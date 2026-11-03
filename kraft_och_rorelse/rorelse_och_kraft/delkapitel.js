@@ -1,6 +1,6 @@
 /* Avsnittssida III. Rörelse och kraft (Fysik · Kraft och rörelse, område 3), med texterna A Rörelse, B Kraft och
- * motkraft och C Tyngdkraften, en bok per text. Texterna följer Joachims föreläsning (beslut 2026-11-03). Bara data;
- * motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
+ * friktion, C Kraft och motkraft och D Tyngdkraften, en bok per text. Texterna följer Joachims föreläsning (beslut
+ * 2026-11-03). Bara data; motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
 Bok.delkapitel({
   id: 'fysik-rorelse-och-kraft',              // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
   amne: 'Fysik',
@@ -12,10 +12,11 @@ Bok.delkapitel({
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
 
-  // Texterna A–C: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
-  // sparat – byt det aldrig. B och C har inget innehåll än och visas som "kommer".
+  // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
+  // sparat – byt det aldrig. D har inget innehåll än och visas som "kommer".
   texter: [
     { id: 'rorelse', titel: 'Rörelse' },
+    { id: 'kraft-och-friktion', titel: 'Kraft och friktion' },
     { id: 'kraft-och-motkraft', titel: 'Kraft och motkraft' },
     { id: 'tyngdkraften', titel: 'Tyngdkraften' }
   ],

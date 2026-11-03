@@ -129,18 +129,28 @@ async function chrome() {
   return { send, ev, undantag, stang };
 }
 
-/* ---------- Rörelsespåren i den öppna boken: avstånden följer rörelsetypen ----------
- * Bläddrar igenom boken och mäter prickarna i varje rörelsespår: likformig lika avstånd, accelererande avstånd som
- * växer jämnt, retarderad avstånd som krymper jämnt, olikformig avstånd som både växer och krymper. Strålens
- * pilspets ska ligga till höger om prickarna (rörelseriktningen). Klistras in i scenarierna (behöver v och $$). */
-const SPARKOLL = String.raw`const sparKoll = async () => {
-    const sett = new Map();
+/* ---------- Figurerna i den öppna boken: rörelsespår och kraftpar mäts ----------
+ * Bläddrar igenom boken och mäter
+ *  - rörelsespåren: likformig lika avstånd, accelererande avstånd som växer jämnt, retarderad avstånd som krymper
+ *    jämnt, olikformig avstånd som både växer och krymper; strålens pilspets till höger om prickarna;
+ *  - kraftparen: två föremål och två pilar, var och en från sitt föremåls mitt, lika långa och motriktade – mot det
+ *    andra föremålet (drag) eller ifrån det (knuff).
+ * Klistras in i scenarierna (behöver v och $$). */
+const FIGURKOLL = String.raw`const figurKoll = async () => {
+    const sett = new Map(), par = new Map();
     for (let n = 1; n <= $$('.lr-sida').length; n++) {
       Bok.gaTill(n); await v(30);
       $$('.scen svg[data-rorelse]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (!sett.has(id)) sett.set(id, { typ: s.dataset.rorelse, xs: [...s.querySelectorAll('circle.fig-prick')].map(c => c.cx.baseVal.value),
           spets: Math.max(...[...s.querySelectorAll('.fig-pilspets')].flatMap(p => [...p.points].map(q => q.x))) });
+      });
+      $$('.scen svg[data-kraftpar]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (!par.has(id)) par.set(id, { satt: s.dataset.kraftpar,
+          mitt: [...s.querySelectorAll('rect.fig-foremal')].map(r => [r.x.baseVal.value + r.width.baseVal.value / 2, r.y.baseVal.value + r.height.baseVal.value / 2]),
+          pilar: [...s.querySelectorAll('g.fig-kraftpar-pil')].map(g => { const l = g.querySelector('line'), t = g.querySelector('polygon').points[0];
+            return { x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }) });
       });
     }
     const fel = [], lika = (p, q) => Math.abs(p - q) < 0.6;
@@ -152,7 +162,19 @@ const SPARKOLL = String.raw`const sparKoll = async () => {
         : x.typ === 'olikformig' && d.some(s => s > 1) && d.some(s => s < -1);
       if (!ok || x.xs.length < 4 || !(x.spets > Math.max(...x.xs))) fel.push(id + ' (' + x.typ + '): ' + a.map(s => Math.round(s)).join(', '));
     }
-    return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel };
+    const parFel = [];
+    for (const [id, x] of par) {
+      const [p, q] = x.pilar, [m, n] = x.mitt;
+      if (x.pilar.length !== 2 || x.mitt.length !== 2) { parFel.push(id + ': ' + x.mitt.length + ' föremål, ' + x.pilar.length + ' pilar'); continue; }
+      const dx = [p.x2 - p.x1, q.x2 - q.x1], dy = [p.y2 - p.y1, q.y2 - q.y1], len = dx.map((s, i) => Math.hypot(s, dy[i]));
+      const fran = lika(p.x1, m[0]) && lika(p.y1, m[1]) && lika(q.x1, n[0]) && lika(q.y1, n[1]);
+      const mot = lika(dx[0], -dx[1]) && lika(dy[0], -dy[1]);
+      const motAndra = Math.sign(dx[0]) === Math.sign(n[0] - m[0]);       // pilen på föremål 1 pekar mot föremål 2
+      const ok = fran && lika(len[0], len[1]) && len[0] > 20 && mot && (x.satt === 'drag' ? motAndra : x.satt === 'knuff' && !motAndra);
+      if (!ok) parFel.push(id + ' (' + x.satt + '): längd ' + len.map(Math.round).join('/') + ', riktning ' + dx.map(Math.round).join('/') + (fran ? '' : ', börjar inte i föremålens mitt'));
+    }
+    return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel,
+      par: { antal: par.size, satt: [...new Set([...par.values()].map(x => x.satt))], fel: parFel } };
   };`;
 
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
@@ -178,7 +200,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   // Sidorna bryts efter sidmåttet, så platser är block (data-post), inte sidnummer: sidan som visar ett block
   const sidaMed = id => $$('.scen .uppslag > .sida[data-nr]').find(s => s.querySelector('[data-post="' + id + '"]'));
   const visar = id => !!sidaMed(id);
-  ${SPARKOLL}
+  ${FIGURKOLL}
   // Kontrollpanelen (?kontroll) är redan avläst; på mobilen täcker den annars texterna som musen ska trycka på
   if ($('.kontrollpanel')) $('.kontrollpanel').style.display = 'none';
 
@@ -288,7 +310,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   prova('nivå: Esc stänger listan, boken är kvar', lista.hidden && oppen());
 
   // Nivåbyte i boken: från en rubrik mitt i boken genom alla nivåer med innehåll och tillbaka – varje gång samma
-  // avsnitt (sidhuvudets namn). Rörelsespåren kontrolleras på varje nivå.
+  // avsnitt (sidhuvudets namn). Rörelsespåren och kraftparen kontrolleras på varje nivå.
   const nivaVal = () => [...$('.niva-lista').querySelectorAll('button')];
   const franNiva = nivaVal().findIndex(b => b.getAttribute('aria-checked') === 'true');
   const ovriga = nivaVal().map((b, i) => i).filter(i => i !== franNiva && !nivaVal()[i].hasAttribute('aria-disabled'));
@@ -305,12 +327,10 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     }
     prova('nivå: nivåbyte i boken (' + [franNiva, ...ovriga, franNiva].map(i => nivaVal()[i].textContent).join(' → ') + ') hamnar i samma avsnitt',
       !fel.length, 'från ”' + mitt[1] + '” i ' + avsnittet + (fel.length ? '; ' + fel.join(' | ') : ''));
-    for (const i of ovriga) { await valjNiva(i); spar.push(await sparKoll()); }
+    for (const i of ovriga) { await valjNiva(i); spar.push(await figurKoll()); }
     await valjNiva(franNiva);
   }
-  spar.push(await sparKoll());
-  if (spar.some(x => x.antal)) prova('figur: rörelsespårens avstånd följer rörelsetypen (' + spar.map(x => x.antal).join(' + ') + ' spår)',
-    spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
+  spar.push(await figurKoll());
   tangent('Home'); await v(80);
 
   // Läs en bit, stäng med ✕, öppna igen: boken minns läsplatsen (ett block)
@@ -355,6 +375,19 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     prova('en bok per text: varje text minns sin egen sida, och den senast lästa är markerad',
       text(0).dataset.oppna === minne && aktiv && aktiv.dataset.text === textB, 'A → ' + text(0).dataset.oppna + ' (mindes ' + minne + '), markerad: ' + (aktiv && aktiv.dataset.text));
   }
+
+  // Figurerna i de andra texterna: varje text med innehåll öppnas och mäts på varje nivå med innehåll
+  const andraTexter = $$('.underdel-knapp[data-oppna]').map(b => b.dataset.text).filter(t => t && t !== text(0).dataset.text);
+  for (const t of andraTexter) {
+    await gest($$('.underdel-knapp').find(b => b.dataset.text === t));
+    for (const i of nivaVal().map((b, i) => i).filter(i => !nivaVal()[i].hasAttribute('aria-disabled'))) { await valjNiva(i); spar.push(await figurKoll()); }
+    await klicka(synlig('.bok-stang'), 450);
+  }
+  if (spar.some(x => x.antal)) prova('figur: rörelsespårens avstånd följer rörelsetypen (' + spar.map(x => x.antal).join(' + ') + ' spår)',
+    spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
+  if (spar.some(x => x.par.antal)) prova('figur: kraftparens pilar är lika långa, motriktade och börjar i var sitt föremåls mitt (' + spar.map(x => x.par.antal).join(' + ') + ' par)',
+    spar.every(x => !x.par.fel.length), spar.flatMap(x => x.par.fel).join(' | ') || spar.flatMap(x => x.par.satt).filter((t, i, l) => l.indexOf(t) === i).join(', '));
+  if (andraTexter.length) prova('figur: figurerna i de andra texterna (' + andraTexter.join(', ') + ') är mätta på varje nivå', stangd(), 'hash=' + location.hash);
   return k;
 }`;
 
@@ -431,10 +464,30 @@ const PROVSCENARIO = String.raw`async () => {
   prova('prov: långt stycke + figur som inte ryms tillsammans: stycket stannar, figuren står först på nästa sida',
     sf('figur-efter') === sf('langt-stycke') + 1 && await forstPaSidan('figur-efter'), 'stycket s. ' + sf('langt-stycke') + ', figuren s. ' + sf('figur-efter'));
   // Rörelsespåren i Tryck: alla fyra typerna, 4–8 prickar, med och utan tider
-  ${SPARKOLL}
-  const sp = await sparKoll();
+  ${FIGURKOLL}
+  const sp = await figurKoll();
   prova('prov: rörelsespåren – avstånden lika / växande / krympande / ojämna efter rörelsetypen',
     sp.antal === 4 && sp.typer.length === 4 && !sp.fel.length, sp.antal + ' spår: ' + (sp.fel.join(' | ') || sp.typer.join(', ')));
+  // Kraftparen i Tryck: drag och knuff, lika långa motriktade pilar från var sitt föremåls mitt
+  prova('prov: kraftparen – pilarna lika långa och motriktade, mot det andra föremålet (drag) och ifrån det (knuff)',
+    sp.par.antal === 2 && sp.par.satt.length === 2 && !sp.par.fel.length, sp.par.antal + ' par: ' + (sp.par.fel.join(' | ') || sp.par.satt.join(', ')));
+  const etikett = async id => { Bok.gaTill(sf(id)); await v(60); const e = $('.scen [data-post="' + id + '"] .figur-bild'); return e ? e.getAttribute('aria-label') : ''; };
+  const texterI = id => [...$$('.scen [data-post="' + id + '"] svg text')].map(t => t.textContent);
+  const drag = await etikett('par-drag'), dragText = texterI('par-drag');
+  prova('prov: kraftpar med värde – värdet över båda pilarna och beskrivningen ur data',
+    dragText.filter(t => t === '12,5 N').length === 2 && drag === 'Kraftpar: Provföremål A och B är förbundna med ett snöre. A dras mot B åt höger och B dras mot A åt vänster, lika stora krafter, 12,5 N, på två olika föremål.',
+    dragText.join(' · ') + ' | ' + drag);
+  const knuff = await etikett('par-knuff'), knuffText = texterI('par-knuff');
+  prova('prov: kraftpar utan värde – inga värden, pilarna ifrån varandra i beskrivningen',
+    !knuffText.some(t => / N$/.test(t)) && /^Kraftpar: Provföremål nr 1 och Provföremål nr 2 ligger an mot varandra\. Kraften på föremål 1 åt vänster och kraften på föremål 2 åt höger, lika stora krafter på två olika föremål\.$/.test(knuff),
+    knuffText.join(' · ') + ' | ' + knuff);
+  // Kraftpilar utan värden, skala 20: pilen för 10 är halva den längsta (104), för 5 en fjärdedel
+  const uv = await etikett('pilar-utan-varden'), uvText = texterI('pilar-utan-varden');
+  const uvLinjer = [...$$('.scen [data-post="pilar-utan-varden"] line.fig-pil')].map(l => Math.hypot(l.x2.baseVal.value - l.x1.baseVal.value, l.y2.baseVal.value - l.y1.baseVal.value) + 12.6);
+  prova('prov: kraftpilar utan värden – längderna ur storleken och skalan, inga "N" i figuren eller beskrivningen',
+    !uvText.join(' ').includes(' N') && uv === 'Kraftpilar på Provlåda: Framåt åt höger, Bakåt åt vänster, Resultanten åt höger.' &&
+    uvLinjer.length === 3 && Math.abs(uvLinjer[0] - 52) < 0.5 && Math.abs(uvLinjer[1] - 26) < 0.5 && Math.abs(uvLinjer[2] - 26) < 0.5,
+    uvLinjer.map(Math.round).join('/') + ' | ' + uvText.join(' · ') + ' | ' + uv);
   Bok.gaTill(sf('spar-retarderad')); await v(60);
   const ret = $('.scen [data-post="spar-retarderad"] svg'), tider = ret ? [...ret.querySelectorAll('text')].map(t => t.textContent) : [];
   prova('prov: rörelsespår med tider – en tid per prick (0 s, 1 s …) och beskrivningen ur data',

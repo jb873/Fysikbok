@@ -9,8 +9,11 @@
  *   flyter_sjunker      vatska?: {namn, densitet}, foremal: [{namn, densitet, ca?, stil?}] (1–4), enhet?: 'g/cm³'
  *   varmeflode          foremal?: [{namn, temp}, {namn, temp}], efter?: 'lika varm', slutrad?, enhet?: '°C'
  *   kraftpilar          foremal?: {namn?, form?: 'lada'|'boll'}, underlag?: false,
- *                       krafter: [{namn, riktning: 'upp'|'ner'|'vanster'|'hoger'|grader, storlek?}], enhet?: 'N', resultant?
- *   skalmodell          atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}] (1–3), overgang?: 'tar upp 2 elektroner',
+ *                       krafter: [{namn, riktning: 'upp'|'ner'|'vanster'|'hoger'|grader, storlek?}], enhet?: 'N', resultant?,
+ *                       varden?: true, skala?
+ *   kraftpar            satt: 'drag'|'knuff', foremal: [{namn}, {namn}], krafter: ['kraften på 1', 'kraften på 2'],
+ *                       storlek?, enhet?: 'N', varden?: true
+ *   skalmodell         atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}] (1–3), overgang?: 'tar upp 2 elektroner',
  *                       rader?: ['protoner'|'neutroner'|'elektroner'|'laddning'|'masstal', …]
  *   rorelsespar         rorelse: 'likformig'|'olikformig'|'accelererande'|'retarderad', prickar?: 6 (4–8), tider?: false
  *
@@ -159,11 +162,14 @@
     const riktord = g => RIKTORD[g] || `i riktningen ${g}°`;
     // Föremålet är litet (64 × 48). Den största kraften får längden L; en kraft under ungefär en tredjedel av den
     // största ritas över föremålet. Figurens höjd följer krafterna, så att en figur med bara vågräta krafter blir låg.
+    // skala: den storlek som får den längsta pilen – samma skala i flera figurer gör pilarna jämförbara mellan dem.
+    // varden: false ritar längderna ur storleken men skriver inte ut värdena.
     const B = 440, L = 104, bh = 24, cx = 220, KANT = 12;
-    const storst = Math.max(...krafter.map(k => k.storlek || 1));
-    const varde = m => m != null ? `${tal(m)} ${enhet}` : '';
+    const storst = d.skala || Math.max(...krafter.map(k => k.storlek || 1));
+    const visa = d.varden !== false;
+    const varde = m => m != null && visa ? `${tal(m)} ${enhet}` : '';
     const pilar = krafter.map(k => ({ namn: k.namn, g: vinkel(k.riktning), m: k.storlek, klass: '' }));
-    const beskr = pilar.map(p => `${p.namn}${p.m != null ? ' ' + varde(p.m) : ''} ${riktord(p.g)}`);
+    const beskr = pilar.map(p => `${p.namn}${varde(p.m) ? ' ' + varde(p.m) : ''} ${riktord(p.g)}`);
     if (d.resultant) {
       let rx = 0, ry = 0;
       krafter.forEach(k => { const v = vinkel(k.riktning) * Math.PI / 180, m = k.storlek || 0; rx += m * Math.cos(v); ry += m * Math.sin(v); });
@@ -172,17 +178,20 @@
         const g = grader(Math.round(Math.atan2(ry, rx) * 180 / Math.PI));
         // Parallell med en av krafterna: resultanten ritas en bit vid sidan om, med etiketten på andra sidan.
         pilar.push({ namn: 'Resultant', g, m, klass: 'fig-resultant', bredvid: pilar.some(p => p.g === g) });
-        beskr.push(`Resultanten ${varde(m)} ${riktord(g)}`);
+        beskr.push(`Resultanten${varde(m) ? ' ' + varde(m) : ''} ${riktord(g)}`);
       } else beskr.push('krafterna tar ut varandra');
     }
     // Lägen i förhållande till föremålets mitt
     for (const p of pilar) {
       const v = p.g * Math.PI / 180, l = Math.max(16, L * (p.m || storst) / storst);   // 16: pilspetsens egen längd
       p.lodrat = Math.abs(Math.sin(v)) >= Math.abs(Math.cos(v));
-      p.x1 = p.bredvid ? (p.lodrat ? -18 : 0) : 0; p.y1 = p.bredvid && !p.lodrat ? 18 : 0;
+      // vågrät resultant över mitten, så att etiketten inte hamnar på underlaget
+      p.x1 = p.bredvid ? (p.lodrat ? -18 : 0) : 0; p.y1 = p.bredvid && !p.lodrat ? -18 : 0;
       p.x2 = p.x1 + l * Math.cos(v); p.y2 = p.y1 - l * Math.sin(v);
     }
-    const overst = Math.min(-bh, ...pilar.map(p => p.y2 - 6)), nederst = Math.max(bh + (d.underlag ? 13 : 0), ...pilar.map(p => p.y2 + 6));
+    // överst: föremålets namn (över föremålet) eller pilarna
+    const namnHojd = d.foremal && d.foremal.namn ? 8 + 15 : 0;
+    const overst = Math.min(-bh - namnHojd, ...pilar.map(p => p.y2 - 6)), nederst = Math.max(bh + (d.underlag ? 13 : 0), ...pilar.map(p => p.y2 + 6));
     const cy = KANT - overst, H = Math.ceil(nederst - overst + 2 * KANT);
 
     let s = '';
@@ -197,12 +206,13 @@
       if (p.lodrat) {
         // bredvid spetsen, namnet över värdet; resultanten till vänster om pilen
         const ty = y2 < y1 ? y2 + 10 : y2 - 20, tx = p.bredvid ? x2 - 10 : x2 + 10, ank = p.bredvid ? 'fig-hoger' : 'fig-vanster';
-        s += text(tx, ty, p.namn, `fig-pil-text ${ank} ${p.klass}`) + (p.m != null ? text(tx, ty + 17, varde(p.m), `fig-text ${ank}`) : '');
+        s += text(tx, ty, p.namn, `fig-pil-text ${ank} ${p.klass}`) + (varde(p.m) ? text(tx, ty + 17, varde(p.m), `fig-text ${ank}`) : '');
       } else {
-        // bortom spetsen, på en rad
-        const hoger = x2 > x1, tx = x2 + (hoger ? 8 : -8), ank = hoger ? 'fig-vanster' : 'fig-hoger';
+        // bortom spetsen, på en rad – men aldrig inne i föremålet, när pilen är kortare än det
+        const hoger = x2 > x1, ut = Math.max(Math.abs(p.x2), form === 'boll' ? bh + 2 : 32);
+        const tx = cx + (hoger ? ut + 8 : -ut - 8), ank = hoger ? 'fig-vanster' : 'fig-hoger';
         s += `<text x="${f(tx)}" y="${f(y2 + 5)}" class="fig-pil-text fig-halo ${ank} ${p.klass}">${esc(p.namn)}` +
-          (p.m != null ? ` <tspan class="fig-varde">${esc(varde(p.m))}</tspan>` : '') + `</text>`;
+          (varde(p.m) ? ` <tspan class="fig-varde">${esc(varde(p.m))}</tspan>` : '') + `</text>`;
       }
     }
     s += `<circle class="fig-angrepp" cx="${cx}" cy="${f(cy)}" r="3.5"/>`;
@@ -342,5 +352,57 @@
     const beskr = `Rörelsespår: ${ANTAL[n]} prickar med lika lång tid emellan, avstånden ${hur === 'växer' || hur === 'krymper' ? hur : 'är ' + hur} – ${namn} rörelse.` +
       (d.tider ? ` Under prickarna står tiderna 0 s till ${m} s.` : '') + ' En pil visar rörelseriktningen åt höger.';
     return { svg: `<svg viewBox="0 0 440 ${Math.ceil(hojd)}" xmlns="http://www.w3.org/2000/svg" data-rorelse="${typ}">${s}</svg>`, beskrivning: beskr };
+  });
+
+  /* Kraftpar (Newtons tredje lag): två föremål, en kraft på vardera – lika långa pilar åt motsatt håll, var och en
+     från sitt föremåls mitt (angreppspunkten). drag: ett snöre mellan föremålen, pilarna pekar mot det andra föremålet;
+     knuff: föremålen ligger an mot varandra, pilarna pekar ifrån varandra. Under varje pil vilket föremål kraften
+     verkar på (krafter[]), med värdet över pilen när storlek är given. Föremålen är neutrala rektanglar med namn. */
+  const textbredd = (s, px) => String(s).length * px * 0.53;          // uppskattad bredd i figurens enheter
+  Bok.figur('kraftpar', d => {
+    const satt = d.satt;
+    if (satt !== 'drag' && satt !== 'knuff') fel(`kraftpar: okänt sätt ”${satt}” (drag eller knuff)`);
+    const foremal = d.foremal, krafter = d.krafter;
+    if (!Array.isArray(foremal) || foremal.length !== 2 || !foremal.every(x => x && x.namn)) fel('kraftpar behöver två föremål: [{namn}, {namn}]');
+    if (!Array.isArray(krafter) || krafter.length !== 2) fel('kraftpar behöver två krafter: [kraften på föremål 1, kraften på föremål 2]');
+    const enhet = d.enhet || 'N', varde = d.storlek != null && d.varden !== false ? `${tal(d.storlek)} ${enhet}` : '';
+    // Föremålen är så breda att namnet ryms över dem (högst 150). drag: föremålen ute vid kanterna med snöret emellan,
+    // pilarna når nästan fram till varandra; knuff: föremålen mot varandra mitt i figuren, pilarna ut mot kanterna.
+    const nb = foremal.map(x => textbredd(x.namn, 16.5));
+    const BF = Math.min(150, Math.max(76, ...nb.map(b => b + 12))), bh = 24, cy = 56;
+    const xs = satt === 'drag' ? [BF / 2 + 8, 440 - BF / 2 - 8] : [220 - BF / 2, 220 + BF / 2];
+    const L = satt === 'drag' ? (xs[1] - xs[0]) / 2 - 18 : Math.min(Math.max(110, BF / 2 + 50), xs[0] - 14);
+    const mot = satt === 'drag' ? [1, -1] : [-1, 1];                   // pilens riktning: +1 åt höger
+    let s = '';
+    if (satt === 'drag') s += `<line class="fig-snore" x1="${xs[0] + BF / 2}" y1="${cy}" x2="${xs[1] - BF / 2}" y2="${cy}"/>`;
+    xs.forEach(x => { s += `<rect class="fig-foremal" x="${f(x - BF / 2)}" y="${cy - bh}" width="${f(BF)}" height="${2 * bh}" rx="2"/>`; });
+    // namnen över föremålen; är de för långa för det står de utåt från mitten
+    const krock = xs[0] + nb[0] / 2 + 8 > xs[1] - nb[1] / 2;
+    foremal.forEach((x, i) => {
+      s += krock ? text(i ? 224 : 216, cy - bh - 10, x.namn, 'fig-text ' + (i ? 'fig-vanster' : 'fig-hoger'))
+        : text(xs[i], cy - bh - 10, x.namn, 'fig-text fig-mitt');
+    });
+    // pilarna, från mitten; etiketterna under pilarna – eller under föremålen, eller åt var sitt håll från figurens
+    // mitt, när de annars står för tätt
+    const spets = xs.map((x, i) => x + mot[i] * L);
+    const lb = krafter.map(k => textbredd(k, 15.5));
+    const ryms = lx => lx[0] + lb[0] / 2 + 8 <= lx[1] - lb[1] / 2 && lx[0] - lb[0] / 2 >= 2 && lx[1] + lb[1] / 2 <= 438;
+    const lx = [xs.map((x, i) => (x + spets[i]) / 2), xs].find(ryms);
+    xs.forEach((x, i) => {
+      s += `<g class="fig-kraftpar-pil" data-foremal="${i + 1}">${pil(x, cy, spets[i], cy, 9)}</g>`;
+      const ey = cy + bh + 22;
+      s += !lx ? text(i ? 224 : 216, ey, krafter[i], 'fig-pil-text ' + (i ? 'fig-vanster' : 'fig-hoger'))
+        : text(lx[i], ey, krafter[i], 'fig-pil-text');
+      // värdet över den del av pilen som är utanför föremålet
+      if (varde) s += text((x + mot[i] * BF / 2 + spets[i]) / 2, cy - 9, varde, 'fig-text fig-mitt fig-halo');
+    });
+    xs.forEach(x => { s += `<circle class="fig-angrepp" cx="${x}" cy="${cy}" r="3.5"/>`; });
+    const H = cy + bh + 32;
+    const riktning = m => m > 0 ? 'åt höger' : 'åt vänster';
+    // den andra kraften mitt i meningen: ”Blocket drar …” → ”blocket drar …” (men ”B drar …” står kvar)
+    const andra = String(krafter[1]).replace(/^(\p{Lu})(?=\p{Ll})/u, c => c.toLowerCase());
+    const beskr = `Kraftpar: ${foremal[0].namn} och ${foremal[1].namn} ${satt === 'drag' ? 'är förbundna med ett snöre' : 'ligger an mot varandra'}. ` +
+      `${krafter[0]} ${riktning(mot[0])} och ${andra} ${riktning(mot[1])}, lika stora krafter${varde ? ', ' + varde + ',' : ''} på två olika föremål.`;
+    return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-kraftpar="${satt}">${s}</svg>`, beskrivning: beskr };
   });
 })();

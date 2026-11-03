@@ -1,7 +1,8 @@
 /* PROVDATA för verktyg/bok-grind.js – inte elevinnehåll. Text B: en egen bok, bara på standardnivån (Djupdykning
  * och de andra nivåerna är "kommer" för den här texten). Skriven i strömformatet (block, inga sidor): grinden prövar
  * en sidbrytning och regelkonflikten – ett stycke och en figur som inte ryms tillsammans på en sida – och
- * rörelsespåren (alla fyra rörelsetyperna, med och utan tider, 4–8 prickar). */
+ * rörelsespåren (alla fyra rörelsetyperna, med och utan tider, 4–8 prickar), kraftparen (drag och knuff, med och
+ * utan värde) och kraftpilar utan värden med en gemensam skala. */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -28,6 +29,18 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'spar-retarderad', namn: 'rorelsespar', rorelse: 'retarderad', tider: true },
         { typ: 'text', text: 'Provtext: olikformig rörelse, fyra prickar.' },
         { typ: 'figur', id: 'spar-olikformig', namn: 'rorelsespar', rorelse: 'olikformig', prickar: 4, bildtext: 'Provbildtext under ett rörelsespår.' },
+        // Kraftparen: grinden mäter att pilarna är lika långa, motriktade och börjar i var sitt föremåls mitt
+        { typ: 'rubrik', text: 'Provrubrik: kraftpar' },
+        { typ: 'text', text: 'Provtext: ett kraftpar med snöre, med värdet.' },
+        { typ: 'figur', id: 'par-drag', namn: 'kraftpar', satt: 'drag', foremal: [{ namn: 'Provföremål A' }, { namn: 'B' }],
+          krafter: ['A dras mot B', 'B dras mot A'], storlek: 12.5, enhet: 'N' },
+        { typ: 'text', text: 'Provtext: ett kraftpar där föremålen knuffar varandra, långa namn, utan värde.' },
+        { typ: 'figur', id: 'par-knuff', namn: 'kraftpar', satt: 'knuff', foremal: [{ namn: 'Provföremål nr 1' }, { namn: 'Provföremål nr 2' }],
+          krafter: ['Kraften på föremål 1', 'Kraften på föremål 2'], bildtext: 'Provbildtext under ett kraftpar.' },
+        // Kraftpilar utan värden och med en gemensam skala: 5 av 20 ger en fjärdedel så lång pil som 20 skulle ge
+        { typ: 'text', text: 'Provtext: kraftpilar utan värden, med skalan 20.' },
+        { typ: 'figur', id: 'pilar-utan-varden', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Provlåda' }, underlag: true, varden: false, skala: 20, resultant: true,
+          krafter: [{ namn: 'Framåt', riktning: 'hoger', storlek: 10 }, { namn: 'Bakåt', riktning: 'vanster', storlek: 5 }] },
         { typ: 'lank', till: ['ova'] }
       ]
     }

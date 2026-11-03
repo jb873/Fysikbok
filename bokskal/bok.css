@@ -494,6 +494,7 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 /* rörelsespår: prickarna i bläck, strålen (rörelseriktningen) i guld */
 .fig-prick { fill: var(--black); }
 .fig-pil.fig-strale { stroke-width: 2; }
+.fig-snore { stroke: var(--dampad); stroke-width: 1.6; }
 
 /* ---------- Innehållsförteckningen (sida 1 och menyn) ---------- */
 
