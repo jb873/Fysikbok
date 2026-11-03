@@ -50,7 +50,9 @@ const FEL = {
     s.textContent = '.sida { font-size: calc(var(--fs) * 1.45) !important; }'; document.head.append(s); });`,
   'stäng fungerar inte': `history.back = () => {};`,
   // motorns provkrok (bara med ?kontroll): en rubrik flyttas sist på sidan före – brytningsreglerna ska ge rött
-  'rubrik sist på en sida': { adress: '&prova=rubrik-sist' }
+  'rubrik sist på en sida': { adress: '&prova=rubrik-sist' },
+  // en konstgjord fördröjning på 250 ms i varje brytning: medianen ska bli över 200 ms i varje läge
+  'långsam brytning': { adress: '&prova=langsam' }
 };
 
 const FANGA_FEL = `window.__fel = [];
@@ -651,11 +653,14 @@ async function kor(dk, lage, felkod) {
     await vanta(300);
     res.kontroller.push({ namn: `minne: läsplatsen (ett block) syns igen efter byte till ${alt.namn}`, ok: igen.ok, detalj: minne + ' → sidor ' + igen.syns });
 
-    // Prestanda: brytningen med CPU:n strypt 6 gånger, som på en Chromebook
+    // Prestanda: brytningen med CPU:n strypt 6 gånger, som på en Chromebook. Varje bok (text × nivå): ett
+    // uppvärmningsvarv som inte räknas, sedan 5 mätvarv – medianen ska vara under 200 ms (maxet redovisas)
     await c.send('Emulation.setCPUThrottlingRate', { rate: 6 });
-    res.brytTid = await c.ev('Bok.brytTid()');
+    res.brytTid = await c.ev('Bok.brytTid(5)');
     await c.send('Emulation.setCPUThrottlingRate', { rate: 1 });
-    res.kontroller.push({ namn: 'prestanda: brytningen under 200 ms med CPU:n strypt 6 gånger', ok: res.brytTid < 200, detalj: res.brytTid + ' ms' });
+    const over = res.brytTid ? res.brytTid.bocker.filter(b => !(b.median < 200)) : [{ bok: '(ingen bok)', median: NaN, max: NaN }];
+    res.kontroller.push({ namn: 'prestanda: brytningen under 200 ms med CPU:n strypt 6 gånger (medianen av 5 varv efter uppvärmning, varje bok)',
+      ok: !over.length, detalj: over.map(b => `${b.bok} median ${b.median} ms (max ${b.max})`).join(', ') });
     if (BILDER) { await c.ev(`document.querySelector('.underdel-knapp').click()`); await vanta(500); await bild(c, dk, lage, 'bok'); }
     res.fel = (await c.ev('window.__fel')).concat(c.undantag.map(u => 'undantag: ' + u));
     res.fel = [...new Set(res.fel)];
@@ -822,7 +827,7 @@ async function jamforWebben(lista) {
       console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  ${dk.namn}, ${lage.namn}: navigering ${r.navigering}, ` +
         `${r.plats ? 'alla sidor får plats' : 'PLATS/STRUKTUR RÖTT'}, JS-fel ${r.fel.length}`);
       if (matt && lage === LAGEN[0]) console.log(`       text: ${matt}`);
-      if (r.brytTid != null) console.log(`       brytningen: ${r.brytTid} ms med CPU:n strypt 6 gånger`);
+      if (r.brytTid) console.log(`       brytningen (CPU×6, median/max av 5 varv): ` + r.brytTid.bocker.map(b => `${b.bok || 'boken'} ${b.median}/${b.max}`).join(' · ') + ' ms');
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
       r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
       if (r.kontroll) r.kontroll.problem.forEach(p => console.log(`       problem: ${p}`));
@@ -833,10 +838,12 @@ async function jamforWebben(lista) {
     const dk = lista.find(d => !d.prov) || lista[0];
     for (const [namn, kod] of Object.entries(FEL)) for (const lage of LAGEN) {
       const r = await kor(dk, lage, kod);
-      const rott = !r.gron;
+      // den långsamma brytningen ska fångas av just tidsprovet
+      const rott = namn === 'långsam brytning' ? r.kontroller.some(x => x.namn.startsWith('prestanda') && !x.ok) : !r.gron;
       gront = gront && rott;
       console.log(`${rott ? 'GRÖNT' : 'RÖTT '}  negativ "${namn}", ${lage.namn}: grinden blev ${rott ? 'röd, som den ska' : 'GRÖN – fångar inte felet'}` +
-        ` (navigering ${r.navigering}, plats ${r.plats ? 'grön' : 'röd'}, JS-fel ${r.fel.length})`);
+        ` (navigering ${r.navigering}, plats ${r.plats ? 'grön' : 'röd'}, JS-fel ${r.fel.length}` +
+        (r.brytTid ? `, brytningen median högst ${r.brytTid.median} ms` : '') + ')');
     }
   }
   console.log(`\n${gront ? 'GRÖNT' : 'RÖTT'}: ${NEGATIV ? 'den negativa verifieringen' : 'bokmotorn och delkapitlen'}` +

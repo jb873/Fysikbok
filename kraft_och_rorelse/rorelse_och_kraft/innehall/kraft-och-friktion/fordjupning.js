@@ -38,6 +38,8 @@ Bok.niva('fordjupning', {
 
         { typ: 'rubrik', text: 'Vilofriktionen anpassar sig efter draget' },
         { typ: 'text', text: 'Så länge blocket ligger stilla kallas friktionen *vilofriktion*. Den är inte en fast kraft, utan blir exakt lika stor som draget, så att resultanten blir noll. Drar du med 3 N är vilofriktionen 3 N, drar du med 8 N är den 8 N. Men den har ett största värde. Överstiger draget det värdet börjar blocket glida.' },
+        { typ: 'figur', namn: 'friktion',
+          bildtext: 'Även släta ytor är ojämna när man tittar riktigt nära.' },
 
         { typ: 'rubrik', text: 'Glidfriktionen är mindre än den största vilofriktionen' },
         { typ: 'text', text: 'När blocket glider kallas friktionen *glidfriktion*. Den är ungefär lika stor oavsett hur fort blocket glider, och den är mindre än den största vilofriktionen. Därför krävs störst kraft för att få något att börja glida. Det förklarar också varför bilar har låsningsfria bromsar: ett hjul som rullar utan att slira använder vilofriktionen mot vägen, som är större än glidfriktionen i ett låst hjul som glider.' },

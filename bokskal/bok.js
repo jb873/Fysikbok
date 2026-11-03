@@ -56,7 +56,7 @@
   let info, textId = '', nivaId = null, sidor = [], nr = 1, uppslag = false, smal = false, oppen = false, kontroll = false;
   // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id) eller 'innehall'.
   // flytt räknas upp när blockens element flyttas mellan sidor (en ny brytning), så att sidorna byggs om.
-  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false;
+  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false;
   let tillbaka = null, vandning = 'snabb', helskarm = true, reglage = 'alltid', vilaTimer = null;
   let fokusEfter = null, panelFran = null, senasteEsc = 0;
   const ui = {};
@@ -505,10 +505,18 @@
               { poster: u.poster.slice(u.delVid), brytFore: true, rubrik: false, delVid: null });
             u = E[i];
           }
-          // …och om sidan annars skulle bli under 40 % fylld: då stannar stycket här och figuren börjar nästa sida
+          // …och om sidan annars skulle bli under 40 % fylld: då stannar stycket här och figuren börjar nästa sida.
+          // Nära gränsen (inom NARA) avgör en riktig sida, som i kontrollen av tunna sidor; mätningen sparas
+          // (fyllFore), så att regelkontrollen kan se att delningen var tillåten.
           const forDel = u.delVid !== null && u.poster.slice(0, u.delVid);
+          const tunnUtan = () => {
+            const hh = hojd(s.poster), k = kap(s.poster);
+            if (hh < TUNN * k) return true;
+            if (hh >= TUNN * k + NARA) return false;
+            prova(s); s.fyllFore = s.fyll; return s.fyll < TUNN;
+          };
           if (forDel && s.enheter.length && !u.brytFore && hojd(s.poster.concat(u.poster)) > kap(s.poster.concat(u.poster)) &&
-            hojd(s.poster) < TUNN * kap(s.poster) && hojd(s.poster.concat(forDel)) <= kap(s.poster.concat(forDel))) {
+            hojd(s.poster.concat(forDel)) <= kap(s.poster.concat(forDel)) && tunnUtan()) {
             E.splice(i, 1, Object.assign({}, u, { poster: forDel, delVid: null }),
               { poster: u.poster.slice(u.delVid), brytFore: true, rubrik: false, delVid: null });
             u = E[i];
@@ -566,6 +574,8 @@
     const ti = toc.querySelector('.sidinnehall');
     sidor[0].over = ti.scrollHeight - ti.clientHeight > 1 ? ti.scrollHeight - ti.clientHeight : 0;
     vard.remove();
+    // Provkrok för grindens negativa prov (bara med ?kontroll&prova=langsam): brytningen tar 250 ms längre
+    if (provaLangsam) { const slut = performance.now() + 250; while (performance.now() < slut); }
     r.ms = Math.round(10 * (performance.now() - t0)) / 10;
     return r;
   }
@@ -589,7 +599,8 @@
           let start = fl.indexOf(fore);
           while (start > 0 && RUBRIKER.includes(fl[start - 1].typ)) start--;
           const innan = start > 0 ? r.matt.get(fl[start - 1]).bottom - r.matt.get(fl[0]).top : 0;
-          if (ihop <= r.kap && innan >= TUNN * r.kap) brott.push(`sida ${s.nr}: ${forsta.typ} står skild från stycket före, fast de ryms tillsammans`);
+          // (nära gränsen avgjorde en riktig sida: fyllFore, se paginera)
+          if (ihop <= r.kap && innan >= TUNN * r.kap && !(P.fyllFore < TUNN)) brott.push(`sida ${s.nr}: ${forsta.typ} står skild från stycket före, fast de ryms tillsammans`);
         }
       }
       if (s.forsta && forsta !== d.poster.find(iFlodet)) brott.push(`sida ${s.nr}: avsnittet ”${s.avsnitt.titel}” börjar inte på ny sida`);
@@ -1193,6 +1204,7 @@
       const adress = new URLSearchParams(location.search);
       kontroll = adress.has('kontroll');
       provaRubrikSist = kontroll && adress.get('prova') === 'rubrik-sist';   // grindens negativa prov, se paginera
+      provaLangsam = kontroll && adress.get('prova') === 'langsam';
       vandning = lager.hamta(nyckel('vandning'), 'snabb');
       helskarm = lager.hamta(nyckel('lashelskarm'), true);
       reglage = lager.hamta(nyckel('lasreglage'), 'alltid');
@@ -1238,15 +1250,24 @@
       if (oppen) { aktuell = null; layout(); rita(null); }
       return { for_stora: r.sidor.filter(s => s.over).map(s => ({ sida: s.nr, px: s.over })), ...regelkoll(r, bok) };
     },
-    // Brytningens tid (ms) för boken som visas, som för eleven (inte strikt), utan sparad brytning: medianen av tre
-    // brytningar i vart och ett av Chromebookens två mått, det längsta av de två. Sidans väntande layout (till exempel
-    // efter ett nytt fönstermått) görs först, så att den inte räknas in.
-    brytTid() {
+    // Brytningens tid (ms) för varje bok (text × nivå med innehåll), som för eleven (inte strikt), utan sparad
+    // brytning. Ett varv bryter boken i vart och ett av Chromebookens två mått och räknar det längsta av de två. Först
+    // ett uppvärmningsvarv som inte räknas, sedan `varv` mätvarv (minst 5): medianen och det längsta per bok.
+    // Sidans väntande layout (till exempel efter ett nytt fönstermått) görs före varje brytning, så att den inte räknas in.
+    brytTid(varv = 5) {
       if (!nivaId) return null;
-      const bok = byggBok(nivaId), median = a => a.sort((x, y) => x - y)[1];
-      const ms = MALSKARMAR.map(([, B, H]) => median([0, 1, 2].map(() => { void document.body.offsetHeight; return paginera(bok, geometri(B, H, false), false).ms; })));
+      varv = Math.max(5, varv);
+      const median = a => { const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+      const rund = x => Math.round(10 * x) / 10;
+      const ut = texter().flatMap(t => info.nivaer.filter(n => harInnehall(n.id, t.id)).map(n => {
+        const bok = byggBok(n.id, t.id);
+        const ettVarv = () => Math.max(...MALSKARMAR.map(([, B, H]) => { void document.body.offsetHeight; return paginera(bok, geometri(B, H, false), false).ms; }));
+        ettVarv();                                                     // uppvärmning, räknas inte
+        const tider = Array.from({ length: varv }, ettVarv);
+        return { bok: bokNyckel(t.id, n.id), median: rund(median(tider)), max: rund(Math.max(...tider)), varv: tider };
+      }));
       if (oppen) { aktuell = null; layout(); rita(null); }
-      return Math.max(...ms);
+      return { bocker: ut, median: Math.max(...ut.map(b => b.median)), max: Math.max(...ut.map(b => b.max)) };
     },
     gaTill: n => { if (oppen) gaTill(n, { hopp: true }); else oppnaBok(n); }
   };

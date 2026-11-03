@@ -234,7 +234,7 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
 - **Ett stycke delas inte.** Är ett ensamt stycke högre än en hel sida kan sidan rullas, och `?kontroll` säger till.
 - **En figur, formel eller ett exempel står på samma sida som stycket före.** Ryms de inte tillsammans på en sida –
   eller skulle sidan före stycket då bli tunn (under 40 %) – stannar stycket och figuren står först på nästa sida.
-  Figuren delas aldrig.
+  Figuren delas aldrig. Nära 40 %-gränsen avgör en riktig sida, samma mätning som kontrollen av tunna sidor.
 - **Inledning, huvudtext och Sammanfattning** (varje avsnitt) börjar på ny sida, inte nödvändigtvis nytt uppslag.
 - **Mjuk idéregel:** en rubrik börjar ny sida om mindre än en tredjedel av sidan är kvar.
 - **`{typ: 'sidbrytning'}`** tvingar ny sida.
@@ -245,7 +245,7 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
   annars blev 40 % fylld.)
 
 Brytningen väntar på typsnitten (annars mäts fel), sparas per sidmått och görs om bara när sidmåttet ändras. Den
-tar ungefär 30–150 ms med CPU:n strypt 6 gånger, som på en Chromebook (grinden: under 200 ms). Innehållsförteckningen räknar ut sidnumren för
+tar ungefär 10–90 ms med CPU:n strypt 6 gånger, som på en Chromebook (grinden: medianen under 200 ms). Innehållsförteckningen räknar ut sidnumren för
 rubrikerna och krymper fortfarande sin egen text (ned till 70 %) om den behöver.
 - **I texten:**
   - `*begrepp*` blir betonat, i djupblått som i filmerna.
@@ -355,7 +355,9 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   - saknade nivåfiler
 
   Den varnar dessutom för avsnitt utan länk i slutet. I konsolen: `Bok.matSidor({sb, sh, fs})` bryter boken i andra
-  mått, `Bok.brytTid()` mäter brytningen och `Bok.plats` är läsplatsen.
+  mått, `Bok.brytTid(varv)` mäter brytningen och `Bok.plats` är läsplatsen. `brytTid` mäter varje bok (text ×
+  nivå): ett uppvärmningsvarv som inte räknas, sedan minst 5 mätvarv (ett varv = båda Chromebookmåtten, det längsta
+  räknas), och ger medianen och det längsta per bok.
 - **`node verktyg/bok-grind.js`** (Node 24 och Chrome) verifierar motorn och alla delkapitel som finns på disken:
   1. Varje `index.html` är byte för byte lika med mallen.
   2. Varje delkapitel prövas i fyra lägen: 1366 × 633 i fönstret, 1366 × 768 i fönstret, 1366 × 768 i helskärm och
@@ -376,7 +378,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        friktionen bakåt (lika långa, på blocket), och samma ytor ge samma mönster i alla böcker. Ingen sida får ha ett
        vanligt (brytbart) mellanslag mellan tal och enhet eller i ett tusental.
      - **Att brytningen följer reglerna och alla sidor får plats** (kontrolläget), och att brytningen tar under
-       200 ms med CPU:n strypt 6 gånger.
+       200 ms med CPU:n strypt 6 gånger: medianen av 5 mätvarv efter en uppvärmning, för varje bok. Grinden skriver
+       ut median och max per bok. (Ett enda varv var för brusigt när datorn var belastad eller gick på batteri.)
      - **Att inga JS-fel uppstår.** De fångas med `window.onerror`, `unhandledrejection` och Chromes egna undantag.
 
   Startsidan och kapitelindexet prövas på dator och mobil: startsida → kapitelindex → avsnittssidorna → brödsmulorna
@@ -397,9 +400,10 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   - en fjärde nivå
   - nivåbyte i boken
   - kraftpilarna
-- **`node verktyg/bok-grind.js --negativ`:** lägger in fyra fel med flit, ett i taget, i varje läge. Felen är ett
-  JS-fel, en för tät sida, en Stäng som inte fungerar och en sida som slutar med en rubrik (motorns provkrok
-  `?kontroll&prova=rubrik-sist`). Grinden ska bli röd för vart och ett.
+- **`node verktyg/bok-grind.js --negativ`:** lägger in fem fel med flit, ett i taget, i varje läge. Felen är ett
+  JS-fel, en för tät sida, en Stäng som inte fungerar, en sida som slutar med en rubrik (motorns provkrok
+  `?kontroll&prova=rubrik-sist`) och en brytning som tar 250 ms längre (`?kontroll&prova=langsam`). Grinden ska bli
+  röd för vart och ett; den långsamma brytningen ska fångas av just tidsprovet.
 - **`--bilder`** sparar skärmbilder av hubben och boken i `verktyg/bilder/grind/`. Alla skärmbilder sparas under
   `verktyg/bilder/`, med en undermapp per arbete (till exempel `repetition-1/`).
 - **`--webb`** prövar den publicerade boken på https://jb873.github.io/Fysikbok/ i stället för filerna på disken
@@ -539,5 +543,12 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     en högre figur krymps (texten i den blir då för liten). Rubriken "I förstoring" står mitt emellan
     strecklinjerna.
   - Insatt i text B, Standard och Enkel, efter första stycket under "Kraften bakåt är friktion" (Enkel: efter
-    stycket om mikroskopet). Fördjupning har ingen sådan rubrik – där väntar figuren på Joachims besked.
+    stycket om mikroskopet). Fördjupning (Joachims besked): efter första stycket under "Vilofriktionen anpassar sig
+    efter draget".
+  - Brytningstiden: uppvärmning + 5 mätvarv, medianen jämförs med 200 ms, för varje bok; negativt prov med en
+    konstgjord fördröjning.
+  - Motorfix: i Fördjupning hamnade sidan före stycket precis vid 40 %. Delningsregeln räknade den till 40 %, men
+    kontrollen mätte den i en riktig sida till under 40 %, så sidan blev tunn. Nu avgör en riktig sida nära gränsen
+    (`fyllFore`), och regelkontrollen godtar delningen när den mätningen visade under 40 %. Sidorna i B Fördjupning
+    blev 10 → 9; inga andra böcker ändrades.
 - Namn och © står på sista sidan och i sidans fot, ur `upphov`.
