@@ -232,7 +232,9 @@
       a.nummer = a.numrerad === false ? null : ++n;
       const post = (b, pid) => ({ typ: b.typ, b, id: b.id || pid, avsnitt: a, fot: b.typ === 'lank' });
       const poster = a.nummer ? [{ typ: 'avsnittsstart', id: a.id + '-start', avsnitt: a }] : [];
-      if (Array.isArray(a.block)) a.block.forEach((b, j) => poster.push(post(b, `${a.id}-${j + 1}`)));
+      // Blockens id i strömformatet: avsnitt-id-b<n>. Rubrikernas adresser är avsnitt-id-<n> (byggBok), och en
+      // läsplats slås upp bland adresserna först – utan b skulle block 7 vara samma namn som rubrik 7.
+      if (Array.isArray(a.block)) a.block.forEach((b, j) => poster.push(post(b, `${a.id}-b${j + 1}`)));
       else (a.sidor || []).forEach((s, si) => {
         if (s.titel && (!si || s.titel !== a.sidor[si - 1].titel)) poster.push(post({ typ: 'rubrik', text: s.titel }, `${a.id}-${si + 1}-0`));
         (s.block || []).forEach((b, bi) => poster.push(post(b.typ === 'rubrik' ? Object.assign({}, b, { typ: 'underrubrik' }) : b, `${a.id}-${si + 1}-${bi + 1}`)));
@@ -418,6 +420,7 @@
    * och figuren står först på nästa sida (figuren delas aldrig); Inledning, huvudtext och
    * Sammanfattning (varje avsnitt) börjar på ny sida; en rubrik börjar ny sida om mindre än en tredjedel av sidan är
    * kvar (den mjuka idéregeln); {typ: 'sidbrytning'} ger ny sida. Textstorleken ändras aldrig för att få plats.
+   * Blir en sida mitt i ett avsnitt tunn tar den sista gruppen från sidan före, om den ryms där (balansen).
    * Alla block mäts i en spalt i ett enda layoutvarv; sedan packas grupperna med räkning, och varje sida provas en
    * gång i en riktig sida (ryms den inte går den sista gruppen vidare). Brytningen sparas per sidmått. */
 
@@ -472,10 +475,17 @@
       return s.over;
     };
 
+    // En stängd sida: provas i en riktig sida om den är nästan full (alltid i kontrolläget), annars räknas fyllnaden
+    const mat = s => {
+      if (strikt || hojd(s.poster) > kap(s.poster) - NARA) return prova(s);
+      s.over = 0; s.fyll = hojd(s.poster) / kap(s.poster); return 0;
+    };
+
     const sidor = [{ typ: 'innehall', bok, avsnitt: INNEHALL, poster: [] }];
     for (const d of bok.delar) {
       const E = d.enheter.map(u => Object.assign({}, u));
       const ny = forsta => { const s = { bok, avsnitt: d.avsnitt, poster: [], enheter: [], forsta }; sidor.push(s); return s; };
+      const fran = sidor.length;
       let s = ny(true), i = 0;
       for (;;) {
         if (i < E.length) {
@@ -501,13 +511,29 @@
         }
         // Sidan stängs. Räkningen är exakt (samma bredd, sista blockets marginal är borttagen), så bara en nästan full
         // sida provas i en riktig sida; ryms den inte där går de sista grupperna vidare (minst en blir kvar).
-        if (strikt || hojd(s.poster) > kap(s.poster) - NARA) {
-          while (prova(s) && s.enheter.length > 1) { const u = s.enheter.pop(); s.poster.length -= u.poster.length; i--; }
-        } else { s.over = 0; s.fyll = hojd(s.poster) / kap(s.poster); }
+        while (mat(s) && s.enheter.length > 1) { const u = s.enheter.pop(); s.poster.length -= u.poster.length; i--; }
         if (i >= E.length) break;
         s = ny(false);
       }
       s.sist = true;                                  // sista sidan i avsnittet: får vara kort
+      // Balansen: packningen är girig, så en sida blir tunn (under 40 %) när nästa grupp inte får plats. Då tar den
+      // den sista gruppen från sidan före, om gruppen ryms och sidan före inte själv blir tunn. En grupp som börjar
+      // efter en sidbrytning eller en delad figur (brytFore) står kvar först på sin sida. Avgörs med räkningen och
+      // marginalen NARA, så att elevens snabba brytning och kontrollägets provade blir samma vid 40-procentsgränsen.
+      const tunn = ps => hojd(ps) < TUNN * kap(ps) + NARA;
+      for (let j = fran + 1; j < sidor.length; j++) {
+        const t = sidor[j], P = sidor[j - 1], nasta = sidor[j + 1];
+        if (t.sist || !tunn(t.poster) || (nasta && nasta.avsnitt === t.avsnitt && nasta.enheter[0].brytFore)) continue;
+        const u = P.enheter[P.enheter.length - 1];
+        if (P.enheter.length < 2 || u.brytFore || t.enheter[0].brytFore) continue;
+        const ihop = u.poster.concat(t.poster), kvar = P.poster.slice(0, P.poster.length - u.poster.length);
+        if (hojd(ihop) > kap(ihop) - NARA || tunn(kvar)) continue;
+        P.enheter.pop(); P.poster = kvar; t.enheter.unshift(u); t.poster = ihop;
+        if (mat(t) || mat(P)) {                       // ryms inte i en riktig sida: tillbaka
+          t.enheter.shift(); t.poster = t.poster.slice(u.poster.length); P.enheter.push(u); P.poster = P.poster.concat(u.poster);
+          mat(t); mat(P);
+        }
+      }
     }
     // Provkrok för grindens negativa prov (bara med ?kontroll&prova=rubrik-sist): en rubrik flyttas sist på sidan före
     if (provaRubrikSist) {
@@ -1079,6 +1105,9 @@
       if (b.typ === 'figur' && !figurer[b.namn]) ut.problem.push(`${kalla}: figuren ”${b.namn}” finns inte`);
       if (b.typ === 'lank') [].concat(b.till || []).filter(id => !ids.includes(id))
         .forEach(id => ut.problem.push(`${kalla}: länk till okänt hjälpmedel ”${id}”`));
+      // En läsplats (ett block-id) slås upp bland adresserna först: samma namn som en annan rubriks adress ger fel plats
+      const a = bok.ankare.get(p.id);
+      if (a && a !== p) ut.problem.push(`${kalla}: blockets id ”${p.id}” är också adressen till rubriken ”${renText(a.b ? a.b.text : a.avsnitt.titel)}” – byt id`);
     }
     for (const d of bok.delar) {
       if (!d.avsnitt.nummer) continue;

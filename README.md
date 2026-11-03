@@ -97,6 +97,8 @@ Fysik/
       innehall/atomen/          text A: en bok per nivå (enkel.js, standard.js, fordjupning.js)
       innehall/joner-isotoper-bindningar/   text B
     materia_repetition/         avsnittssida II. Repetition, texterna materia/, densitet-och-varme/, varmespridning/
+    rorelse_och_kraft/          avsnittssida III. Rörelse och kraft, texterna rorelse/ (A, strömformatet),
+                                kraft-och-motkraft/ och tyngdkraften/ (B och C, tomma: "kommer")
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
@@ -237,6 +239,10 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
 - **Mjuk idéregel:** en rubrik börjar ny sida om mindre än en tredjedel av sidan är kvar.
 - **`{typ: 'sidbrytning'}`** tvingar ny sida.
 - **Ingen sida under 40 %** fylld, utom sista sidan i ett avsnitt och sidan före en sidbrytning (`?kontroll`).
+- **Balansen:** sidorna packas en i taget, så en sida blir tunn när nästa grupp inte får plats. Då tar den tunna sidan
+  den sista gruppen (rubriken och dess stycke) från sidan före, om gruppen ryms och sidan före inte själv blir tunn.
+  En grupp efter en sidbrytning eller en delad figur flyttas inte. (2026-11-03: Rörelse, Fördjupning, där sida 4
+  annars blev 40 % fylld.)
 
 Brytningen väntar på typsnitten (annars mäts fel), sparas per sidmått och görs om bara när sidmåttet ändras. Den
 tar ungefär 30–150 ms med CPU:n strypt 6 gånger, som på en Chromebook (grinden: under 200 ms). Innehållsförteckningen räknar ut sidnumren för
@@ -261,6 +267,9 @@ rubrikerna och krymper fortfarande sin egen text (ned till 70 %) om den behöver
 | `tabell` | `rubriker?`, `rader: [[...]]`, `fotnot?`. Första kolumnen är radrubrik. |
 
 Ett block får ett eget `id` om det som eleven gör i det ska överleva att block flyttas (för interaktiva block senare).
+Utan eget id heter blocket `<avsnitt>-b<n>` (det n:te blocket), och läsplatsen sparas så. Rubrikernas adresser heter
+`<avsnitt>-<n>` (den n:te rubriken). Ett eget id får inte vara samma som en adress, eftersom läsplatsen då pekar på
+rubriken. Kontrolläget säger till om det händer.
 
 ## Figurer
 
@@ -281,6 +290,7 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `varmeflode` | `foremal?: [{namn, temp}, {namn, temp}]`, `sluttemp?`, `efter?`, `slutrad?`, `enhet?` | pilens riktning: från det varmare till det kallare |
 | `kraftpilar` | `krafter: [{namn, riktning, storlek}]`, `foremal?: {namn?, form?: 'lada' \| 'boll'}`, `underlag?`, `resultant?`, `enhet?: 'N'` | pilarnas längd (proportionell mot storleken) och resultanten. `riktning`: `upp`, `ner`, `vanster`, `hoger` eller grader. |
 | `skalmodell` | `atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}]` (1–3), `overgang?: 'tar upp 2 elektroner'`, `rader?` | laddningen (protoner − elektroner), formeln (O²⁻), masstalet, och vilka elektroner som flyttar vid en övergång (markerade i guld). Med `neutroner` och högst fyra kärnpartiklar ritas protoner och neutroner i kärnan (isotoper). |
+| `rorelsespar` | `rorelse: 'likformig' \| 'olikformig' \| 'accelererande' \| 'retarderad'`, `prickar?: 6` (4–8), `tider?: false` | prickmodellen: lika lång tid mellan prickarna, och prickarnas lägen. Likformig: lika stora avstånd. Accelererande: avstånden växer jämnt (1, 2, 3 …). Retarderad: avstånden krymper jämnt, och de två sista ligger nästan ihop. Olikformig: ett fast ojämnt mönster (kort, långt, mellan …). Under prickarna står en stråle med pilspets åt höger (rörelseriktningen). `tider: true` skriver 0 s, 1 s … under prickarna. Figuren är låg och bred. |
 
 - `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data.
 - Figuren tar högst 32 % av sidhöjden.
@@ -352,7 +362,9 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        innehållsförteckningen ska leda till en sida där rubriken syns. Nivålistan och menyn ska stängas med Esc.
        Boken ska stängas med ✕, Esc och bakåt, och öppnas igen på samma block. En adress till en rubrik ska öppna
        boken där. Läsplatsen ska synas igen efter byte av sidmått (fönster ↔ helskärm ↔ mobil). Är texterna egna
-       böcker ska en annan text öppna en egen bok, och varje text minnas sin plats.
+       böcker ska en annan text öppna en egen bok, och varje text minnas sin plats. Har boken flera nivåer med
+       innehåll ska ett nivåbyte från en rubrik mitt i boken, genom alla nivåer och tillbaka, hamna i samma avsnitt.
+       Varje rörelsespår mäts på varje nivå: avstånden ska följa rörelsetypen.
      - **Att brytningen följer reglerna och alla sidor får plats** (kontrolläget), och att brytningen tar under
        200 ms med CPU:n strypt 6 gånger.
      - **Att inga JS-fel uppstår.** De fångas med `window.onerror`, `unhandledrejection` och Chromes egna undantag.
@@ -363,6 +375,7 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   Tryck, Energi) och prövar dessutom:
   - en bok per text, en text som är "kommer" (Energi) och en nivå som bara en text har (Djupdykning)
   - strömformatet (Tryck): en sidbrytning, och ett långt stycke + figur som inte ryms tillsammans
+  - rörelsespåren (Tryck): alla fyra rörelsetyperna, 4–8 prickar, med och utan tider
   - hjälpmedel med adress, också som inbäddad flik (Öva)
   - begreppslänkar
   - inbäddningen
@@ -377,6 +390,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
 - **`--webb`** prövar den publicerade boken på https://jb873.github.io/Fysikbok/ i stället för filerna på disken
   (`--webb=<adress>` för en annan adress). Grinden kontrollerar först att webben visar samma filer som disken.
   Visar den inte det, är något inte pushat eller så har Pages inte byggt klart. Kör den efter varje push.
+- **`--bara=<namn>`** prövar bara de delkapitel vars namn innehåller texten, till exempel `--bara=rorelse_och_kraft`.
+  Det är ett snabbt prov medan man arbetar. Grinden är grön först när hela har körts.
 
 ## Interaktiva inslag (senare)
 
@@ -483,4 +498,11 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - Sidans sista block har ingen marginal under (`bok.css`), så att brytningen kan räkna exakt.
   - Sidor per bok (Chromebook i fönstret), förut → nu: Atomen 15 → 12, Joner, isotoper och bindningar 19 → 15,
     Materia 10 → 8, Densitet och värme 13 → 11, Värmespridning 10 → 10.
+- **2026-11-03, avsnittssida III och rörelsespåret (arbetsordern III A):**
+  - Figurtypen `rorelsespar` (Joachims prickmodell) är en ny funktion i `figurer.js`: prickarna i bläck och strålen
+    i guld (`fig-prick`, `fig-pil fig-strale` i `bok.css`).
+  - Två fel i motorn som det första riktiga innehållet i strömformatet visade:
+    - Blockens id `<avsnitt>-<n>` var samma namn som rubrikernas adresser, så hubben öppnade boken vid fel rubrik.
+      Blocken heter nu `<avsnitt>-b<n>`, och kontrolläget säger till om ett id krockar.
+    - Packningen lämnade en tunn sida som gick att undvika. Därför finns balansen (se *Brytningen*).
 - Namn och © står på sista sidan och i sidans fot, ur `upphov`.

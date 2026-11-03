@@ -491,6 +491,9 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-proton { fill: var(--accent); stroke: #2c1a3e; stroke-width: 1; }
 .fig-neutron { fill: var(--atom); stroke: #8a7656; stroke-width: 1; }
 .fig-liten { font-size: 14.5px; }
+/* rörelsespår: prickarna i bläck, strålen (rörelseriktningen) i guld */
+.fig-prick { fill: var(--black); }
+.fig-pil.fig-strale { stroke-width: 2; }
 
 /* ---------- Innehållsförteckningen (sida 1 och menyn) ---------- */
 

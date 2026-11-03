@@ -23,6 +23,8 @@ const ROT = path.resolve(__dirname, '..');
 const MALL = path.join(ROT, 'mall', 'delkapitel', 'index.html');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const NEGATIV = process.argv.includes('--negativ'), BILDER = process.argv.includes('--bilder');
+// --bara=<del av namnet>: bara de delkapitel vars namn innehåller texten (snabbt prov medan man arbetar; inte grönt för boken)
+const BARA = (process.argv.find(a => a.startsWith('--bara=')) || '').slice(7);
 const BILDMAPP = path.join(__dirname, 'bilder', 'grind');
 
 // --webb prövar den publicerade boken (GitHub Pages) i stället för filerna på disken; --webb=<adress> en annan adress.
@@ -71,7 +73,7 @@ function delkapitel() {
   // Läget utan texter (en bok per nivå, texterna är dess avsnitt): det vanliga scenariot, inget provscenario
   const utan = path.join(__dirname, 'provbok-utan-texter');
   if (fs.existsSync(path.join(utan, 'delkapitel.js'))) ut.push({ namn: 'verktyg/provbok-utan-texter (provdata)', mapp: utan, prov: false });
-  return ut;
+  return BARA ? ut.filter(d => d.namn.includes(BARA)) : ut;
 }
 
 /* ---------- Chrome via DevTools-protokollet ---------- */
@@ -127,6 +129,32 @@ async function chrome() {
   return { send, ev, undantag, stang };
 }
 
+/* ---------- Rörelsespåren i den öppna boken: avstånden följer rörelsetypen ----------
+ * Bläddrar igenom boken och mäter prickarna i varje rörelsespår: likformig lika avstånd, accelererande avstånd som
+ * växer jämnt, retarderad avstånd som krymper jämnt, olikformig avstånd som både växer och krymper. Strålens
+ * pilspets ska ligga till höger om prickarna (rörelseriktningen). Klistras in i scenarierna (behöver v och $$). */
+const SPARKOLL = String.raw`const sparKoll = async () => {
+    const sett = new Map();
+    for (let n = 1; n <= $$('.lr-sida').length; n++) {
+      Bok.gaTill(n); await v(30);
+      $$('.scen svg[data-rorelse]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (!sett.has(id)) sett.set(id, { typ: s.dataset.rorelse, xs: [...s.querySelectorAll('circle.fig-prick')].map(c => c.cx.baseVal.value),
+          spets: Math.max(...[...s.querySelectorAll('.fig-pilspets')].flatMap(p => [...p.points].map(q => q.x))) });
+      });
+    }
+    const fel = [], lika = (p, q) => Math.abs(p - q) < 0.6;
+    for (const [id, x] of sett) {
+      const a = x.xs.slice(1).map((s, i) => s - x.xs[i]), d = a.slice(1).map((s, i) => s - a[i]);
+      const ok = x.typ === 'likformig' ? a.every(s => lika(s, a[0]))
+        : x.typ === 'accelererande' ? d.every(s => s > 1 && lika(s, d[0]))
+        : x.typ === 'retarderad' ? d.every(s => s < -1 && lika(s, d[0]))
+        : x.typ === 'olikformig' && d.some(s => s > 1) && d.some(s => s < -1);
+      if (!ok || x.xs.length < 4 || !(x.spets > Math.max(...x.xs))) fel.push(id + ' (' + x.typ + '): ' + a.map(s => Math.round(s)).join(', '));
+    }
+    return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel };
+  };`;
+
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
 
 const SCENARIO = String.raw`async (helskarmLage) => {
@@ -150,6 +178,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   // Sidorna bryts efter sidmåttet, så platser är block (data-post), inte sidnummer: sidan som visar ett block
   const sidaMed = id => $$('.scen .uppslag > .sida[data-nr]').find(s => s.querySelector('[data-post="' + id + '"]'));
   const visar = id => !!sidaMed(id);
+  ${SPARKOLL}
   // Kontrollpanelen (?kontroll) är redan avläst; på mobilen täcker den annars texterna som musen ska trycka på
   if ($('.kontrollpanel')) $('.kontrollpanel').style.display = 'none';
 
@@ -258,6 +287,32 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   tangent('Escape'); await v(80);
   prova('nivå: Esc stänger listan, boken är kvar', lista.hidden && oppen());
 
+  // Nivåbyte i boken: från en rubrik mitt i boken genom alla nivåer med innehåll och tillbaka – varje gång samma
+  // avsnitt (sidhuvudets namn). Rörelsespåren kontrolleras på varje nivå.
+  const nivaVal = () => [...$('.niva-lista').querySelectorAll('button')];
+  const franNiva = nivaVal().findIndex(b => b.getAttribute('aria-checked') === 'true');
+  const ovriga = nivaVal().map((b, i) => i).filter(i => i !== franNiva && !nivaVal()[i].hasAttribute('aria-disabled'));
+  const valjNiva = async i => { await klicka(synlig('.bokapp .niva-knapp')); await klicka(nivaVal()[i], 250); };
+  const spar = [];
+  if (ovriga.length) {
+    const mitt = rader.filter(r => !r[2])[Math.floor(rader.filter(r => !r[2]).length / 2)];
+    Bok.gaTill(mitt[0]); await v(80);
+    const avsnittet = $('.scen .sida[data-nr="' + mitt[0] + '"] .sh-namn').textContent.trim(), fel = [];
+    for (const i of [...ovriga, franNiva]) {
+      await valjNiva(i);
+      const s = sidaMed(Bok.plats), dar = s && s.querySelector('.sh-namn').textContent.trim();
+      if (dar !== avsnittet) fel.push(nivaVal()[i].textContent + ': ' + dar);
+    }
+    prova('nivå: nivåbyte i boken (' + [franNiva, ...ovriga, franNiva].map(i => nivaVal()[i].textContent).join(' → ') + ') hamnar i samma avsnitt',
+      !fel.length, 'från ”' + mitt[1] + '” i ' + avsnittet + (fel.length ? '; ' + fel.join(' | ') : ''));
+    for (const i of ovriga) { await valjNiva(i); spar.push(await sparKoll()); }
+    await valjNiva(franNiva);
+  }
+  spar.push(await sparKoll());
+  if (spar.some(x => x.antal)) prova('figur: rörelsespårens avstånd följer rörelsetypen (' + spar.map(x => x.antal).join(' + ') + ' spår)',
+    spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
+  tangent('Home'); await v(80);
+
   // Läs en bit, stäng med ✕, öppna igen: boken minns läsplatsen (ett block)
   tangent('ArrowRight'); await v(60); tangent('ArrowRight'); await v(60);
   const minne = Bok.plats;
@@ -276,12 +331,15 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   await v(450);
   prova('stäng: Esc går tillbaka till delkapitlet', stangd(), 'hash=' + location.hash);
 
-  // En annan text öppnar boken där den texten börjar
-  const avsn = $('.underdel-knapp[data-oppna]:not(.aktiv)') || $('.underdel-knapp');
+  // En annan text öppnar boken där den texten börjar. Har bara en text innehåll (de andra "kommer") öppnas den igen.
+  const annan = $('.underdel-knapp[data-oppna]:not(.aktiv)');
+  const avsn = annan || $('.underdel-knapp[data-oppna]');
   const start = avsn.dataset.oppna, titel = avsn.querySelector('.underdel-titel').textContent;
-  const textB = avsn.dataset.text;                   // satt när varje text är en egen bok (texter i delkapitel.js)
+  const textB = annan && avsn.dataset.text;          // satt när varje text är en egen bok (texter i delkapitel.js)
   await gest(avsn);
-  prova('öppna: en annan text öppnar boken där den texten börjar', visar(start) && sidaMed(start).querySelector('.sh-namn').textContent.includes(titel), syns() + ' (' + titel + ', ' + start + ')');
+  if (annan) prova('öppna: en annan text öppnar boken där den texten börjar', visar(start) && sidaMed(start).querySelector('.sh-namn').textContent.includes(titel), syns() + ' (' + titel + ', ' + start + ')');
+  else prova('öppna: den enda texten med innehåll öppnas igen där eleven var (de andra är "kommer")', visar(start) &&
+    $$('.underdel-knapp:not([data-oppna])').every(b => b.getAttribute('aria-disabled') === 'true'), syns() + ' (' + start + ')');
   if (textB) {
     const bt = $('.scen .sida[data-nr="1"] .boktitel'), btTitel = bt && bt.firstChild.textContent.trim();
     prova('en bok per text: texten är en egen bok med egen innehållsförteckning', btTitel === titel && btTitel !== titelA, btTitel + ' (A: ' + titelA + ')');
@@ -372,6 +430,16 @@ const PROVSCENARIO = String.raw`async () => {
     'före s. ' + sf('fore-brytning') + ', efter s. ' + sf('efter-brytning'));
   prova('prov: långt stycke + figur som inte ryms tillsammans: stycket stannar, figuren står först på nästa sida',
     sf('figur-efter') === sf('langt-stycke') + 1 && await forstPaSidan('figur-efter'), 'stycket s. ' + sf('langt-stycke') + ', figuren s. ' + sf('figur-efter'));
+  // Rörelsespåren i Tryck: alla fyra typerna, 4–8 prickar, med och utan tider
+  ${SPARKOLL}
+  const sp = await sparKoll();
+  prova('prov: rörelsespåren – avstånden lika / växande / krympande / ojämna efter rörelsetypen',
+    sp.antal === 4 && sp.typer.length === 4 && !sp.fel.length, sp.antal + ' spår: ' + (sp.fel.join(' | ') || sp.typer.join(', ')));
+  Bok.gaTill(sf('spar-retarderad')); await v(60);
+  const ret = $('.scen [data-post="spar-retarderad"] svg'), tider = ret ? [...ret.querySelectorAll('text')].map(t => t.textContent) : [];
+  prova('prov: rörelsespår med tider – en tid per prick (0 s, 1 s …) och beskrivningen ur data',
+    tider.join(',') === '0 s,1 s,2 s,3 s,4 s,5 s' && /^Rörelsespår: sex prickar med lika lång tid emellan, avstånden krymper – retarderad rörelse\./.test(ret.closest('.figur-bild').getAttribute('aria-label')),
+    tider.join(',') + ' | ' + (ret && ret.closest('.figur-bild').getAttribute('aria-label')));
   synlig('.bok-stang').click(); await v(450);
   const dd = $$('.niva-valjare .niva-knapp').find(b => b.textContent.startsWith('Djupdykning'));
   prova('prov: i hubben är Djupdykning "kommer" när texten Tryck är vald', !oppen() && $('.underdel-knapp.aktiv').dataset.text === 'tryck' && dd && dd.getAttribute('aria-disabled') === 'true',
@@ -478,7 +546,8 @@ async function provaSidorna(lage) {
   const prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
   const start = adressTill(path.join(ROT, 'index.html'));
   const kapitel = new URL('kraft_och_rorelse/index.html', start).href;
-  const avsnitt = ['atomen_repetition', 'materia_repetition'].map(d => new URL(`kraft_och_rorelse/${d}/index.html`, start).href);
+  const MAPPAR = ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft'], ROMERSKA = ['I', 'II', 'III'];
+  const avsnitt = MAPPAR.map(d => new URL(`kraft_och_rorelse/${d}/index.html`, start).href);
   try {
     await c.send('Page.enable'); await c.send('Runtime.enable');
     await c.send('Emulation.setDeviceMetricsOverride', { width: lage.B, height: lage.H, deviceScaleFactor: 1, mobile: !!lage.mobil });
@@ -519,8 +588,9 @@ async function provaSidorna(lage) {
       smula === `A:Fysik→${start} | SPAN:› | SPAN:Kraft och rörelse` && await c.ev(`document.querySelector('.hero-banner .avsnitt-label').textContent === 'Kapitel III'`), smula);
     const av = await kort('ul.innehallsforteckning > li > .kapitel-kort');
     prova('kapitelindex: avsnittssidorna I–VI', av.map(x => x.nr).join(' ') === 'I II III IV V VI', av.map(x => x.nr + ' ' + x.titel).join(' · '));
-    prova('kapitelindex: I och II länkar till avsnittssidorna', av[0] && av[0].href === avsnitt[0] && av[1] && av[1].href === avsnitt[1], av.slice(0, 2).map(x => x.href).join(' | '));
-    prova('kapitelindex: III–VI är tonade, aria-disabled, "Kommer" och inga länkar', av.slice(2).length === 4 && av.slice(2).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
+    prova('kapitelindex: I–III länkar till avsnittssidorna', avsnitt.every((u, i) => av[i] && av[i].tag === 'A' && av[i].href === u && !av[i].kommer),
+      av.slice(0, 3).map(x => x.href).join(' | '));
+    prova('kapitelindex: IV–VI är tonade, aria-disabled, "Kommer" och inga länkar', av.slice(3).length === 3 && av.slice(3).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
     const res = await kort('.resurser-rad .resurs-kort');
     prova('kapitelindex: resurserna Begreppsbank och Självskattning, tonade "Kommer"',
       res.map(x => x.titel).join(', ') === 'Begreppsbank, Självskattning' && res.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
@@ -529,12 +599,12 @@ async function provaSidorna(lage) {
 
     // Avsnittssidorna och brödsmulorna tillbaka
     for (const [i, mal] of avsnitt.entries()) {
-      await klicka(`a.kapitel-kort[href$="${['atomen_repetition', 'materia_repetition'][i]}/index.html"]`, 1200);
-      prova(`kapitelindex → avsnittssida ${['I', 'II'][i]}`, await har() === mal, await har());
+      await klicka(`a.kapitel-kort[href$="${MAPPAR[i]}/index.html"]`, 1200);
+      prova(`kapitelindex → avsnittssida ${ROMERSKA[i]}`, await har() === mal, await har());
       const s = await c.ev(`[...document.querySelectorAll('.hero-banner .brodsmulor a')].map(a => a.textContent + '→' + a.href).join(' | ')`);
-      prova(`avsnittssida ${['I', 'II'][i]}: brödsmulorna Fysik och Kraft och rörelse är länkar dit`, s === `Fysik→${start} | Kraft och rörelse→${kapitel}`, s);
+      prova(`avsnittssida ${ROMERSKA[i]}: brödsmulorna Fysik och Kraft och rörelse är länkar dit`, s === `Fysik→${start} | Kraft och rörelse→${kapitel}`, s);
       await klicka('.hero-banner .brodsmulor a:last-of-type');
-      prova(`avsnittssida ${['I', 'II'][i]} → brödsmulan Kraft och rörelse → kapitelindexet`, await har() === kapitel, await har());
+      prova(`avsnittssida ${ROMERSKA[i]} → brödsmulan Kraft och rörelse → kapitelindexet`, await har() === kapitel, await har());
     }
     await klicka('.hero-banner .brodsmulor a');
     prova('kapitelindex → brödsmulan Fysik → startsidan', await har() === start, await har());
@@ -628,6 +698,7 @@ async function jamforWebben(lista) {
         ` (navigering ${r.navigering}, plats ${r.plats ? 'grön' : 'röd'}, JS-fel ${r.fel.length})`);
     }
   }
-  console.log(`\n${gront ? 'GRÖNT' : 'RÖTT'}: ${NEGATIV ? 'den negativa verifieringen' : 'bokmotorn och delkapitlen'}`);
+  console.log(`\n${gront ? 'GRÖNT' : 'RÖTT'}: ${NEGATIV ? 'den negativa verifieringen' : 'bokmotorn och delkapitlen'}` +
+    (BARA ? ` – bara ”${BARA}” (--bara); hela grinden är inte körd` : ''));
   process.exit(gront ? 0 : 1);
 })().catch(e => { console.error(e); process.exit(2); });

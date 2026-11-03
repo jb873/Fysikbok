@@ -12,6 +12,7 @@
  *                       krafter: [{namn, riktning: 'upp'|'ner'|'vanster'|'hoger'|grader, storlek?}], enhet?: 'N', resultant?
  *   skalmodell          atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}] (1–3), overgang?: 'tar upp 2 elektroner',
  *                       rader?: ['protoner'|'neutroner'|'elektroner'|'laddning'|'masstal', …]
+ *   rorelsespar         rorelse: 'likformig'|'olikformig'|'accelererande'|'retarderad', prickar?: 6 (4–8), tider?: false
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -294,5 +295,52 @@
     });
     hojd += 14;
     return { svg: svg(B, Math.ceil(hojd), s), beskrivning: 'Skalmodell. ' + beskr.join(' ') };
+  });
+
+  /* Rörelsespår (prickmodellen): en prick där föremålet är, med lika lång tid mellan prickarna – avståndet visar
+     rörelsen. Under prickarna en stråle med pilspets åt höger: rörelseriktningen. Motorn räknar ut lägena:
+     likformig lika stora avstånd; accelererande avstånd som växer jämnt (1, 2, 3 …); retarderad avstånd som krymper
+     jämnt, tills de två sista nästan ligger ihop; olikformig ett fast ojämnt mönster (kort, långt, mellan, kort, långt …). */
+  const RORELSE = {
+    likformig: ['lika stora', 'likformig'], olikformig: ['olika långa', 'olikformig'],
+    accelererande: ['växer', 'accelererande'], retarderad: ['krymper', 'retarderad']
+  };
+  const ANTAL = { 4: 'fyra', 5: 'fem', 6: 'sex', 7: 'sju', 8: 'åtta' };
+  Bok.figur('rorelsespar', d => {
+    const typ = d.rorelse, n = d.prickar == null ? 6 : d.prickar;
+    if (!RORELSE[typ]) fel(`rorelsespar: okänd rörelse ”${typ}” (likformig, olikformig, accelererande eller retarderad)`);
+    if (!ANTAL[n]) fel('rorelsespar ritar 4–8 prickar');
+    const R = 6.5, X0 = 22, SPANN = 374, NARA = 2.6 * R;          // NARA: de två sista vid retardation, nästan ihop
+    const m = n - 1;
+    const avstand = typ === 'likformig' ? Array(m).fill(1)
+      : typ === 'accelererande' ? Array.from({ length: m }, (_, i) => i + 1)
+      : typ === 'olikformig' ? Array.from({ length: m }, (_, i) => [1, 3, 2][i % 3])
+      : null;
+    let steg;
+    if (avstand) { const sum = avstand.reduce((a, b) => a + b, 0); steg = avstand.map(a => a * SPANN / sum); }
+    else {
+      // retarderad: avstånden minskar med lika mycket varje gång, från det största till NARA
+      const forst = 2 * SPANN / m - NARA, minskar = (forst - NARA) / (m - 1);
+      steg = Array.from({ length: m }, (_, i) => forst - i * minskar);
+    }
+    const xs = [X0];
+    steg.forEach(a => xs.push(xs[xs.length - 1] + a));
+    const yP = 16, yS = 40;
+    let s = xs.map(x => `<circle class="fig-prick" cx="${f(x)}" cy="${yP}" r="${R}"/>`).join('');
+    s += pil(6, yS, 434, yS, 8, 'fig-strale');
+    let hojd = yS + 12;
+    if (d.tider) {
+      // tiderna under strålen; ligger två prickar för tätt för etiketterna hamnar den andra en rad längre ner
+      let rad = 0;
+      xs.forEach((x, i) => {
+        rad = i && x - xs[i - 1] < 30 && rad === 0 ? 1 : 0;
+        s += text(x, yS + 26 + rad * 18, `${i} s`, 'fig-text fig-mitt fig-dampad fig-liten');
+        hojd = Math.max(hojd, yS + 32 + rad * 18);
+      });
+    }
+    const [hur, namn] = RORELSE[typ];
+    const beskr = `Rörelsespår: ${ANTAL[n]} prickar med lika lång tid emellan, avstånden ${hur === 'växer' || hur === 'krymper' ? hur : 'är ' + hur} – ${namn} rörelse.` +
+      (d.tider ? ` Under prickarna står tiderna 0 s till ${m} s.` : '') + ' En pil visar rörelseriktningen åt höger.';
+    return { svg: `<svg viewBox="0 0 440 ${Math.ceil(hojd)}" xmlns="http://www.w3.org/2000/svg" data-rorelse="${typ}">${s}</svg>`, beskrivning: beskr };
   });
 })();

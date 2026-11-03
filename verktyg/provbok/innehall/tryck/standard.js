@@ -1,6 +1,7 @@
 /* PROVDATA för verktyg/bok-grind.js – inte elevinnehåll. Text B: en egen bok, bara på standardnivån (Djupdykning
  * och de andra nivåerna är "kommer" för den här texten). Skriven i strömformatet (block, inga sidor): grinden prövar
- * en sidbrytning och regelkonflikten – ett stycke och en figur som inte ryms tillsammans på en sida. */
+ * en sidbrytning och regelkonflikten – ett stycke och en figur som inte ryms tillsammans på en sida – och
+ * rörelsespåren (alla fyra rörelsetyperna, med och utan tider, 4–8 prickar). */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -17,6 +18,16 @@ Bok.niva('standard', {
           { namn: 'Kork', densitet: 0.25 },
           { namn: 'Sten', densitet: 2.6 }
         ] },
+        // Rörelsespåret: grinden mäter att avstånden följer rörelsetypen (lika / växande / krympande / ojämna)
+        { typ: 'rubrik', text: 'Provrubrik: rörelsespår' },
+        { typ: 'text', text: 'Provtext: likformig rörelse med tiderna under prickarna.' },
+        { typ: 'figur', id: 'spar-likformig', namn: 'rorelsespar', rorelse: 'likformig', tider: true },
+        { typ: 'text', text: 'Provtext: accelererande rörelse, åtta prickar.' },
+        { typ: 'figur', id: 'spar-accelererande', namn: 'rorelsespar', rorelse: 'accelererande', prickar: 8 },
+        { typ: 'text', text: 'Provtext: retarderad rörelse med tiderna – de två sista prickarna nästan ihop.' },
+        { typ: 'figur', id: 'spar-retarderad', namn: 'rorelsespar', rorelse: 'retarderad', tider: true },
+        { typ: 'text', text: 'Provtext: olikformig rörelse, fyra prickar.' },
+        { typ: 'figur', id: 'spar-olikformig', namn: 'rorelsespar', rorelse: 'olikformig', prickar: 4, bildtext: 'Provbildtext under ett rörelsespår.' },
         { typ: 'lank', till: ['ova'] }
       ]
     }
