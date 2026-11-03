@@ -4,7 +4,8 @@
 Bok.delkapitel({
   id: 'fysik-materia-repetition',             // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
   amne: 'Fysik',
-  smulor: ['Fysik', 'Kraft och rörelse'],
+  smulor: [{ text: 'Fysik', href: '../../index.html' },            // brödsmulorna länkar till startsidan
+           { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
   nummer: 2,                                 // brödsmulan "2. Repetition" och etiketten "Avsnitt II"
   titel: 'Repetition',
   undertitel: 'materia, densitet och värme',  // bannerns rad: "— materia, densitet och värme —"

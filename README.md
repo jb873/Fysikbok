@@ -88,7 +88,9 @@ Fysik/
     figurer.js                  de funktionella figurerna (SVG), specificerade i data
     typsnitt/                   EB Garamond och Marcellus SC (OFL)
   mall/delkapitel/              mallen för ett nytt delkapitel (kopieras hel)
-  kraft_och_rorelse/            ett arbetsområde
+  index.html                    startsidan: kapitlen I–III (I och II tonade "Kommer"), Översikt
+  kraft_och_rorelse/            ett arbetsområde (kapitel III)
+    index.html                  kapitelindexet: avsnittssidorna I–VI och resurskorten (tonade tills de finns)
     atomen_repetition/          avsnittssida I. Repetition – ett delkapitel, bara data
       index.html                mallen, ordagrant
       delkapitel.js             nummer, titel, undertitel, texter, hjälpmedel
@@ -121,7 +123,8 @@ Allt fungerar från disken (file://), utan server. Dubbelklicka på ett delkapit
 Bok.delkapitel({
   id: 'fysik-kraft-tryck',            // unikt; nyckeln för det eleven sparat – byt det aldrig sedan
   amne: 'Fysik',
-  smulor: ['Fysik', 'Kraft och rörelse'],   // brödsmulor; {text, href} när sidan finns att länka till
+  smulor: [{ text: 'Fysik', href: '../../index.html' },   // brödsmulorna: startsidan
+           { text: 'Kraft och rörelse', href: '../index.html' }],   // och kapitelindexet
   nummer: 2,                          // brödsmulan "2. Tryck" och etiketten "Avsnitt II"
   titel: 'Tryck',
   undertitel: null,                   // bannerns rad, utan tankstreck: 'materia, densitet och värme'
@@ -136,7 +139,9 @@ Bok.delkapitel({
    till (se nedan). Fliksidans titel blir "Fysik – Kraft och rörelse – 2. Tryck", som i de andra böckerna.
 4. Skriv texten i `innehall/<nivå>.js` (se *Skriva en nivås bok*). Bokens numrerade avsnitt blir texterna A, B, C …
    på delkapitlets sida. Ska varje text vara en egen bok: se *En bok per text*.
-5. Kör grinden: `node verktyg/bok-grind.js`. Den hittar det nya delkapitlet av sig själv.
+5. Byt avsnittssidans tonade kort i kapitelindexet (`<arbetsområde>/index.html`) mot en länk,
+   `<a class="kapitel-kort" href="<delkapitel>/index.html">`, som de som redan finns.
+6. Kör grinden: `node verktyg/bok-grind.js`. Den hittar det nya delkapitlet av sig själv.
 
 **Elevtext:** all text som eleven läser är data. Titel och undertitel sätter Joachim, så skriv aldrig en beskrivning
 själv.
@@ -352,6 +357,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        200 ms med CPU:n strypt 6 gånger.
      - **Att inga JS-fel uppstår.** De fångas med `window.onerror`, `unhandledrejection` och Chromes egna undantag.
 
+  Startsidan och kapitelindexet prövas på dator och mobil: startsida → kapitelindex → avsnittssidorna → brödsmulorna
+  tillbaka, och att tonade kort (kapitel, avsnitt, resurser som kommer) inte är länkar och inte leder någonstans.
   `verktyg/provbok-utan-texter/` prövar läget utan texter med samma scenario. Provboken har tre texter (Krafter,
   Tryck, Energi) och prövar dessutom:
   - en bok per text, en text som är "kommer" (Energi) och en nivå som bara en text har (Djupdykning)

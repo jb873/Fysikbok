@@ -4,7 +4,8 @@
 Bok.delkapitel({
   id: 'fysik-atomen-repetition',              // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
   amne: 'Fysik',
-  smulor: ['Fysik', 'Kraft och rörelse'],
+  smulor: [{ text: 'Fysik', href: '../../index.html' },            // brödsmulorna länkar till startsidan
+           { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
   nummer: 1,                                  // brödsmulan "1. Repetition" och etiketten "Avsnitt I"
   titel: 'Repetition',
   undertitel: 'atomen, joner och bindningar', // bannerns rad: "— atomen, joner och bindningar —"

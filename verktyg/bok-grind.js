@@ -450,6 +450,87 @@ async function bild(c, dk, lage, vad) {
   console.log('   bild:', fil);
 }
 
+/* ---------- Startsidan och kapitelindexet: vägen mellan sidorna ----------
+ * Startsidan (index.html) → kapitelindexet (kraft_och_rorelse/index.html) → avsnittssidorna → brödsmulorna tillbaka.
+ * Ett tonat kort (kapitel, avsnitt eller resurs som inte finns än) är inte en länk och leder ingenstans. */
+
+async function provaSidorna(lage) {
+  const c = await chrome();
+  const k = [], fel = [];
+  const prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
+  const start = 'file:///' + path.join(ROT, 'index.html').replace(/\\/g, '/');
+  const kapitel = new URL('kraft_och_rorelse/index.html', start).href;
+  const avsnitt = ['atomen_repetition', 'materia_repetition'].map(d => new URL(`kraft_och_rorelse/${d}/index.html`, start).href);
+  try {
+    await c.send('Page.enable'); await c.send('Runtime.enable');
+    await c.send('Emulation.setDeviceMetricsOverride', { width: lage.B, height: lage.H, deviceScaleFactor: 1, mobile: !!lage.mobil });
+    await c.send('Page.addScriptToEvaluateOnNewDocument', { source: FANGA_FEL });
+    const har = async () => decodeURI(await c.ev('location.href.split("#")[0]'));
+    const samlaFel = async () => fel.push(...await c.ev('window.__fel || []'));
+    const ga = async url => { await c.send('Page.navigate', { url }); await vanta(700); };
+    const klicka = async (sel, vant = 900) => { await samlaFel(); await c.ev(`document.querySelector(${JSON.stringify(sel)}).click()`); await vanta(vant); };
+    const kort = sel => c.ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].map(e => ({ tag: e.tagName, dimmad: e.classList.contains('dimmad'),
+      av: e.getAttribute('aria-disabled'), href: e.href || null, kommer: !!e.querySelector('.kommer-snart') || /Kommer/.test(e.textContent),
+      titel: (e.querySelector('.kap-titel, h3, h4') || {}).textContent, nr: (e.querySelector('.romersk') || {}).textContent }))`);
+    const bred = async namn => prova(`${namn}: inte bredare än skärmen`, await c.ev('document.documentElement.scrollWidth <= innerWidth'));
+    const tonadeLederIngenstans = async (namn, sel) => {
+      const fore = await har();
+      const n = await c.ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].map(e => { e.click(); return 1; }).length`);
+      await vanta(400);
+      prova(`${namn}: de ${n} tonade korten går inte att klicka sig vidare från`, n > 0 && await har() === fore);
+    };
+
+    // Startsidan
+    await ga(start);
+    const kap = await kort('ul.innehallsforteckning > li > .kapitel-kort');
+    prova('startsida: kapitlen I Materia och universum · II Ljud och ljus · III Kraft och rörelse',
+      kap.map(x => x.nr + ' ' + x.titel).join(' · ') === 'I Materia och universum · II Ljud och ljus · III Kraft och rörelse', kap.map(x => x.nr + ' ' + x.titel).join(' · '));
+    prova('startsida: I och II är tonade, aria-disabled, "Kommer" och inga länkar', kap.slice(0, 2).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
+    prova('startsida: III länkar till kapitelindexet', kap[2] && kap[2].tag === 'A' && kap[2].href === kapitel, kap[2] && kap[2].href);
+    const ov = await kort('.sektion-avgransare .kapitel-kort');
+    prova('startsida: Översikt – Huvudelevbok och Självskattning, tonade "Kommer"',
+      ov.map(x => x.titel).join(', ') === 'Huvudelevbok, Självskattning' && ov.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
+    await bred('startsida');
+    await tonadeLederIngenstans('startsida', '.kapitel-kort.dimmad');
+
+    // Kapitelindexet
+    await klicka('a.kapitel-kort[href$="kraft_och_rorelse/index.html"]');
+    prova('startsida → kapitelindexet', await har() === kapitel, await har());
+    const smula = await c.ev(`[...document.querySelectorAll('.brodsmulor > *')].map(e => e.tagName + ':' + e.textContent.trim() + (e.href ? '→' + e.href : '')).join(' | ')`);
+    prova('kapitelindex: brödsmulan Fysik (länk) › Kraft och rörelse, etiketten Kapitel III',
+      smula === `A:Fysik→${start} | SPAN:› | SPAN:Kraft och rörelse` && await c.ev(`document.querySelector('.hero-banner .avsnitt-label').textContent === 'Kapitel III'`), smula);
+    const av = await kort('ul.innehallsforteckning > li > .kapitel-kort');
+    prova('kapitelindex: avsnittssidorna I–VI', av.map(x => x.nr).join(' ') === 'I II III IV V VI', av.map(x => x.nr + ' ' + x.titel).join(' · '));
+    prova('kapitelindex: I och II länkar till avsnittssidorna', av[0] && av[0].href === avsnitt[0] && av[1] && av[1].href === avsnitt[1], av.slice(0, 2).map(x => x.href).join(' | '));
+    prova('kapitelindex: III–VI är tonade, aria-disabled, "Kommer" och inga länkar', av.slice(2).length === 4 && av.slice(2).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
+    const res = await kort('.resurser-rad .resurs-kort');
+    prova('kapitelindex: resurserna Begreppsbank och Självskattning, tonade "Kommer"',
+      res.map(x => x.titel).join(', ') === 'Begreppsbank, Självskattning' && res.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
+    await bred('kapitelindex');
+    await tonadeLederIngenstans('kapitelindex', '.kapitel-kort.dimmad, .resurs-kort.dimmad');
+
+    // Avsnittssidorna och brödsmulorna tillbaka
+    for (const [i, mal] of avsnitt.entries()) {
+      await klicka(`a.kapitel-kort[href$="${['atomen_repetition', 'materia_repetition'][i]}/index.html"]`, 1200);
+      prova(`kapitelindex → avsnittssida ${['I', 'II'][i]}`, await har() === mal, await har());
+      const s = await c.ev(`[...document.querySelectorAll('.hero-banner .brodsmulor a')].map(a => a.textContent + '→' + a.href).join(' | ')`);
+      prova(`avsnittssida ${['I', 'II'][i]}: brödsmulorna Fysik och Kraft och rörelse är länkar dit`, s === `Fysik→${start} | Kraft och rörelse→${kapitel}`, s);
+      await klicka('.hero-banner .brodsmulor a:last-of-type');
+      prova(`avsnittssida ${['I', 'II'][i]} → brödsmulan Kraft och rörelse → kapitelindexet`, await har() === kapitel, await har());
+    }
+    await klicka('.hero-banner .brodsmulor a');
+    prova('kapitelindex → brödsmulan Fysik → startsidan', await har() === start, await har());
+    await ga(avsnitt[0]); await vanta(500);
+    await klicka('.hero-banner .brodsmulor a');
+    prova('avsnittssida I → brödsmulan Fysik → startsidan', await har() === start, await har());
+    await samlaFel();
+  } catch (e) {
+    fel.push('grinden: ' + e.message);
+  } finally { await c.stang(); }
+  const ok = k.filter(x => x.ok).length;
+  return { kontroller: k, fel: [...new Set(fel.concat(c.undantag.map(u => 'undantag: ' + u)))], navigering: `${ok}/${k.length}`, gron: k.length > 0 && ok === k.length && !fel.length && !c.undantag.length };
+}
+
 /* ---------- Huvudprogrammet ---------- */
 
 (async () => {
@@ -467,7 +548,16 @@ async function bild(c, dk, lage, vad) {
   console.log('');
 
   if (!NEGATIV) {
-    // 2. Varje delkapitel i varje läge
+    // 2. Startsidan och kapitelindexet: vägen mellan sidorna, på dator och mobil
+    for (const lage of [LAGEN[0], LAGEN[3]]) {
+      const r = await provaSidorna(lage);
+      gront = gront && r.gron;
+      console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  startsida och kapitelindex, ${lage.namn}: ${r.navigering}, JS-fel ${r.fel.length}`);
+      r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
+      r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
+    }
+    console.log('');
+    // 3. Varje delkapitel i varje läge
     for (const dk of lista) for (const lage of LAGEN) {
       const r = await kor(dk, lage);
       gront = gront && r.gron;

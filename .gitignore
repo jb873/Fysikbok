@@ -1,3 +1,7 @@
 # Hålls utanför repot
 *.zip
 verktyg/bilder/
+
+# Interna arbetsfiler: överlämningen och gamla versioner av innehåll (finns kvar lokalt)
+RAM.md
+Arkiv/
