@@ -101,7 +101,15 @@ async function chrome() {
       ['mousePressed', 'mouseReleased'].reduce((p, type) => p.then(() => send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 })), Promise.resolve());
     }
   };
-  const send = (method, params = {}) => new Promise(r => { const i = ++id; vant[i] = r; ws.send(JSON.stringify({ id: i, method, params })); });
+  // Ett anrop som inte får svar (Chrome har stängts eller hängt sig) ger fel efter två minuter – grinden blir röd
+  // i stället för att vänta för evigt.
+  ws.onclose = () => Object.keys(vant).forEach(i => vant[i]({ error: 'Chrome stängdes' }));
+  const send = (method, params = {}) => new Promise((ok, fel) => {
+    const i = ++id, t = setTimeout(() => { delete vant[i]; fel(new Error(method + ': inget svar från Chrome')); }, 120000);
+    vant[i] = d => { clearTimeout(t); d.error && d.error === 'Chrome stängdes' ? fel(new Error(method + ': Chrome stängdes')) : ok(d); };
+    if (ws.readyState !== 1) return vant[i]({ error: 'Chrome stängdes' });
+    ws.send(JSON.stringify({ id: i, method, params }));
+  });
   const ev = async uttryck => {
     const svar = (await send('Runtime.evaluate', { expression: uttryck, awaitPromise: true, returnByValue: true, userGesture: true })).result;
     if (svar.exceptionDetails) throw new Error('i sidan: ' + (svar.exceptionDetails.exception ? svar.exceptionDetails.exception.description : svar.exceptionDetails.text));
@@ -109,8 +117,11 @@ async function chrome() {
   };
   const stang = async () => {
     try { ws.close(); } catch (e) { /* redan stängd */ }
-    proc.kill();
-    await new Promise(r => proc.once('exit', r).once('error', r));
+    // Har Chrome redan avslutats kommer inget nytt 'exit' – vänta då inte (annars hänger grinden)
+    if (proc.exitCode === null && proc.signalCode === null) {
+      proc.kill();
+      await Promise.race([new Promise(r => proc.once('exit', r).once('error', r)), vanta(10000)]);
+    }
     try { fs.rmSync(profil, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch (e) { /* Windows släpper filen senare; tmp städas av systemet */ }
   };
   return { send, ev, undantag, stang };
