@@ -80,10 +80,19 @@
 
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+  // Tal och enhet hålls ihop: mellanslaget mellan ett tal och en enhet efter det (10 N, 1 538 °C, 5 m/s) och
+  // tusentalsmellanslaget (1 538) blir hårda (U+00A0) när texten ritas, så att raden aldrig bryts där. Källfilerna
+  // skrivs med vanliga mellanslag.
+  const ENHETER = ['km/h', 'm/s²', 'm/s', 'g/cm³', 'kg/m³', 'kg/dm³', 'kWh', 'cm³', 'dm³', 'm³', 'mm²', 'cm²', 'm²', '°C',
+    'kPa', 'hPa', 'MPa', 'Pa', 'kHz', 'Hz', 'dB', 'kN', 'N', 'kJ', 'MJ', 'J', 'kW', 'MW', 'W', 'kg', 'mg', 'g', 'ton',
+    'km', 'dm', 'cm', 'mm', 'nm', 'm', 'min', 'ms', 'h', 's', 'dl', 'cl', 'ml', 'l', 'K', 'mA', 'A', 'kV', 'V', 'Ω', '%'];
+  const TAL_ENHET = new RegExp(`(\\d) (?=(?:${ENHETER.join('|')})(?![\\p{L}\\p{N}]))`, 'gu');
+  const bindTal = s => String(s == null ? '' : s).replace(/(\d) (?=\d{3}(?!\d))/g, '$1 ').replace(TAL_ENHET, '$1 ');
+
   // Textens enda markering: *begrepp* (betonat, djupblått), *böjd form|grundform* när begreppet står böjt,
   // [[täljare|nämnare]] (bråk) och <sub>/<sup>. Har delkapitlet en begreppslista blir varje begrepp en länk dit.
   function inline(s, lankar = true) {
-    return esc(s)
+    return esc(bindTal(s))
       .replace(/&lt;(\/?)(sub|sup)&gt;/g, '<$1$2>')
       .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g,
         '<span class="brak"><span class="brak-t">$1</span><span class="brak-n">$2</span></span>')

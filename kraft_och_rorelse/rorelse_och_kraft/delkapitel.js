@@ -8,7 +8,7 @@ Bok.delkapitel({
            { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
   nummer: 3,                                 // brödsmulan "3. Rörelse och kraft" och etiketten "Avsnitt III"
   titel: 'Rörelse och kraft',
-  undertitel: 'rörelse, kraft och tyngdkraft', // bannerns rad: "— rörelse, kraft och tyngdkraft —"
+  undertitel: 'rörelse, kraft, friktion och tyngdkraft', // bannerns rad: "— rörelse, kraft, friktion och tyngdkraft —"
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
 

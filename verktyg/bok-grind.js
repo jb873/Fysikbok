@@ -137,9 +137,15 @@ async function chrome() {
  *    andra föremålet (drag) eller ifrån det (knuff).
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map();
+    const sett = new Map(), par = new Map(), tal = new Set();
+    // ett vanligt (brytbart) mellanslag mellan ett tal och en enhet, eller i ett tusental, i texten (inte i figurerna)
+    const BRYTS = /\d (?:\d{3}(?!\d)|(?:km\/h|m\/s|g\/cm³|kg\/m³|cm³|m³|°C|kN|N|kJ|J|kW|W|kg|g|km|cm|mm|m|min|h|s|%)(?![\p{L}\p{N}]))/u;
     for (let n = 1; n <= $$('.lr-sida').length; n++) {
       Bok.gaTill(n); await v(30);
+      $$('.scen .sida[data-nr="' + n + '"] .sidinnehall').forEach(s => {
+        const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); let t;
+        while ((t = w.nextNode())) if (!t.parentElement.closest('svg')) { const m = t.textContent.match(BRYTS); if (m) tal.add('s. ' + n + ': ”' + t.textContent.slice(Math.max(0, m.index - 12), m.index + 10) + '”'); }
+      });
       $$('.scen svg[data-rorelse]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (!sett.has(id)) sett.set(id, { typ: s.dataset.rorelse, xs: [...s.querySelectorAll('circle.fig-prick')].map(c => c.cx.baseVal.value),
@@ -174,7 +180,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       if (!ok) parFel.push(id + ' (' + x.satt + '): längd ' + len.map(Math.round).join('/') + ', riktning ' + dx.map(Math.round).join('/') + (fran ? '' : ', börjar inte i föremålens mitt'));
     }
     return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel,
-      par: { antal: par.size, satt: [...new Set([...par.values()].map(x => x.satt))], fel: parFel } };
+      par: { antal: par.size, satt: [...new Set([...par.values()].map(x => x.satt))], fel: parFel }, tal: [...tal] };
   };`;
 
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
@@ -387,6 +393,8 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   if (spar.some(x => x.par.antal)) prova('figur: kraftparens pilar är lika långa, motriktade och börjar i var sitt föremåls mitt (' + spar.map(x => x.par.antal).join(' + ') + ' par)',
     spar.every(x => !x.par.fel.length), spar.flatMap(x => x.par.fel).join(' | ') || spar.flatMap(x => x.par.satt).filter((t, i, l) => l.indexOf(t) === i).join(', '));
+  prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
+    spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   if (andraTexter.length) prova('figur: figurerna i de andra texterna (' + andraTexter.join(', ') + ') är mätta på varje nivå', stangd(), 'hash=' + location.hash);
   return k;
 }`;
@@ -468,6 +476,25 @@ const PROVSCENARIO = String.raw`async () => {
   const sp = await figurKoll();
   prova('prov: rörelsespåren – avstånden lika / växande / krympande / ojämna efter rörelsetypen',
     sp.antal === 4 && sp.typer.length === 4 && !sp.fel.length, sp.antal + ' spår: ' + (sp.fel.join(' | ') || sp.typer.join(', ')));
+  // Tal och enhet: hårda mellanslag, och i en spalt som är 1 px bred (där raden bryts vid varje vanligt mellanslag)
+  // står "10 N", "1 538 °C", "5 m/s" och "18 km/h" ändå på en rad
+  Bok.gaTill(sf('tal-och-enhet')); await v(60);
+  const te = $('.scen [data-post="tal-och-enhet"]');
+  const smal = te.cloneNode(true); smal.style.cssText = 'position:absolute;left:0;top:0;width:1px;visibility:hidden';
+  document.body.appendChild(smal);
+  const enRad = t => {
+    const w = document.createTreeWalker(smal, NodeFilter.SHOW_TEXT); let nod;
+    while ((nod = w.nextNode()) && !nod.textContent.includes(t));
+    if (!nod) return null;
+    const r = document.createRange(), i = nod.textContent.indexOf(t); r.setStart(nod, i); r.setEnd(nod, i + t.length);
+    return new Set([...r.getClientRects()].map(q => Math.round(q.top))).size === 1;
+  };
+  const par = ['10 N', '1 538 °C', '5 m/s', '18 km/h'];
+  const tePar = par.map(t => t.replace(/ /g, '·') + ': ' + (enRad(t) ? 'en rad' : 'BRUTEN'));
+  const kontroll = enRad('16 − 6');                 // vanliga mellanslag: ska brytas i den smala spalten
+  smal.remove();
+  prova('prov: tal och enhet bryts aldrig isär – "16 − 6 = 10 N" och "1 538 °C" (hårda mellanslag, också i tusentalet)',
+    tePar.every(t => t.endsWith('en rad')) && kontroll === false, tePar.join(' | ') + ' | 16 − 6 (vanliga mellanslag): ' + (kontroll ? 'en rad – spalten bryter inte' : 'bruten, som den ska'));
   // Kraftparen i Tryck: drag och knuff, lika långa motriktade pilar från var sitt föremåls mitt
   prova('prov: kraftparen – pilarna lika långa och motriktade, mot det andra föremålet (drag) och ifrån det (knuff)',
     sp.par.antal === 2 && sp.par.satt.length === 2 && !sp.par.fel.length, sp.par.antal + ' par: ' + (sp.par.fel.join(' | ') || sp.par.satt.join(', ')));

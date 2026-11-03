@@ -252,6 +252,10 @@ rubrikerna och krymper fortfarande sin egen text (ned till 70 %) om den behöver
   - `*atomer|atom*` skriver begreppet böjt men länkar till grundformen.
   - `[[m|V]]` blir ett bråk.
   - `<sub>2</sub>` och `<sup>3</sup>` ger index. Annan HTML visas som text.
+  - Tal och enhet hålls ihop: mellanslaget mellan ett tal och en enhet efter det (`10 N`, `1 538 °C`, `5 m/s`,
+    `18 km/h`) och tusentalsmellanslaget (`1 538`) blir hårda (U+00A0) när texten ritas, så att raden aldrig bryts
+    där. Skriv vanliga mellanslag i källfilerna. Enheterna står i `ENHETER` i `bok.js`.
+  - `*ord*` är alltid ett begrepp. Vill man bara betona ett ord blir det vanlig text.
 
 | Block | Fält |
 |---|---|
@@ -366,7 +370,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        böcker ska en annan text öppna en egen bok, och varje text minnas sin plats. Har boken flera nivåer med
        innehåll ska ett nivåbyte från en rubrik mitt i boken, genom alla nivåer och tillbaka, hamna i samma avsnitt.
        Figurerna mäts i varje text och på varje nivå: rörelsespårens avstånd ska följa rörelsetypen, och
-       kraftparens pilar ska vara lika långa, motriktade och börja i var sitt föremåls mitt.
+       kraftparens pilar ska vara lika långa, motriktade och börja i var sitt föremåls mitt. Ingen sida får ha ett
+       vanligt (brytbart) mellanslag mellan tal och enhet eller i ett tusental.
      - **Att brytningen följer reglerna och alla sidor får plats** (kontrolläget), och att brytningen tar under
        200 ms med CPU:n strypt 6 gånger.
      - **Att inga JS-fel uppstår.** De fångas med `window.onerror`, `unhandledrejection` och Chromes egna undantag.
@@ -380,6 +385,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   - rörelsespåren (Tryck): alla fyra rörelsetyperna, 4–8 prickar, med och utan tider
   - kraftparen (Tryck): drag och knuff, med och utan värde, och beskrivningen ur data
   - kraftpilar utan värden och med en gemensam skala (Tryck)
+  - tal och enhet (Tryck): "16 − 6 = 10 N", "1 538 °C", "5 m/s" och "18 km/h" står på en rad också i en spalt som
+    är 1 px bred, medan "16 − 6" (vanliga mellanslag) bryts där
   - hjälpmedel med adress, också som inbäddad flik (Öva)
   - begreppslänkar
   - inbäddningen
@@ -518,4 +525,7 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - `kraftpilar`: föremålets namn får plats över föremålet (det klipptes förut), en vågrät resultant står över
     mitten (förut på underlaget), och en kort pils etikett står utanför föremålet.
   - Grinden öppnar också de andra texterna och mäter deras figurer på varje nivå.
+  - Joachims beslut efter granskningen: skalan 16 behålls; `*olika*` i C Standard var betoning och är vanlig text;
+    motorn håller ihop tal och enhet med hårda mellanslag (`bindTal` i `bok.js`); undertiteln är "rörelse, kraft,
+    friktion och tyngdkraft".
 - Namn och © står på sista sidan och i sidans fot, ur `upphov`.

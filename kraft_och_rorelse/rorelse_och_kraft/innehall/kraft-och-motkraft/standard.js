@@ -2,7 +2,8 @@
  * Joachims granskade källa (III-B-C-Kraft-friktion-motkraft-alla-nivaer-v2.md, 2026-11-03), införd ordagrant i
  * strömformatet: ### = rubrik, ett stycke = ett textblock, [FIGUR n] = figuren där markeringen står (data ur
  * arbetsordern). "Det här lär du dig:" står som liten rubrik utan kolon, som i text A. Stycket "SPARAT TILL TEXT D"
- * i källan är inte infört. Avsnittens id (inledning, kraft-och-motkraft, sammanfattning) är desamma på alla nivåer. */
+ * i källan är inte infört. *olika* i källan var betoning, inte begrepp: vanlig text (Joachims beslut 2026-11-03).
+ * Avsnittens id (inledning, kraft-och-motkraft, sammanfattning) är desamma på alla nivåer. */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -35,7 +36,7 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Det gäller inte bara blocket. När ett föremål påverkar ett annat med en kraft, påverkar det andra föremålet tillbaka med en lika stor kraft åt motsatt håll. Kraften och motkraften är alltid lika stora, de verkar alltid åt motsatt håll, och de uppstår alltid samtidigt. Det kallas Newtons tredje lag, eller lagen om *kraft och motkraft*.' },
 
         { typ: 'rubrik', text: 'Kraft och motkraft verkar på olika föremål' },
-        { typ: 'text', text: 'Det viktiga är att kraften och motkraften verkar på två *olika* föremål. Din kraft verkar på blocket. Motkraften verkar på dig. Därför tar de inte ut varandra. För att krafter ska ta ut varandra måste de verka på samma föremål – som draget och friktionen gör på blocket.' },
+        { typ: 'text', text: 'Det viktiga är att kraften och motkraften verkar på två olika föremål. Din kraft verkar på blocket. Motkraften verkar på dig. Därför tar de inte ut varandra. För att krafter ska ta ut varandra måste de verka på samma föremål – som draget och friktionen gör på blocket.' },
 
         { typ: 'rubrik', text: 'Friktionen är inte motkraften till ditt drag' },
         { typ: 'text', text: 'Det är lätt att tro att friktionen är motkraften till ditt drag, eftersom båda verkar åt motsatt håll. Men så är det inte. Friktionen verkar på blocket och kommer från bordet. Motkraften till ditt drag verkar på din hand och kommer från blocket. Friktionen bromsar blocket. Motkraften är det du känner i handen. Friktionen har en egen motkraft: blocket drar bordet med sig framåt, lika mycket.' },
