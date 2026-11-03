@@ -296,6 +296,7 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `kraftpar` | `satt: 'drag' \| 'knuff'`, `foremal: [{namn}, {namn}]`, `krafter: ['kraften på föremål 1', 'kraften på föremål 2']`, `storlek?`, `enhet?: 'N'`, `varden?: true` | Newtons tredje lag: två föremål (neutrala rektanglar med namn) och en kraft på vardera – lika långa pilar åt motsatt håll, var och en från sitt föremåls mitt. `drag`: ett snöre mellan föremålen, pilarna pekar mot det andra föremålet. `knuff`: föremålen ligger an mot varandra, pilarna pekar ifrån varandra. Under varje pil står vilket föremål kraften verkar på; med `storlek` står värdet över pilarna. |
 | `skalmodell` | `atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}]` (1–3), `overgang?: 'tar upp 2 elektroner'`, `rader?` | laddningen (protoner − elektroner), formeln (O²⁻), masstalet, och vilka elektroner som flyttar vid en övergång (markerade i guld). Med `neutroner` och högst fyra kärnpartiklar ritas protoner och neutroner i kärnan (isotoper). |
 | `rorelsespar` | `rorelse: 'likformig' \| 'olikformig' \| 'accelererande' \| 'retarderad'`, `prickar?: 6` (4–8), `tider?: false` | prickmodellen: lika lång tid mellan prickarna, och prickarnas lägen. Likformig: lika stora avstånd. Accelererande: avstånden växer jämnt (1, 2, 3 …). Retarderad: avstånden krymper jämnt, och de två sista ligger nästan ihop. Olikformig: ett fast ojämnt mönster (kort, långt, mellan …). Under prickarna står en stråle med pilspets åt höger (rörelseriktningen). `tider: true` skriver 0 s, 1 s … under prickarna. Figuren är låg och bred. |
+| `friktion` | `foremal?: 'Block'`, `underlag?: 'Bord'`, `pilar?: true`, `ytor?: 'normal' \| 'grov' \| 'slat'` | ytorna i förstoring. Överst "Så ser det ut": blocket på bordslinjen och kontaktytan i en streckad ruta. Nederst "I förstoring": blockets undersida och bordets yta med oregelbundna toppar och gropar som hakar i varandra (samma mönster varje gång; `ytor` avgör hur ojämnt), i olika dämpade färger. Strecklinjerna från rutan går till förstoringens hörn och korsar aldrig rubrikerna. Pilarna verkar på blocket: draget framåt och friktionen bakåt, lika långa; `pilar: false` ritar bara ytorna. Med andra namn än Block och Bord blir beskrivningen enklare ("Låda på hylla.") – skriv gärna en egen. |
 
 - `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data.
 - Figuren tar högst 32 % av sidhöjden.
@@ -370,7 +371,9 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        böcker ska en annan text öppna en egen bok, och varje text minnas sin plats. Har boken flera nivåer med
        innehåll ska ett nivåbyte från en rubrik mitt i boken, genom alla nivåer och tillbaka, hamna i samma avsnitt.
        Figurerna mäts i varje text och på varje nivå: rörelsespårens avstånd ska följa rörelsetypen, och
-       kraftparens pilar ska vara lika långa, motriktade och börja i var sitt föremåls mitt. Ingen sida får ha ett
+       kraftparens pilar ska vara lika långa, motriktade och börja i var sitt föremåls mitt. I friktionen ska ytorna
+       haka i varandra utan att gå in i varandra, strecklinjerna inte korsa rubrikerna, draget peka framåt och
+       friktionen bakåt (lika långa, på blocket), och samma ytor ge samma mönster i alla böcker. Ingen sida får ha ett
        vanligt (brytbart) mellanslag mellan tal och enhet eller i ett tusental.
      - **Att brytningen följer reglerna och alla sidor får plats** (kontrolläget), och att brytningen tar under
        200 ms med CPU:n strypt 6 gånger.
@@ -385,6 +388,7 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   - rörelsespåren (Tryck): alla fyra rörelsetyperna, 4–8 prickar, med och utan tider
   - kraftparen (Tryck): drag och knuff, med och utan värde, och beskrivningen ur data
   - kraftpilar utan värden och med en gemensam skala (Tryck)
+  - friktionen (Tryck): med pilar och bildtext, och utan pilar med grova ytor och andra namn, och beskrivningen ur data
   - tal och enhet (Tryck): "16 − 6 = 10 N", "1 538 °C", "5 m/s" och "18 km/h" står på en rad också i en spalt som
     är 1 px bred, medan "16 − 6" (vanliga mellanslag) bryts där
   - hjälpmedel med adress, också som inbäddad flik (Öva)
@@ -528,4 +532,12 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - Joachims beslut efter granskningen: skalan 16 behålls; `*olika*` i C Standard var betoning och är vanlig text;
     motorn håller ihop tal och enhet med hårda mellanslag (`bindTal` i `bok.js`); undertiteln är "rörelse, kraft,
     friktion och tyngdkraft".
+- **2026-11-03, figurtypen `friktion` (arbetsordern friktion):**
+  - En ny funktion i `figurer.js`; streckat (`fig-lupp`), ytorna (`fig-yta-foremal`, `fig-yta-underlag`,
+    `fig-ytlinje`) i `bok.css`.
+  - Figuren är 186 enheter hög, så att den får stå i spaltens bredd: en figur får vara högst 32 % av sidhöjden, och
+    en högre figur krymps (texten i den blir då för liten). Rubriken "I förstoring" står mitt emellan
+    strecklinjerna.
+  - Insatt i text B, Standard och Enkel, efter första stycket under "Kraften bakåt är friktion" (Enkel: efter
+    stycket om mikroskopet). Fördjupning har ingen sådan rubrik – där väntar figuren på Joachims besked.
 - Namn och © står på sista sidan och i sidans fot, ur `upphov`.

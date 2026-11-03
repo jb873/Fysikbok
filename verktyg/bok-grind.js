@@ -134,10 +134,12 @@ async function chrome() {
  *  - rörelsespåren: likformig lika avstånd, accelererande avstånd som växer jämnt, retarderad avstånd som krymper
  *    jämnt, olikformig avstånd som både växer och krymper; strålens pilspets till höger om prickarna;
  *  - kraftparen: två föremål och två pilar, var och en från sitt föremåls mitt, lika långa och motriktade – mot det
- *    andra föremålet (drag) eller ifrån det (knuff).
+ *    andra föremålet (drag) eller ifrån det (knuff);
+ *  - friktionen: ytorna hakar i varandra utan att gå in i varandra, strecklinjerna korsar inga rubriker, draget åt
+ *    höger och friktionen åt vänster, lika långa och från samma punkt på blocket; samma ytor ger samma mönster.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), tal = new Set();
+    const sett = new Map(), par = new Map(), fr = new Map(), tal = new Set();
     // ett vanligt (brytbart) mellanslag mellan ett tal och en enhet, eller i ett tusental, i texten (inte i figurerna)
     const BRYTS = /\d (?:\d{3}(?!\d)|(?:km\/h|m\/s|g\/cm³|kg\/m³|cm³|m³|°C|kN|N|kJ|J|kW|W|kg|g|km|cm|mm|m|min|h|s|%)(?![\p{L}\p{N}]))/u;
     for (let n = 1; n <= $$('.lr-sida').length; n++) {
@@ -157,6 +159,18 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           mitt: [...s.querySelectorAll('rect.fig-foremal')].map(r => [r.x.baseVal.value + r.width.baseVal.value / 2, r.y.baseVal.value + r.height.baseVal.value / 2]),
           pilar: [...s.querySelectorAll('g.fig-kraftpar-pil')].map(g => { const l = g.querySelector('line'), t = g.querySelector('polygon').points[0];
             return { x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }) });
+      });
+      $$('.scen svg[data-friktion]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (fr.has(id)) return;
+        const punkter = k => { const p = s.querySelector('polyline.' + k); return p ? [...p.points].map(q => [q.x, q.y]) : []; };
+        const ytlinjer = [...s.querySelectorAll('polyline.fig-ytlinje')];
+        fr.set(id, { ytor: s.dataset.friktion, ritad: !!s.querySelector('polygon.fig-yta-foremal') && !!s.querySelector('polygon.fig-yta-underlag'),
+          rubriker: [...s.querySelectorAll('text.fig-rubrik')].map(t => { const b = t.getBBox(); return [b.x, b.y, b.x + b.width, b.y + b.height, t.textContent]; }),
+          linjer: [...s.querySelectorAll('line.fig-lupplinje')].map(l => [l.x1.baseVal.value, l.y1.baseVal.value, l.x2.baseVal.value, l.y2.baseVal.value]),
+          undersida: ytlinjer[0] ? [...ytlinjer[0].points].map(q => [q.x, q.y]) : [], yta: punkter('fig-ytlinje-underlag'),
+          pilar: [...s.querySelectorAll('g.fig-friktion-pil')].map(g => { const l = g.querySelector('line'), t = g.querySelector('polygon').points[0];
+            return { kraft: g.dataset.kraft, x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }) });
       });
     }
     const fel = [], lika = (p, q) => Math.abs(p - q) < 0.6;
@@ -179,8 +193,38 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       const ok = fran && lika(len[0], len[1]) && len[0] > 20 && mot && (x.satt === 'drag' ? motAndra : x.satt === 'knuff' && !motAndra);
       if (!ok) parFel.push(id + ' (' + x.satt + '): längd ' + len.map(Math.round).join('/') + ', riktning ' + dx.map(Math.round).join('/') + (fran ? '' : ', börjar inte i föremålens mitt'));
     }
+    // friktionen: båda ytorna ritade, blockets undersida aldrig under bordets yta men an mot den någonstans, ytorna
+    // ojämna; strecklinjerna korsar ingen rubrik; pilarna (om några) lika långa från samma punkt, draget åt höger och
+    // friktionen åt vänster, ovanför bordets yta (på blocket)
+    const frFel = [], monster = {};
+    for (const [id, x] of fr) {
+      const f_ = [];
+      if (!x.ritad || x.yta.length < 8 || x.undersida.length !== x.yta.length) f_.push('ytorna saknas');
+      else {
+        const glapp = x.yta.map((p, i) => p[1] - x.undersida[i][1]);
+        if (glapp.some(g => g < 0)) f_.push('blocket går ner i bordet');
+        if (!glapp.some(g => g < 1.5)) f_.push('ytorna ligger inte an');
+        const ys = x.yta.map(p => p[1]);
+        if (Math.max(...ys) - Math.min(...ys) < 2) f_.push('ytan är slät');
+      }
+      const korsar = x.linjer.filter(([x1, y1, x2, y2]) => x.rubriker.some(([a, b, c, e]) =>
+        Array.from({ length: 101 }, (_, i) => [x1 + (x2 - x1) * i / 100, y1 + (y2 - y1) * i / 100]).some(([px, py]) => px > a - 2 && px < c + 2 && py > b - 2 && py < e + 2)));
+      if (x.linjer.length !== 2 || x.rubriker.length !== 2 || x.rubriker.some(r => !(r[2] - r[0] > 20)) || korsar.length) f_.push(x.linjer.length + ' strecklinjer, ' + x.rubriker.length + ' rubriker' + (korsar.length ? ', en linje korsar en rubrik' : ''));
+      if (x.pilar.length) {
+        const [dr, fk] = ['drag', 'friktion'].map(k => x.pilar.find(p => p.kraft === k));
+        const yMin = x.yta.length ? Math.min(...x.yta.map(p => p[1])) : 0;
+        if (!dr || !fk || x.pilar.length !== 2 || !(dr.x2 > dr.x1) || !(fk.x2 < fk.x1) || !lika(dr.x1, fk.x1) || !lika(dr.y1, fk.y1) ||
+          !lika(dr.x2 - dr.x1, fk.x1 - fk.x2) || !lika(dr.y1, dr.y2) || !(dr.y1 < yMin)) f_.push('pilarna: ' + JSON.stringify(x.pilar.map(p => [p.kraft, Math.round(p.x1), Math.round(p.x2)])));
+      }
+      if (f_.length) frFel.push(id + ' (' + x.ytor + '): ' + f_.join(', '));
+      // samma mönster varje gång: samma ytor ger samma punkter
+      const nyckel = JSON.stringify(x.yta);
+      if (monster[x.ytor] && monster[x.ytor] !== nyckel) frFel.push(id + ': mönstret skiljer sig från en annan figur med samma ytor');
+      monster[x.ytor] = nyckel;
+    }
     return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel,
-      par: { antal: par.size, satt: [...new Set([...par.values()].map(x => x.satt))], fel: parFel }, tal: [...tal] };
+      par: { antal: par.size, satt: [...new Set([...par.values()].map(x => x.satt))], fel: parFel },
+      fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
@@ -393,6 +437,13 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   if (spar.some(x => x.par.antal)) prova('figur: kraftparens pilar är lika långa, motriktade och börjar i var sitt föremåls mitt (' + spar.map(x => x.par.antal).join(' + ') + ' par)',
     spar.every(x => !x.par.fel.length), spar.flatMap(x => x.par.fel).join(' | ') || spar.flatMap(x => x.par.satt).filter((t, i, l) => l.indexOf(t) === i).join(', '));
+  if (spar.some(x => x.fr.antal)) {
+    // samma ytor ska ge samma mönster i alla böcker
+    const monster = {}, olika = [];
+    spar.forEach(x => Object.entries(x.fr.monster).forEach(([y, m]) => { if (monster[y] && monster[y] !== m) olika.push(y); monster[y] = m; }));
+    prova('figur: friktionen – ytorna hakar i varandra, strecklinjerna korsar inga rubriker, draget framåt och friktionen bakåt på blocket, samma mönster varje gång (' + spar.map(x => x.fr.antal).join(' + ') + ' figurer)',
+      spar.every(x => !x.fr.fel.length) && !olika.length, spar.flatMap(x => x.fr.fel).concat(olika.map(y => 'mönstret för ' + y + ' skiljer sig mellan böckerna')).join(' | ') || spar.flatMap(x => x.fr.ytor).filter((t, i, l) => l.indexOf(t) === i).join(', '));
+  }
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   if (andraTexter.length) prova('figur: figurerna i de andra texterna (' + andraTexter.join(', ') + ') är mätta på varje nivå', stangd(), 'hash=' + location.hash);
@@ -515,6 +566,16 @@ const PROVSCENARIO = String.raw`async () => {
     !uvText.join(' ').includes(' N') && uv === 'Kraftpilar på Provlåda: Framåt åt höger, Bakåt åt vänster, Resultanten åt höger.' &&
     uvLinjer.length === 3 && Math.abs(uvLinjer[0] - 52) < 0.5 && Math.abs(uvLinjer[1] - 26) < 0.5 && Math.abs(uvLinjer[2] - 26) < 0.5,
     uvLinjer.map(Math.round).join('/') + ' | ' + uvText.join(' · ') + ' | ' + uv);
+  // Friktion: ritas utan fel ur data, med och utan pilar; mätningen (figurKoll) gäller båda
+  const frP = await etikett('friktion-pilar'), frG = await etikett('friktion-grov');
+  const frPilar = id => $$('.scen [data-post="' + id + '"] g.fig-friktion-pil').length;
+  Bok.gaTill(sf('friktion-pilar')); await v(60); const nP = frPilar('friktion-pilar'), bt = $('.scen [data-post="friktion-pilar"] figcaption');
+  Bok.gaTill(sf('friktion-grov')); await v(60); const nG = frPilar('friktion-grov'), gText = texterI('friktion-grov');
+  prova('prov: friktion – ritas ur data med pilar (draget och friktionen) och utan pilar (grova ytor, egna namn), och mätningen håller',
+    sp.fr.antal === 2 && !sp.fr.fel.length && sp.fr.ytor.join(',') === 'normal,grov' && nP === 2 && nG === 0 && bt && bt.textContent === 'Provbildtext under friktionen.' &&
+    frP === 'Ett block på ett bord. I förstoring syns att båda ytorna har små toppar och gropar som hakar i varandra. Draget pekar framåt och friktionen bakåt på blocket.' &&
+    frG === 'Låda på hylla. I förstoring syns att båda ytorna har tydliga toppar och gropar som hakar i varandra.' && gText.includes('Låda') && gText.includes('Hylla'),
+    (sp.fr.fel.join(' | ') || sp.fr.ytor.join(',')) + ' | pilar ' + nP + '/' + nG + ' | ' + frP + ' | ' + frG);
   Bok.gaTill(sf('spar-retarderad')); await v(60);
   const ret = $('.scen [data-post="spar-retarderad"] svg'), tider = ret ? [...ret.querySelectorAll('text')].map(t => t.textContent) : [];
   prova('prov: rörelsespår med tider – en tid per prick (0 s, 1 s …) och beskrivningen ur data',

@@ -16,6 +16,7 @@
  *   skalmodell         atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}] (1–3), overgang?: 'tar upp 2 elektroner',
  *                       rader?: ['protoner'|'neutroner'|'elektroner'|'laddning'|'masstal', …]
  *   rorelsespar         rorelse: 'likformig'|'olikformig'|'accelererande'|'retarderad', prickar?: 6 (4–8), tider?: false
+ *   friktion            foremal?: 'Block', underlag?: 'Bord', pilar?: true, ytor?: 'normal'|'grov'|'slat'
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -404,5 +405,60 @@
     const beskr = `Kraftpar: ${foremal[0].namn} och ${foremal[1].namn} ${satt === 'drag' ? 'är förbundna med ett snöre' : 'ligger an mot varandra'}. ` +
       `${krafter[0]} ${riktning(mot[0])} och ${andra} ${riktning(mot[1])}, lika stora krafter${varde ? ', ' + varde + ',' : ''} på två olika föremål.`;
     return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-kraftpar="${satt}">${s}</svg>`, beskrivning: beskr };
+  });
+
+  /* Friktion – ytorna i förstoring. Överst blocket på bordet som det ser ut, med kontaktytan i en liten streckad ruta;
+     nederst samma ställe förstorat: blockets undersida och bordets yta har oregelbundna toppar och gropar som hakar i
+     varandra. Mönstret är detsamma varje gång (fast frö); ytor avgör hur ojämnt det ritas. Pilarna verkar på blocket:
+     draget framåt (åt höger) och friktionen bakåt, lika långa. Strecklinjerna från rutan går till förstoringens övre
+     hörn; rubriken I förstoring står mitt emellan dem, så att de aldrig korsar den. Med andra namn än Block och Bord
+     blir beskrivningen enklare ("Låda på hylla.") – skriv då gärna en egen beskrivning i data. */
+  const YTOR = { normal: [4.5, 9.5, 1, 'små'], grov: [7.5, 13, 1.3, 'tydliga'], slat: [1.2, 3, 0.8, 'mycket små'] };
+  Bok.figur('friktion', d => {
+    const ytor = String(d.ytor || 'normal').replace('ä', 'a');
+    const [amin, amax, vidd, hur] = YTOR[ytor] || fel(`friktion: okända ytor ”${d.ytor}” (normal, grov eller slat)`);
+    const foremal = d.foremal || 'Block', underlag = d.underlag || 'Bord', pilar = d.pilar !== false;
+    // Så ser det ut: blocket (76 × 30) på bordslinjen med namnet till vänster, kontaktytan i rutan. Figuren hålls låg (186), så att den får
+    // stå i textspaltens bredd (en figur är högst en knapp tredjedel av sidan)
+    const BORD = 56, RUTA = { x: 200, y: 50, b: 40, h: 18 };
+    // I förstoring: utsnittet, med ytorna kring Y0
+    const Z = { x: 20, y: 104, b: 400, h: 78 }, Y0 = 150;
+    let s = text(220, 17, 'Så ser det ut', 'fig-rubrik');
+    s += `<line class="fig-bord" x1="70" y1="${BORD}" x2="370" y2="${BORD}"/>` +
+      Array.from({ length: 15 }, (_, i) => `<line class="fig-skraffer" x1="${80 + i * 20}" y1="${BORD + 1}" x2="${72 + i * 20}" y2="${BORD + 10}"/>`).join('');
+    s += `<rect class="fig-foremal" x="182" y="${BORD - 30}" width="76" height="30" rx="2"/>`;
+    s += text(176, BORD - 10, foremal, 'fig-text fig-hoger fig-dampad') + text(380, BORD + 6, underlag, 'fig-text fig-vanster fig-dampad');
+    s += `<rect class="fig-lupp" x="${RUTA.x}" y="${RUTA.y}" width="${RUTA.b}" height="${RUTA.h}"/>`;
+    s += [[RUTA.x, Z.x], [RUTA.x + RUTA.b, Z.x + Z.b]].map(([a, b]) => `<line class="fig-lupp fig-lupplinje" x1="${a}" y1="${RUTA.y + RUTA.h}" x2="${b}" y2="${Z.y}"/>`).join('');
+    s += text(220, Z.y - 8, 'I förstoring', 'fig-rubrik');
+    // bordets yta: växelvis topp och grop med olika höjd och bredd, och en ojämn punkt på varje sluttning; blockets
+    // undersida följer den en bit ovanför och ligger an mot några av topparna – blockets toppar står ner i gropar
+    const sl = slump(11), yta = [], topp = [];
+    let forra = null;
+    for (let x = Z.x, upp = true; ; upp = !upp) {
+      const y = Y0 + (upp ? -1 : 1) * (amin + (sl() + 0.5) * (amax - amin));
+      if (forra) { const t = 0.35 + (sl() + 0.5) * 0.3; yta.push([forra[0] + (x - forra[0]) * t, forra[1] + (y - forra[1]) * t + sl() * (amax - amin) * 0.6]); topp.push(false); }
+      yta.push([x, y]); topp.push(upp); forra = [x, y];
+      if (x >= Z.x + Z.b) break;
+      x = Math.min(Z.x + Z.b, x + (8 + (sl() + 0.5) * 12) * vidd);
+    }
+    const undersida = yta.map(([x, y], i) => { const r = sl(); return [x, y - (topp[i] && r < -0.1 ? 0.6 : 1.8 + (r + 0.5) * 2.4)]; });
+    const pts = l => l.map(([x, y]) => `${f(x)},${f(y)}`).join(' ');
+    s += `<polygon class="fig-yta-foremal" points="${Z.x},${Z.y} ${Z.x + Z.b},${Z.y} ${pts(undersida.slice().reverse())}"/>`;
+    s += `<polygon class="fig-yta-underlag" points="${pts(yta)} ${Z.x + Z.b},${Z.y + Z.h} ${Z.x},${Z.y + Z.h}"/>`;
+    s += `<polyline class="fig-ytlinje" points="${pts(undersida)}"/><polyline class="fig-ytlinje fig-ytlinje-underlag" points="${pts(yta)}"/>`;
+    s += `<rect class="fig-lupp" x="${Z.x}" y="${Z.y}" width="${Z.b}" height="${Z.h}"/>`;
+    s += text(Z.x + Z.b - 8, Z.y + 20, foremal, 'fig-text fig-hoger fig-dampad') + text(Z.x + Z.b - 8, Z.y + Z.h - 6, underlag, 'fig-text fig-hoger fig-dampad');
+    if (pilar) {
+      // från blockets mitt i utsnittet, lika långa åt var sitt håll; etiketterna bortom spetsarna
+      const cx = 220, cy = Z.y + 18, L = 90;
+      s += `<g class="fig-friktion-pil" data-kraft="drag">${pil(cx, cy, cx + L, cy, 9)}</g><g class="fig-friktion-pil" data-kraft="friktion">${pil(cx, cy, cx - L, cy, 9)}</g>`;
+      s += text(cx + L + 8, cy + 5, 'Drag', 'fig-pil-text fig-halo fig-vanster') + text(cx - L - 8, cy + 5, 'Friktion', 'fig-pil-text fig-halo fig-hoger');
+      s += `<circle class="fig-angrepp" cx="${cx}" cy="${cy}" r="3.5"/>`;
+    }
+    const vanlig = foremal === 'Block' && underlag === 'Bord';
+    const beskr = `${vanlig ? 'Ett block på ett bord' : `${foremal} på ${underlag.toLowerCase()}`}. I förstoring syns att båda ytorna har ${hur} toppar och gropar som hakar i varandra.` +
+      (pilar ? ` Draget pekar framåt och friktionen bakåt på ${vanlig ? 'blocket' : 'föremålet'}.` : '');
+    return { svg: `<svg viewBox="0 0 440 ${Z.y + Z.h + 6}" xmlns="http://www.w3.org/2000/svg" data-friktion="${ytor}">${s}</svg>`, beskrivning: beskr };
   });
 })();

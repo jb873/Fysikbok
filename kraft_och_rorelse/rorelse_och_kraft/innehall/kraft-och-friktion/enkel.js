@@ -66,6 +66,8 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'Kraften bakåt heter friktion' },
         { typ: 'text', text: 'Nu ska vi titta på vad kraften bakåt egentligen är. Den heter *friktion*. Friktion uppstår när två ytor gnids mot varandra – här undersidan av blocket och bordet.' },
         { typ: 'text', text: 'Ett bord kan se helt slätt ut. Men om du kunde titta på det i ett mikroskop skulle du se små gropar och toppar. Blockets undersida ser likadan ut. När blocket dras över bordet hakar de små topparna i varandra. Det är det som bromsar, och det är det som är friktion.' },
+        { typ: 'figur', namn: 'friktion',
+          bildtext: 'Även släta ytor är ojämna när man tittar riktigt nära.' },
 
         { typ: 'rubrik', text: 'Friktionen finns bara när någon drar' },
         { typ: 'text', text: 'Friktionen finns inte där hela tiden. Om blocket bara ligger på bordet och ingen drar i det, så finns det ingen friktion alls. Friktionen uppstår först när du börjar dra.' },

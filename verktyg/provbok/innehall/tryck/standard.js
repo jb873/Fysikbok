@@ -43,6 +43,11 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Provtext: kraftpilar utan värden, med skalan 20.' },
         { typ: 'figur', id: 'pilar-utan-varden', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Provlåda' }, underlag: true, varden: false, skala: 20, resultant: true,
           krafter: [{ namn: 'Framåt', riktning: 'hoger', storlek: 10 }, { namn: 'Bakåt', riktning: 'vanster', storlek: 5 }] },
+        // Friktion: ytorna i förstoring, med pilar (som i texten) och utan pilar, grova ytor och andra namn
+        { typ: 'text', text: 'Provtext: friktion i förstoring.' },
+        { typ: 'figur', id: 'friktion-pilar', namn: 'friktion', bildtext: 'Provbildtext under friktionen.' },
+        { typ: 'text', text: 'Provtext: friktion utan pilar, grova ytor.' },
+        { typ: 'figur', id: 'friktion-grov', namn: 'friktion', foremal: 'Låda', underlag: 'Hylla', pilar: false, ytor: 'grov' },
         { typ: 'lank', till: ['ova'] }
       ]
     }

@@ -60,6 +60,8 @@ Bok.niva('standard', {
 
         { typ: 'rubrik', text: 'Kraften bakåt är friktion' },
         { typ: 'text', text: 'Kraften som verkar bakåt på blocket kallas *friktion*. Friktion uppstår när två ytor gnids mot varandra, här blockets undersida och bordet. Även ytor som ser släta ut är ojämna om man tittar riktigt nära, och de små ojämnheterna hakar i varandra och bromsar.' },
+        { typ: 'figur', namn: 'friktion',
+          bildtext: 'Även släta ytor är ojämna när man tittar riktigt nära.' },
 
         { typ: 'rubrik', text: 'Friktionen växer med draget – upp till en gräns' },
         { typ: 'text', text: 'Friktionen finns inte där hela tiden. Ligger blocket bara stilla och ingen drar i det, finns ingen friktion alls. När du börjar dra uppstår friktionen, och den blir precis lika stor som ditt drag. Drar du lite, blir friktionen liten. Drar du mer, blir friktionen större. Därför ligger blocket kvar. Men friktionen kan inte växa hur mycket som helst. När ditt drag blir större än den största friktion som ytorna klarar, börjar blocket glida.' },
