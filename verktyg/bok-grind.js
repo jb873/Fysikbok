@@ -25,6 +25,13 @@ const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Applica
 const NEGATIV = process.argv.includes('--negativ'), BILDER = process.argv.includes('--bilder');
 const BILDMAPP = path.join(__dirname, 'bilder', 'grind');
 
+// --webb prövar den publicerade boken (GitHub Pages) i stället för filerna på disken; --webb=<adress> en annan adress.
+// Sidorna hämtas då därifrån, men delkapitlen listas och mallen jämförs fortfarande på disken.
+const WEBB = process.argv.find(a => a === '--webb' || a.startsWith('--webb='));
+const BAS = WEBB ? (WEBB.split('=')[1] || 'https://jb873.github.io/Fysikbok/').replace(/\/?$/, '/')
+  : 'file:///' + ROT.replace(/\\/g, '/') + '/';
+const adressTill = fil => BAS + path.relative(ROT, fil).split(path.sep).join('/');
+
 // Målskärmen: Chromebook 1366 × 768. I fönstret återstår ca 1366 × 633; 1366 × 768 i fönstret och i helskärm.
 // Mobilen är inte målskärm men ska fungera.
 const LAGEN = [
@@ -372,7 +379,7 @@ async function kor(dk, lage, felkod) {
     await c.send('Emulation.setDeviceMetricsOverride', { width: lage.B, height: lage.H, deviceScaleFactor: 1, mobile: !!lage.mobil });
     if (lage.mobil) await c.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
     await c.send('Page.addScriptToEvaluateOnNewDocument', { source: FANGA_FEL + (typeof felkod === 'string' ? felkod : '') });
-    const url = 'file:///' + path.join(dk.mapp, 'index.html').replace(/\\/g, '/') + '?kontroll' + ((felkod && felkod.adress) || '');
+    const url = adressTill(path.join(dk.mapp, 'index.html')) + '?kontroll' + ((felkod && felkod.adress) || '');
     const ladda = async adress => {
       await c.send('Page.navigate', { url: 'about:blank' }); await vanta(100);
       await c.send('Page.navigate', { url: adress });
@@ -458,7 +465,7 @@ async function provaSidorna(lage) {
   const c = await chrome();
   const k = [], fel = [];
   const prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
-  const start = 'file:///' + path.join(ROT, 'index.html').replace(/\\/g, '/');
+  const start = adressTill(path.join(ROT, 'index.html'));
   const kapitel = new URL('kraft_och_rorelse/index.html', start).href;
   const avsnitt = ['atomen_repetition', 'materia_repetition'].map(d => new URL(`kraft_och_rorelse/${d}/index.html`, start).href);
   try {
@@ -531,13 +538,40 @@ async function provaSidorna(lage) {
   return { kontroller: k, fel: [...new Set(fel.concat(c.undantag.map(u => 'undantag: ' + u)))], navigering: `${ok}/${k.length}`, gron: k.length > 0 && ok === k.length && !fel.length && !c.undantag.length };
 }
 
+/* ---------- Webben: visar den samma filer som disken? ----------
+ * Annars prövar --webb en annan version än den på disken (Pages har inte byggt klart, eller något är inte pushat). */
+
+async function jamforWebben(lista) {
+  const filer = [path.join(ROT, 'index.html'), path.join(ROT, 'kraft_och_rorelse', 'index.html')];
+  const samla = mapp => fs.readdirSync(mapp, { withFileTypes: true }).forEach(f =>
+    f.isDirectory() ? samla(path.join(mapp, f.name)) : filer.push(path.join(mapp, f.name)));
+  [path.join(ROT, 'bokskal'), ...lista.map(d => d.mapp)].forEach(samla);
+  const lf = b => Buffer.from(b.toString('latin1').replace(/\r\n/g, '\n'), 'latin1');
+  const avvikande = [];
+  for (const fil of filer) {
+    const svar = await fetch(adressTill(fil)).catch(e => ({ ok: false, status: e.message }));
+    const lika = svar.ok && Buffer.compare(lf(Buffer.from(await svar.arrayBuffer())), lf(fs.readFileSync(fil))) === 0;
+    if (!lika) avvikande.push(path.relative(ROT, fil) + (svar.ok ? ' (annat innehåll)' : ` (${svar.status})`));
+  }
+  return { antal: filer.length, avvikande };
+}
+
 /* ---------- Huvudprogrammet ---------- */
 
 (async () => {
   const lista = delkapitel();
   const mall = fs.readFileSync(MALL);
   let gront = true;
-  console.log(`Bokmotorn: ${lista.length} delkapitel (${lista.map(d => d.namn).join(', ')})\n`);
+  console.log(`Bokmotorn: ${lista.length} delkapitel (${lista.map(d => d.namn).join(', ')})`);
+  console.log(`Prövar: ${WEBB ? 'den publicerade boken, ' + BAS : 'filerna på disken'}\n`);
+
+  if (WEBB) {
+    const j = await jamforWebben(lista);
+    gront = gront && !j.avvikande.length;
+    console.log(`${j.avvikande.length ? 'RÖTT ' : 'GRÖNT'}  webben visar samma filer som disken: ${j.antal - j.avvikande.length}/${j.antal}`);
+    j.avvikande.forEach(f => console.log(`       ✗ ${f}`));
+    console.log('');
+  }
 
   // 1. index.html är mallen, ordagrant
   for (const dk of lista) {

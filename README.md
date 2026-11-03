@@ -374,6 +374,9 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   `?kontroll&prova=rubrik-sist`). Grinden ska bli röd för vart och ett.
 - **`--bilder`** sparar skärmbilder av hubben och boken i `verktyg/bilder/grind/`. Alla skärmbilder sparas under
   `verktyg/bilder/`, med en undermapp per arbete (till exempel `repetition-1/`).
+- **`--webb`** prövar den publicerade boken på https://jb873.github.io/Fysikbok/ i stället för filerna på disken
+  (`--webb=<adress>` för en annan adress). Grinden kontrollerar först att webben visar samma filer som disken.
+  Visar den inte det, är något inte pushat eller så har Pages inte byggt klart. Kör den efter varje push.
 
 ## Interaktiva inslag (senare)
 
