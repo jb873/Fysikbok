@@ -18,6 +18,8 @@
  *   rorelsespar         rorelse: 'likformig'|'olikformig'|'accelererande'|'retarderad', prickar?: 6 (4–8), tider?: false
  *   friktion            foremal?: 'Block', underlag?: 'Bord', pilar?: true, ytor?: 'normal'|'grov'|'slat'
  *   lutande_plan        steg?: 3 (1–3) – Galileos tankeexperiment: lika branta, flackare, vågrätt
+ *   stoppstracka        rader: [{fart, reaktion, broms}] (1–5), markering?: {varde, text}, enhet?: 'm'
+ *   friktion (paneler)  paneler: [{rubrik, foremal, underlag, ytor}] (2–3) – förstoringarna bredvid varandra
  *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h], maxhojd?: 0.2–0.45 (standard 0.45),
  *                       prickar?: [[x, y], …] (lägesmarkeringar), stråle?: {fran, till} (riktningen under prickarna),
  *                       pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}], lika?: [[0, 1]], beskrivning (krävs)
@@ -418,9 +420,47 @@
      hörn; rubriken I förstoring står mitt emellan dem, så att de aldrig korsar den. Med andra namn än Block och Bord
      blir beskrivningen enklare ("Låda på hylla.") – skriv då gärna en egen beskrivning i data. */
   const YTOR = { normal: [4.5, 9.5, 1, 'små'], grov: [7.5, 13, 1.3, 'tydliga'], slat: [1.2, 3, 0.8, 'mycket små'] };
+  const ytorNamn = y => String(y || 'normal').replace('ä', 'a');
+  // De två ytorna i förstoringen Z (föremålets undersida och underlagets yta), kring höjden Y0. Samma mönster varje gång.
+  function ytorna(Z, Y0, ytor) {
+    const [amin, amax, vidd] = YTOR[ytor];
+    const sl = slump(11), yta = [], topp = [];
+    let forra = null;
+    for (let x = Z.x, upp = true; ; upp = !upp) {
+      const y = Y0 + (upp ? -1 : 1) * (amin + (sl() + 0.5) * (amax - amin));
+      if (forra) { const t = 0.35 + (sl() + 0.5) * 0.3; yta.push([forra[0] + (x - forra[0]) * t, forra[1] + (y - forra[1]) * t + sl() * (amax - amin) * 0.6]); topp.push(false); }
+      yta.push([x, y]); topp.push(upp); forra = [x, y];
+      if (x >= Z.x + Z.b) break;
+      x = Math.min(Z.x + Z.b, x + (8 + (sl() + 0.5) * 12) * vidd);
+    }
+    const undersida = yta.map(([x, y], i) => { const r = sl(); return [x, y - (topp[i] && r < -0.1 ? 0.6 : 1.8 + (r + 0.5) * 2.4)]; });
+    const pts = l => l.map(([x, y]) => `${f(x)},${f(y)}`).join(' ');
+    return `<polygon class="fig-yta-foremal" points="${Z.x},${Z.y} ${Z.x + Z.b},${Z.y} ${pts(undersida.slice().reverse())}"/>` +
+      `<polygon class="fig-yta-underlag" points="${pts(yta)} ${Z.x + Z.b},${Z.y + Z.h} ${Z.x},${Z.y + Z.h}"/>` +
+      `<polyline class="fig-ytlinje" points="${pts(undersida)}"/><polyline class="fig-ytlinje fig-ytlinje-underlag" points="${pts(yta)}"/>` +
+      `<rect class="fig-lupp" x="${Z.x}" y="${Z.y}" width="${Z.b}" height="${Z.h}"/>`;
+  }
   Bok.figur('friktion', d => {
-    const ytor = String(d.ytor || 'normal').replace('ä', 'a');
-    const [amin, amax, vidd, hur] = YTOR[ytor] || fel(`friktion: okända ytor ”${d.ytor}” (normal, grov eller slat)`);
+    // paneler: två (eller fler) förstoringar bredvid varandra, var och en med rubrik och egna ytor – t.ex. däcket mot
+    // torr asfalt och mot blank is (III B Djupdykning). Bara förstoringen, inga pilar.
+    if (d.paneler) {
+      const p = d.paneler;
+      if (!Array.isArray(p) || p.length < 2 || p.length > 3) fel('friktion: paneler är en lista med 2–3 paneler');
+      const gap = 24, b = (440 - gap * (p.length - 1)) / p.length, Z0 = { y: 30, h: 78 };
+      let s = '';
+      p.forEach((q, i) => {
+        const ytor = ytorNamn(q.ytor);
+        if (!YTOR[ytor]) fel(`friktion: okända ytor ”${q.ytor}” (normal, grov eller slat)`);
+        const Z = { x: f(i * (b + gap)), y: Z0.y, b: f(b), h: Z0.h };
+        s += `<g class="fig-friktion-panel" data-ytor="${ytor}">` + text(Z.x + Z.b / 2, 18, q.rubrik || '', 'fig-rubrik') + ytorna(Z, Z.y + 46, ytor) +
+          text(Z.x + Z.b - 6, Z.y + 18, q.foremal || 'Block', 'fig-text fig-hoger fig-dampad') +
+          text(Z.x + Z.b - 6, Z.y + Z.h - 6, q.underlag || 'Bord', 'fig-text fig-hoger fig-dampad') + '</g>';
+      });
+      const beskr = 'Förstorade ytor: ' + p.map(q => `${q.rubrik ? q.rubrik + ' – ' : ''}${(q.foremal || 'Block').toLowerCase()} mot ${(q.underlag || 'Bord').toLowerCase()}, ${YTOR[ytorNamn(q.ytor)][3]} toppar och gropar`).join('; ') + '.';
+      return { svg: `<svg viewBox="0 0 440 ${Z0.y + Z0.h + 6}" xmlns="http://www.w3.org/2000/svg" data-friktion-paneler="${p.length}">${s}</svg>`, beskrivning: beskr };
+    }
+    const ytor = ytorNamn(d.ytor);
+    const [, , , hur] = YTOR[ytor] || fel(`friktion: okända ytor ”${d.ytor}” (normal, grov eller slat)`);
     const foremal = d.foremal || 'Block', underlag = d.underlag || 'Bord', pilar = d.pilar !== false;
     // Så ser det ut: blocket (76 × 30) på bordslinjen med namnet till vänster, kontaktytan i rutan. Figuren hålls låg (186), så att den får
     // stå i textspaltens bredd (en figur är högst en knapp tredjedel av sidan)
@@ -437,21 +477,7 @@
     s += text(220, Z.y - 8, 'I förstoring', 'fig-rubrik');
     // bordets yta: växelvis topp och grop med olika höjd och bredd, och en ojämn punkt på varje sluttning; blockets
     // undersida följer den en bit ovanför och ligger an mot några av topparna – blockets toppar står ner i gropar
-    const sl = slump(11), yta = [], topp = [];
-    let forra = null;
-    for (let x = Z.x, upp = true; ; upp = !upp) {
-      const y = Y0 + (upp ? -1 : 1) * (amin + (sl() + 0.5) * (amax - amin));
-      if (forra) { const t = 0.35 + (sl() + 0.5) * 0.3; yta.push([forra[0] + (x - forra[0]) * t, forra[1] + (y - forra[1]) * t + sl() * (amax - amin) * 0.6]); topp.push(false); }
-      yta.push([x, y]); topp.push(upp); forra = [x, y];
-      if (x >= Z.x + Z.b) break;
-      x = Math.min(Z.x + Z.b, x + (8 + (sl() + 0.5) * 12) * vidd);
-    }
-    const undersida = yta.map(([x, y], i) => { const r = sl(); return [x, y - (topp[i] && r < -0.1 ? 0.6 : 1.8 + (r + 0.5) * 2.4)]; });
-    const pts = l => l.map(([x, y]) => `${f(x)},${f(y)}`).join(' ');
-    s += `<polygon class="fig-yta-foremal" points="${Z.x},${Z.y} ${Z.x + Z.b},${Z.y} ${pts(undersida.slice().reverse())}"/>`;
-    s += `<polygon class="fig-yta-underlag" points="${pts(yta)} ${Z.x + Z.b},${Z.y + Z.h} ${Z.x},${Z.y + Z.h}"/>`;
-    s += `<polyline class="fig-ytlinje" points="${pts(undersida)}"/><polyline class="fig-ytlinje fig-ytlinje-underlag" points="${pts(yta)}"/>`;
-    s += `<rect class="fig-lupp" x="${Z.x}" y="${Z.y}" width="${Z.b}" height="${Z.h}"/>`;
+    s += ytorna(Z, Y0, ytor);
     s += text(Z.x + Z.b - 8, Z.y + 20, foremal, 'fig-text fig-hoger fig-dampad') + text(Z.x + Z.b - 8, Z.y + Z.h - 6, underlag, 'fig-text fig-hoger fig-dampad');
     if (pilar) {
       // från blockets mitt i utsnittet, lika långa åt var sitt håll; etiketterna bortom spetsarna
@@ -516,6 +542,47 @@
     if (d.maxhojd != null && !(d.maxhojd >= 0.2 && d.maxhojd <= 0.45)) fel('bildpilar: maxhojd ska vara mellan 0.2 och 0.45 (andel av sidhöjden)');
     const stil = d.maxhojd != null ? ` style="max-height: calc(var(--sh) * ${d.maxhojd})" data-maxhojd="${d.maxhojd}"` : '';
     return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-bildpilar="${pilar.length}" data-lika="${data}"${prickar.length ? ` data-prickar="${prickar.length}"` : ''}${stil}>${s}</svg>`, beskrivning: d.beskrivning };
+  });
+
+  /* Stoppsträckan (III B Djupdykning, 2026-11-04): liggande staplar, en rad per fart, varje stapel i två delar –
+   * reaktionssträckan (ljus) och bromssträckan (mörk). Fartens namn till vänster, stoppsträckan (summan) till höger,
+   * en gemensam skala under staplarna (var tionde enhet, upp till den längsta stapeln) och förklaringen en gång.
+   * markering: en streckad lodrät linje genom alla rader vid ett värde på skalan, med en etikett överst. */
+  Bok.figur('stoppstracka', d => {
+    const rader = d.rader, enhet = d.enhet || 'm', m = d.markering || null;
+    if (!Array.isArray(rader) || !rader.length || rader.length > 5) fel('stoppstracka behöver rader: [{fart, reaktion, broms}] (1–5)');
+    rader.forEach(r => { if (!(r.reaktion >= 0) || !(r.broms >= 0) || !r.fart) fel('stoppstracka: varje rad behöver fart, reaktion och broms'); });
+    const summa = r => Math.round((r.reaktion + r.broms) * 100) / 100, max = Math.max(...rader.map(summa), m ? m.varde : 0);
+    const X0 = 76, XS = 440 - 52, k = (XS - X0) / max, X = v => X0 + v * k;
+    const TOPP = m ? 28 : 8, RAD = 30, BH = 16, yA = TOPP + rader.length * RAD + 2;
+    const hart = v => `${tal(v)} ${enhet}`;                          // hårt mellanslag mellan tal och enhet
+    let s = '';
+    rader.forEach((r, i) => {
+      const y = TOPP + i * RAD;
+      s += `<g class="fig-stopp-rad" data-reaktion="${r.reaktion}" data-broms="${r.broms}">` +
+        text(X0 - 8, y + BH - 3, r.fart, 'fig-text fig-hoger') +
+        `<rect class="fig-stopp-reaktion" x="${X0}" y="${y}" width="${f(r.reaktion * k)}" height="${BH}"/>` +
+        `<rect class="fig-stopp-broms" x="${f(X(r.reaktion))}" y="${y}" width="${f(r.broms * k)}" height="${BH}"/>` +
+        text(X(summa(r)) + 6, y + BH - 3, hart(summa(r)), 'fig-text fig-vanster fig-stopp-total') + '</g>';
+    });
+    // skalan: var tionde enhet upp till den längsta stapeln
+    s += `<line class="fig-bord" x1="${X0}" y1="${yA}" x2="${f(X(max))}" y2="${yA}"/>`;
+    for (let v = 0; v <= max + 1e-9; v += 10) {
+      s += `<line class="fig-bord" x1="${f(X(v))}" y1="${yA}" x2="${f(X(v))}" y2="${yA + 5}"/>` +
+        text(X(v), yA + 20, v + 10 > max ? hart(v) : tal(v), 'fig-text fig-mitt fig-dampad fig-liten fig-stopp-skala');
+    }
+    if (m) {
+      s += `<line class="fig-stopp-markering" data-varde="${m.varde}" x1="${f(X(m.varde))}" y1="${TOPP - 8}" x2="${f(X(m.varde))}" y2="${yA}"/>` +
+        text(X(m.varde), TOPP - 12, m.text || '', 'fig-text fig-mitt fig-stopp-markering-text');
+    }
+    // förklaringen en gång, under skalan
+    const yF = yA + 40;
+    s += `<rect class="fig-stopp-reaktion" x="${X0}" y="${yF - 10}" width="14" height="10"/>` + text(X0 + 20, yF, 'reaktionssträcka', 'fig-text fig-vanster fig-liten') +
+      `<rect class="fig-stopp-broms" x="${X0 + 150}" y="${yF - 10}" width="14" height="10"/>` + text(X0 + 170, yF, 'bromssträcka', 'fig-text fig-vanster fig-liten');
+    const beskr = d.beskrivning || `Liggande staplar för ${rader.map(r => r.fart).join(', ').replace(/, ([^,]*)$/, ' och $1')}. Varje stapel består av reaktionssträcka och bromssträcka: ` +
+      rader.map(r => `${tal(r.reaktion)} + ${tal(r.broms)} = ${hart(summa(r))}`).join(', ').replace(/, ([^,]*)$/, ' och $1') + '.' +
+      (m ? ` En streckad linje vid ${hart(m.varde)}${m.text ? ' visar ' + m.text : ''}.` : '');
+    return { svg: `<svg viewBox="0 0 440 ${yF + 6}" xmlns="http://www.w3.org/2000/svg" data-stoppstracka="${rader.length}" data-x0="${X0}" data-k="${k}">${s}</svg>`, beskrivning: beskr };
   });
 
   /* Galileos tankeexperiment med två lutande plan (III A Djupdykning, 2026-11-04), i tre steg under varandra:

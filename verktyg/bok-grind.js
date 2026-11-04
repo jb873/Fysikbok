@@ -146,7 +146,7 @@ async function chrome() {
  *    utsnittet, etiketterna överlappar inte varandra.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -191,6 +191,37 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           undersida: ytlinjer[0] ? [...ytlinjer[0].points].map(q => [q.x, q.y]) : [], yta: punkter('fig-ytlinje-underlag'),
           pilar: [...s.querySelectorAll('g.fig-friktion-pil')].map(g => { const l = g.querySelector('line'), t = g.querySelector('polygon').points[0];
             return { kraft: g.dataset.kraft, x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }) });
+      });
+      // stoppsträckan: staplarnas delar mot värdena, totalen och markeringen (mäts direkt, i skärmens pixlar)
+      $$('.scen svg[data-stoppstracka]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (st.has(id)) return;
+        const r = s.getBoundingClientRect(), vb = s.viewBox.baseVal, sk = Math.min(r.width / vb.width, r.height / vb.height);
+        const x0 = +s.dataset.x0, k = +s.dataset.k, f_ = [];
+        s.querySelectorAll('g.fig-stopp-rad').forEach((g, i) => {
+          const re = +g.dataset.reaktion, br = +g.dataset.broms, a = g.querySelector('rect.fig-stopp-reaktion'), b = g.querySelector('rect.fig-stopp-broms');
+          const tot = g.querySelector('text.fig-stopp-total').textContent, totV = parseFloat(tot.replace(',', '.'));
+          if (Math.abs(a.x.baseVal.value - x0) * sk > 1 || Math.abs(a.width.baseVal.value - re * k) * sk > 1) f_.push('rad ' + (i + 1) + ': reaktionssträckan');
+          if (Math.abs(b.x.baseVal.value - (x0 + re * k)) * sk > 1 || Math.abs(b.width.baseVal.value - br * k) * sk > 1) f_.push('rad ' + (i + 1) + ': bromssträckan');
+          if (Math.abs(totV - (re + br)) > 0.001 || !/ /.test(tot)) f_.push('rad ' + (i + 1) + ': totalen ”' + tot + '”');
+        });
+        const m = s.querySelector('line.fig-stopp-markering');
+        if (m && Math.abs(m.x1.baseVal.value - (x0 + +m.dataset.varde * k)) * sk > 1) f_.push('markeringen på fel ställe');
+        st.set(id, { rader: s.querySelectorAll('g.fig-stopp-rad').length, markering: !!m, fel: f_ });
+      });
+      // friktion i paneler: i varje panel ligger ytorna an utan att gå in i varandra, och panelen har en rubrik
+      $$('.scen svg[data-friktion-paneler]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (fp.has(id)) return;
+        const f_ = [];
+        s.querySelectorAll('g.fig-friktion-panel').forEach((g, i) => {
+          const u = [...g.querySelector('polyline.fig-ytlinje:not(.fig-ytlinje-underlag)').points], y = [...g.querySelector('polyline.fig-ytlinje-underlag').points];
+          const glapp = y.map((p, j) => p.y - u[j].y);
+          if (u.length !== y.length || glapp.some(v => v < 0)) f_.push('panel ' + (i + 1) + ': föremålet går ner i underlaget');
+          else if (!glapp.some(v => v < 1.5)) f_.push('panel ' + (i + 1) + ': ytorna ligger inte an');
+          if (!g.querySelector('text.fig-rubrik') || !g.querySelector('text.fig-rubrik').textContent.trim()) f_.push('panel ' + (i + 1) + ': ingen rubrik');
+        });
+        fp.set(id, { paneler: s.querySelectorAll('g.fig-friktion-panel').length, fel: f_ });
       });
       $$('.scen svg[data-bildpilar]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
@@ -292,6 +323,8 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       bp: { antal: bp.size, pilar: [...bp.values()].reduce((a, x) => a + x.pilar.length, 0), fel: bpFel,
         minPx: bp.size ? Math.min(...[...bp.values()].map(x => x.minPx)) : null },
       sym: { antal: symSett.size, fel: symFel },
+      st: { antal: st.size, fel: [...st].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
+      fp: { antal: fp.size, fel: [...fp].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
@@ -607,6 +640,10 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   if (spar.some(x => x.bp.antal)) prova('figur: bildpilarna – fotot laddas, pilarna i lika är lika långa (±1 px), ingen pil eller etikett utanför utsnittet, etiketterna överlappar inte och är minst 14 px på skärmen, lägesmarkeringarna har lika stora avstånd (±1 px) inom bilden (' + spar.map(x => x.bp.antal).join(' + ') + ' bilder)',
     spar.every(x => !x.bp.fel.length), spar.flatMap(x => x.bp.fel).join(' | ') ||
       spar.reduce((a, x) => a + x.bp.pilar, 0) + ' pilar, minsta etiketten ' + Math.min(...spar.filter(x => x.bp.antal).map(x => x.bp.minPx)).toFixed(1) + ' px');
+  if (spar.some(x => x.st.antal)) prova('figur: stoppsträckan – delarna proportionella mot värdena (±1 px), totalen = summan med hårt mellanslag, markeringen på rätt ställe på skalan (' + spar.map(x => x.st.antal).join(' + ') + ' figurer)',
+    spar.every(x => !x.st.fel.length), spar.flatMap(x => x.st.fel).join(' | '));
+  if (spar.some(x => x.fp.antal)) prova('figur: friktion i paneler – i varje panel ligger ytorna an utan att gå in i varandra, och panelen har en rubrik (' + spar.map(x => x.fp.antal).join(' + ') + ' figurer)',
+    spar.every(x => !x.fp.fel.length), spar.flatMap(x => x.fp.fel).join(' | '));
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   prova('text: g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden står i vanlig stil med rätt skiftläge, inte i kapitäler (' + spar.reduce((a, x) => a + x.sym.antal, 0) + ' ställen)',

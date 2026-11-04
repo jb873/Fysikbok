@@ -39,6 +39,12 @@ Bok.niva('standard', {
         // Lutande plan (Galileos tankeexperiment) med två steg och motorns egen beskrivning
         { typ: 'text', text: 'Provtext: lutande plan i två steg.' },
         { typ: 'figur', id: 'lutande-plan-2', namn: 'lutande_plan', steg: 2, bildtext: 'Provbildtext under de lutande planen.' },
+        // Stoppsträckan med ett decimaltal och en markering, och friktion i två paneler (grinden mäter båda)
+        { typ: 'text', text: 'Provtext: stoppsträckan i två rader.' },
+        { typ: 'figur', id: 'stoppstracka-prov', namn: 'stoppstracka', rader: [{ fart: 'Prov 1', reaktion: 6.5, broms: 3 }, { fart: 'Prov 2', reaktion: 12, broms: 10 }],
+          markering: { varde: 15, text: 'provmärke' }, enhet: 'm' },
+        { typ: 'text', text: 'Provtext: två ytor i förstoring.' },
+        { typ: 'figur', id: 'friktion-paneler', namn: 'friktion', paneler: [{ rubrik: 'Prov grov', foremal: 'Låda', underlag: 'Golv', ytor: 'grov' }, { rubrik: 'Prov slät', foremal: 'Låda', underlag: 'Is', ytor: 'slat' }] },
         // Kraftparen: grinden mäter att pilarna är lika långa, motriktade och börjar i var sitt föremåls mitt
         { typ: 'rubrik', text: 'Provrubrik: kraftpar' },
         { typ: 'text', text: 'Provtext: ett kraftpar med snöre, med värdet.' },
