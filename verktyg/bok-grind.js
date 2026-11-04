@@ -102,7 +102,9 @@ async function chrome() {
     // (helskärm kräver en sådan, och en programmerad gest gäller bara några sekunder).
     if (d.method === 'Runtime.bindingCalled' && d.params.name === '__gest') {
       const { x, y } = JSON.parse(d.params.payload);
-      ['mousePressed', 'mouseReleased'].reduce((p, type) => p.then(() => send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 })), Promise.resolve());
+      // stängs Chrome mitt i klicket blir det ett undantag i körningen (rött), inte en krasch i grinden
+      ['mousePressed', 'mouseReleased'].reduce((p, type) => p.then(() => send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 })), Promise.resolve())
+        .catch(e => undantag.push('grinden: ' + e.message));
     }
   };
   // Ett anrop som inte får svar (Chrome har stängts eller hängt sig) ger fel efter två minuter – grinden blir röd
@@ -138,10 +140,12 @@ async function chrome() {
  *  - kraftparen: två föremål och två pilar, var och en från sitt föremåls mitt, lika långa och motriktade – mot det
  *    andra föremålet (drag) eller ifrån det (knuff);
  *  - friktionen: ytorna hakar i varandra utan att gå in i varandra, strecklinjerna korsar inga rubriker, draget åt
- *    höger och friktionen åt vänster, lika långa och från samma punkt på blocket; samma ytor ger samma mönster.
+ *    höger och friktionen åt vänster, lika långa och från samma punkt på blocket; samma ytor ger samma mönster;
+ *  - bildpilarna: fotot laddas, pilarna i lika är lika långa (±1 px på skärmen), ingen pil eller etikett utanför
+ *    utsnittet, etiketterna överlappar inte varandra.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), tal = new Set();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set();
     // ett vanligt (brytbart) mellanslag mellan ett tal och en enhet, eller i ett tusental, i texten (inte i figurerna)
     const BRYTS = /\d (?:\d{3}(?!\d)|(?:km\/h|m\/s|g\/cm³|kg\/m³|cm³|m³|°C|kN|N|kJ|J|kW|W|kg|g|km|cm|mm|m|min|h|s|%)(?![\p{L}\p{N}]))/u;
     for (let n = 1; n <= $$('.lr-sida').length; n++) {
@@ -173,6 +177,17 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           undersida: ytlinjer[0] ? [...ytlinjer[0].points].map(q => [q.x, q.y]) : [], yta: punkter('fig-ytlinje-underlag'),
           pilar: [...s.querySelectorAll('g.fig-friktion-pil')].map(g => { const l = g.querySelector('line'), t = g.querySelector('polygon').points[0];
             return { kraft: g.dataset.kraft, x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }) });
+      });
+      $$('.scen svg[data-bildpilar]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (bp.has(id)) return;
+        const r = s.getBoundingClientRect(), vb = s.viewBox.baseVal, img = s.querySelector('image');
+        const ruta = e => { const q = e.getBoundingClientRect(); return [q.left - r.left, q.top - r.top, q.right - r.left, q.bottom - r.top]; };
+        bp.set(id, { vb: [vb.width, vb.height], px: r.width / vb.width, lika: JSON.parse(s.dataset.lika || '[]'), antal: +s.dataset.bildpilar,
+          bild: img ? { href: new URL(img.getAttribute('href'), location.href).href, b: img.width.baseVal.value, h: img.height.baseVal.value } : null,
+          pilar: [...s.querySelectorAll('g.fig-bildpil')].map(g => { const l = g.querySelector('line.fig-bildpil-rod'), t = g.querySelector('polygon.fig-bildpil-rod').points[0];
+            return { x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }),
+          etiketter: [...s.querySelectorAll('text.fig-bildpil-text')].map(t => ({ namn: t.textContent, ruta: ruta(t) })), bredd: r.width, hojd: r.height });
       });
     }
     const fel = [], lika = (p, q) => Math.abs(p - q) < 0.6;
@@ -224,8 +239,31 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       if (monster[x.ytor] && monster[x.ytor] !== nyckel) frFel.push(id + ': mönstret skiljer sig från en annan figur med samma ytor');
       monster[x.ytor] = nyckel;
     }
+    // bildpilarna: fotot laddas (med fotots proportioner), pilarna i lika är lika långa (±1 px på skärmen), ingen pil
+    // eller etikett utanför utsnittet, och etiketterna överlappar inte varandra
+    const bpFel = [], laddad = {};
+    for (const [id, x] of bp) {
+      const f_ = [];
+      if (!x.bild) f_.push('ingen bild');
+      else {
+        if (!(x.bild.href in laddad)) laddad[x.bild.href] = await new Promise(ok => { const i = new Image(); i.onload = () => ok([i.naturalWidth, i.naturalHeight]); i.onerror = () => ok(null); i.src = x.bild.href; });
+        const n = laddad[x.bild.href];
+        if (!n) f_.push('bilden laddas inte (' + x.bild.href.split('/').pop() + ')');
+        else if (Math.abs(n[0] / n[1] - x.bild.b / x.bild.h) > 0.005) f_.push('bildens proportioner ' + n.join('×') + ' stämmer inte med data');
+      }
+      if (x.pilar.length !== x.antal || x.etiketter.length !== x.antal) f_.push(x.pilar.length + ' pilar, ' + x.etiketter.length + ' etiketter, ' + x.antal + ' i data');
+      const len = x.pilar.map(p => Math.hypot(p.x2 - p.x1, p.y2 - p.y1) * x.px);
+      x.lika.forEach(([a, b]) => { if (!(Math.abs(len[a] - len[b]) <= 1)) f_.push('pil ' + a + ' och ' + b + ' är ' + Math.round(len[a]) + ' och ' + Math.round(len[b]) + ' px'); });
+      const ute = (px, py) => px < -0.5 || py < -0.5 || px > x.vb[0] + 0.5 || py > x.vb[1] + 0.5;
+      x.pilar.forEach((p, i) => { if (ute(p.x1, p.y1) || ute(p.x2, p.y2)) f_.push('pil ' + i + ' utanför utsnittet'); });
+      x.etiketter.forEach(e => { if (e.ruta[0] < -0.5 || e.ruta[1] < -0.5 || e.ruta[2] > x.bredd + 0.5 || e.ruta[3] > x.hojd + 0.5) f_.push('etiketten ”' + e.namn + '” utanför utsnittet'); });
+      x.etiketter.forEach((e, i) => x.etiketter.slice(i + 1).forEach(g => { const [a, b] = [e.ruta, g.ruta];
+        if (a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]) f_.push('etiketterna ”' + e.namn + '” och ”' + g.namn + '” överlappar'); }));
+      if (f_.length) bpFel.push(id + ': ' + f_.join(', '));
+    }
     return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel,
       par: { antal: par.size, satt: [...new Set([...par.values()].map(x => x.satt))], fel: parFel },
+      bp: { antal: bp.size, pilar: [...bp.values()].reduce((a, x) => a + x.pilar.length, 0), fel: bpFel },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
@@ -446,6 +484,8 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     prova('figur: friktionen – ytorna hakar i varandra, strecklinjerna korsar inga rubriker, draget framåt och friktionen bakåt på blocket, samma mönster varje gång (' + spar.map(x => x.fr.antal).join(' + ') + ' figurer)',
       spar.every(x => !x.fr.fel.length) && !olika.length, spar.flatMap(x => x.fr.fel).concat(olika.map(y => 'mönstret för ' + y + ' skiljer sig mellan böckerna')).join(' | ') || spar.flatMap(x => x.fr.ytor).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   }
+  if (spar.some(x => x.bp.antal)) prova('figur: bildpilarna – fotot laddas, pilarna i lika är lika långa (±1 px), ingen pil eller etikett utanför utsnittet, etiketterna överlappar inte (' + spar.map(x => x.bp.antal).join(' + ') + ' bilder)',
+    spar.every(x => !x.bp.fel.length), spar.flatMap(x => x.bp.fel).join(' | ') || spar.reduce((a, x) => a + x.bp.pilar, 0) + ' pilar');
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   if (andraTexter.length) prova('figur: figurerna i de andra texterna (' + andraTexter.join(', ') + ') är mätta på varje nivå', stangd(), 'hash=' + location.hash);
@@ -578,6 +618,17 @@ const PROVSCENARIO = String.raw`async () => {
     frP === 'Ett block på ett bord. I förstoring syns att båda ytorna har små toppar och gropar som hakar i varandra. Draget pekar framåt och friktionen bakåt på blocket.' &&
     frG === 'Låda på hylla. I förstoring syns att båda ytorna har tydliga toppar och gropar som hakar i varandra.' && gText.includes('Låda') && gText.includes('Hylla'),
     (sp.fr.fel.join(' | ') || sp.fr.ytor.join(',')) + ' | pilar ' + nP + '/' + nG + ' | ' + frP + ' | ' + frG);
+  // Bildpilar: utsnittet (900 × 360 av fotot → 440 × 176), två pilar, en etikett utan läge (över pilens mitt),
+  // beskrivningen ur data; mätningen (figurKoll) gäller den
+  const bpE = await etikett('bildpilar-utsnitt');
+  Bok.gaTill(sf('bildpilar-utsnitt')); await v(60);
+  const bpS = $('.scen [data-post="bildpilar-utsnitt"] svg[data-bildpilar]'), bpVb = bpS ? bpS.viewBox.baseVal : null;
+  const bpT = $('.scen [data-post="bildpilar-utsnitt"] figcaption');
+  prova('prov: bildpilar – utsnittet, två lika långa pilar med etiketter, beskrivningen och bildtexten ur data, och mätningen håller',
+    sp.bp.antal === 1 && !sp.bp.fel.length && sp.bp.pilar === 2 && bpVb && bpVb.width === 440 && Math.abs(bpVb.height - 176) < 0.1 &&
+    bpE === 'Provbeskrivning av fotot.' && bpT && bpT.textContent === 'Provbildtext under fotot.' &&
+    texterI('bildpilar-utsnitt').join(',') === 'provpil 1,provpil 2',
+    (sp.bp.fel.join(' | ') || sp.bp.pilar + ' pilar') + ' | ' + (bpVb && bpVb.width + '×' + bpVb.height) + ' | ' + bpE + ' | ' + texterI('bildpilar-utsnitt').join(','));
   Bok.gaTill(sf('spar-retarderad')); await v(60);
   const ret = $('.scen [data-post="spar-retarderad"] svg'), tider = ret ? [...ret.querySelectorAll('text')].map(t => t.textContent) : [];
   prova('prov: rörelsespår med tider – en tid per prick (0 s, 1 s …) och beskrivningen ur data',

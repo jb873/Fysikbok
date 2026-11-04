@@ -297,9 +297,11 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `skalmodell` | `atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}]` (1–3), `overgang?: 'tar upp 2 elektroner'`, `rader?` | laddningen (protoner − elektroner), formeln (O²⁻), masstalet, och vilka elektroner som flyttar vid en övergång (markerade i guld). Med `neutroner` och högst fyra kärnpartiklar ritas protoner och neutroner i kärnan (isotoper). |
 | `rorelsespar` | `rorelse: 'likformig' \| 'olikformig' \| 'accelererande' \| 'retarderad'`, `prickar?: 6` (4–8), `tider?: false` | prickmodellen: lika lång tid mellan prickarna, och prickarnas lägen. Likformig: lika stora avstånd. Accelererande: avstånden växer jämnt (1, 2, 3 …). Retarderad: avstånden krymper jämnt, och de två sista ligger nästan ihop. Olikformig: ett fast ojämnt mönster (kort, långt, mellan …). Under prickarna står en stråle med pilspets åt höger (rörelseriktningen). `tider: true` skriver 0 s, 1 s … under prickarna. Figuren är låg och bred. |
 | `friktion` | `foremal?: 'Block'`, `underlag?: 'Bord'`, `pilar?: true`, `ytor?: 'normal' \| 'grov' \| 'slat'` | ytorna i förstoring. Överst "Så ser det ut": blocket på bordslinjen och kontaktytan i en streckad ruta. Nederst "I förstoring": blockets undersida och bordets yta med oregelbundna toppar och gropar som hakar i varandra (samma mönster varje gång; `ytor` avgör hur ojämnt), i olika dämpade färger. Strecklinjerna från rutan går till förstoringens hörn och korsar aldrig rubrikerna. Pilarna verkar på blocket: draget framåt och friktionen bakåt, lika långa; `pilar: false` ritar bara ytorna. Med andra namn än Block och Bord blir beskrivningen enklare ("Låda på hylla.") – skriv gärna en egen. |
+| `bildpilar` | `bild` (adress från delkapitlets sida), `bredd`, `hojd` (fotots pixlar), `utsnitt?: [x, y, b, h]`, `pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}]`, `lika?: [[0, 1]]`, `beskrivning` (krävs), `bildtext?` | ett foto med kraftpilar ritade ovanpå. Allt i fotots pixlar. Fotot visar den verkliga situationen; pilarna ritas ur data, så att de alltid blir rätt. Pilarna är röda (#b3261e) med vit kant och en prick i angreppspunkten; etiketten (namnet, mitt på `etikett`, annars över pilens mitt) i samma röda, halvfet med vit kant. `lika`: pilar som ska vara lika långa – motorn vägrar rita annars (högst 1 px skillnad i fotot), och grinden mäter. En pil utanför utsnittet är fel. Fotot görs utan pilar. Figuren får vara upp till 45 % av sidhöjden. |
 
-- `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data.
-- Figuren tar högst 32 % av sidhöjden.
+- `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data (inte `bildpilar`: ett foto
+  kan inte beskrivas ur data).
+- Figuren tar högst 32 % av sidhöjden, ett foto (`bildpilar`) högst 45 %.
 - En figur med fel data visas som en markering på sidan, och kontrolläget säger vad som är fel.
 - **En ny sorts figur** (inte en ny figur av en befintlig sort) är en ny funktion i `bokskal/figurer.js`. Det är
   utbyggnad av motorn, inte innehåll.
@@ -392,6 +394,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   - kraftparen (Tryck): drag och knuff, med och utan värde, och beskrivningen ur data
   - kraftpilar utan värden och med en gemensam skala (Tryck)
   - friktionen (Tryck): med pilar och bildtext, och utan pilar med grova ytor och andra namn, och beskrivningen ur data
+  - bildpilar (Tryck): ett utsnitt av fotot på avsnittssida III, två lika långa pilar, en etikett utan läge,
+    beskrivningen och bildtexten ur data
   - tal och enhet (Tryck): "16 − 6 = 10 N", "1 538 °C", "5 m/s" och "18 km/h" står på en rad också i en spalt som
     är 1 px bred, medan "16 − 6" (vanliga mellanslag) bryts där
   - hjälpmedel med adress, också som inbäddad flik (Öva)
@@ -551,4 +555,16 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     kontrollen mätte den i en riktig sida till under 40 %, så sidan blev tunn. Nu avgör en riktig sida nära gränsen
     (`fyllFore`), och regelkontrollen godtar delningen när den mätningen visade under 40 %. Sidorna i B Fördjupning
     blev 10 → 9; inga andra böcker ändrades.
+- **2026-11-04, figurtypen `bildpilar` och text C v3 (arbetsordern bildpilar):**
+  - En ny funktion i `figurer.js`: fotot `kraft_och_rorelse/rorelse_och_kraft/bilder/block-rep.jpg` med kraftpilar
+    ur data; klasserna `fig-bildpil-*` i `bok.css`, och 45 % av sidhöjden för just den här figuren.
+  - Text B: figur 1 (kraftpilar med bara dragkraften) är BILD A på alla nivåer. Text C är v3
+    (`III-C-Kraft-och-motkraft-v3.md`) på alla nivåer, med BILD B och C; v2 ligger i `Arkiv/`. Figur 6 (kraftparet
+    block–hand) används inte längre; figurtypen finns kvar.
+  - Justerat från skissens koordinater: pilen "repet drar i mig" börjar på fingrarna (y 525, inte 552, som är under
+    handen); etiketterna i BILD A och B står bredvid pilarna ("dragkraft" [750, 600] till höger om spetsen,
+    "friktion" [160, 745] under pilen) – på [440, 600] och [160, 700] låg texten över pilarna.
+  - Motorfix: ett stycke följt av två figurer (C Fördjupning) delas före den första figur som inte ryms, inte alltid
+    före den första; resten får följa en figur som flyttats fram (mobilen: BILD B och C på samma sida).
+  - Grinden: en Chrome som stängs mitt i ett musklick ger rött i stället för att krascha grinden.
 - Namn och © står på sista sidan och i sidans fot, ur `upphov`.

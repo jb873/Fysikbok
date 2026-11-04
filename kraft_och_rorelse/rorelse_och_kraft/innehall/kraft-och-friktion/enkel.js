@@ -28,8 +28,9 @@ Bok.niva('enkel', {
 
         { typ: 'rubrik', text: 'En kraft ritas som en pil' },
         { typ: 'text', text: 'En kraft har alltid en storlek – hur stark den är. Den har också en riktning – åt vilket håll den drar eller knuffar. Därför ritar man en kraft som en pil. Pilen börjar på föremålet, där kraften tar tag. Pilen pekar åt det håll kraften verkar. Och ju starkare kraften är, desto längre ritar man pilen.' },
-        { typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Block' }, underlag: true, varden: false, skala: 16,
-          krafter: [{ namn: 'Dragkraft', riktning: 'hoger', storlek: 10 }] },
+        { typ: 'figur', namn: 'bildpilar', bild: 'bilder/block-rep.jpg', bredd: 1672, hojd: 941,
+          pilar: [{ namn: 'dragkraft', fran: [300, 552], till: [580, 552], etikett: [750, 600] }],
+          beskrivning: 'En person drar i ett rep som sitter fast i ett träblock på ett bord. En pil från blocket pekar framåt i repets riktning: dragkraften.' },
         { typ: 'text', text: 'Titta på bilden. Någon drar ett block åt höger. Därför pekar pilen åt höger. Pricken visar var kraften tar tag i blocket.' },
 
         { typ: 'rubrik', text: 'Två lika stora krafter åt olika håll tar ut varandra' },

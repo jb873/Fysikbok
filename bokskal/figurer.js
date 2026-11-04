@@ -17,6 +17,8 @@
  *                       rader?: ['protoner'|'neutroner'|'elektroner'|'laddning'|'masstal', …]
  *   rorelsespar         rorelse: 'likformig'|'olikformig'|'accelererande'|'retarderad', prickar?: 6 (4–8), tider?: false
  *   friktion            foremal?: 'Block', underlag?: 'Bord', pilar?: true, ytor?: 'normal'|'grov'|'slat'
+ *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h],
+ *                       pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}], lika?: [[0, 1]], beskrivning (krävs)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -460,5 +462,42 @@
     const beskr = `${vanlig ? 'Ett block på ett bord' : `${foremal} på ${underlag.toLowerCase()}`}. I förstoring syns att båda ytorna har ${hur} toppar och gropar som hakar i varandra.` +
       (pilar ? ` Draget pekar framåt och friktionen bakåt på ${vanlig ? 'blocket' : 'föremålet'}.` : '');
     return { svg: `<svg viewBox="0 0 440 ${Z.y + Z.h + 6}" xmlns="http://www.w3.org/2000/svg" data-friktion="${ytor}">${s}</svg>`, beskrivning: beskr };
+  });
+
+  /* Bildpilar: ett foto med kraftpilar ritade ovanpå. Fotot visar den verkliga situationen; pilarna ritas ur data
+     (fotots pixlar), så att de alltid blir rätt – samma längd när krafterna är lika (lika), rätt riktning, på rätt
+     föremål. Pilarna är röda med vit kant (fysikens guld försvinner mot trä), med en prick i angreppspunkten och
+     etiketten i samma röda färg. Figuren ritas i 440 enheters bredd, så att texten blir lika stor som i de andra
+     figurerna, och får vara upp till 45 % av sidhöjden (bok.css). Fotot kan inte beskrivas ur data: beskrivning krävs.
+     Fotot görs utan pilar; pilarna ritas alltid här. */
+  Bok.figur('bildpilar', d => {
+    if (!d.bild || !(d.bredd > 0) || !(d.hojd > 0)) fel('bildpilar behöver bild, bredd och hojd (fotots pixlar)');
+    if (!d.beskrivning) fel('bildpilar behöver en beskrivning – fotot kan inte beskrivas ur data');
+    const pilar = d.pilar || fel('bildpilar behöver pilar: [{namn, fran: [x, y], till: [x, y], etikett?}]');
+    const [ux, uy, ub, uh] = d.utsnitt || [0, 0, d.bredd, d.hojd];
+    if (ux < 0 || uy < 0 || ub <= 0 || uh <= 0 || ux + ub > d.bredd || uy + uh > d.hojd) fel('bildpilar: utsnittet går utanför bilden');
+    const inne = ([x, y]) => x >= ux && x <= ux + ub && y >= uy && y <= uy + uh;
+    pilar.forEach(p => { if (!p.fran || !p.till || !inne(p.fran) || !inne(p.till)) fel(`bildpilar: pilen ”${p.namn}” går utanför utsnittet`); });
+    const langd = p => Math.hypot(p.till[0] - p.fran[0], p.till[1] - p.fran[1]);
+    const lika = d.lika || [];
+    lika.forEach(([a, b]) => {
+      if (!pilar[a] || !pilar[b]) fel(`bildpilar: lika [${a}, ${b}] pekar på en pil som inte finns`);
+      if (Math.abs(langd(pilar[a]) - langd(pilar[b])) > 1) fel(`bildpilar: ”${pilar[a].namn}” och ”${pilar[b].namn}” ska vara lika långa`);
+    });
+    const k = 440 / ub, H = f(uh * k), X = x => (x - ux) * k, Y = y => (y - uy) * k;
+    let s = `<image href="${esc(d.bild)}" x="${f(-ux * k)}" y="${f(-uy * k)}" width="${f(d.bredd * k)}" height="${f(d.hojd * k)}" preserveAspectRatio="none"/>`;
+    pilar.forEach((p, i) => {
+      const [x1, y1, x2, y2] = [X(p.fran[0]), Y(p.fran[1]), X(p.till[0]), Y(p.till[1])];
+      // först den vita kanten, sedan den röda pilen; pricken i angreppspunkten
+      s += `<g class="fig-bildpil" data-pil="${i}">${pil(x1, y1, x2, y2, 10, 'fig-bildpil-kant')}${pil(x1, y1, x2, y2, 10, 'fig-bildpil-rod')}` +
+        `<circle class="fig-bildpil-prick" cx="${f(x1)}" cy="${f(y1)}" r="4.5"/></g>`;
+    });
+    // etiketterna sist, så att ingen pil går över en etikett; utan etikett: över pilens mitt
+    pilar.forEach((p, i) => {
+      const [ex, ey] = p.etikett ? [X(p.etikett[0]), Y(p.etikett[1])] : [(X(p.fran[0]) + X(p.till[0])) / 2, (Y(p.fran[1]) + Y(p.till[1])) / 2 - 12];
+      s += `<text x="${f(ex)}" y="${f(ey)}" class="fig-bildpil-text" data-pil="${i}">${esc(p.namn)}</text>`;
+    });
+    const data = esc(JSON.stringify(lika)).replace(/"/g, '&quot;');
+    return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-bildpilar="${pilar.length}" data-lika="${data}">${s}</svg>`, beskrivning: d.beskrivning };
   });
 })();

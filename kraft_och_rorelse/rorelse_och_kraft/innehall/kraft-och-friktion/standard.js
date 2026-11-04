@@ -4,6 +4,7 @@
  * arbetsordern). Motorn bryter sidorna. "Det här lär du dig:" står som liten rubrik utan kolon, som i text A.
  * Kraftpilarna utan värden (newton införs i text D) och med samma skala (16), så att pilarna går att jämföra mellan
  * figurerna. "Kraft bakåt" med flit: texten säger först efter figur 5 att den heter friktion.
+ * Figur 1 är fotot med dragkraften (bildpilar, BILD A i arbetsordern 2026-11-04); de andra figurerna står kvar.
  * Avsnittens id (inledning, kraft-och-friktion, sammanfattning) är desamma på alla nivåer. */
 Bok.niva('standard', {
   avsnitt: [
@@ -33,8 +34,9 @@ Bok.niva('standard', {
 
         { typ: 'rubrik', text: 'En kraft ritas som en pil' },
         { typ: 'text', text: 'En kraft har alltid en storlek och en riktning. Därför ritar man den som en pil. Pilen börjar där kraften angriper föremålet, den pekar åt det håll kraften verkar, och ju större kraften är, desto längre ritas pilen. När du drar ett block åt höger ritas kraften som en pil åt höger från blocket.' },
-        { typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Block' }, underlag: true, varden: false, skala: 16,
-          krafter: [{ namn: 'Dragkraft', riktning: 'hoger', storlek: 10 }] },
+        { typ: 'figur', namn: 'bildpilar', bild: 'bilder/block-rep.jpg', bredd: 1672, hojd: 941,
+          pilar: [{ namn: 'dragkraft', fran: [300, 552], till: [580, 552], etikett: [750, 600] }],
+          beskrivning: 'En person drar i ett rep som sitter fast i ett träblock på ett bord. En pil från blocket pekar framåt i repets riktning: dragkraften.' },
 
         { typ: 'rubrik', text: 'Lika stora krafter åt olika håll tar ut varandra' },
         { typ: 'text', text: 'Tänk dig att du drar i blocket, men det rör sig inte. Då måste det finnas en kraft till, som verkar åt motsatt håll – bakåt. Kraften framåt och kraften bakåt är lika stora, och därför tar de ut varandra. Tillsammans blir det som om ingen kraft verkade alls, och blocket ligger kvar.' },

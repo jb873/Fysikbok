@@ -48,6 +48,13 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'friktion-pilar', namn: 'friktion', bildtext: 'Provbildtext under friktionen.' },
         { typ: 'text', text: 'Provtext: friktion utan pilar, grova ytor.' },
         { typ: 'figur', id: 'friktion-grov', namn: 'friktion', foremal: 'Låda', underlag: 'Hylla', pilar: false, ytor: 'grov' },
+        // Bildpilar: ett utsnitt av fotot (avsnittssida III), två lika långa pilar, beskrivningen ur data
+        { typ: 'text', text: 'Provtext: ett foto med kraftpilar, ett utsnitt.' },
+        { typ: 'figur', id: 'bildpilar-utsnitt', namn: 'bildpilar', bild: '../../kraft_och_rorelse/rorelse_och_kraft/bilder/block-rep.jpg',
+          bredd: 1672, hojd: 941, utsnitt: [600, 380, 900, 360],
+          pilar: [{ namn: 'provpil 1', fran: [690, 503], till: [950, 503], etikett: [820, 460] },
+                  { namn: 'provpil 2', fran: [1255, 525], till: [995, 525] }],
+          lika: [[0, 1]], beskrivning: 'Provbeskrivning av fotot.', bildtext: 'Provbildtext under fotot.' },
         { typ: 'lank', till: ['ova'] }
       ]
     }

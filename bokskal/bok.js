@@ -499,10 +499,17 @@
       for (;;) {
         if (i < E.length) {
           let u = E[i];
-          // Regelkonflikten: ryms inte stycket och figuren på en tom sida delas gruppen – figuren börjar nästa sida
+          // Regelkonflikten: ryms inte stycket och figuren på en tom sida delas gruppen – figuren börjar nästa sida.
+          // Står flera figurer efter stycket stannar så många som ryms med det; gruppen delas före den första som
+          // inte ryms (två foton efter ett stycke: stycket och det första fotot ihop, det andra på nästa sida).
           if (u.delVid !== null && hojd(u.poster) > kap(u.poster)) {
-            E.splice(i, 1, Object.assign({}, u, { poster: u.poster.slice(0, u.delVid), delVid: null }),
-              { poster: u.poster.slice(u.delVid), brytFore: true, rubrik: false, delVid: null });
+            let vid = u.delVid;
+            while (vid + 1 < u.poster.length && MED_STYCKET.includes(u.poster[vid + 1].typ) &&
+              hojd(u.poster.slice(0, vid + 1)) <= kap(u.poster.slice(0, vid + 1))) vid++;
+            // (står det kvar figurer med stycket får den delen fortfarande delas enligt 40 %-regeln nedan; resten
+            // behöver då ingen egen sida – den ryms ändå inte med stycket, men får följa en figur som flyttats fram)
+            E.splice(i, 1, Object.assign({}, u, { poster: u.poster.slice(0, vid), delVid: vid > u.delVid ? u.delVid : null }),
+              { poster: u.poster.slice(vid), brytFore: vid === u.delVid, rubrik: false, delVid: null });
             u = E[i];
           }
           // …och om sidan annars skulle bli under 40 % fylld: då stannar stycket här och figuren börjar nästa sida.

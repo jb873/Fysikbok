@@ -1,5 +1,6 @@
 /* Avsnittssida III, text B: Kraft och friktion – fördjupning. Samma källa och regler som standard.js; här visar
- * kraftpilarna värdena i newton. "16 − 6 = 10 N" står som text i löptexten (minustecken U+2212). */
+ * kraftpilarna värdena i newton. "16 − 6 = 10 N" står som text i löptexten (minustecken U+2212). Figur 1 är fotot
+ * med dragkraften (bildpilar, BILD A i arbetsordern 2026-11-04), utan värde. */
 Bok.niva('fordjupning', {
   avsnitt: [
     {
@@ -25,8 +26,9 @@ Bok.niva('fordjupning', {
       block: [
         { typ: 'rubrik', text: 'En kraft har storlek, riktning och angreppspunkt' },
         { typ: 'text', text: 'En kraft är en knuff eller ett drag, och den beskrivs av tre saker: hur stor den är, åt vilket håll den verkar och var den angriper föremålet. Därför ritas den som en pil från angreppspunkten. Kraftens storlek mäts i enheten newton, N – mer om det i texten om tyngdkraften.' },
-        { typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Block' }, underlag: true, enhet: 'N', skala: 16,
-          krafter: [{ namn: 'Dragkraft', riktning: 'hoger', storlek: 10 }] },
+        { typ: 'figur', namn: 'bildpilar', bild: 'bilder/block-rep.jpg', bredd: 1672, hojd: 941,
+          pilar: [{ namn: 'dragkraft', fran: [300, 552], till: [580, 552], etikett: [750, 600] }],
+          beskrivning: 'En person drar i ett rep som sitter fast i ett träblock på ett bord. En pil från blocket pekar framåt i repets riktning: dragkraften.' },
 
         { typ: 'rubrik', text: 'Resultanten får man genom att lägga ihop krafterna med hänsyn till riktningen' },
         { typ: 'text', text: 'Krafter som verkar längs samma linje läggs ihop med hänsyn till riktningen. Krafter åt samma håll adderas, krafter åt motsatt håll subtraheras. Drar du blocket framåt med 16 N och friktionen bromsar med 6 N blir resultanten 16 − 6 = 10 N framåt. Drar du med 6 N och friktionen är 6 N blir resultanten 0 N.' },
