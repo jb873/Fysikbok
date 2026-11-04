@@ -114,8 +114,8 @@ Fysik/
       innehall/atomen/          text A: en bok per nivå (enkel.js, standard.js, fordjupning.js)
       innehall/joner-isotoper-bindningar/   text B
     materia_repetition/         avsnittssida II. Repetition, texterna materia/, densitet-och-varme/, varmespridning/
-    rorelse_och_kraft/          avsnittssida III. Rörelse och kraft, texterna rorelse/, kraft-och-friktion/ och
-                                kraft-och-motkraft/ (A–C, strömformatet) och tyngdkraften/ (D, tom: "kommer")
+    rorelse_och_kraft/          avsnittssida III. Rörelse och kraft, texterna rorelse/, kraft-och-friktion/,
+                                kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
@@ -357,7 +357,7 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `skalmodell` | `atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}]` (1–3), `overgang?: 'tar upp 2 elektroner'`, `rader?` | laddningen (protoner − elektroner), formeln (O²⁻), masstalet, och vilka elektroner som flyttar vid en övergång (markerade i guld). Med `neutroner` och högst fyra kärnpartiklar ritas protoner och neutroner i kärnan (isotoper). |
 | `rorelsespar` | `rorelse: 'likformig' \| 'olikformig' \| 'accelererande' \| 'retarderad'`, `prickar?: 6` (4–8), `tider?: false` | prickmodellen: lika lång tid mellan prickarna, och prickarnas lägen. Likformig: lika stora avstånd. Accelererande: avstånden växer jämnt (1, 2, 3 …). Retarderad: avstånden krymper jämnt, och de två sista ligger nästan ihop. Olikformig: ett fast ojämnt mönster (kort, långt, mellan …). Under prickarna står en stråle med pilspets åt höger (rörelseriktningen). `tider: true` skriver 0 s, 1 s … under prickarna. Figuren är låg och bred. |
 | `friktion` | `foremal?: 'Block'`, `underlag?: 'Bord'`, `pilar?: true`, `ytor?: 'normal' \| 'grov' \| 'slat'` | ytorna i förstoring. Överst "Så ser det ut": blocket på bordslinjen och kontaktytan i en streckad ruta. Nederst "I förstoring": blockets undersida och bordets yta med oregelbundna toppar och gropar som hakar i varandra (samma mönster varje gång; `ytor` avgör hur ojämnt), i olika dämpade färger. Strecklinjerna från rutan går till förstoringens hörn och korsar aldrig rubrikerna. Pilarna verkar på blocket: draget framåt och friktionen bakåt, lika långa; `pilar: false` ritar bara ytorna. Med andra namn än Block och Bord blir beskrivningen enklare ("Låda på hylla.") – skriv gärna en egen. |
-| `bildpilar` | `bild` (adress från delkapitlets sida), `bredd`, `hojd` (fotots pixlar), `utsnitt?: [x, y, b, h]`, `pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}]`, `lika?: [[0, 1]]`, `beskrivning` (krävs), `bildtext?` | ett foto med kraftpilar ritade ovanpå. Allt i fotots pixlar. Fotot visar den verkliga situationen; pilarna ritas ur data, så att de alltid blir rätt. Pilarna är röda (#b3261e) med vit kant och en prick i angreppspunkten; etiketten (namnet, mitt på `etikett`, annars över pilens mitt) i samma röda, halvfet med vit kant. `lika`: pilar som ska vara lika långa – motorn vägrar rita annars (högst 1 px skillnad i fotot), och grinden mäter. En pil utanför utsnittet är fel. Fotot görs utan pilar. Figuren får vara upp till 45 % av sidhöjden. |
+| `bildpilar` | `bild` (adress från delkapitlets sida), `bredd`, `hojd` (fotots pixlar), `utsnitt?: [x, y, b, h]`, `pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}]`, `lika?: [[0, 1]]`, `beskrivning` (krävs), `bildtext?`, `maxhojd?: 0.2–0.45` | ett foto med kraftpilar ritade ovanpå. Allt i fotots pixlar. Fotot visar den verkliga situationen; pilarna ritas ur data, så att de alltid blir rätt. Pilarna är röda (#b3261e) med vit kant och en prick i angreppspunkten; etiketten (namnet, mitt på `etikett`, annars över pilens mitt) i samma röda, halvfet med vit kant. `lika`: pilar som ska vara lika långa – motorn vägrar rita annars (högst 1 px skillnad i fotot), och grinden mäter. En pil utanför utsnittet är fel. Fotot görs utan pilar. Figuren får vara upp till 45 % av sidhöjden; `maxhojd` ger en lägre gräns för just den bilden (ett stående foto som annars inte ryms med stycket före, som dynamometern i III D: 0,43). |
 
 - `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data (inte `bildpilar`: ett foto
   kan inte beskrivas ur data).
@@ -666,3 +666,19 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   *Bladvändning: På / Av*; Snabb finns kvar bara som glidningen vid hopp. 0,34 s, så att en vändning med CPU:n
   strypt 6 gånger håller sig under 450 ms också med sidbytet (med 0,40 och 0,38 s blev den 450–500 ms i en del lägen).
 - Namn och © står på sista sidan och i sidans fot, ur `upphov`.
+- **2026-11-04, III D Tyngdkraften (arbetsordern III D):**
+  - Text D är införd ordagrant på alla tre nivåer i strömformatet (`innehall/tyngdkraften/`). Avsnitten är
+    inledning, tyngdkraft-och-normalkraft (1), massa-och-tyngd (2) och sammanfattning, med samma id på alla nivåer.
+  - Bilderna är `bildpilar`: BILD T och BILD F på `block-rep.jpg`, BILD M på `dynamometer.jpg`.
+  - **BILD F:** förslagets koordinater fick pilarna att korsa varandra. Därför sitter de nu så här:
+    - tyngdkraften från blockets mitt [300, 552];
+    - normalkraften från undersidan vid x 420;
+    - dragkraften från blockets högra överkant, ovanför repet [500, 470];
+    - friktionen från undersidans vänstra del [250, 640].
+    - Dragkraften och friktionen är 240 px, tyngdkraften och normalkraften 248 px.
+  - **BILD M:** utsnittet är [0, 420, 1086, 1028], så att hela skalan med visaren och påsen syns. Pilarna är 140 px
+    vardera: tyngdkraften från påsens mitt och fjäderns kraft från påsens överkant, längs snöret.
+  - **Motorfix (Joachims beslut):** `bildpilar` har fått `maxhojd` i data. Med 45 % rymdes stycket före BILD M och
+    bilden inte på samma sida i 1366 × 633. Sidan före blev då tunn (37 %). Med 0,43 för BILD M ryms de ihop.
+  - Fördjupningen har formeln F = m · g och tabellen över g på jorden, månen, Mars och Jupiter. Det är formel- och
+    tabellblocken, med data ur arbetsordern.

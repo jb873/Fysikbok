@@ -17,7 +17,7 @@
  *                       rader?: ['protoner'|'neutroner'|'elektroner'|'laddning'|'masstal', …]
  *   rorelsespar         rorelse: 'likformig'|'olikformig'|'accelererande'|'retarderad', prickar?: 6 (4–8), tider?: false
  *   friktion            foremal?: 'Block', underlag?: 'Bord', pilar?: true, ytor?: 'normal'|'grov'|'slat'
- *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h],
+ *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h], maxhojd?: 0.2–0.45 (standard 0.45),
  *                       pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}], lika?: [[0, 1]], beskrivning (krävs)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
@@ -498,7 +498,11 @@
       s += `<text x="${f(ex)}" y="${f(ey)}" class="fig-bildpil-text" data-pil="${i}">${esc(p.namn)}</text>`;
     });
     const data = esc(JSON.stringify(lika)).replace(/"/g, '&quot;');
-    return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-bildpilar="${pilar.length}" data-lika="${data}">${s}</svg>`, beskrivning: d.beskrivning };
+    // maxhojd: en lägre maxhöjd för just den här bilden (andel av sidhöjden, 0,2–0,45; annars 0,45 i bok.css), t.ex.
+    // ett stående foto som annars inte ryms på samma sida som stycket före (III D, BILD M: 0,43)
+    if (d.maxhojd != null && !(d.maxhojd >= 0.2 && d.maxhojd <= 0.45)) fel('bildpilar: maxhojd ska vara mellan 0.2 och 0.45 (andel av sidhöjden)');
+    const stil = d.maxhojd != null ? ` style="max-height: calc(var(--sh) * ${d.maxhojd})" data-maxhojd="${d.maxhojd}"` : '';
+    return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-bildpilar="${pilar.length}" data-lika="${data}"${stil}>${s}</svg>`, beskrivning: d.beskrivning };
   });
 
   /* ---------- Omslagsmotiven (Bok.illustration): ett per kapitel, i kapitel.js som illustration ----------
