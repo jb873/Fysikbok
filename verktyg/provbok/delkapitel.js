@@ -10,6 +10,8 @@ Bok.delkapitel({
   titel: 'Provbok',
   undertitel: 'inte elevinnehåll',
   overrad: 'Provdata för bok-grind',
+  kapitel: '../provkapitel.js',               // omslaget (provkapitlet)
+  omslag: { undertitel: 'Prov: {text}' },     // omslagets undertitel ur en mall
   texter: [
     { id: 'krafter', titel: 'Krafter', undertitel: 'inte elevinnehåll' },   // alla fyra nivåer, Djupdykning bara här
     { id: 'tryck', titel: 'Tryck' },                                         // bara Standard

@@ -7,6 +7,8 @@
 @font-face { font-family: "EB Garamond"; src: url("typsnitt/EBGaramond-wght.ttf") format("truetype");
              font-weight: 400 800; font-display: swap; }
 @font-face { font-family: "Marcellus SC"; src: url("typsnitt/MarcellusSC-Regular.ttf") format("truetype"); font-display: swap; }
+/* Marcellus (gemener): bara på omslaget – undertiteln, upphovet och F, som i musikvideorna */
+@font-face { font-family: "Marcellus"; src: url("typsnitt/Marcellus-Regular.ttf") format("truetype"); font-display: swap; }
 
 :root {
   --black: #1b2a36;          /* bläck: plattformens ink */
@@ -361,6 +363,18 @@ a.resurs-kort:hover { background-color: #faf4e4; transform: translateY(-1px); }
 .hogersida { border-radius: 0 3px 3px 0;
   background: linear-gradient(to right, rgba(40, 30, 10, .10), rgba(40, 30, 10, 0) 5%), var(--papper); }
 .tom-sida { filter: brightness(.97); }
+
+/* Omslaget (bok.js: omslagElement), som i musikvideorna: sida 0, före innehållet. På ett uppslag står det ensamt som
+   högersida och boken är stängd – till vänster syns bordet (också under bladvändningen, i bladlagret). Hörnen är
+   filmens (14 av 1036). Mobilen: omslaget fyller sidan. */
+.uppslag.med-omslag { box-shadow: none; }
+.sida.omslag { background: #162040; border-radius: calc(var(--sh) * 14 / 1036); overflow: hidden;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .38); }
+.smal .sida.omslag, .blad-sida .sida.omslag { box-shadow: none; }
+.smal .sida.omslag { border-radius: 0; }
+.omslag-bild, .omslag-bild svg { display: block; width: 100%; height: 100%; }
+.sida.fore-omslag { background: none; border-radius: 0; }
+.blad-fast .sida.fore-omslag { background: var(--bord); }
 
 /* Sidhuvud: avsnittet och sidnumret, med numret i det yttre hörnet (till vänster på en vänstersida). */
 .sidhuvud {

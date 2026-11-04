@@ -11,6 +11,11 @@ Bok.delkapitel({
   undertitel: null,                           // bannerns rad under titeln, utan tankstreck: 'materia, densitet och värme'
   overrad: 'Fysik · Arbetsområdets namn',     // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
+  // Kapitlets gemensamma data, <arbetsområde>/kapitel.js: omslaget (överrad, titel, illustration, upphov) först i
+  // varje bok. Undertiteln på omslaget är textens namn; med omslag.undertitel en egen rad, där {text} blir textens namn.
+  // Utan kapitel-raden har boken inget omslag.
+  kapitel: '../kapitel.js',
+  // omslag: { undertitel: 'Repetition: {text}' },
 
   // Texterna A, B … på delkapitlets sida. Med texter är varje text en egen bok per nivå, i innehall/<text-id>/<nivå>.js
   // (samma Bok.niva(...) som annars), med egen innehållsförteckning. id blir mappens namn och nyckeln för det eleven

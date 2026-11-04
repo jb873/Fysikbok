@@ -12,7 +12,8 @@
 //      att alla sidor får plats och att strukturen är hel (?kontroll), och att inga JS-fel uppstår – fångade med
 //      window.onerror och unhandledrejection, och med Chromes egna undantag (Runtime.exceptionThrown) som extra nät.
 // Har delkapitlet texter (en bok per text) prövas också att en annan text är en egen bok och att varje text minns
-// sin sida. Provboken (verktyg/provbok/) har texter och prövar dessutom det som det riktiga innehållet inte använder
+// sin sida. Har det ett kapitel (kapitel.js) prövas omslaget: första öppningen, texterna innanför ramen och i
+// ordning, motivet under undertiteln, Home till innehållet, och bladvändningen till och från omslaget. Provboken (verktyg/provbok/) har texter och prövar dessutom det som det riktiga innehållet inte använder
 // än: en text som är "kommer", en nivå som bara en text har, hjälpmedel med adress, begrepp som länkar, en fjärde
 // nivå (djupdykning) och kraftpilarna.
 'use strict';
@@ -290,6 +291,31 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   // Sidorna bryts efter sidmåttet, så platser är block (data-post), inte sidnummer: sidan som visar ett block
   const sidaMed = id => $$('.scen .uppslag > .sida[data-nr]').find(s => s.querySelector('[data-post="' + id + '"]'));
   const visar = id => !!sidaMed(id);
+  // Omslaget (kapitel.js): undertiteln, och att texterna står innanför ramen i ordning och motivet under dem
+  const harOmslag = JSON.parse(document.body.dataset.kontroll).omslag;
+  const omslagUnder = () => $$('.scen .sida.omslag text.omslag-under').map(t => t.textContent).join(' ');
+  const omslagKoll = () => {
+    const svg = $('.scen .sida.omslag svg');
+    if (!svg) return { fel: ['inget omslag i scenen'], text: [] };
+    const folie = svg.querySelector('.omslag-folie'), [x0, y0, x1, y1] = folie.dataset.ram.split(' ').map(Number);
+    const texter = [...svg.querySelectorAll('.omslag-folie text, text.omslag-under, text.omslag-upphov')];
+    const fel = [];
+    texter.forEach(t => { const b = t.getBBox();
+      if (b.x < x0 + 4 || b.x + b.width > x1 - 4 || b.y < y0 || b.y + b.height > y1) fel.push('”' + t.textContent + '” går utanför ramen'); });
+    const y = texter.map(t => +t.getAttribute('y'));
+    if (y.some((v, i) => i && v <= y[i - 1])) fel.push('texterna står inte i ordning uppifrån: ' + y.join(', '));
+    const ram = folie.querySelectorAll('rect')[1].getBoundingClientRect();
+    const delar = [...svg.querySelectorAll('.omslag-motiv > :not(defs):not(.omslag-sken)')].map(e => e.getBoundingClientRect());
+    if (!delar.length) fel.push('inget motiv');
+    else {
+      const m = { top: Math.min(...delar.map(r => r.top)), bottom: Math.max(...delar.map(r => r.bottom)), left: Math.min(...delar.map(r => r.left)), right: Math.max(...delar.map(r => r.right)) };
+      const under = [...svg.querySelectorAll('text.omslag-under')].pop(), upphov = svg.querySelector('text.omslag-upphov');
+      if (under && m.top < under.getBoundingClientRect().bottom) fel.push('motivet går upp i undertiteln');
+      if (upphov && m.bottom > upphov.getBoundingClientRect().top) fel.push('motivet går ned i upphovet');
+      if (m.left < ram.left || m.right > ram.right || m.top < ram.top || m.bottom > ram.bottom) fel.push('motivet går utanför ramen');
+    }
+    return { fel, text: texter.map(t => t.textContent) };
+  };
   ${FIGURKOLL}
   // Kontrollpanelen (?kontroll) är redan avläst; på mobilen täcker den annars texterna som musen ska trycka på
   if ($('.kontrollpanel')) $('.kontrollpanel').style.display = 'none';
@@ -339,7 +365,27 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   const antal = $$('.lr-sida').length;
   prova('öppna: ett tryck på en text öppnar boken', oppen());
   prova(helskarmLage ? 'öppna: boken öppnas i helskärm' : 'öppna: boken öppnas i fönstret', helsk() === helskarmLage, 'helskärm=' + helsk());
-  prova('öppna: text A öppnar boken där texten börjar, och adressen pekar på en rubrik', visar(startA) && location.hash.length > 1 &&
+  if (harOmslag) {
+    // Omslaget: första gången öppnas boken där, före innehållet (sida 0); undertiteln är textens namn
+    const om = omslagKoll();
+    prova('omslag: första gången öppnas boken på omslaget, med textens namn i undertiteln, och adressen pekar på det',
+      startA === 'omslag' && JSON.stringify(syns()) === '[0]' && omslagUnder().includes(titelA) && location.hash.endsWith('omslag') && Bok.sida === 0,
+      syns() + ' ' + location.hash + ' | ' + omslagUnder() + ' (' + titelA + ', ' + startA + ')');
+    prova('omslag: överrad, titel, undertitel och upphov står innanför ramen, i ordning uppifrån, och motivet under undertiteln',
+      !om.fel.length, om.fel.join(' | ') || om.text.join(' / '));
+    const upp = !!$('.scen .uppslag.ar-uppslag');
+    prova(upp ? 'omslag: på uppslaget står omslaget ensamt till höger (boken stängd)' : 'omslag: omslaget fyller sidan',
+      upp ? !!$('.scen .uppslag.med-omslag > .fore-omslag + .sida.omslag.hogersida') : (() => { const o = $('.scen .sida.omslag'); if (!o) return false;
+        const r = o.getBoundingClientRect(), st = $('.scen').style;
+        return Math.abs(r.width - parseFloat(st.getPropertyValue('--sb'))) < 1 && Math.abs(r.height - parseFloat(st.getPropertyValue('--sh'))) < 1; })(),
+      $$('.scen .uppslag > *').map(e => e.className).join(' + '));
+    const posO = (synlig('.las-sidtext') || synlig('.position') || {}).textContent || '';
+    prova('omslag: sidpositionen säger "Omslag", och bakåt går inte längre', posO.includes('Omslag') && (synlig('.sidpil-bak') || synlig('.bottenlist .knapp')).disabled, posO);
+    tangent('ArrowRight'); await v(450);
+    prova('omslag: → öppnar boken på innehållet (sida 1)', syns()[0] === 1 && !!$('.scen .sida[data-nr="1"] .boktitel'), syns());
+    tangent('Home'); await v(80);
+    prova('omslag: Home går till innehållet, inte till omslaget', syns()[0] === 1, syns());
+  } else prova('öppna: text A öppnar boken där texten börjar, och adressen pekar på en rubrik', visar(startA) && location.hash.length > 1 &&
     sidaMed(startA).querySelector('.sh-namn').textContent.includes(titelA), syns() + ' ' + location.hash + ' (' + titelA + ', ' + startA + ')');
   prova('öppna: delkapitlets sida är inert bakom boken', $('.hero-banner').inert === true && $('main.sida').inert === true);
   const steg = syns().length, s0 = syns()[0];
@@ -447,12 +493,19 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   const start = avsn.dataset.oppna, titel = avsn.querySelector('.underdel-titel').textContent;
   const textB = annan && avsn.dataset.text;          // satt när varje text är en egen bok (texter i delkapitel.js)
   await gest(avsn);
-  if (annan) prova('öppna: en annan text öppnar boken där den texten börjar', visar(start) && sidaMed(start).querySelector('.sh-namn').textContent.includes(titel), syns() + ' (' + titel + ', ' + start + ')');
+  // en text som inte lästs än öppnas på sitt omslag (undertiteln är textens namn), annars där den börjar
+  const paOmslaget = start === 'omslag';
+  if (annan) prova('öppna: en annan text öppnar boken där den texten börjar' + (paOmslaget ? ' (på sitt omslag)' : ''),
+    visar(start) && (paOmslaget ? omslagUnder().includes(titel) : sidaMed(start).querySelector('.sh-namn').textContent.includes(titel)), syns() + ' (' + titel + ', ' + start + ')');
   else prova('öppna: den enda texten med innehåll öppnas igen där eleven var (de andra är "kommer")', visar(start) &&
     $$('.underdel-knapp:not([data-oppna])').every(b => b.getAttribute('aria-disabled') === 'true'), syns() + ' (' + start + ')');
   if (textB) {
+    if (paOmslaget) { const u = omslagUnder(), om = omslagKoll();
+      prova('en bok per text: texten är en egen bok med eget omslag', u.includes(titel) && !u.includes(titelA) && !om.fel.length, u + ' (A: ' + titelA + ') ' + om.fel.join(' | ')); }
+    tangent('Home'); await v(80);
     const bt = $('.scen .sida[data-nr="1"] .boktitel'), btTitel = bt && bt.firstChild.textContent.trim();
     prova('en bok per text: texten är en egen bok med egen innehållsförteckning', btTitel === titel && btTitel !== titelA, btTitel + ' (A: ' + titelA + ')');
+    if (paOmslaget) { tangent('ArrowLeft'); await v(450); }    // tillbaka till omslaget, där boken öppnades
   }
   history.back(); await v(450);
   prova('stäng: webbläsarens bakåt går tillbaka till delkapitlet', stangd(), 'hash=' + location.hash);
@@ -700,6 +753,20 @@ const BLAD = String.raw`async () => {
   synlig('.bok-innehall').click(); await v(150);
   $('.meny .val button[data-v="blad"]').click(); tangent('Escape'); await v(100);
   prova('blad: inställningen "Bladvändning: Av" ger direkt sidbyte, utan animation', av === 0, av + ' lager/animationer');
+  // Omslaget: ← från innehållet vänder bladet tillbaka till omslaget, → vänder omslaget och boken öppnas
+  if (JSON.parse(document.body.dataset.kontroll).omslag) {
+    Bok.gaTill(1); await v(300);
+    tangent('ArrowLeft');
+    const o = syns(), oLager = lager(), oBlad = upp ? !!$('.blad-lager .blad.fran-vanster .blad-sida.bak .omslag') : !!$('.blad-lager .blad .omslag');
+    await v(520);
+    const oKvar = lager();
+    tangent('ArrowRight');
+    const i = syns(), iLager = lager(), iBlad = !!$('.blad-lager .blad.fran-hoger .blad-sida.fram .sida.omslag');
+    await v(520);
+    prova('blad: ← från innehållet vänder bladet till omslaget, → vänder omslaget och öppnar boken på innehållet',
+      JSON.stringify(o) === '[0]' && oLager === 1 && oBlad && !oKvar && i[0] === 1 && iLager === 1 && iBlad && !lager() && !igang(),
+      'bakåt ' + o + ' (lager ' + oLager + ', omslaget på bladet ' + oBlad + '), framåt ' + i + ' (lager ' + iLager + ', omslaget på bladet ' + iBlad + '), efteråt ' + lager() + ' lager');
+  }
   return k;
 }`;
 // En vändning: från tangenten (sidbytet ingår) tills lagret är borta, och glappen mellan bildrutorna
@@ -954,6 +1021,9 @@ async function jamforWebben(lista) {
   const samla = mapp => fs.readdirSync(mapp, { withFileTypes: true }).forEach(f =>
     f.isDirectory() ? samla(path.join(mapp, f.name)) : filer.push(path.join(mapp, f.name)));
   [path.join(ROT, 'bokskal'), ...lista.map(d => d.mapp)].forEach(samla);
+  // och kapitlens kapitel.js (kapitel: '…' i delkapitel.js), som ligger utanför delkapitlens mappar
+  lista.forEach(d => { const m = /^\s*kapitel:\s*'([^']+)'/m.exec(fs.readFileSync(path.join(d.mapp, 'delkapitel.js'), 'utf8'));
+    const fil = m && path.resolve(d.mapp, m[1]); if (fil && !filer.includes(fil)) filer.push(fil); });
   const lf = b => Buffer.from(b.toString('latin1').replace(/\r\n/g, '\n'), 'latin1');
   const avvikande = [];
   for (const fil of filer) {

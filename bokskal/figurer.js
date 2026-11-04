@@ -500,4 +500,80 @@
     const data = esc(JSON.stringify(lika)).replace(/"/g, '&quot;');
     return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-bildpilar="${pilar.length}" data-lika="${data}">${s}</svg>`, beskrivning: d.beskrivning };
   });
+
+  /* ---------- Omslagsmotiven (Bok.illustration): ett per kapitel, i kapitel.js som illustration ----------
+   * Ritade ur musikvideornas omslag (1800-talet/verktyg/bok.py, bara läst) med filmens koordinater och färger:
+   * 792 enheter brett, från motivets topp (0) ned till marken (hojd). Omslaget (bok.js) lägger motivet under
+   * undertiteln och krymper det på ett smalare omslag. id: ett unikt prefix för gradienter. */
+  const OM = { ljusbla: '#96c4ec', koppar: '#ce8250', plan: '#284070', kloss: '#345084', lins: '#121e3e', sken: '#3c6096' };
+  const PARTIKEL = { proton: [200, 74, 50], neutron: [150, 157, 168], elektron: [72, 150, 220] };   // bok.py: PROTON …
+  const rgb = c => `rgb(${c.map(Math.round).join(',')})`;
+  const punkter = l => l.map(p => p.map(f).join(',')).join(' ');
+  // En partikel som i filmen (bok.py: kula): en skuggad kula med laddningen som tecken
+  function kula(x, y, r, farg, tecken) {
+    return `<circle cx="${f(x)}" cy="${f(y)}" r="${r}" fill="${rgb(farg)}" stroke="${rgb(farg.map(c => c * 0.6))}" stroke-width="${f(Math.max(1, r * 0.09))}"/>` +
+      `<ellipse cx="${f(x - r * 0.32)}" cy="${f(y - r * 0.44)}" rx="${f(r * 0.3)}" ry="${f(r * 0.22)}" fill="${rgb(farg.map(c => c + (255 - c) * 0.5))}"/>` +
+      (tecken ? `<text x="${f(x)}" y="${f(y + r * 0.04)}" font-family="EB Garamond" font-weight="600" font-size="${Math.max(10, Math.round(r * 1.25))}" ` +
+        `fill="#fff" text-anchor="middle" dominant-baseline="central">${tecken}</text>` : '');
+  }
+  // En pil med fylld spets (bok.py: _pil)
+  function omslagsPil(a, b, farg, w, spets) {
+    const d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, ux = (b[0] - a[0]) / d, uy = (b[1] - a[1]) / d;
+    const bas = [b[0] - ux * spets, b[1] - uy * spets];
+    return `<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(bas[0])}" y2="${f(bas[1])}" stroke="${farg}" stroke-width="${w}"/>` +
+      `<polygon points="${punkter([b, [bas[0] - uy * spets * 0.5, bas[1] + ux * spets * 0.5], [bas[0] + uy * spets * 0.5, bas[1] - ux * spets * 0.5]])}" fill="${farg}"/>`;
+  }
+  // Kolatomen som på filmens omslag (bok.py: atom i closed_book_fysik): kärnans 6 protoner och 6 neutroner där
+  // karna_positioner(6, 6, r) lägger dem (uträknat ur filmens kod, i enheter av kulans radie, yttersta först),
+  // 2 elektroner i K-skalet och 4 i L-skalet.
+  const KOL_KARNA = [[1.2655, -3.4355, 1], [0.9447, 3.4367, 0], [-3.207, 1.1692, 0], [-1.4659, -2.8719, 1], [2.8751, 0.9115, 1],
+    [-0.8005, 2.5466, 1], [1.9376, -1.413, 0], [-2.28, -0.5388, 1], [-0.0678, -1.9321, 0], [1.1222, 1.3651, 0], [-1.0132, 0.7931, 0], [0.6892, -0.0308, 1]];
+  function kolatom(cx, cy, R, rb, re, linje) {
+    const kr = rb * 1.08 * Math.sqrt(11.5) + rb, rk = kr + (R - kr) * 0.46;           // bok.py: karna_radie
+    const pa = (r, antal, vrid) => Array.from({ length: antal }, (_, k) => {
+      const v = (-90 + vrid + k * 360 / antal) * Math.PI / 180; return [cx + r * Math.cos(v), cy + r * Math.sin(v)]; });
+    return [rk, R].map(r => `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" fill="none" stroke="${OM.ljusbla}" stroke-width="${linje}"/>`).join('') +
+      KOL_KARNA.map(([x, y, p]) => kula(cx + x * rb, cy + y * rb, rb, p ? PARTIKEL.proton : PARTIKEL.neutron, p ? '+' : null)).join('') +
+      [...pa(rk, 2, 90), ...pa(R, 4, 45)].map(([x, y]) => kula(x, y, re, PARTIKEL.elektron, '−')).join('');
+  }
+
+  /* Kraft och rörelse (filmens _kraft_och_rorelse, 2026-10-26): en kloss dras uppför ett lutande plan av kraften F
+   * (koppar). Klossens tidigare lägen visar rörelsen, små pilar under klossen trycket mot underlaget, och en förstoring
+   * av klossen kolatomen (materia). */
+  Bok.illustration('kraft-och-rorelse', ({ hojd, id }) => {
+    const L = OM.ljusbla, x0 = 0, x1 = 792, topp = 0, yb = hojd;
+    const A = [x0 + 76, yb], C = [x1 - 84, topp + 150];
+    const lang = Math.hypot(C[0] - A[0], C[1] - A[1]), u = [(C[0] - A[0]) / lang, (C[1] - A[1]) / lang], n = [u[1], -u[0]];
+    const p = (s, h) => [A[0] + u[0] * s + n[0] * h, A[1] + u[1] * s + n[1] * h];      // s längs planet, h ovanför det
+    const bw = 128, bh = 84, s0 = lang * 0.62;
+    const kloss = s => [p(s - bw / 2, 0), p(s + bw / 2, 0), p(s + bw / 2, bh), p(s - bw / 2, bh)];
+    // ett svagt blått sken bakom motivet (filmen: en suddad ellips; här en radiell toning)
+    const sx0 = x0 + 90, sy0 = topp + 60, sx1 = x1 - 60, sy1 = yb + 40;
+    let s = `<defs><radialGradient id="${id}-sken"><stop offset="0" stop-color="${OM.sken}" stop-opacity=".18"/>` +
+      `<stop offset=".62" stop-color="${OM.sken}" stop-opacity=".15"/><stop offset="1" stop-color="${OM.sken}" stop-opacity="0"/></radialGradient></defs>` +
+      `<ellipse class="omslag-sken" cx="${f((sx0 + sx1) / 2)}" cy="${f((sy0 + sy1) / 2)}" rx="${f((sx1 - sx0) / 2 + 70)}" ry="${f((sy1 - sy0) / 2 + 70)}" fill="url(#${id}-sken)"/>`;
+    // det lutande planet och marken, med streck under marken
+    s += `<polygon points="${punkter([A, [C[0], yb], C])}" fill="${OM.plan}" opacity=".75"/>`;
+    let streck = '';
+    for (let x = x0 + 50; x < x1 - 40; x += 22) streck += `M${x} ${f(yb + 2)}L${x - 14} ${f(yb + 16)}`;
+    s += `<g stroke="${L}" fill="none" opacity=".85"><polygon points="${punkter([A, C, [C[0], yb]])}" stroke-width="2.2"/>` +
+      `<line x1="${x0 + 40}" y1="${f(yb)}" x2="${x1 - 40}" y2="${f(yb)}" stroke-width="2.2"/><path d="${streck}" stroke-width="1.2"/></g>`;
+    // rörelsen: klossens tidigare lägen, allt svagare bakåt
+    [[2, 0.3], [1, 0.52]].forEach(([k, a]) => { s += `<polygon points="${punkter(kloss(s0 - k * 118))}" fill="none" stroke="${L}" stroke-width="1.6" opacity="${a}"/>`; });
+    // trycket: små pilar från klossen in mot underlaget
+    s += `<g opacity=".9">${[-0.36, -0.12, 0.12, 0.36].map(t => omslagsPil(p(s0 + t * bw, -4), p(s0 + t * bw, -36), L, 1.8, 10)).join('')}</g>`;
+    // klossen och kraften F, som drar den uppför planet
+    const fp = p(s0 + bw / 2 + 120, bh / 2 + 40);
+    s += `<polygon points="${punkter(kloss(s0))}" fill="${OM.kloss}" stroke="${OM.koppar}" stroke-width="3"/>` +
+      omslagsPil(p(s0 + bw / 2 + 4, bh / 2), p(s0 + bw / 2 + 170, bh / 2), OM.koppar, 6, 26) +
+      `<text x="${f(fp[0])}" y="${f(fp[1])}" font-family="Marcellus" font-size="44" fill="${OM.koppar}" text-anchor="middle" dominant-baseline="central">F</text>`;
+    // förstoringen: en lins på klossen och kolatomen i en cirkel ovanför planet
+    const q = p(s0 - bw * 0.18, bh * 0.6), rq = 15, Z = [x0 + 190, topp + 120], RZ = 104;
+    const dx = Z[0] - q[0], dy = Z[1] - q[1], d = Math.hypot(dx, dy), vx = -dy / d, vy = dx / d;
+    s += `<g stroke="${L}" stroke-width="1.4" opacity=".55">` + [1, -1].map(t =>
+      `<line x1="${f(q[0] + vx * rq * t)}" y1="${f(q[1] + vy * rq * t)}" x2="${f(Z[0] + vx * RZ * t)}" y2="${f(Z[1] + vy * RZ * t)}"/>`).join('') + '</g>';
+    s += `<circle cx="${Z[0]}" cy="${Z[1]}" r="${RZ}" fill="${OM.lins}" stroke="${L}" stroke-width="2.2"/>` +
+      `<circle cx="${f(q[0])}" cy="${f(q[1])}" r="${rq}" fill="none" stroke="${L}" stroke-width="2"/>` + kolatom(Z[0], Z[1], RZ - 22, 9, 7.5, 1.6);
+    return s;
+  });
 })();

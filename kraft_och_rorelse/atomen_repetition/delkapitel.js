@@ -11,6 +11,8 @@ Bok.delkapitel({
   undertitel: 'atomen, joner och bindningar', // bannerns rad: "— atomen, joner och bindningar —"
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
+  kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)
+  omslag: { undertitel: 'Repetition: {text}' },   // omslagets undertitel; {text} blir textens namn
 
   // Texterna A och B: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
   // sparat – byt det aldrig.

@@ -11,6 +11,7 @@ Bok.delkapitel({
   undertitel: 'rörelse, kraft, friktion och tyngdkraft', // bannerns rad: "— rörelse, kraft, friktion och tyngdkraft —"
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
+  kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
   // sparat – byt det aldrig. D har inget innehåll än och visas som "kommer".

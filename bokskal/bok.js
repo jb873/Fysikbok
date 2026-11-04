@@ -17,12 +17,17 @@
  * Texten flödar (2026-11-02): innehållet är en ström av block, och motorn bryter sidorna efter sidans mått (paginera).
  * Sidnumren beror på skärmen; läsplatsen är ett block och adressen pekar på en rubrik.
  *
+ * Omslaget (2026-11-04), som i musikvideorna: med kapitel: '../kapitel.js' i delkapitel.js laddas kapitlets
+ * Bok.kapitel({overrad, titel, illustration, upphov}), och varje bok får ett omslag före innehållsförteckningen
+ * (sida 0, utanför brytningen; undertiteln är textens namn). Se omslaget nedan.
+ *
  * Statusen härleds ur innehållet och skrivs aldrig för hand: en nivå utan avsnitt och ett hjälpmedel utan adress
  * syns, är märkta "kommer" och går inte att välja.
  *
  * Utbyggnad som inte är innehåll – görs i motorn, inte av den som skriver:
  *   Bok.blocktyp(namn, fn)   en ny sorts block, t.ex. en övning (fn(data, ctx) → element)
  *   Bok.figur(namn, fn)      en ny sorts figur (fn(data) → SVG-text eller {svg, beskrivning}), se figurer.js
+ *   Bok.illustration(namn, fn)  ett kapitels omslagsmotiv (fn({hojd}) → SVG-text), se figurer.js
  *
  * Fungerar direkt från disken (file://), utan server. Se Fysik/README.md. */
 (function () {
@@ -52,9 +57,11 @@
   const FLIKAR = [['forelasning', 'Föreläsning', 'forelasning'], ['laes', 'Läs', null], ['ova', 'Öva', 'ova'],
     ['elevboken', 'Elevboken', 'elevbok']];
 
-  const blocktyper = {}, figurer = {}, nivadata = {}, bocker = {}, problem = [];
+  const blocktyper = {}, figurer = {}, illustrationer = {}, nivadata = {}, bocker = {}, problem = [];
+  let kapitel = null;                          // kapitlets gemensamma data (kapitel.js): omslaget
   let info, textId = '', nivaId = null, sidor = [], nr = 1, uppslag = false, smal = false, oppen = false, kontroll = false;
-  // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id) eller 'innehall'.
+  // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id), 'innehall' eller
+  // 'omslag'. nr: sidan som visas – 0 är omslaget.
   // flytt räknas upp när blockens element flyttas mellan sidor (en ny brytning), så att sidorna byggs om.
   let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false;
   let tillbaka = null, vandning = 'blad', helskarm = true, reglage = 'alltid', vilaTimer = null;
@@ -310,9 +317,9 @@
 
   // Sidhuvudets text: avsnittets nummer och namn. Numret sätts i Garamond (span.nr), där 1 inte liknar ett I.
   const bokTitlar = t => { const x = textInfo(t); return [x.titel, x.undertitel]; };
-  const sidhuvud = s => s.typ === 'innehall' ? bokTitlar(s.bok.text).filter(Boolean).join(' · ')
+  const sidhuvud = s => s.typ === 'omslag' ? 'Omslag' : s.typ === 'innehall' ? bokTitlar(s.bok.text).filter(Boolean).join(' · ')
     : (s.avsnitt.nummer ? `${s.avsnitt.nummer} · ` : '') + (s.avsnitt.kort || s.avsnitt.titel);
-  const sidhuvudNoder = s => s.typ !== 'innehall' && s.avsnitt.nummer
+  const sidhuvudNoder = s => s.avsnitt && s.avsnitt.nummer
     ? [h('span', { class: 'nr' }, s.avsnitt.nummer), ' · ', s.avsnitt.kort || s.avsnitt.titel] : [sidhuvud(s)];
 
   // En sidas element. Blockens element flyttas hit; har de flyttats sedan (en ny brytning) byggs sidan om.
@@ -359,6 +366,120 @@
         rubriker.length > 1 && h('ol', { class: 'toc-sidor' }, rubriker.map(p =>
           h('li', null, tocKnapp(r.postSida.get(p).nr, 'toc-s', h('span', { class: 'toc-titel', html: inline(p.b.text, false) }))))));
     }));
+  }
+
+  /* ---------- Omslaget: som i musikvideorna ----------
+   * Filmernas omslag (1800-talet/verktyg/bok.py: closed_book_fysik och fysiktemat, bara läst) ritat i SVG:
+   * midnattsblått band med prägling i koppar (ram, hörnprickar, överrad, titel och linje), rutnät och skala i
+   * ljusblått, undertiteln i ljust tryck, kapitlets motiv (Bok.illustration) och upphovet. Måtten är filmens:
+   * omslaget är 1036 enheter högt (filmens pixlar) och bredden följer sidans form, så texterna står på filmens
+   * baslinjer i alla storlekar. Ryms titeln inte på en rad blir den två balanserade rader, som i filmen; på ett
+   * smalare omslag (mobil) krymper motivet. Filmens tygstruktur är inte med.
+   * Omslaget är sida 0: före innehållsförteckningen och utanför brytningen, så sidnumren är desamma som utan omslag.
+   * Data: kapitlets kapitel.js (överrad, titel, illustration, upphov) och textens namn som undertitel – eller
+   * delkapitlets omslag.undertitel, där {text} blir textens namn ('Repetition: {text}'). */
+  const OMSLAG_H = 1036;
+  const OMSLAG = { band: '#162040', koppar: '#ce8250', kopparLjus: '#f4be8e', kopparMork: '#040816', ljusbla: '#96c4ec', text: '#e8ecf2' };
+  const OMSLAGET = { typ: 'omslag', nr: 0, ankare: 'omslag', poster: [] };
+  let omslagNr = 0, matDuk = null;
+  const harOmslag = () => !!kapitel;
+  const forstaSida = () => harOmslag() ? 0 : 1;
+  const sida = n => n === 0 ? OMSLAGET : sidor[n - 1];
+  function omslagsdata(t = textId) {
+    const mall = (info.omslag && info.omslag.undertitel) || '{text}';
+    return { overrad: kapitel.overrad, titel: kapitel.titel, undertitel: mall.replace('{text}', textInfo(t).titel),
+      illustration: kapitel.illustration, upphov: kapitel.upphov || info.upphov };
+  }
+  // Textens bredd i omslagets enheter, med filmens spärrning (tracking: lika mycket efter varje tecken utom det sista)
+  function textBredd(text, storlek, typsnitt, sparr) {
+    const c = matDuk || (matDuk = document.createElement('canvas').getContext('2d'));
+    c.font = `${storlek}px "${typsnitt}"`;
+    return c.measureText(text).width + sparr * Math.max(0, [...text].length - 1);
+  }
+  const fallande = (fran, till, d) => Array.from({ length: Math.floor((fran - till) / d) + 1 }, (_, i) => fran - i * d);
+  // En rad i den största storleken som ryms, annars två rader (helst balanserade, eller efter ett kolon).
+  function radbryt(text, bredd, typsnitt, enRad, tvaRader, sparr = () => 0, efterKolon = false) {
+    const w = (t, s) => textBredd(t, s, typsnitt, sparr(s));
+    for (const s of enRad) if (w(text, s) <= bredd) return { rader: [text], storlek: s };
+    const ord = text.split(' ');
+    const delningar = s => ord.slice(1).map((_, k) => [ord.slice(0, k + 1).join(' '), ord.slice(k + 1).join(' ')])
+      .sort((a, b) => Math.abs(w(a[0], s) - w(a[1], s)) - Math.abs(w(b[0], s) - w(b[1], s)));
+    // efter ett kolon ("Repetition:" ensam på första raden) hellre än i en mindre storlek, ned till 30 (16 px på mobilen)
+    const kolon = efterKolon ? ord.findIndex(o => o.endsWith(':')) : -1;
+    if (kolon >= 0 && kolon < ord.length - 1) {
+      const d = [ord.slice(0, kolon + 1).join(' '), ord.slice(kolon + 1).join(' ')];
+      for (const s of fallande(tvaRader[0], 30, 2)) if (Math.max(w(d[0], s), w(d[1], s)) <= bredd) return { rader: d, storlek: s };
+    }
+    for (const s of tvaRader) {
+      const ryms = delningar(s).filter(d => Math.max(w(d[0], s), w(d[1], s)) <= bredd);
+      if (ryms.length) return { rader: ryms[0], storlek: s };
+    }
+    const s = tvaRader[tvaRader.length - 1];      // ryms inte ens så: grinden mäter omslaget och säger till
+    return { rader: ord.length > 1 ? delningar(s)[0] : [text], storlek: s };
+  }
+
+  function omslagElement() {
+    const g = aktuell.g, d = omslagsdata();
+    const nyck = [geoNyckel(g), textId, typsnittKlara, d.undertitel].join('|');
+    if (OMSLAGET.el && OMSLAGET.nyckel === nyck) return OMSLAGET.el;
+    const H = OMSLAG_H, W = Math.round(H * g.sb / g.sh), id = 'omslag' + (++omslagNr), o = OMSLAG;
+    const r1 = v => Math.round(v * 10) / 10;
+    // Filmens mått, i omslagets enheter (filmens omslag börjar 22 px ned i bilden): ryggen 44, ramen 52 innanför kanten
+    const fx0 = 44 + 52, fx1 = W - 52, fy0 = 52, fy1 = H - 52, cx = (fx0 + fx1) / 2;
+    const T = radbryt(d.titel.toUpperCase(), fx1 - fx0 - 110, 'Marcellus SC', fallande(108, 60, 4), fallande(88, 60, 4), s => 8 * s / 108);
+    const sparrT = 8 * T.storlek / 108;
+    const titelY = T.rader.map((_, k) => 140 + Math.max(T.storlek, 104) + 14 + k * T.storlek * 1.02);
+    const linjeY = titelY[titelY.length - 1] + 38;
+    const U = d.undertitel ? radbryt(d.undertitel, fx1 - fx0 - 60, 'Marcellus', fallande(50, 42, 2), fallande(46, 34, 2), undefined, true) : null;
+    const underY = U ? U.rader.map((_, k) => linjeY + 72 + k * U.storlek * 1.18) : [linjeY + 72];
+    const topp = Math.max(underY[underY.length - 1] + 44, 448), yb = 878;
+    // text-anchor middle räknar spärrningen efter sista tecknet: flytta tillbaka en halv spärrning
+    const text = (x, y, t, typsnitt, storlek, sparr = 0, attr = '') => `<text x="${r1(x + sparr / 2)}" y="${r1(y)}" font-family="${typsnitt}" ` +
+      `font-size="${r1(storlek)}"${sparr ? ` letter-spacing="${r1(sparr)}"` : ''} text-anchor="middle" ${attr}>${esc(t)}</text>`;
+    // Präglingen: ram, hörn, överrad, titel och linjen – i tre lager: skugga, ljuskant och kopparn
+    const folie = `<rect x="${fx0}" y="${fy0}" width="${fx1 - fx0}" height="${fy1 - fy0}" fill="none" stroke="currentColor" stroke-width="3"/>` +
+      `<rect x="${fx0 + 12}" y="${fy0 + 12}" width="${fx1 - fx0 - 24}" height="${fy1 - fy0 - 24}" fill="none" stroke="currentColor" stroke-width="1.2"/>` +
+      [[fx0, fy0], [fx1, fy0], [fx0, fy1], [fx1, fy1]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="currentColor"/>`).join('') +
+      (d.overrad ? text(cx, 140, d.overrad.toUpperCase(), 'Marcellus SC', 30, 7, 'fill="currentColor"') : '') +
+      T.rader.map((t, k) => text(cx, titelY[k], t, 'Marcellus SC', T.storlek, sparrT, 'fill="currentColor"')).join('') +
+      `<line x1="${r1(cx - 190)}" y1="${r1(linjeY)}" x2="${r1(cx + 190)}" y2="${r1(linjeY)}" stroke="currentColor" stroke-width="2.5"/>` +
+      `<circle cx="${r1(cx)}" cy="${r1(linjeY)}" r="8" fill="currentColor"/>`;
+    // Rutnätet (32 enheter) och millimeterskalan längs vänstra kanten – svagt, som tryck i bandet
+    let nat = '';
+    for (let x = fx0 + 24; x < fx1 - 12; x += 32) nat += `M${x} ${fy0 + 24}V${fy1 - 24}`;
+    for (let y = fy0 + 24; y < fy1 - 12; y += 32) nat += `M${fx0 + 24} ${y}H${fx1 - 24}`;
+    let skala = '';
+    for (let k = 0; k <= 40; k++) skala += `M${fx0 + 26} ${fy0 + 120 + k * 18}h${k % 5 ? 11 : 22}`;
+    // Motivet i filmens bredd (792), krympt om omslaget är smalare, från toppen ned till marken
+    const MB = 792, s = Math.min(1, (fx1 - fx0) / MB), ill = illustrationer[d.illustration];
+    let motiv = '';
+    if (ill) {
+      try { motiv = `<g class="omslag-motiv" transform="translate(${r1(cx - MB * s / 2)} ${r1(topp)}) scale(${Math.round(s * 1000) / 1000})">${ill({ hojd: (yb - topp) / s, id })}</g>`; }
+      catch (e) { anmal(`omslaget: illustrationen ”${d.illustration}” kunde inte ritas: ${e.message}`); }
+    }
+    const upphov = d.upphov ? `${d.upphov.namn}  ·  © ${d.upphov.ar}`.replace(/ /g, ' ') : '';
+    const svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
+      `<defs><linearGradient id="${id}-ljus" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".045"/>` +
+      `<stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient>` +
+      `<linearGradient id="${id}-rygg"><stop offset="0" stop-opacity=".4"/><stop offset=".3" stop-opacity=".24"/><stop offset=".6" stop-opacity=".1"/><stop offset="1" stop-opacity="0"/></linearGradient>` +
+      `<clipPath id="${id}-yta"><rect x="${fx0 + 14}" y="${fy0 + 14}" width="${fx1 - fx0 - 28}" height="${fy1 - fy0 - 28}"/></clipPath>` +
+      `<filter id="${id}-sudd" x="-2%" y="-2%" width="104%" height="104%"><feGaussianBlur stdDeviation="1.6"/></filter></defs>` +
+      `<rect width="${W}" height="${H}" fill="${o.band}"/><rect width="${W}" height="${H}" fill="url(#${id}-ljus)"/>` +
+      `<rect width="44" height="${H}" fill="url(#${id}-rygg)"/><rect x="44" width="3" height="${H}" opacity=".35"/>` +
+      `<g clip-path="url(#${id}-yta)"><path d="${nat}" stroke="${o.ljusbla}" stroke-width="1" opacity=".07" fill="none"/>` +
+      `<path d="${skala}" stroke="${o.ljusbla}" stroke-width="1.5" opacity=".22" fill="none"/>${motiv}</g>` +
+      `<g color="${o.kopparMork}" opacity=".8" transform="translate(2 2)" filter="url(#${id}-sudd)">${folie}</g>` +
+      `<g color="${o.kopparLjus}" opacity=".5" transform="translate(-1 -1)">${folie}</g><g color="${o.koppar}" class="omslag-folie" data-ram="${fx0 + 12} ${fy0 + 12} ${fx1 - 12} ${fy1 - 12}">${folie}</g>` +
+      (U ? U.rader.map((t, k) => text(cx, underY[k], t, 'Marcellus', U.storlek, 0, `fill="${o.text}" class="omslag-under"`)).join('') : '') +
+      (upphov ? text(cx, 950, upphov, 'Marcellus', 24, 1, `fill="${o.ljusbla}" opacity=".62" class="omslag-upphov"`) : '') +
+      `</svg>`;
+    // Skärmläsaren får texten en gång, i vanlig stavning
+    const las = [d.overrad, d.titel, d.undertitel, d.upphov && `${d.upphov.namn}, © ${d.upphov.ar}`].filter(Boolean);
+    OMSLAGET.el = h('article', { class: 'sida omslag', 'data-nr': 0, 'aria-label': 'Omslag' },
+      h('div', { class: 'omslag-bild', 'data-post': 'omslag', html: svg }),
+      h('div', { class: 'sr-only' }, las.map(t => h('p', null, t))));
+    OMSLAGET.nyckel = nyck;
+    return OMSLAGET.el;
   }
 
   /* ---------- Storlek: uppslag på dator, en sida i taget på mobil ---------- */
@@ -627,7 +748,7 @@
   /* ---------- Visa och bläddra ---------- */
 
   function synliga(n) {
-    if (!uppslag) return [n];
+    if (!uppslag || n === 0) return [n];         // omslaget står ensamt (på ett uppslag som högersida)
     const v = n % 2 ? n : n - 1;                 // udda sidor till vänster: 1–2, 3–4, …
     return v + 1 <= sidor.length ? [v, v + 1] : [v];
   }
@@ -636,23 +757,26 @@
   function rita(riktning, blad = false) {
     if (bladKlar) bladKlar();                    // en pågående vändning blir klar direkt – aldrig en kö
     const gammal = ui.scen.firstElementChild, gamla = gammal && gammal.classList.contains('uppslag') ? [...gammal.children] : [];
-    const vis = synliga(nr);
-    const u = h('div', { class: 'uppslag ' + (uppslag ? 'ar-uppslag' : 'ar-enkel') + (smal ? ' smal' : '') });
+    const vis = synliga(nr), med = vis[0] === 0;
+    const u = h('div', { class: 'uppslag ' + (uppslag ? 'ar-uppslag' : 'ar-enkel') + (smal ? ' smal' : '') + (med ? ' med-omslag' : '') });
+    // Omslaget på ett uppslag: boken är stängd – tomt till vänster (bordet), omslaget till höger. Bläddras det framåt
+    // vänds omslaget som ett blad och sida 1–2 öppnas.
+    if (uppslag && med) u.append(h('div', { class: 'sida vanstersida fore-omslag', 'aria-hidden': 'true' }));
     vis.forEach((n, i) => {
-      const e = byggSida(sidor[n - 1]);
-      e.classList.toggle('vanstersida', uppslag && i === 0);
-      e.classList.toggle('hogersida', uppslag && i === 1);
+      const e = n === 0 ? omslagElement() : byggSida(sidor[n - 1]);
+      e.classList.toggle('vanstersida', uppslag && i === 0 && n !== 0);
+      e.classList.toggle('hogersida', uppslag && (i === 1 || n === 0));
       u.append(e);
     });
-    if (uppslag && vis.length === 1) u.append(h('div', { class: 'sida hogersida tom-sida', 'aria-hidden': 'true' }));
+    if (uppslag && vis.length === 1 && !med) u.append(h('div', { class: 'sida hogersida tom-sida', 'aria-hidden': 'true' }));
     // Bladvändning vid bläddring; vid ett hopp (innehållet, en länk, Home/End) bara den korta glidningen
     const rorelse = riktning && vandning === 'blad' && !minskadRorelse();
     const vand = rorelse && blad && gamla.length === u.children.length && !gamla.some(e => u.contains(e));
     if (rorelse && !vand) u.classList.add(riktning > 0 ? 'in-framat' : 'in-bakat');
     ui.scen.replaceChildren(u);
     if (vand) vandBlad(gamla, u, riktning);
-    if (riktning !== null) vis.forEach(n => { sidor[n - 1].el.querySelector('.sidinnehall').scrollTop = 0; });
-    requestAnimationFrame(() => vis.forEach(n => markeraMer(sidor[n - 1])));
+    if (riktning !== null) vis.forEach(n => { const inne = sida(n).el.querySelector('.sidinnehall'); if (inne) inne.scrollTop = 0; });
+    requestAnimationFrame(() => vis.forEach(n => markeraMer(sida(n))));
     uppdateraLage(vis, riktning !== null);
   }
 
@@ -719,31 +843,34 @@
   }
 
   function uppdateraLage(vis, nyttLage) {
-    const forsta = sidor[vis[0] - 1], sista = sidor[vis[vis.length - 1] - 1];
-    const olika = vis.map(n => sidor[n - 1]).filter((s, i, a) => !i || sidhuvud(s) !== sidhuvud(a[i - 1]));
-    const sidor_ = vis.length > 1 ? `Sida ${vis[0]}–${vis[1]}` : `Sida ${vis[0]}`, sidtext = `${sidor_} av ${sidor.length}`;
-    ui.position.replaceChildren(h('span', { class: 'pos-avsnitt' }, olika.map((s, i) => [i ? ' / ' : '', sidhuvudNoder(s)])),
+    const forsta = sida(vis[0]), sista = sida(vis[vis.length - 1]), omslag = forsta.typ === 'omslag';
+    const olika = vis.map(sida).filter((s, i, a) => !i || sidhuvud(s) !== sidhuvud(a[i - 1]));
+    const sidor_ = omslag ? 'Omslag' : vis.length > 1 ? `Sida ${vis[0]}–${vis[1]}` : `Sida ${vis[0]}`;
+    const sidtext = omslag ? `Omslag, ${sidor.length} sidor` : `${sidor_} av ${sidor.length}`;
+    ui.position.replaceChildren(h('span', { class: 'pos-avsnitt' }, omslag ? bokTitlar(textId)[0] : olika.map((s, i) => [i ? ' / ' : '', sidhuvudNoder(s)])),
       h('span', { class: 'pos-skiljetecken' }, ' · '), h('span', { class: 'pos-sida' }, sidtext));
-    ui.lasSidtext.replaceChildren(h('span', null, sidor_), h('span', null, `av ${sidor.length}`));
+    ui.lasSidtext.replaceChildren(h('span', null, sidor_), h('span', null, omslag ? `${sidor.length} sidor` : `av ${sidor.length}`));
     ui.lasRemsa.querySelectorAll('.lr-sida').forEach(d => d.classList.toggle('synlig', vis.includes(+d.dataset.nr)));
-    ui.bak.disabled = ui.pilBak.disabled = forsta.nr === 1;
+    ui.bak.disabled = ui.pilBak.disabled = forsta.nr === forstaSida();
     ui.fram.disabled = ui.pilFram.disabled = sista.nr === sidor.length;
     if (tillbaka && vis.includes(tillbaka)) tillbaka = null;
     ui.chipar.forEach(c => { c.hidden = !tillbaka; if (tillbaka) c.textContent = `↩ Tillbaka till sida ${tillbaka}`; });
     ui.position.hidden = !!tillbaka;
     lager.spara(platsNyckel(textId, nivaId), plats);
     if (nyttLage) {
-      ui.meddela.textContent = `${sidtext}. ${olika.map(sidhuvud).join(' / ')}.`;
-      vis.forEach(n => sidor[n - 1].poster.forEach(p => p.vidVisning.forEach(fn => { try { fn(); } catch (e) { console.error(e); } })));
+      ui.meddela.textContent = omslag ? `Omslag. ${[omslagsdata().titel, omslagsdata().undertitel].filter(Boolean).join(' – ')}.`
+        : `${sidtext}. ${olika.map(sidhuvud).join(' / ')}.`;
+      vis.forEach(n => sida(n).poster.forEach(p => p.vidVisning.forEach(fn => { try { fn(); } catch (e) { console.error(e); } })));
     }
   }
 
   // Läsplatsen är ett block, inte ett sidnummer: sidnumren beror på sidmåttet. platsFor: sidans första block.
   // sidaFor: sidan med ett block, en rubrik (adressen), 'innehall' eller ett sidnummer (#sida-7 från förr).
-  const platsFor = s => s.typ === 'innehall' ? 'innehall' : (s.poster.find(iFlodet) || {}).id;
+  const platsFor = s => s.typ === 'omslag' || s.typ === 'innehall' ? s.typ : (s.poster.find(iFlodet) || {}).id;
   function sidaFor(x) {
+    if (x === 'omslag') return forstaSida();
     const m = /^sida-(\d+)$/.exec(x || '');
-    if (m || typeof x === 'number') return Math.max(1, Math.min(sidor.length, m ? +m[1] : x));
+    if (m || typeof x === 'number') return Math.max(forstaSida(), Math.min(sidor.length, m ? +m[1] : x));
     const bok = byggBok(nivaId), p = x && x !== 'innehall' && postFor(bok, x);
     const s = p && (aktuell.postSida.get(p) || aktuell.postSida.get(bok.poster.slice(bok.poster.indexOf(p)).find(iFlodet)));
     return s ? s.nr : 1;
@@ -760,12 +887,13 @@
   // tidigare "tillbaka": eleven gick dit för att hitta något annat. Boken är en enda post i webbläsarens historik,
   // så att bakåt alltid leder tillbaka till delkapitlet; adressen följer med och pekar på sidans rubrik (#atomer-2).
   function gaTill(n, { hopp = false, minnas = hopp } = {}) {
-    n = Math.max(1, Math.min(sidor.length, n | 0 || 1));
+    n = Number.isFinite(+n) ? Math.max(forstaSida(), Math.min(sidor.length, Math.trunc(+n))) : 1;   // 0: omslaget
     const fore = synliga(nr)[0], efter = synliga(n)[0];
-    if (minnas && efter !== fore && !(fore === 1 && tillbaka)) tillbaka = nr;
+    // (från omslaget blir det inget "Tillbaka till sida …")
+    if (minnas && efter !== fore && !(fore === 1 && tillbaka)) tillbaka = nr || null;
     nr = n;
-    plats = platsFor(sidor[n - 1]);
-    history.replaceState({ bok: true }, '', adress(sidor[n - 1].ankare));
+    plats = platsFor(sida(n));
+    history.replaceState({ bok: true }, '', adress(sida(n).ankare));
     rita(Math.sign(efter - fore), !hopp);           // bläddring vänder ett blad, ett hopp gör det inte
   }
   const bladdra = steg => { const v = synliga(nr); gaTill(steg > 0 ? v[v.length - 1] + 1 : v[0] - 1); };
@@ -845,19 +973,23 @@
     if (!nivaId) { ui.lasLage.textContent = 'Texterna kommer.'; return; }
     // Läsplatsen är ett block (platsNyckel); finns det inte längre i boken börjar texten om
     const sparadPost = (bok, t, n) => postFor(bok, lager.hamta(platsNyckel(t, n), null));
+    // Utan läsplats i boken: omslaget (första gången, eller om eleven var där), innehållet om eleven var där
+    const borjan = (t, n) => harOmslag() && lager.hamta(platsNyckel(t, n), null) !== 'innehall' ? 'omslag' : 'innehall';
     const bok = byggBok(nivaId), sp = sparadPost(bok, textId, nivaId);
     let knappar;
     if (info.texter) {
       knappar = info.texter.map(t => {
         const n = nivaFor(t.id), p = n && sparadPost(byggBok(n, t.id), t.id, n);
-        return { titel: t.titel, text: t.id, dar: t.id === textId, kommer: !n, oppna: p ? p.id : 'innehall' };
+        return { titel: t.titel, text: t.id, dar: t.id === textId, kommer: !n, oppna: p ? p.id : borjan(t.id, n) };
       });
     } else {
       const numrerade = bok.avsnitt.filter(a => a.nummer), avsnitt = numrerade.length ? numrerade : bok.avsnitt;
       const ix = a => bok.avsnitt.indexOf(a);
       // texten där eleven är (i Inledningen: A, i Sammanfattningen: den sista); den öppnar boken där eleven var
       const har = sp ? Math.max(0, avsnitt.filter(a => ix(a) <= ix(sp.avsnitt)).length - 1) : 0;
-      knappar = avsnitt.map((a, i) => ({ titel: a.titel, dar: i === har, oppna: i === har && sp ? sp.id : bok.delar[ix(a)].poster[0].id }));
+      const forst = !sp && borjan('', nivaId) === 'omslag' ? 'omslag' : null;
+      knappar = avsnitt.map((a, i) => ({ titel: a.titel, dar: i === har,
+        oppna: i === har && sp ? sp.id : i === har && forst ? forst : bok.delar[ix(a)].poster[0].id }));
     }
     ui.texter.replaceChildren(...knappar.map((k, i) => {
       const bokstav = String.fromCharCode(97 + i);
@@ -904,8 +1036,8 @@
     layout();                                      // bryter boken efter sidmåttet
     nr = sidaFor(mal);
     const p = postFor(byggBok(nivaId), mal);
-    plats = p && iFlodet(p) ? p.id : platsFor(sidor[nr - 1]);       // läsplatsen följer med när sidmåttet ändras
-    history.replaceState({ bok: true }, '', adress(sidor[nr - 1].ankare));
+    plats = p && iFlodet(p) ? p.id : platsFor(sida(nr));            // läsplatsen följer med när sidmåttet ändras
+    history.replaceState({ bok: true }, '', adress(sida(nr).ankare));
     rita(0);
     ui.scen.focus({ preventScroll: true });
     ui.meddela.textContent = `${bokTitlar(textId)[0]}, ${nivaNamn(nivaId)}. Esc stänger boken.`;
@@ -1162,22 +1294,33 @@
   }
 
   function bytNiva(id) {
-    const avsnitt = sidor[nr - 1].avsnitt.id;
+    const pa = nr, avsnitt = pa ? sidor[pa - 1].avsnitt.id : null;
     satsNiva(id);
     ritaNivaval();
     tillbaka = null;
     layout();
-    // samma avsnitt på den andra nivån, från dess början
+    // samma avsnitt på den andra nivån, från dess början (på omslaget: omslaget)
     const d = byggBok(id).delar.find(x => x.avsnitt.id === avsnitt);
-    nr = d ? sidaFor(d.poster[0].id) : 1;
-    plats = platsFor(sidor[nr - 1]);
-    history.replaceState({ bok: true }, '', adress(sidor[nr - 1].ankare));
+    nr = pa === 0 ? 0 : d ? sidaFor(d.poster[0].id) : 1;
+    plats = platsFor(sida(nr));
+    history.replaceState({ bok: true }, '', adress(sida(nr).ankare));
     rita(0);
     ui.meddela.textContent = `Nivå: ${nivaNamn(id)}.`;
   }
 
   /* ---------- Nivåfilerna: en per nivå, innehall/<nivå>.js (med texter innehall/<text>/<nivå>.js). En tom fil ger
      en nivå som kommer. Filen anropar Bok.niva(...) som vanligt; vilken text den hör till står på dess script-tagg. ---------- */
+
+  // Kapitlets gemensamma data (omslaget): kapitel: '../kapitel.js' i delkapitel.js. Filen anropar Bok.kapitel(...).
+  function laddaKapitel() {
+    if (!info.kapitel) return Promise.resolve();
+    return new Promise(ok => {
+      const s = h('script', { src: info.kapitel });
+      s.onload = () => { if (!kapitel) anmal(`${info.kapitel} anropade inte Bok.kapitel(…)`); ok(); };
+      s.onerror = () => { anmal(`${info.kapitel} saknas (kapitel i delkapitel.js)`); ok(); };
+      document.head.append(s);
+    });
+  }
 
   function laddaNiva(n, t = '') {
     return new Promise(ok => {
@@ -1218,6 +1361,8 @@
   // före en sidbrytning).
   function kontrollera() {
     const ut = { problem: problem.slice(), varningar: [], nivaer: {} };
+    if (harOmslag() && kapitel.illustration && !illustrationer[kapitel.illustration]) ut.problem.push(`kapitel.js: illustrationen ”${kapitel.illustration}” finns inte (Bok.illustration i figurer.js)`);
+    ut.omslag = harOmslag();
     const mobil = matchMedia(MOBIL).matches;
     const storlekar = MALSKARMAR.map(([n, B, H]) => [n, B, H, false]);
     // Mobilen: boken har en list överst (44 px) och en längst ner (52 px), se bok.css
@@ -1288,7 +1433,7 @@
       reglage = lager.hamta(nyckel('lasreglage'), 'alltid');
       byggHubb();
       byggBokram();
-      Promise.all(texter().flatMap(t => info.nivaer.map(n => laddaNiva(n, t.id)))).then(() => {
+      Promise.all([laddaKapitel(), ...texter().flatMap(t => info.nivaer.map(n => laddaNiva(n, t.id)))]).then(() => {
         // Texten: den i adressen (?text=), den eleven läste senast, annars den första som har innehåll
         if (info.texter) textId = [adress.get('text'), lager.hamta(nyckel('text'), null), ...info.texter.map(t => t.id)]
           .find(t => t && info.texter.some(x => x.id === t) && info.nivaer.some(n => harInnehall(n.id, t))) || info.texter[0].id;
@@ -1299,8 +1444,11 @@
         // Stäng och bakåt leder dit och inte bort från delkapitlet.
         const mal = platsIAdressen();
         if (mal && nivaId) { history.replaceState(null, '', utanHash()); oppnaAdress(mal); }
-        // Brytningen mäter texten: när typsnitten har laddats görs den om (och sparas), och först då kontrolleras boken
-        (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+        // Brytningen mäter texten: när typsnitten har laddats görs den om (och sparas), och först då kontrolleras boken.
+        // Omslagets typsnitt laddas med (Marcellus används bara där), så att titeln mäts i rätt typsnitt.
+        const typsnitt = !document.fonts ? [] : [document.fonts.ready,
+          ...(harOmslag() ? ['30px "Marcellus SC"', '50px "Marcellus"'].map(f => document.fonts.load(f).catch(() => {})) : [])];
+        Promise.all(typsnitt).then(() => {
           typsnittKlara = true;
           Object.values(bocker).forEach(b => { b.brytningar = {}; });
           if (oppen) { aktuell = null; layout(); rita(null); }
@@ -1313,10 +1461,16 @@
       const s = document.currentScript, t = (s && s.dataset.text) || '';
       try { nivadata[bokNyckel(t, id)] = normalisera(id, data, nivaFil(t, id)); } catch (e) { anmal(e.message); }
     },
+    // Kapitlets kapitel.js: det som är gemensamt för delkapitlen – omslagets överrad, titel, illustration och upphov
+    kapitel(uppgifter) {
+      kapitel = Object.assign({}, uppgifter);
+      ['titel', 'illustration'].forEach(k => { if (!kapitel[k]) anmal(`kapitel.js: omslaget saknar ${k}`); });
+    },
     blocktyp(namn, fn) { blocktyper[namn] = fn; },
     figur(namn, fn) { figurer[namn] = fn; },
+    illustration(namn, fn) { illustrationer[namn] = fn; },
     get sida() { return nr; },
-    get plats() { return plats; },                 // läsplatsen: ett block (post-id) eller 'innehall'
+    get plats() { return plats; },                 // läsplatsen: ett block (post-id), 'innehall' eller 'omslag'
     get oppen() { return oppen; },
     sidaFor: x => oppen ? sidaFor(x) : null,       // sidan med ett block eller en rubrik, i den öppna boken
     // Bok.matSidor() bryter boken i Chromebookens fönstermått (eller {sb, sh, fs}) och returnerar sidorna som inte

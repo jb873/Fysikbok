@@ -44,9 +44,15 @@ länkas de ändå: begreppen till begreppslistan och slutet av varje text till �
 | Under boken | En tunn lägesremsa, en markering per sida grupperad per avsnitt. Den går inte att klicka på. |
 | Bredvid boken | Dämpade bläddringspilar. |
 
+- **Omslaget** står först i boken, före innehållsförteckningen. Det är byggt som omslaget i musikvideorna (se
+  *Kapitlets omslag*). På dator står omslaget ensamt som högersida, alltså en stängd bok, och → vänder det som ett
+  blad så att sida 1–2 öppnas. På mobilen fyller omslaget sidan.
+  - Boken öppnas på omslaget första gången.
+  - Har eleven läst förut öppnas boken där eleven var, som förut.
+  - Omslaget nås också genom att bläddra bakåt från sida 1. Sidpositionen säger då "Omslag".
 - **Var är jag:** sidhuvudet på varje sida visar avsnittets nummer och namn, och sidnumret står i det yttre hörnet.
-- **Bläddra** med pilarna, ← och → (och PageUp/PageDown, Home/End) eller genom att svepa. Klick i
-  innehållsförteckningen (sida 1) hoppar.
+- **Bläddra** med pilarna, ← och → (och PageUp/PageDown, Home/End) eller genom att svepa. Home går till
+  innehållsförteckningen (sida 1), inte till omslaget. Klick i innehållsförteckningen hoppar.
 - **Bladvändning** (På, standard / Av): vid bläddring vänds ett blad på 0,34 s, på ett uppslag runt ryggen från
   höger till vänster (bakåt tvärtom), på mobilen lyfts sidan runt sin vänsterkant. Ett hopp (innehållet, en länk,
   Home/End, Tillbaka) vänder inget blad, bara en kort glidning på 0,17 s. *Av* och minskad rörelse i datorns
@@ -95,12 +101,13 @@ Fysik/
   bokskal/                      MOTORN – fryst, delas av alla delkapitel
     bok.js                      hubben (avsnittssidan), böckerna, sidor, bläddring, nivåer, hjälpmedel, kontrolläget
     bok.css                     papper, typografi, hubben (geografins regler i fysikens färger), reglagen
-    figurer.js                  de funktionella figurerna (SVG), specificerade i data
-    typsnitt/                   EB Garamond och Marcellus SC (OFL)
+    figurer.js                  de funktionella figurerna (SVG), specificerade i data, och omslagsmotiven
+    typsnitt/                   EB Garamond, Marcellus SC och Marcellus (OFL; Marcellus bara på omslaget)
   mall/delkapitel/              mallen för ett nytt delkapitel (kopieras hel)
   index.html                    startsidan: kapitlen I–III (I och II tonade "Kommer"), Översikt
   kraft_och_rorelse/            ett arbetsområde (kapitel III)
     index.html                  kapitelindexet: avsnittssidorna I–VI och resurskorten (tonade tills de finns)
+    kapitel.js                  kapitlets gemensamma data: omslaget (överrad, titel, illustration, upphov)
     atomen_repetition/          avsnittssida I. Repetition – ett delkapitel, bara data
       index.html                mallen, ordagrant
       delkapitel.js             nummer, titel, undertitel, texter, hjälpmedel
@@ -114,7 +121,8 @@ Fysik/
     bok-grind.js                verifieringen (se nedan)
     bilder/                     skärmbilder: grind/ (--bilder) och en mapp per arbete
     provbok/                    provdata för grinden, med texter (en bok per text) – inte elevinnehåll
-    provbok-utan-texter/        provdata utan texter: grinden prövar att det läget fungerar som förut
+    provkapitel.js              provbokens kapitel: ett omslag med en titel på två rader
+    provbok-utan-texter/        provdata utan texter och utan kapitel (inget omslag): läget som förut
 ```
 
 Allt fungerar från disken (file://), utan server. Dubbelklicka på ett delkapitels `index.html`.
@@ -142,6 +150,7 @@ Bok.delkapitel({
   undertitel: null,                   // bannerns rad, utan tankstreck: 'materia, densitet och värme'
   overrad: 'Fysik · Kraft och rörelse',     // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
+  kapitel: '../kapitel.js',           // kapitlets omslag (se Kapitlets omslag); utan raden inget omslag
   hjalpmedel: { forelasning: { href: null }, ova: { href: null }, sjalvskattning: { href: null },
                 begreppslista: { href: null }, elevbok: { href: null } }
 });
@@ -185,6 +194,47 @@ innehall/joner-isotoper-bindningar/standard.js …
 - Utan `texter` är allt som förut: en bok per nivå i `innehall/<nivå>.js`, och texterna är dess avsnitt. Det eleven
   sparat ligger kvar.
 - Är en text för lång för en bok (innehållsförteckningen får inte plats på sida 1) blir den två texter.
+
+## Kapitlets omslag
+
+Varje bok börjar med ett omslag som i musikvideorna. Omslaget är ritat ur filmernas omslag (`closed_book_fysik` och
+fysiktemat i `1800-talet/verktyg/bok.py`, som bara har lästs) och har samma mått, färger och typsnitt:
+- **Bandet:** midnattsblått, med prägling i koppar. Präglingen omfattar ramen, hörnprickarna, överraden, titeln och
+  linjen.
+- **Rutnät och skala:** ljusblå.
+- **Undertiteln:** i ljust tryck.
+- **Längst ned:** motivet och upphovet.
+- **Typsnitt:** Marcellus SC till överraden och titeln, Marcellus till undertiteln och upphovet.
+
+Det är ingen rasterbild. Allt är SVG, 1036 enheter högt (filmens pixlar), och bredden följer sidans form. Filmens
+tygstruktur är inte med.
+
+Det som är gemensamt för delkapitlen står i kapitlets `kapitel.js`:
+
+```js
+Bok.kapitel({
+  overrad: 'NO – Fysik',                // i kapitäler: NO – FYSIK
+  titel: 'Kraft och rörelse',
+  illustration: 'kraft-och-rorelse',    // motivet: Bok.illustration i bokskal/figurer.js
+  upphov: { namn: 'Joachim Björkman', ar: 2026 }
+});
+```
+
+Varje delkapitel läser filen med `kapitel: '../kapitel.js'` i `delkapitel.js`. Mallen `index.html` ändras inte.
+
+- **Undertiteln** är textens namn ur `texter`, till exempel "Kraft och motkraft".
+- **En egen undertitel:** sätt `omslag: { undertitel: 'Repetition: {text}' }` i `delkapitel.js`. `{text}` blir textens
+  namn, till exempel "Repetition: Atomen". Repetition I och II gör så.
+- **Titeln** står helst på en rad. Ryms den inte delas den på två balanserade rader, som i filmen, och så blir det
+  på mobilen.
+- **Undertiteln** står på en rad, eller på två om den inte ryms, och då helst efter ett kolon.
+- **Motivet** krymper på ett smalare omslag.
+- **Ett nytt kapitel** behöver ett nytt motiv: en ny `Bok.illustration` i `figurer.js`. Det är ett motorarbete, som
+  en ny figurtyp.
+- **Utan `kapitel`** har boken inget omslag, och allt är som förut.
+- **Sidnumren påverkas inte.** Omslaget är sida 0, utanför brytningen. Innehållsförteckningen är fortfarande sida 1,
+  så sidnumren, uppslagen och läsplatserna är desamma som utan omslag.
+- **Adressen** till omslaget är `#<text>/omslag`.
 
 ## Lägga till en nivå
 
@@ -365,6 +415,7 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   - figurer med fel data
   - länkar till okända hjälpmedel
   - saknade nivåfiler
+  - en `kapitel.js` som saknas, eller ett omslag med okänd illustration
 
   Den varnar dessutom för avsnitt utan länk i slutet. I konsolen: `Bok.matSidor({sb, sh, fs})` bryter boken i andra
   mått, `Bok.brytTid(varv)` mäter brytningen och `Bok.plats` är läsplatsen. `brytTid` mäter varje bok (text ×
@@ -389,12 +440,21 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        haka i varandra utan att gå in i varandra, strecklinjerna inte korsa rubrikerna, draget peka framåt och
        friktionen bakåt (lika långa, på blocket), och samma ytor ge samma mönster i alla böcker. Ingen sida får ha ett
        vanligt (brytbart) mellanslag mellan tal och enhet eller i ett tusental.
+       **Omslaget** (när delkapitlet har `kapitel`) prövas också:
+       - Första gången öppnas boken på omslaget, med textens namn i undertiteln.
+       - Överrad, titel, undertitel och upphov står innanför ramen och i ordning uppifrån, och motivet står under
+         undertiteln och innanför ramen.
+       - På uppslaget står omslaget ensamt som högersida, och på mobilen fyller det sidan.
+       - Sidpositionen säger "Omslag", och det går inte att bläddra bakåt från omslaget.
+       - → öppnar innehållet, och Home går till innehållet.
+       - En annan text öppnas på sitt eget omslag.
      - **Att brytningen följer reglerna och alla sidor får plats** (kontrolläget), och att brytningen tar under
        200 ms med CPU:n strypt 6 gånger: medianen av 5 mätvarv efter en uppvärmning, för varje bok. Grinden skriver
        ut median och max per bok. (Ett enda varv var för brusigt när datorn var belastad eller gick på batteri.)
      - **Bladvändningen:** → och ← vänder ett blad (det nya uppslaget syns direkt, lagret är borta efteråt, längden
        högst 450 ms); ett hopp vänder inget; en snabb serie om 10 sidbyten hamnar rätt med högst ett blad åt gången
-       och inget kvar (ingen kö); *Av* ger direkt sidbyte; med prefers-reduced-motion inga animationer. Med CPU:n
+       och inget kvar (ingen kö); *Av* ger direkt sidbyte; med prefers-reduced-motion inga animationer; ← från
+       innehållet vänder bladet till omslaget och → vänder omslaget och öppnar boken. Med CPU:n
        strypt 6 gånger: en vändning högst 450 ms från tangenten (medianen av 3 efter en uppvärmningsvändning, som
        brytningstiden; max redovisas) och inget glapp över 50 ms mellan bildrutorna – bara med laddaren i (på
        batteri: "ej mätt").
@@ -585,6 +645,22 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - Grinden: en Chrome som stängs mitt i ett musklick ger rött i stället för att krascha grinden.
   - Joachims beslut efter granskningen: BILD C har utsnittet [440, 330, 1152, 520], så att handen och repet fyller
     bilden; BILD A och B visar hela fotot.
+- **2026-11-04, bokomslag som i musikvideorna (arbetsordern omslag; Joachims svar på de fyra frågorna):**
+  - Omslaget är filmernas, i SVG (se *Kapitlets omslag*). Undertiteln och upphovet står i Marcellus, som i
+    filmerna; `Marcellus-Regular.ttf` fanns redan i `bokskal/typsnitt/`.
+  - Datan står i en gemensam `kraft_och_rorelse/kapitel.js`, som delkapitlen läser. Det sker med `kapitel` i
+    `delkapitel.js`, och motorn laddar filen som en nivåfil, så att mallen `index.html` inte ändras.
+  - Undertiteln är textens namn. Repetition I och II har "Repetition: <textens titel>" (`omslag.undertitel`).
+  - Home går till innehållsförteckningen som förut. Omslaget nås genom att bläddra bakåt och visas när boken
+    öppnas första gången. En elev som stod på innehållsförteckningen kommer tillbaka dit.
+  - Mina val:
+    - **Överraden** skrivs "NO – Fysik" som i filmens manus och visas i kapitäler (NO – FYSIK). Skärmläsaren läser
+      den i vanlig stavning.
+    - **Kolatomens kärna** ligger där filmens `karna_positioner` lägger den. De tolv lägena är uträknade en gång ur
+      filmens kod och inskrivna i `figurer.js`, eftersom filmens slumptal (numpy) inte går att få fram i JS.
+    - **Skenet** bakom motivet är en radiell toning, inte en suddad ellips.
+    - **Undertiteln** får två rader om den inte ryms, helst efter ett kolon. Filmen har bara en rad.
+    - **Sidpositionen** på omslaget säger "Omslag" och bokens antal sidor.
 - **2026-11-04, bladvändning (arbetsordern bladvändning, alternativ A):** modellen ur `turn_frame` i filmernas
   bok, byggd i CSS 3D (se *Bladvändning* ovan). Läsinställningen *Sidvändning: Snabb / Direkt* blev
   *Bladvändning: På / Av*; Snabb finns kvar bara som glidningen vid hopp. 0,34 s, så att en vändning med CPU:n
