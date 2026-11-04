@@ -35,7 +35,7 @@ Bok.niva('fordjupning', {
           lika: [[0, 1]],
           beskrivning: 'Samma bild. Två lika långa pilar utgår från blocket: dragkraften framåt och friktionen bakåt. Båda verkar på blocket och tar ut varandra.' },
         // BILD C: kraft och motkraft
-        { typ: 'figur', namn: 'bildpilar', bild: 'bilder/block-rep.jpg', bredd: 1672, hojd: 941,
+        { typ: 'figur', namn: 'bildpilar', bild: 'bilder/block-rep.jpg', bredd: 1672, hojd: 941, utsnitt: [440, 330, 1152, 520],
           pilar: [{ namn: 'jag drar i repet', fran: [690, 503], till: [950, 503], etikett: [820, 460] },
                   { namn: 'repet drar i mig', fran: [1255, 525], till: [995, 525], etikett: [1125, 615] }],
           lika: [[0, 1]],

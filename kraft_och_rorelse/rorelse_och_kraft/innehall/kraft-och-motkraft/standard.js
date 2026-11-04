@@ -39,7 +39,7 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Nu tittar vi på handen och repet' },
         { typ: 'text', text: 'Titta nu på ett annat ställe i samma bild – där handen håller i repet. Där finns också två krafter, men de är av ett annat slag. Handen drar i repet, och repet drar tillbaka i handen. Du känner det själv: ju hårdare du drar i repet, desto hårdare drar det i dig. Kraften tillbaka kallas *motkraft*.' },
         // BILD C: kraft och motkraft – pilen på handen börjar på fingrarna (y 525; 552 i skissen är under handen)
-        { typ: 'figur', namn: 'bildpilar', bild: 'bilder/block-rep.jpg', bredd: 1672, hojd: 941,
+        { typ: 'figur', namn: 'bildpilar', bild: 'bilder/block-rep.jpg', bredd: 1672, hojd: 941, utsnitt: [440, 330, 1152, 520],
           pilar: [{ namn: 'jag drar i repet', fran: [690, 503], till: [950, 503], etikett: [820, 460] },
                   { namn: 'repet drar i mig', fran: [1255, 525], till: [995, 525], etikett: [1125, 615] }],
           lika: [[0, 1]],
