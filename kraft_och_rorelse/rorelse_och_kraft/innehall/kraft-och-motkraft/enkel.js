@@ -20,7 +20,7 @@ Bok.niva('enkel', {
       ]
     },
     {
-      id: 'kraft-och-motkraft', titel: 'Kraft och motkraft', numrerad: false,
+      id: 'kraft-och-motkraft', titel: 'Kraft och motkraft',
       block: [
         { typ: 'rubrik', text: 'Först tittar vi på blocket' },
         { typ: 'text', text: 'Titta på bilden. Någon drar i ett rep. Repet sitter fast i ett block som ligger på ett bord. Det är samma block som i texten om kraft och friktion.' },
@@ -56,10 +56,20 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Kraften och motkraften verkar alltså aldrig på samma sak. Din kraft verkar på repet. Motkraften verkar på dig.' },
         { typ: 'text', text: 'Kommer du ihåg att två lika stora krafter åt olika håll kan ta ut varandra? Det gäller bara när båda krafterna verkar på samma sak, som på blocket. Kraft och motkraft verkar på olika saker. Därför tar de aldrig ut varandra.' },
 
+      ]
+    },
+    {
+      id: 'motkraft-eller-jamvikt', titel: 'Motkraft eller jämvikt?',
+      block: [
         { typ: 'rubrik', text: 'Friktionen är inte motkraften till dragkraften' },
         { typ: 'text', text: 'Det är lätt att tro att friktionen är motkraften till dragkraften. De pekar ju åt var sitt håll i den första bilden. Men så är det inte. Både dragkraften och friktionen sitter på blocket – samma sak. Då kan de inte vara kraft och motkraft. De är två olika krafter som tar ut varandra. Det kallas att blocket är i *jämvikt*.' },
         { typ: 'text', text: 'Prova knepet med att byta plats på orden. ”Repet drar i blocket” blir ”blocket drar i repet”. Det är dragkraftens motkraft – och den sitter på repet, inte på blocket.' },
 
+      ]
+    },
+    {
+      id: 'i-vardagen', titel: 'Kraft och motkraft i vardagen',
+      block: [
         { typ: 'rubrik', text: 'Du går genom att trycka marken bakåt' },
         { typ: 'text', text: 'Kraft och motkraft förklarar något du gör varje dag: att gå. När du tar ett steg trycker du foten bakåt mot marken. Marken trycker då tillbaka på din fot, lika hårt, men framåt. Det är den kraften från marken som för dig framåt. Kraften från marken är friktion. Här är friktionen alltså själv en del av en kraft och en motkraft.' },
         { typ: 'text', text: 'Det här fungerar bara om det finns friktion. På blank is glider foten bara bakåt. Då kan du inte trycka mot marken, och marken kan inte trycka tillbaka. Därför är det så svårt att gå på is.' },

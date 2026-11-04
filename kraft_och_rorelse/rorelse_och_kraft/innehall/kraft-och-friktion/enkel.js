@@ -20,7 +20,7 @@ Bok.niva('enkel', {
       ]
     },
     {
-      id: 'kraft-och-friktion', titel: 'Kraft och friktion', numrerad: false,
+      id: 'kraft-och-kraftpilar', titel: 'Kraft och kraftpilar',
       block: [
         { typ: 'rubrik', text: 'En kraft är en knuff eller ett drag' },
         { typ: 'text', text: 'När vi säger att någon har mycket kraft menar vi ofta att personen är stark. I fysiken betyder ordet något annat. Där är en *kraft* en knuff eller ett drag. Om du knuffar på en dörr verkar du med en kraft på dörren. Om du drar i ett snöre verkar du med en kraft på snöret.' },
@@ -33,6 +33,11 @@ Bok.niva('enkel', {
           beskrivning: 'En person drar i ett rep som sitter fast i ett träblock på ett bord. En pil från blocket pekar framåt i repets riktning: dragkraften.' },
         { typ: 'text', text: 'Titta på bilden. Någon drar ett block åt höger. Därför pekar pilen åt höger. Pricken visar var kraften tar tag i blocket.' },
 
+      ]
+    },
+    {
+      id: 'krafterna-avgor-rorelsen', titel: 'Krafterna avgör rörelsen',
+      block: [
         { typ: 'rubrik', text: 'Två lika stora krafter åt olika håll tar ut varandra' },
         { typ: 'text', text: 'Tänk dig att du drar i ett tungt block, men det rör sig inte. Hur kan det komma sig? Du drar ju! Svaret är att det finns en kraft till. Den verkar åt andra hållet – bakåt. Kraften bakåt är precis lika stor som ditt drag framåt.' },
         { typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Block' }, underlag: true, varden: false, skala: 16, resultant: true,
@@ -64,6 +69,11 @@ Bok.niva('enkel', {
           krafter: [{ namn: 'Dragkraft', riktning: 'hoger', storlek: 2 }, { namn: 'Kraft bakåt', riktning: 'vanster', storlek: 6 }] },
         { typ: 'text', text: 'Blocket saktar in för varje sekund, tills det står still. Det retarderar. Precis som prickarna som kom närmare och närmare varandra i texten om rörelse.' },
 
+      ]
+    },
+    {
+      id: 'friktion', titel: 'Friktion',
+      block: [
         { typ: 'rubrik', text: 'Kraften bakåt heter friktion' },
         { typ: 'text', text: 'Nu ska vi titta på vad kraften bakåt egentligen är. Den heter *friktion*. Friktion uppstår när två ytor gnids mot varandra – här undersidan av blocket och bordet.' },
         { typ: 'text', text: 'Ett bord kan se helt slätt ut. Men om du kunde titta på det i ett mikroskop skulle du se små gropar och toppar. Blockets undersida ser likadan ut. När blocket dras över bordet hakar de små topparna i varandra. Det är det som bromsar, och det är det som är friktion.' },

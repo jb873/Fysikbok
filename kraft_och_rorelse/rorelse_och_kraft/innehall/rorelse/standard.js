@@ -2,7 +2,9 @@
  * Joachims granskade källa (III-A-Rorelse-alla-nivaer-v2.md, 2026-11-03), införd ordagrant i strömformatet:
  * ### = rubrik, ett stycke = ett textblock, [FIGUR rorelsespar: X] = figuren där markeringen står. Motorn bryter sidorna.
  * "Det här lär du dig:" står som liten rubrik utan kolon, som "Det här repeterar du" i Repetition I.
- * Avsnittens id (inledning, rorelse, sammanfattning) är desamma på alla nivåer – nivåbytet hittar samma avsnitt. */
+ * Avsnittens id (inledning, rorelsen-i-prickarna, troghetslagen, sammanfattning) är desamma på alla nivåer – nivåbytet hittar samma
+ * avsnitt. Fördjupning har dessutom att-rakna-pa-rorelse; nivåbytet därifrån går till troghetslagen. Huvudrubrikerna (avsnitten)
+ * står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -24,7 +26,7 @@ Bok.niva('standard', {
       ]
     },
     {
-      id: 'rorelse', titel: 'Rörelse', numrerad: false,
+      id: 'rorelsen-i-prickarna', titel: 'Rörelsen syns i prickarna',
       block: [
         { typ: 'rubrik', text: 'En rörelse kan beskrivas med var föremålet är efter lika lång tid' },
         { typ: 'text', text: 'Tänk dig att du fotograferar en bil som kör förbi, en gång varje sekund, och sätter en prick där bilen var på varje bild. Mellan två prickar har det alltså alltid gått lika lång tid. Avståndet mellan prickarna visar hur långt bilen hann under den tiden. Ligger prickarna långt isär rör sig bilen snabbt, ligger de tätt rör den sig långsamt. På det sättet kan man se hur en rörelse ser ut, utan att räkna.' },
@@ -46,6 +48,11 @@ Bok.niva('standard', {
         { typ: 'text', text: 'När avståndet mellan prickarna krymper för varje tidsenhet minskar farten. Då säger man att föremålet *retarderar|retardation*. En bil som bromsar in mot ett rödljus hinner allt kortare bit för varje sekund, tills prickarna nästan hamnar på varandra och bilen står still. Det som får bilen att retardera är en kraft bakåt, från bromsarna och friktionen mot vägen.' },
         { typ: 'figur', namn: 'rorelsespar', rorelse: 'retarderad' },
 
+      ]
+    },
+    {
+      id: 'troghetslagen', titel: 'Tröghetslagen',
+      block: [
         { typ: 'rubrik', text: 'Bara en kraft kan ändra fart eller riktning' },
         { typ: 'text', text: 'I alla de olikformiga rörelserna gäller samma sak: när farten eller riktningen ändras är det en kraft som ligger bakom. En boll som ligger still på golvet börjar inte rulla av sig själv – någon måste sparka på den. En boll som rullar svänger inte av sig själv – något måste knuffa den åt sidan. Och en boll som rullar slutar inte av sig själv – det är friktionen mot golvet och luftmotståndet som bromsar den.' },
 

@@ -557,14 +557,13 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
   padding-bottom: .2em; border-bottom: 2px solid var(--accent-2); }
 .upphov { font-size: .78em; color: var(--dampad); margin-top: 2em !important; }
 
-.toc, .toc-sidor { list-style: none; margin: 0; padding: 0; }
-.toc-sidor { padding-left: 1.7em; }
+/* Förteckningen: bara huvudrubrikerna (avsnitten), som i en tryckt bok */
+.toc { list-style: none; margin: 0; padding: 0; }
 .toc-knapp {
   display: flex; align-items: baseline; width: 100%; background: none; border: 0; padding: .05em 0;
   text-align: left; cursor: pointer; color: inherit; line-height: 1.3;
 }
 .toc-a { font-family: var(--rubrik); font-size: 1.04em; margin-top: .3em; }
-.toc-s { font-size: .88em; padding: 0; }
 .toc-nr { flex: none; width: 1.6em; font-family: var(--text); font-weight: 600; color: var(--accent-2-mork); }
 .toc-prickar { flex: 1; min-width: 1em; margin: 0 .4em; border-bottom: 1.5px dotted rgba(27, 42, 54, .35); transform: translateY(-.28em); }
 .toc-sida { flex: none; font-family: var(--text); font-variant-numeric: tabular-nums; color: var(--dampad); }
@@ -596,7 +595,6 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .val button + button { border-left: 1px solid var(--linje); }
 .val button[aria-pressed="true"] { background: var(--black); color: var(--papper); }
 .tangenter { color: var(--dampad); font-size: .9em; margin: .8em 0 0; }
-.smal .meny-panel .toc-s { padding: .3em 0; }
 .smal .meny-panel .toc-a { padding: .2em 0; }
 
 /* ---------- Ett hjälpmedel öppnat inifrån boken (bok.js: oppnaPanel) ---------- */

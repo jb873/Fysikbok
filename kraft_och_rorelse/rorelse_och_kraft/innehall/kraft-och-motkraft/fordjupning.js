@@ -21,11 +21,16 @@ Bok.niva('fordjupning', {
       ]
     },
     {
-      id: 'kraft-och-motkraft', titel: 'Kraft och motkraft', numrerad: false,
+      id: 'kraft-och-motkraft', titel: 'Kraft och motkraft',
       block: [
         { typ: 'rubrik', text: 'Krafter är alltid en växelverkan mellan två föremål' },
         { typ: 'text', text: 'En kraft finns aldrig ensam. Den uppstår alltid mellan två föremål som påverkar varandra – en växelverkan. Newtons tredje lag säger: om föremål A påverkar föremål B med en kraft, påverkar B föremål A med en lika stor kraft i motsatt riktning. Krafterna kallas *kraft och motkraft*, eller ett kraftpar.' },
 
+      ]
+    },
+    {
+      id: 'motkraft-eller-jamvikt', titel: 'Motkraft eller jämvikt?',
+      block: [
         { typ: 'rubrik', text: 'Krafterna på ett föremål och kraftparen är två olika frågor' },
         { typ: 'text', text: 'Bilden visar krafterna på blocket: dragkraften från repet och friktionen från bordet. De verkar på samma föremål och tar ut varandra – blocket är i *jämvikt*. Men de är inte ett kraftpar. Ett kraftpar verkar alltid på två olika föremål, som handen och repet i nästa bild.' },
         // BILD B: krafterna på blocket
@@ -48,6 +53,11 @@ Bok.niva('fordjupning', {
         { typ: 'rubrik', text: 'Kedjan av kraftpar slutar i jorden' },
         { typ: 'text', text: 'Följ friktionen vidare. Bordet bromsar blocket – och blocket drar bordet med sig lika mycket. Varför rör sig då inte bordet? För att golvet håller emot med friktion mot bordsbenen. Golvets friktion har i sin tur en motkraft: bordet drar golvet med sig. Golvet sitter fast i huset, och huset i jorden. Samma sak gäller dig: repet drar dig framåt, och friktionen mellan dina fötter och golvet håller dig kvar. Kedjan av kraftpar slutar alltid i jorden – och eftersom jorden är så enormt mycket tyngre än allt annat märks dess rörelse inte.' },
 
+      ]
+    },
+    {
+      id: 'i-vardagen', titel: 'Kraft och motkraft i vardagen',
+      block: [
         { typ: 'rubrik', text: 'Lika stora krafter kan ge olika rörelser' },
         { typ: 'text', text: 'En stor lastbil och en liten bil krockar. Vilken bil påverkas av störst kraft? Svaret överraskar många: krafterna är exakt lika stora, enligt Newtons tredje lag. Men den lilla bilen har mycket mindre massa, och därför ändras dess rörelse mycket mer. Samma kraft ger större acceleration på ett föremål med liten massa. Det är därför de som sitter i den lilla bilen skadas värre.' },
 

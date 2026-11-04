@@ -1,7 +1,8 @@
 /* Avsnittssida III, text A: Rörelse – nivån Fördjupning. En självbärande bok ur samma kärna som Standard (fart och
  * hastighet med räkning, medelfart, tröghet och massa – förstå först, räkna sist). Joachims granskade källa
  * (III-A-Rorelse-alla-nivaer-v2.md, 2026-11-03), införd ordagrant i strömformatet – se standard.js. [FORMEL] är ett
- * formelblock; bråken i löptexten (600/120, v = s/t) står kvar som text. Samma avsnitts-id som Standard. */
+ * formelblock; bråken i löptexten (600/120, v = s/t) står kvar som text. Samma avsnitts-id som Standard, och dessutom
+ * att-rakna-pa-rorelse (bara i Fördjupning). */
 Bok.niva('fordjupning', {
   avsnitt: [
     {
@@ -23,7 +24,7 @@ Bok.niva('fordjupning', {
       ]
     },
     {
-      id: 'rorelse', titel: 'Rörelse', numrerad: false,
+      id: 'rorelsen-i-prickarna', titel: 'Rörelsen syns i prickarna',
       block: [
         { typ: 'rubrik', text: 'Prickarna visar både fart och riktning' },
         { typ: 'text', text: 'I prickmodellen är det alltid lika lång tid mellan två prickar. Avståndet mellan dem visar hur långt föremålet hann – alltså hur snabbt det rörde sig. Men prickarna visar också något mer: åt vilket håll föremålet rörde sig. En rörelse har alltid både en storlek och en riktning.' },
@@ -42,9 +43,19 @@ Bok.niva('fordjupning', {
         { typ: 'rubrik', text: 'Den som åker fort behöver inte accelerera' },
         { typ: 'text', text: 'Acceleration handlar om att hastigheten ändras, inte om hur stor den är. Ett flygplan som flyger rakt fram i jämna 900 km/h accelererar inte alls. En cykel som just börjar rulla går långsamt, men den accelererar, eftersom farten ökar. Det som avgör om en kraft påverkar föremålet är alltså inte hur fort det åker, utan om rörelsen ändras.' },
 
+      ]
+    },
+    {
+      id: 'troghetslagen', titel: 'Tröghetslagen',
+      block: [
         { typ: 'rubrik', text: 'Tröghet hänger ihop med massa' },
         { typ: 'text', text: 'Alla föremål är tröga – men inte lika tröga. Ju större massa ett föremål har, desto större är dess tröghet, och desto större kraft behövs för att ändra dess rörelse. En tom kundvagn är lätt att få i gång och lätt att stoppa. En full kundvagn kräver mycket mer kraft, både för att komma i gång och för att stanna. En tung lastbil behöver därför mycket längre bromssträcka än en personbil i samma fart.' },
 
+      ]
+    },
+    {
+      id: 'att-rakna-pa-rorelse', titel: 'Att räkna på rörelse',
+      block: [
         { typ: 'rubrik', text: 'Farten räknas ut som sträckan delad med tiden' },
         { typ: 'text', text: 'Nu när du vet vad fart är kan du räkna ut den. Man delar sträckan med tiden: v = s/t, där v är farten, s är sträckan och t är tiden. En cyklist som cyklar 600 meter på 120 sekunder har farten 600/120 = 5 m/s. Det betyder att cyklisten kommer 5 meter längre för varje sekund – i prickmodellen ligger prickarna 5 meter isär.' },
         { typ: 'formel', uttryck: 'v = [[s|t]]', forklaring: [['v', 'fart'], ['s', 'sträcka'], ['t', 'tid']] },

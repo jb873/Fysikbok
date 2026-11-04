@@ -2,7 +2,8 @@
  * Joachims källa (III-D-Tyngdkraften-alla-nivaer.md, 2026-11-04), införd ordagrant i strömformatet: ### = rubrik,
  * ett stycke = ett textblock. Samma bilder som Standard ([BILD T], [BILD F], [BILD M], bildpilar). "Det här lär du
  * dig:" står som liten rubrik utan kolon, som i text A–C.
- * Avsnittens id (inledning, tyngdkraft-och-normalkraft, massa-och-tyngd, sammanfattning) är desamma på alla nivåer. */
+ * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma på alla
+ * nivåer; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('enkel', {
   avsnitt: [
     {
@@ -76,11 +77,10 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'En tyngre låda är svårare att dra' },
         { typ: 'text', text: 'Tänk dig en tom flyttlåda på golvet. Den är lätt att dra. Fyll den nu med böcker. Nu är den mycket svårare att dra. Varför?' },
         { typ: 'text', text: 'Den fulla lådan har större massa. Då drar jorden hårdare i den. Lådan trycks hårdare mot golvet, och golvet trycker tillbaka med en större normalkraft. När ytorna trycks hårdare mot varandra blir friktionen större. Därför måste du dra hårdare.' },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]
     },
     {
-      id: 'massa-och-tyngd', titel: 'Massa och tyngd',
+      id: 'att-mata-kraft', titel: 'Att mäta kraft',
       block: [
         { typ: 'rubrik', text: 'Kraft mäts i newton' },
         { typ: 'text', text: 'Lyft en tung matkasse. Lyft sedan en lätt. Du känner att den tunga kräver mer kraft. För att kunna jämföra krafter mäter vi dem. Enheten för kraft heter *newton*. Den förkortas N.' },
@@ -96,6 +96,11 @@ Bok.niva('enkel', {
           beskrivning: 'En dynamometer med en fjäder och en skala från 0 till 5 newton hänger från en krok. I den nedre kroken hänger en tygpåse. Visaren står på 2. Två lika långa pilar på påsen: tyngdkraften nedåt och fjäderns kraft uppåt.' },
         { typ: 'text', text: 'Titta på bilden. Ett föremål hänger i dynamometern. Jorden drar föremålet nedåt, och föremålet drar i fjädern. Fjädern dras ut tills den drar föremålet uppåt lika hårt som jorden drar det nedåt. Då står visaren still, och du kan läsa av tyngdkraften. Ett tungt föremål drar ut fjädern mer än ett lätt.' },
 
+      ]
+    },
+    {
+      id: 'massa-och-tyngd', titel: 'Massa och tyngd',
+      block: [
         { typ: 'rubrik', text: 'Massa är hur mycket materia något innehåller' },
         { typ: 'text', text: 'Nu kommer två ord som är lätta att blanda ihop: massa och tyngd. Vi tar dem ett i taget.' },
         { typ: 'text', text: '*Massa* är hur mycket materia något innehåller – hur mycket ”grejer” det är i det. Massa mäts i kilogram, kg. Tänk på en ryggsäck med böcker som har massan 5 kg. Böckerna innehåller lika mycket materia var du än är. I Sverige, på en fjälltopp eller på månen – det är alltid samma böcker.' },

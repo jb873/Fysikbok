@@ -5,7 +5,8 @@
  * Joachims beslut 2026-11-04: rubrikerna "… gånger g" och "g är olika …" och tabellhuvudet "g (N/kg)" är omskrivna
  * ("Tyngden räknas ut med massan och tyngdfaktorn", "Tyngdfaktorn är olika på olika himlakroppar", "Tyngdfaktor (N/kg)").
  * "Det här lär du dig:" står som liten rubrik utan kolon, som i text A–C.
- * Avsnittens id (inledning, tyngdkraft-och-normalkraft, massa-och-tyngd, sammanfattning) är desamma på alla nivåer. */
+ * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma på alla
+ * nivåer; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('fordjupning', {
   avsnitt: [
     {
@@ -58,11 +59,10 @@ Bok.niva('fordjupning', {
 
         { typ: 'rubrik', text: 'Varje riktning för sig' },
         { typ: 'text', text: 'Med fyra krafter på blocket tittar man på varje riktning för sig. Lodrätt: tyngdkraft och normalkraft – här är det jämvikt så länge blocket ligger kvar på bordet. Vågrätt: dragkraft och friktion – här avgör resultanten om blocket accelererar, retarderar eller fortsätter i samma fart. Friktionen beror i sin tur på normalkraften, så de två riktningarna hänger ihop.' },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]
     },
     {
-      id: 'massa-och-tyngd', titel: 'Massa och tyngd',
+      id: 'att-mata-kraft', titel: 'Att mäta kraft',
       block: [
         { typ: 'rubrik', text: 'En dynamometer mäter kraft med en fjäder' },
         { typ: 'text', text: 'Kraft mäts i *newton* (N) med en *dynamometer*. Fjädern i den dras ut lika mycket för varje newton – dubbelt så stor kraft ger dubbelt så lång utdragning, så länge fjädern inte töjs för mycket. Det gör att skalan kan delas in jämnt.' },
@@ -74,6 +74,11 @@ Bok.niva('fordjupning', {
           bildtext: 'Dynamometern visar 2 N. Påsen har tyngden 2 N – och massan ungefär 0,2 kg.',
           beskrivning: 'En dynamometer med en fjäder och en skala från 0 till 5 newton hänger från en krok. I den nedre kroken hänger en tygpåse. Visaren står på 2. Två lika långa pilar på påsen: tyngdkraften nedåt och fjäderns kraft uppåt.' },
 
+      ]
+    },
+    {
+      id: 'massa-och-tyngd', titel: 'Massa och tyngd',
+      block: [
         { typ: 'rubrik', text: 'Tyngden räknas ut med massan och tyngdfaktorn' },
         { typ: 'text', text: 'Tyngden beror på massan och på hur hårt den plats man är på drar. Sambandet skrivs F = m · g, där F är tyngden i newton, m är massan i kilogram och g är tyngdfaktorn i newton per kilogram (N/kg). På jorden är g ungefär 9,8 N/kg, som ofta avrundas till 10 N/kg. En ryggsäck med massan 5 kg har tyngden F = 5 · 9,8 = 49 N, alltså ungefär 50 N.' },
         { typ: 'formel', uttryck: 'F = m · g',

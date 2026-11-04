@@ -3,7 +3,8 @@
  * ordagrant i strömformatet: ### = rubrik, ett stycke = ett textblock. [BILD B] och [BILD C] är fotot block-rep.jpg
  * med kraftpilar (bildpilar, data ur arbetsordern); [FIGUR 7] är kraftparet med skridskoåkarna, som förut. Kraftparet
  * visas mellan handen och repet. "Det här lär du dig:" står som liten rubrik utan kolon, som i text A.
- * Avsnittens id (inledning, kraft-och-motkraft, sammanfattning) är desamma på alla nivåer. */
+ * Avsnittens id (inledning, kraft-och-motkraft, motkraft-eller-jamvikt, i-vardagen, sammanfattning) är desamma på alla nivåer;
+ * huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -25,7 +26,7 @@ Bok.niva('standard', {
       ]
     },
     {
-      id: 'kraft-och-motkraft', titel: 'Kraft och motkraft', numrerad: false,
+      id: 'kraft-och-motkraft', titel: 'Kraft och motkraft',
       block: [
         { typ: 'rubrik', text: 'Först tittar vi på krafterna på blocket' },
         { typ: 'text', text: 'Bilden visar samma situation som i texten om kraft och friktion: någon drar i ett rep som sitter fast i ett block på ett bord. Titta först bara på blocket. Två krafter verkar på det. Repet drar blocket framåt med en dragkraft, och bordet bromsar blocket bakåt med friktion. Båda pilarna utgår från blocket, och de är lika långa. Krafterna tar ut varandra, och blocket ligger still.' },
@@ -53,6 +54,11 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Kraft och motkraft verkar på olika föremål' },
         { typ: 'text', text: 'Det viktiga är att kraften och motkraften verkar på två olika föremål. Din kraft verkar på repet. Motkraften verkar på dig. Därför tar de inte ut varandra. För att krafter ska ta ut varandra måste de verka på samma föremål – som dragkraften och friktionen gör på blocket i den första bilden.' },
 
+      ]
+    },
+    {
+      id: 'motkraft-eller-jamvikt', titel: 'Motkraft eller jämvikt?',
+      block: [
         { typ: 'rubrik', text: 'Friktionen är inte motkraften till dragkraften' },
         { typ: 'text', text: 'Det är lätt att tro att friktionen är motkraften till dragkraften, eftersom de pekar åt var sitt håll i den första bilden. Men så är det inte. Båda verkar på blocket, och då kan de inte vara kraft och motkraft. De är två olika krafter som tar ut varandra – blocket är i *jämvikt*.' },
         { typ: 'text', text: 'Prova knepet: ”repet drar i blocket” blir ”blocket drar i repet”. Det är dragkraftens motkraft, och den verkar på repet. Friktionen har sin egen motkraft: ”bordet bromsar blocket” blir ”blocket drar bordet med sig” – lika mycket, men på bordet.' },
@@ -60,6 +66,11 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Fråga dig: vilket föremål verkar kraften på?' },
         { typ: 'text', text: 'En enkel regel hjälper. Verkar båda krafterna på samma föremål kan de ta ut varandra – som dragkraften och friktionen på blocket. Verkar den ena på ett föremål och den andra på ett annat, är det kraft och motkraft – som mellan handen och repet.' },
 
+      ]
+    },
+    {
+      id: 'i-vardagen', titel: 'Kraft och motkraft i vardagen',
+      block: [
         { typ: 'rubrik', text: 'Du går framåt genom att trycka marken bakåt' },
         { typ: 'text', text: 'Kraft och motkraft förklarar hur du kan gå. När du tar ett steg trycker din fot bakåt mot marken. Marken trycker då tillbaka på din fot med en lika stor kraft framåt – och det är den kraften som för dig framåt. Kraften från marken är friktion. Här är friktionen alltså själv en del av en kraft och en motkraft: foten trycker marken bakåt, och marken trycker foten framåt. Utan friktion skulle foten bara glida bakåt, och då skulle det inte uppstå någon kraft och motkraft mellan foten och marken.' },
 

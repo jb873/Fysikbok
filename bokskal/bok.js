@@ -365,16 +365,16 @@
     ];
   }
 
-  // Sidnumren räknas ut ur brytningen: avsnittets första sida, och under det sidan för varje rubrik.
+  // Som i en tryckt bok står bara huvudrubrikerna i förteckningen: avsnitten (Inledning, de numrerade avsnitten,
+  // Sammanfattning), med sidan där avsnittet börjar. ###-rubrikerna står bara i texten (Joachims beslut 2026-11-04).
   function innehallslista(bok, r) {
     const tocKnapp = (till, klass, ...inne) => h('button', { type: 'button', class: 'toc-knapp ' + klass, 'data-till': till },
       inne, h('span', { class: 'toc-prickar', 'aria-hidden': 'true' }), h('span', { class: 'toc-sida' }, till));
     return h('ol', { class: 'toc' }, bok.delar.map(d => {
-      const a = d.avsnitt, rubriker = d.poster.filter(p => p.typ === 'rubrik');
-      return h('li', null,
-        tocKnapp(r.postSida.get(d.poster.find(iFlodet)).nr, 'toc-a', h('span', { class: 'toc-nr' }, a.nummer || ''), h('span', { class: 'toc-titel', html: symboler(inline(a.titel, false)) })),
-        rubriker.length > 1 && h('ol', { class: 'toc-sidor' }, rubriker.map(p =>
-          h('li', null, tocKnapp(r.postSida.get(p).nr, 'toc-s', h('span', { class: 'toc-titel', html: symboler(inline(p.b.text, false)) }))))));
+      const a = d.avsnitt, k = tocKnapp(r.postSida.get(d.poster.find(iFlodet)).nr, 'toc-a', h('span', { class: 'toc-nr' }, a.nummer || ''),
+        h('span', { class: 'toc-titel', html: symboler(inline(a.titel, false)) }));
+      k.dataset.avsnitt = a.id;
+      return h('li', null, k);
     }));
   }
 
@@ -1283,12 +1283,9 @@
   function oppnaMeny() {
     visaNivaLista(false);
     ui.menyLista.replaceChildren(innehallslista(byggBok(nivaId), aktuell));
-    const vis = synliga(nr);
-    ui.menyLista.querySelectorAll('.toc-s, .toc-a').forEach(b => {
-      // varje synlig sida markeras en gång: underraden om avsnittet har flera sidor, annars avsnittsraden
-      const egen = b.classList.contains('toc-s') || !b.parentElement.querySelector('.toc-sidor');
-      if (egen && vis.includes(+b.dataset.till)) b.setAttribute('aria-current', 'page');
-    });
+    // du är här: avsnittet som de synliga sidorna hör till (på omslaget inget)
+    const har = new Set(synliga(nr).filter(n => n > 0).map(n => sidor[n - 1].avsnitt.id));
+    ui.menyLista.querySelectorAll('.toc-a').forEach(b => { if (har.has(b.dataset.avsnitt)) b.setAttribute('aria-current', 'page'); });
     ui.val.forEach(g => g.markera());
     ui.meny.hidden = false;
     (ui.menyLista.querySelector('[aria-current]') || ui.menyLista.querySelector('button')).focus();
@@ -1323,12 +1320,15 @@
 
   function bytNiva(id) {
     const pa = nr, avsnitt = pa ? sidor[pa - 1].avsnitt.id : null;
+    // avsnitten fram till och med det där eleven är, närmast först (Fördjupning kan ha ett avsnitt som andra nivåer
+    // saknar: då det närmaste föregående som finns på den nya nivån)
+    const fore = byggBok(nivaId).avsnitt.map(a => a.id), bakat = fore.slice(0, fore.indexOf(avsnitt) + 1).reverse();
     satsNiva(id);
     ritaNivaval();
     tillbaka = null;
     layout();
     // samma avsnitt på den andra nivån, från dess början (på omslaget: omslaget)
-    const d = byggBok(id).delar.find(x => x.avsnitt.id === avsnitt);
+    const delar = byggBok(id).delar, d = bakat.map(x => delar.find(dd => dd.avsnitt.id === x)).find(Boolean);
     nr = pa === 0 ? 0 : d ? sidaFor(d.poster[0].id) : 1;
     plats = platsFor(sida(nr));
     history.replaceState({ bok: true }, '', adress(sida(nr).ankare));
@@ -1377,11 +1377,10 @@
       const a = bok.ankare.get(p.id);
       if (a && a !== p) ut.problem.push(`${kalla}: blockets id ”${p.id}” är också adressen till rubriken ”${renText(a.b ? a.b.text : a.avsnitt.titel)}” – byt id`);
     }
-    for (const d of bok.delar) {
-      if (!d.avsnitt.nummer) continue;
-      const sista = d.poster.filter(p => p.typ !== 'upphov').pop();
-      if (!sista || sista.typ !== 'lank') ut.varningar.push(`${bok.id}: avsnittet ”${d.avsnitt.titel}” slutar inte med en länk till hjälpmedlen`);
-    }
+    // Länken till hjälpmedlen står sist i det sista numrerade avsnittet (och i Sammanfattningen), inte i varje avsnitt
+    const numrerade = bok.delar.filter(d => d.avsnitt.nummer), d = numrerade[numrerade.length - 1];
+    const sista = d && d.poster.filter(p => p.typ !== 'upphov').pop();
+    if (d && (!sista || sista.typ !== 'lank')) ut.varningar.push(`${bok.id}: det sista avsnittet ”${d.avsnitt.titel}” slutar inte med en länk till hjälpmedlen`);
   }
 
   // Varje bok bryts i Chromebookens två mått och i det här fönstret (på mobilen: mobilens mått). Rött: en sida som
@@ -1420,7 +1419,8 @@
         `${mnamn} (${m.storlek}, ${m.text}) ${m.sidor} sidor, ` + (m.for_stora.length ? 'får inte plats – ' + m.for_stora.map(f => `sida ${f.sida} (+${f.px} px)`).join(', ') : 'alla får plats')).join('; '));
     }
     // Grindens prov: rubrikernas adresser i boken som visas (adress → block)
-    if (nivaId) ut.ankare = [...byggBok(nivaId).ankare].map(([a, p]) => [adress(a).slice(1), p.id]);
+    // (rubrikernas adresser räknas per nivå: avsnitt-id-n är den n:te rubriken i avsnittet på just den nivån)
+    if (nivaId) { ut.ankare = [...byggBok(nivaId).ankare].map(([a, p]) => [adress(a).slice(1), p.id]); ut.niva = nivaId; }
     ut.gron = !ut.problem.length && !antalFel;
     document.body.dataset.kontroll = JSON.stringify(ut);
     let p = document.querySelector('.kontrollpanel');

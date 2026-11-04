@@ -3,7 +3,8 @@
  * ett stycke = ett textblock. [BILD T] och [BILD F] är fotot block-rep.jpg och [BILD M] fotot dynamometer.jpg, med
  * kraftpilar (bildpilar, data ur arbetsordern III D; lägena justerade så att pilar och etiketter inte överlappar).
  * "Det här lär du dig:" står som liten rubrik utan kolon, som i text A–C.
- * Avsnittens id (inledning, tyngdkraft-och-normalkraft, massa-och-tyngd, sammanfattning) är desamma på alla nivåer. */
+ * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma på alla
+ * nivåer; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -62,11 +63,10 @@ Bok.niva('standard', {
 
         { typ: 'rubrik', text: 'Ett tyngre block ger större friktion mot bordet' },
         { typ: 'text', text: 'Tänk dig att du först drar en tom trälåda över golvet och sedan fyller den med böcker. Den fyllda lådan har större massa och påverkas därför av en större tyngdkraft. Den trycks hårdare mot golvet, vilket gör att golvet också påverkar lådan med en större normalkraft. På samma underlag leder den större normalkraften vanligtvis till större friktion, och därför behöver du dra hårdare för att få lådan att glida.' },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]
     },
     {
-      id: 'massa-och-tyngd', titel: 'Massa och tyngd',
+      id: 'att-mata-kraft', titel: 'Att mäta kraft',
       block: [
         { typ: 'rubrik', text: 'Kraft mäts i newton med hjälp av en dynamometer' },
         { typ: 'text', text: 'När du lyfter en tung matkasse känner du att du måste använda en större kraft än när du lyfter en lätt kasse. För att kunna jämföra krafter behöver vi mäta hur stora de är, och enheten för kraft är *newton* (N). Ett vanligt mätinstrument är en *dynamometer*, som innehåller en fjäder som dras ut när den belastas. Ju större kraft som påverkar fjädern, desto längre dras den ut.' },
@@ -80,6 +80,11 @@ Bok.niva('standard', {
           bildtext: 'Dynamometern visar 2 N. Påsen har tyngden 2 N – och massan ungefär 0,2 kg.',
           beskrivning: 'En dynamometer med en fjäder och en skala från 0 till 5 newton hänger från en krok. I den nedre kroken hänger en tygpåse. Visaren står på 2. Två lika långa pilar på påsen: tyngdkraften nedåt och fjäderns kraft uppåt.' },
 
+      ]
+    },
+    {
+      id: 'massa-och-tyngd', titel: 'Massa och tyngd',
+      block: [
         { typ: 'rubrik', text: 'Massa beskriver mängden materia medan tyngd är en kraft' },
         { typ: 'text', text: 'När vi beskriver ett föremål behöver vi skilja mellan två begrepp: *massa* och *tyngd*. Massan beskriver hur mycket materia föremålet innehåller och mäts i kilogram (kg). Tyngden är däremot den kraft som jorden drar föremålet med, och den mäts i newton (N). Ett föremål kan därför ha samma massa på olika platser men olika tyngd beroende på hur stark gravitationen är.' },
         { typ: 'text', text: 'Tänk dig en ryggsäck som innehåller böcker med den sammanlagda massan 5 kg. Böckerna innehåller lika mycket materia oavsett om ryggsäcken finns i Sverige eller på månen. Däremot förändras den kraft som drar böckerna nedåt när gravitationen förändras. Det är därför viktigt att inte blanda ihop massa med tyngd.' },

@@ -22,7 +22,7 @@ Bok.niva('enkel', {
       ]
     },
     {
-      id: 'rorelse', titel: 'Rörelse', numrerad: false,
+      id: 'rorelsen-i-prickarna', titel: 'Rörelsen syns i prickarna',
       block: [
         { typ: 'rubrik', text: 'Vi kan rita en rörelse med prickar' },
         { typ: 'text', text: 'Tänk dig att du står vid en väg och fotograferar en bil som kör förbi. Du tar en bild varje sekund. På varje bild sätter du en prick där bilen var. Mellan två prickar har det alltså gått precis en sekund.' },
@@ -51,6 +51,11 @@ Bok.niva('enkel', {
         { typ: 'figur', namn: 'rorelsespar', rorelse: 'retarderad' },
         { typ: 'text', text: 'Tänk på en bil som kör fram mot ett rödljus och bromsar. För varje sekund hinner bilen en lite kortare bit. Till slut ligger prickarna nästan på varandra, och då står bilen still. Det som gör att bilen saktar in är bromsarna och friktionen mot vägen. De drar bilen bakåt med en kraft.' },
 
+      ]
+    },
+    {
+      id: 'troghetslagen', titel: 'Tröghetslagen',
+      block: [
         { typ: 'rubrik', text: 'Det behövs en kraft för att ändra en rörelse' },
         { typ: 'text', text: 'Titta tillbaka på de olika rörelserna. Varje gång farten ändrades, eller riktningen ändrades, var det en kraft som gjorde det. Det gäller alltid.' },
         { typ: 'text', text: 'En fotboll som ligger still på gräset börjar aldrig rulla av sig själv. Någon måste sparka på den. En boll som rullar svänger aldrig av sig själv. Något måste knuffa den åt sidan. Och en boll som rullar slutar inte heller av sig själv. Det är friktionen mot gräset och luftmotståndet som bromsar den, lite i taget, tills den ligger still.' },

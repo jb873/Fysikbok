@@ -22,7 +22,7 @@ Bok.niva('fordjupning', {
       ]
     },
     {
-      id: 'kraft-och-friktion', titel: 'Kraft och friktion', numrerad: false,
+      id: 'kraft-och-kraftpilar', titel: 'Kraft och kraftpilar',
       block: [
         { typ: 'rubrik', text: 'En kraft har storlek, riktning och angreppspunkt' },
         { typ: 'text', text: 'En kraft är en knuff eller ett drag, och den beskrivs av tre saker: hur stor den är, åt vilket håll den verkar och var den angriper föremålet. Därför ritas den som en pil från angreppspunkten. Kraftens storlek mäts i enheten newton, N – mer om det i texten om tyngdkraften.' },
@@ -30,6 +30,11 @@ Bok.niva('fordjupning', {
           pilar: [{ namn: 'dragkraft', fran: [300, 552], till: [580, 552], etikett: [750, 600] }],
           beskrivning: 'En person drar i ett rep som sitter fast i ett träblock på ett bord. En pil från blocket pekar framåt i repets riktning: dragkraften.' },
 
+      ]
+    },
+    {
+      id: 'krafterna-avgor-rorelsen', titel: 'Krafterna avgör rörelsen',
+      block: [
         { typ: 'rubrik', text: 'Resultanten får man genom att lägga ihop krafterna med hänsyn till riktningen' },
         { typ: 'text', text: 'Krafter som verkar längs samma linje läggs ihop med hänsyn till riktningen. Krafter åt samma håll adderas, krafter åt motsatt håll subtraheras. Drar du blocket framåt med 16 N och friktionen bromsar med 6 N blir resultanten 16 − 6 = 10 N framåt. Drar du med 6 N och friktionen är 6 N blir resultanten 0 N.' },
         { typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Block' }, underlag: true, enhet: 'N', skala: 16, resultant: true,
@@ -38,6 +43,11 @@ Bok.niva('fordjupning', {
         { typ: 'rubrik', text: 'Resultanten avgör hur rörelsen ändras' },
         { typ: 'text', text: 'Är resultanten noll ändras inte rörelsen: föremålet ligger still eller rör sig likformigt. Är resultanten skild från noll ändras rörelsen i resultantens riktning. Ju större resultanten är, desto snabbare ändras rörelsen – och ju större massa föremålet har, desto långsammare ändras den för samma resultant. Det sambandet kallas Newtons andra lag.' },
 
+      ]
+    },
+    {
+      id: 'friktion', titel: 'Friktion',
+      block: [
         { typ: 'rubrik', text: 'Vilofriktionen anpassar sig efter draget' },
         { typ: 'text', text: 'Så länge blocket ligger stilla kallas friktionen *vilofriktion*. Den är inte en fast kraft, utan blir exakt lika stor som draget, så att resultanten blir noll. Drar du med 3 N är vilofriktionen 3 N, drar du med 8 N är den 8 N. Men den har ett största värde. Överstiger draget det värdet börjar blocket glida.' },
         { typ: 'figur', namn: 'friktion',

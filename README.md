@@ -270,7 +270,7 @@ Bok.niva('standard', {
       …,
       { typ: 'sidbrytning' },                               // valfritt: nästa block börjar ny sida
       …,
-      { typ: 'lank', till: ['ova', 'sjalvskattning'] }      // sist i avsnittet
+      { typ: 'lank', till: ['ova', 'sjalvskattning'] }      // sist i det sista numrerade avsnittet (och i Sammanfattningen)
     ] }
   ]
 });
@@ -278,7 +278,11 @@ Bok.niva('standard', {
 
 - **Avsnitt:** `{id, titel, block}`. `numrerad: false` ger ett avsnitt utan nummer (Inledning, Sammanfattning), och
   `kort` ger ett kortare namn i sidhuvudet. Numreringen, förteckningen, remsan och sidnumren räknas av sig själva.
-- **`rubrik`** är påståenderubriken: den står i innehållsförteckningen och i adressen. **`underrubrik`** är en liten
+- **Avsnitten är huvudrubrikerna** (Joachims beslut 2026-11-04): som i en tryckt bok står bara de i
+  innehållsförteckningen – Inledning, de numrerade avsnitten och Sammanfattning. Varje text delas i 2–3 numrerade
+  avsnitt. Fördjupning får ha ett avsnitt som de andra nivåerna saknar; nivåbytet därifrån går till det närmaste
+  föregående avsnitt som finns på den nya nivån.
+- **`rubrik`** är påståenderubriken: den står i texten och i adressen (inte i innehållsförteckningen). **`underrubrik`** är en liten
   rubrik inne i texten (som "Det här repeterar du").
 - **Det äldre sidformatet** (`sidor: [{titel, block}]`, Repetition I och II) läses fortfarande: sidans titel blir en
   rubrik, sidor i följd med samma titel (en tät sida som delades för hand) slås ihop, och `{typ: 'rubrik'}` inne på en
@@ -394,11 +398,11 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   Till exempel `'../begrepp/index.html#{begrepp}'` eller `'../ova/index.html?avsnitt={avsnitt}'`.
 - **Begrepp → begreppslistan:** när `begreppslista` har en adress blir varje `*begrepp*` i texten en länk dit, med en
   tunn prickad linje under. Böjda former skrivs `*atomer|atom*`.
-- **I slutet av ett avsnitt → öva/självskattning:** blocket `{ typ: 'lank', till: ['ova', 'sjalvskattning'] }` sist
-  på avsnittets sista sida.
+- **I slutet av texten → öva/självskattning:** blocket `{ typ: 'lank', till: ['ova', 'sjalvskattning'] }` sist
+  i det sista numrerade avsnittet och i Sammanfattningen (inte sist i varje avsnitt).
   - Det står i sidans fot, som en tyst rad under en tunn linje.
   - Det står där redan innan hjälpmedlet finns, så att sidan rymmer det.
-  - Kontrolläget varnar för ett numrerat avsnitt som saknar länken.
+  - Kontrolläget varnar om det sista numrerade avsnittet saknar länken.
 - **Inifrån boken** öppnas ett hjälpmedel ovanpå boken, inbäddat med plattformens `?embed=1`. Eleven behåller sidan
   och helskärmen. Där finns också *Öppna i egen flik ↗* och *Tillbaka till boken* (eller Esc).
 - **Ett nytt hjälpmedel** utöver de fem läggs till i `hjalpmedel` med ett eget namn: `{ namn: '…', href: '…' }`.
@@ -430,7 +434,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        hjälpmedelskort, och att sidan inte är bredare än skärmen. Boken ska öppnas från en text med ett riktigt
        musklick, där texten börjar, och gå till helskärm. Man ska kunna bläddra, se var man är, hoppa och komma
        tillbaka, och sidan ska därefter markera texten och läsplatsen där eleven var. Varje rad i
-       innehållsförteckningen ska leda till en sida där rubriken syns. Nivålistan och menyn ska stängas med Esc.
+       innehållsförteckningen ska leda till en sida där rubriken syns, och förteckningen ska bara ha avsnitten (inga
+       ###-rubriker). Nivåbytet från ett avsnitt som bara finns på en nivå ska gå till närmaste föregående avsnitt. Nivålistan och menyn ska stängas med Esc.
        Boken ska stängas med ✕, Esc och bakåt, och öppnas igen på samma block. En adress till en rubrik ska öppna
        boken där. Läsplatsen ska synas igen efter byte av sidmått (fönster ↔ helskärm ↔ mobil). Är texterna egna
        böcker ska en annan text öppna en egen bok, och varje text minnas sin plats. Har boken flera nivåer med
@@ -699,3 +704,16 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     Grindens bildpilprov räknar nu också på bilden. Förut jämförde provet etiketterna med rutan, och för ett stående
     foto var det fel.
   - **Kapitelindexet, kort IV:** "Fall, kast och balans" – "Fritt fall, kaströrelse, tyngdpunkt och balans."
+- **2026-11-04, huvudrubriker i innehållsförteckningen (arbetsordern huvudrubriker, III A–D):**
+  - Förteckningen visar bara avsnitten, som i en tryckt bok. ###-rubrikerna står kvar i texten.
+  - III A–D är indelade i 2–3 numrerade avsnitt per text enligt ordern. Fördjupning A har dessutom "Att räkna på
+    rörelse". Ingen text är ändrad: ett skript jämförde före och efter, och blocken är desamma i samma ordning.
+  - Länkblocket står sist i det sista numrerade avsnittet och i Sammanfattningen.
+  - **Motorn:**
+    - "Du är här" i menyn markerar avsnittet.
+    - Nivåbytet går till närmaste föregående avsnitt som finns på den nya nivån.
+    - Kontrolläget varnar bara om det sista numrerade avsnittet saknar länken.
+  - **Läsplatser:** blockens id och rubrikernas adresser räknas ur avsnittet (`<avsnitt>-b<n>`, `<avsnitt>-<n>`). En
+    läsplats eller länk i III från före indelningen pekar därför på ett id som inte finns längre. Boken öppnas då
+    på omslaget.
+  - Repetition I och II och djupdykningen tas i en senare order.

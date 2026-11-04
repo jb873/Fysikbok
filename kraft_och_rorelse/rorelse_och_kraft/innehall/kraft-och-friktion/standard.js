@@ -5,7 +5,8 @@
  * Kraftpilarna utan värden (newton införs i text D) och med samma skala (16), så att pilarna går att jämföra mellan
  * figurerna. "Kraft bakåt" med flit: texten säger först efter figur 5 att den heter friktion.
  * Figur 1 är fotot med dragkraften (bildpilar, BILD A i arbetsordern 2026-11-04); de andra figurerna står kvar.
- * Avsnittens id (inledning, kraft-och-friktion, sammanfattning) är desamma på alla nivåer. */
+ * Avsnittens id (inledning, kraft-och-kraftpilar, krafterna-avgor-rorelsen, friktion, sammanfattning) är desamma på alla nivåer;
+ * huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -27,7 +28,7 @@ Bok.niva('standard', {
       ]
     },
     {
-      id: 'kraft-och-friktion', titel: 'Kraft och friktion', numrerad: false,
+      id: 'kraft-och-kraftpilar', titel: 'Kraft och kraftpilar',
       block: [
         { typ: 'rubrik', text: 'En kraft är en knuff eller ett drag' },
         { typ: 'text', text: 'I vardagen betyder kraft ofta styrka – ”han har mycket kraft”. I fysiken betyder det något mer bestämt: en *kraft* är en knuff eller ett drag på ett föremål. En kraft behövs för att ett föremål som ligger stilla ska börja röra sig, och en kraft behövs för att ett föremål som rör sig ska ändra fart eller riktning. Det är precis vad tröghetslagen säger: utan kraft fortsätter allt som det gör.' },
@@ -38,6 +39,11 @@ Bok.niva('standard', {
           pilar: [{ namn: 'dragkraft', fran: [300, 552], till: [580, 552], etikett: [750, 600] }],
           beskrivning: 'En person drar i ett rep som sitter fast i ett träblock på ett bord. En pil från blocket pekar framåt i repets riktning: dragkraften.' },
 
+      ]
+    },
+    {
+      id: 'krafterna-avgor-rorelsen', titel: 'Krafterna avgör rörelsen',
+      block: [
         { typ: 'rubrik', text: 'Lika stora krafter åt olika håll tar ut varandra' },
         { typ: 'text', text: 'Tänk dig att du drar i blocket, men det rör sig inte. Då måste det finnas en kraft till, som verkar åt motsatt håll – bakåt. Kraften framåt och kraften bakåt är lika stora, och därför tar de ut varandra. Tillsammans blir det som om ingen kraft verkade alls, och blocket ligger kvar.' },
         { typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Block' }, underlag: true, varden: false, skala: 16, resultant: true,
@@ -60,6 +66,11 @@ Bok.niva('standard', {
         { typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lada', namn: 'Block' }, underlag: true, varden: false, skala: 16, resultant: true,
           krafter: [{ namn: 'Dragkraft', riktning: 'hoger', storlek: 2 }, { namn: 'Kraft bakåt', riktning: 'vanster', storlek: 6 }] },
 
+      ]
+    },
+    {
+      id: 'friktion', titel: 'Friktion',
+      block: [
         { typ: 'rubrik', text: 'Kraften bakåt är friktion' },
         { typ: 'text', text: 'Kraften som verkar bakåt på blocket kallas *friktion*. Friktion uppstår när två ytor gnids mot varandra, här blockets undersida och bordet. Även ytor som ser släta ut är ojämna om man tittar riktigt nära, och de små ojämnheterna hakar i varandra och bromsar.' },
         { typ: 'figur', namn: 'friktion',

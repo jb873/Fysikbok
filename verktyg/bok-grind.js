@@ -425,26 +425,32 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   const pos = (synlig('.las-sidtext') || synlig('.position') || {}).textContent || '';
   prova('var är jag: sidpositionen "Sida ' + vis.join('–') + ' av ' + antal + '"', pos.includes('Sida ' + vis.join('–')) && pos.includes('av ' + antal), pos);
   await klicka(synlig('.bok-innehall'));
-  prova('meny: Innehåll öppnar förteckningen med "du är här"', !$('.meny').hidden && $$('.meny [aria-current="page"]').some(b => vis.includes(+b.dataset.till)));
+  // du är här: avsnittet som de synliga sidorna hör till (raden börjar på eller före sidan, nästa rad efter den)
+  const tocRader = $$('.meny .toc-a'), markerade = tocRader.filter(b => b.getAttribute('aria-current') === 'page');
+  prova('meny: Innehåll öppnar förteckningen med "du är här" vid avsnittet', !$('.meny').hidden && markerade.length >= 1 && markerade.every(b => { const n = tocRader[tocRader.indexOf(b) + 1];
+    return +b.dataset.till <= Math.max(...vis) && (!n || +n.dataset.till > Math.min(...vis)); }), markerade.map(b => b.textContent).join(' | ') + ' (sidor ' + vis + ')');
   tangent('Escape'); await v(80);
   prova('meny: Esc stänger menyn, boken är kvar', $('.meny').hidden && oppen());
   tangent('ArrowLeft'); await v(80);
 
-  // Hopp via innehållet i menyn och tillbaka
+  // Hopp via innehållet i menyn och tillbaka: till ett avsnitt som inte syns (förteckningen har bara avsnitten – i en
+  // kort bok syns alla från början, och då hoppar eleven från sista sidan)
   await klicka(synlig('.bok-innehall'));
-  const malsida = $$('.meny .toc-knapp').map(b => +b.dataset.till).find(n => n > s0 + 2 * steg) ||
-    $$('.meny .toc-knapp').map(b => +b.dataset.till).find(n => !syns().includes(n));
+  const tocTill = () => $$('.meny .toc-knapp').map(b => +b.dataset.till);
+  let malsida = tocTill().find(n => n > s0 + 2 * steg) || tocTill().find(n => !syns().includes(n));
+  if (!malsida) { tangent('Escape'); await v(80); tangent('End'); await v(80); await klicka(synlig('.bok-innehall')); malsida = tocTill().find(n => !syns().includes(n)); }
   const fore = syns();
   await klicka($('.meny .toc-knapp[data-till="' + malsida + '"]'));
   prova('hoppa: en rad i innehållet går till sidan', $('.meny').hidden && syns().includes(malsida), syns() + ' (mål ' + malsida + ')');
   const chip = synlig('.tillbaka-chip:not([hidden])'), dit = chip && +(chip.textContent.match(/sida (\d+)/) || [])[1];
   prova('hoppa: "Tillbaka till sida x" visas, x där eleven var', fore.includes(dit), chip && chip.textContent);
   if (chip) await klicka(chip);
-  prova('hoppa: tillbaka-knappen går tillbaka', syns()[0] === s0, syns());
+  prova('hoppa: tillbaka-knappen går tillbaka', syns()[0] === fore[0], syns());
+  if (syns()[0] !== s0) { Bok.gaTill(s0); await v(80); }
 
   // Innehållsförteckningen räknas ur brytningen: varje rad leder till en sida där rubriken (eller avsnittet) syns
   await klicka(synlig('.bok-innehall'));
-  const rader = $$('.meny .toc-knapp').map(b => [+b.dataset.till, b.querySelector('.toc-titel').textContent.trim(), b.classList.contains('toc-a')]);
+  const rader = $$('.meny .toc-knapp').map(b => [+b.dataset.till, b.querySelector('.toc-titel').textContent.trim(), b.classList.contains('toc-a'), !!b.querySelector('.toc-nr').textContent.trim(), b.dataset.avsnitt]);
   tangent('Escape'); await v(80);
   const fel = [];
   for (const [till, titel, avsnitt] of rader) {
@@ -453,6 +459,10 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     if (!sidan || !(avsnitt ? sidan.querySelector('.sh-namn').textContent.includes(titel) : $$('.scen .sida[data-nr="' + till + '"] .sidtitel').some(e => e.textContent.trim() === titel))) fel.push(till + ' ' + titel);
   }
   prova('innehåll: varje rad leder till en sida där rubriken syns (' + rader.length + ' rader)', rader.length > 0 && !fel.length, fel.join(' | '));
+  // Bara huvudrubrikerna, som i en tryckt bok: en rad per avsnitt (lägesremsans grupper utom innehållssidan), inga ###-rubriker
+  const grupper = $$('.lr-grupp').length - 1;
+  prova('innehåll: bara huvudrubrikerna (avsnitten) står i förteckningen, inga ###-rubriker (' + rader.length + ' avsnitt)',
+    rader.every(r => r[2]) && rader.length === grupper && !$('.meny .toc ol, .meny .toc-s'), rader.length + ' rader, ' + grupper + ' avsnitt');
   tangent('End'); await v(80);
   prova('bläddra: End går till sista sidan', syns().includes(antal), syns());
   tangent('Home'); await v(80);
@@ -473,7 +483,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   const valjNiva = async i => { await klicka(synlig('.bokapp .niva-knapp')); await klicka(nivaVal()[i], 250); };
   const spar = [];
   if (ovriga.length) {
-    const mitt = rader.filter(r => !r[2])[Math.floor(rader.filter(r => !r[2]).length / 2)];
+    const numrerade = rader.filter(r => r[3]), mitt = (numrerade.length ? numrerade : rader)[Math.floor((numrerade.length || rader.length) / 2)];
     Bok.gaTill(mitt[0]); await v(80);
     const avsnittet = $('.scen .sida[data-nr="' + mitt[0] + '"] .sh-namn').textContent.trim(), fel = [];
     for (const i of [...ovriga, franNiva]) {
@@ -484,6 +494,26 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     prova('nivå: nivåbyte i boken (' + [franNiva, ...ovriga, franNiva].map(i => nivaVal()[i].textContent).join(' → ') + ') hamnar i samma avsnitt',
       !fel.length, 'från ”' + mitt[1] + '” i ' + avsnittet + (fel.length ? '; ' + fel.join(' | ') : ''));
     for (const i of ovriga) { await valjNiva(i); spar.push(await figurKoll()); }
+    // Ett avsnitt som bara finns på en nivå (III A Fördjupning: Att räkna på rörelse): nivåbytet därifrån går till det
+    // närmaste föregående avsnitt som finns på den nya nivån
+    const avsnittPa = async i => { await valjNiva(i); await klicka(synlig('.bok-innehall'));
+      const r = $$('.meny .toc-a').map(b => ({ till: +b.dataset.till, id: b.dataset.avsnitt, titel: b.querySelector('.toc-titel').textContent.trim() }));
+      tangent('Escape'); await v(80); return r; };
+    const listor = {};
+    for (const i of [franNiva, ...ovriga]) listor[i] = await avsnittPa(i);
+    let fall = null;
+    for (const x of Object.keys(listor)) for (const y of Object.keys(listor)) if (!fall && x !== y) {
+      const ids = new Set(listor[y].map(a => a.id)), a = listor[x].find(q => !ids.has(q.id));
+      if (a) { const fore = listor[x].slice(0, listor[x].indexOf(a)).reverse().find(q => ids.has(q.id));
+        fall = { x: +x, y: +y, a, mal: fore && listor[y].find(q => q.id === fore.id) }; }
+    }
+    if (fall) {
+      await valjNiva(fall.x); Bok.gaTill(fall.a.till); await v(80);
+      await valjNiva(fall.y);
+      const s = sidaMed(Bok.plats), dar = s && s.querySelector('.sh-namn').textContent.trim();
+      prova('nivå: från ett avsnitt som bara finns på en nivå går nivåbytet till närmaste föregående avsnitt på den nya nivån',
+        !!fall.mal && !!dar && dar.includes(fall.mal.titel), '”' + fall.a.titel + '” (' + nivaVal()[fall.x].textContent + ') → ' + nivaVal()[fall.y].textContent + ': ' + dar + ' (väntat ' + (fall.mal && fall.mal.titel) + ')');
+    }
     await valjNiva(franNiva);
   }
   spar.push(await figurKoll());
@@ -754,6 +784,7 @@ const BLAD = String.raw`async () => {
   synlig('.bok-innehall').click(); await v(150);
   const mal = $$('.meny .toc-knapp').map(b => +b.dataset.till).find(n => n > 1 + steg);
   if (mal) { $('.meny .toc-knapp[data-till="' + mal + '"]').click(); await v(20); }
+  else { tangent('Escape'); await v(80); }                  // en kort bok: inget avsnitt bortom uppslaget – stäng menyn
   prova('blad: ett hopp i innehållet vänder inget blad, bara direkt till sidan', !mal || (syns().includes(mal) && !lager()), 'mål ' + mal + ', syns ' + syns() + ', lager ' + lager());
   await v(300); Bok.gaTill(1); await v(300);
   // snabb serie: 7 framåt och 3 bakåt med 15 ms emellan – rätt sida på slutet, högst ett blad åt gången, ingen kö
@@ -888,7 +919,8 @@ async function kor(dk, lage, felkod) {
     // delkapitel. Rubrikernas adresser kommer ur kontrolläget (adress → block).
     const ankare = ((res.kontroll && res.kontroll.ankare) || []).filter(([a, p]) => p !== a && /-\d+$/.test(a));
     const [adr, post] = ankare[Math.floor(ankare.length / 2)] || ['innehall', 'innehall'];
-    await ladda(url + '#' + encodeURIComponent(adr));
+    // på den nivå som adresserna räknades för (en rubriks adress är den n:te rubriken i avsnittet på en viss nivå)
+    await ladda(url + (res.kontroll && res.kontroll.niva ? '&niva=' + res.kontroll.niva : '') + '#' + encodeURIComponent(adr));
     const direkt = await c.ev(`(async () => {
       const v = ms => new Promise(r => setTimeout(r, ms)), $ = s => document.querySelector(s);
       const sidor = [...document.querySelectorAll('.scen .uppslag > .sida[data-nr]')];
