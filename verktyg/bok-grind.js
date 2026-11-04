@@ -204,6 +204,8 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           pilar: [...s.querySelectorAll('g.fig-bildpil')].map(g => { const l = g.querySelector('line.fig-bildpil-rod'), t = g.querySelector('polygon.fig-bildpil-rod').points[0];
             return { x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }),
           etiketter: [...s.querySelectorAll('text.fig-bildpil-text')].map(t => ({ namn: t.textContent, ruta: ruta(t) })), bredd: vb.width * sk, hojd: vb.height * sk,
+          prickar: [...s.querySelectorAll('circle.fig-bildpil-lage')].map(c => [c.cx.baseVal.value, c.cy.baseVal.value]),
+          strale: [...s.querySelectorAll('g.fig-bildpil-strale line.fig-bildpil-rod')].map(l => [l.x1.baseVal.value, l.y1.baseVal.value, l.x2.baseVal.value, l.y2.baseVal.value]),
           // etikettens storlek på skärmen: textens storlek i figurens enheter gånger figurens skala
           minPx: Math.min(...[...s.querySelectorAll('text.fig-bildpil-text')].map(t => parseFloat(getComputedStyle(t).fontSize) * sk)) });
       });
@@ -278,6 +280,11 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       x.etiketter.forEach((e, i) => x.etiketter.slice(i + 1).forEach(g => { const [a, b] = [e.ruta, g.ruta];
         if (a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]) f_.push('etiketterna ”' + e.namn + '” och ”' + g.namn + '” överlappar'); }));
       if (!(x.minPx >= 13.95)) f_.push('en etikett är bara ' + x.minPx.toFixed(1) + ' px på skärmen (minst 14)');
+      // lägesmarkeringarna: lika stora avstånd (±1 px på skärmen) och allt – prickar och stråle – innanför bilden
+      const avst = x.prickar.slice(1).map((p, i) => Math.hypot(p[0] - x.prickar[i][0], p[1] - x.prickar[i][1]) * x.px);
+      if (avst.length && Math.max(...avst) - Math.min(...avst) > 1) f_.push('prickarnas avstånd är olika: ' + avst.map(a => a.toFixed(1)).join('/') + ' px');
+      if (x.prickar.some(p => ute(p[0], p[1]))) f_.push('en prick utanför bilden');
+      x.strale.forEach(l => { if (ute(l[0], l[1]) || ute(l[2], l[3])) f_.push('strålen utanför bilden'); });
       if (f_.length) bpFel.push(id + ': ' + f_.join(', '));
     }
     return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel,
@@ -483,24 +490,34 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   const valjNiva = async i => { await klicka(synlig('.bokapp .niva-knapp')); await klicka(nivaVal()[i], 250); };
   const spar = [];
   if (ovriga.length) {
-    const numrerade = rader.filter(r => r[3]), mitt = (numrerade.length ? numrerade : rader)[Math.floor((numrerade.length || rader.length) / 2)];
-    Bok.gaTill(mitt[0]); await v(80);
-    const avsnittet = $('.scen .sida[data-nr="' + mitt[0] + '"] .sh-namn').textContent.trim(), fel = [];
-    for (const i of [...ovriga, franNiva]) {
-      await valjNiva(i);
-      const s = sidaMed(Bok.plats), dar = s && s.querySelector('.sh-namn').textContent.trim();
-      if (dar !== avsnittet) fel.push(nivaVal()[i].textContent + ': ' + dar);
-    }
-    prova('nivå: nivåbyte i boken (' + [franNiva, ...ovriga, franNiva].map(i => nivaVal()[i].textContent).join(' → ') + ') hamnar i samma avsnitt',
-      !fel.length, 'från ”' + mitt[1] + '” i ' + avsnittet + (fel.length ? '; ' + fel.join(' | ') : ''));
-    for (const i of ovriga) { await valjNiva(i); spar.push(await figurKoll()); }
-    // Ett avsnitt som bara finns på en nivå (III A Fördjupning: Att räkna på rörelse): nivåbytet därifrån går till det
-    // närmaste föregående avsnitt som finns på den nya nivån
+    // Avsnitten på varje nivå (förteckningen). Djupdykningen har andra avsnitt än de andra nivåerna.
     const avsnittPa = async i => { await valjNiva(i); await klicka(synlig('.bok-innehall'));
       const r = $$('.meny .toc-a').map(b => ({ till: +b.dataset.till, id: b.dataset.avsnitt, titel: b.querySelector('.toc-titel').textContent.trim() }));
       tangent('Escape'); await v(80); return r; };
     const listor = {};
     for (const i of [franNiva, ...ovriga]) listor[i] = await avsnittPa(i);
+    await valjNiva(franNiva);
+    // Från ett avsnitt mitt i boken genom alla nivåer och tillbaka: varje gång samma avsnitt, eller – finns det inte på
+    // nivån – det närmaste föregående som finns där (sidhuvudets namn)
+    const numrerade = rader.filter(r => r[3]), mitt = (numrerade.length ? numrerade : rader)[Math.floor((numrerade.length || rader.length) / 2)];
+    Bok.gaTill(mitt[0]); await v(80);
+    let nu = mitt[4], fran = franNiva;
+    const fel = [], vag = [];
+    for (const i of [...ovriga, franNiva]) {
+      const ids = listor[fran].map(a => a.id), bakat = ids.slice(0, ids.indexOf(nu) + 1).reverse();
+      const mal = bakat.map(id => listor[i].find(a => a.id === id)).find(Boolean);
+      await valjNiva(i);
+      const s = sidaMed(Bok.plats), dar = s && s.querySelector('.sh-namn').textContent.trim();
+      if (!mal || !dar || !dar.includes(mal.titel)) fel.push(nivaVal()[i].textContent + ': ' + dar + ' (väntat ' + (mal && mal.titel) + ')');
+      vag.push(nivaVal()[i].textContent + ' ' + (mal && mal.titel));
+      if (mal) nu = mal.id;
+      fran = i;
+    }
+    prova('nivå: nivåbyte i boken (' + [franNiva, ...ovriga, franNiva].map(i => nivaVal()[i].textContent).join(' → ') + ') hamnar i samma avsnitt, eller i det närmaste föregående som finns på nivån',
+      !fel.length, 'från ”' + mitt[1] + '”: ' + (fel.length ? fel.join(' | ') : vag.join(' → ')));
+    for (const i of ovriga) { await valjNiva(i); spar.push(await figurKoll()); }
+    // Ett avsnitt som bara finns på en nivå (III A Fördjupning: Att räkna på rörelse): nivåbytet därifrån går till det
+    // närmaste föregående avsnitt som finns på den nya nivån
     let fall = null;
     for (const x of Object.keys(listor)) for (const y of Object.keys(listor)) if (!fall && x !== y) {
       const ids = new Set(listor[y].map(a => a.id)), a = listor[x].find(q => !ids.has(q.id));
@@ -587,7 +604,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     prova('figur: friktionen – ytorna hakar i varandra, strecklinjerna korsar inga rubriker, draget framåt och friktionen bakåt på blocket, samma mönster varje gång (' + spar.map(x => x.fr.antal).join(' + ') + ' figurer)',
       spar.every(x => !x.fr.fel.length) && !olika.length, spar.flatMap(x => x.fr.fel).concat(olika.map(y => 'mönstret för ' + y + ' skiljer sig mellan böckerna')).join(' | ') || spar.flatMap(x => x.fr.ytor).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   }
-  if (spar.some(x => x.bp.antal)) prova('figur: bildpilarna – fotot laddas, pilarna i lika är lika långa (±1 px), ingen pil eller etikett utanför utsnittet, etiketterna överlappar inte och är minst 14 px på skärmen (' + spar.map(x => x.bp.antal).join(' + ') + ' bilder)',
+  if (spar.some(x => x.bp.antal)) prova('figur: bildpilarna – fotot laddas, pilarna i lika är lika långa (±1 px), ingen pil eller etikett utanför utsnittet, etiketterna överlappar inte och är minst 14 px på skärmen, lägesmarkeringarna har lika stora avstånd (±1 px) inom bilden (' + spar.map(x => x.bp.antal).join(' + ') + ' bilder)',
     spar.every(x => !x.bp.fel.length), spar.flatMap(x => x.bp.fel).join(' | ') ||
       spar.reduce((a, x) => a + x.bp.pilar, 0) + ' pilar, minsta etiketten ' + Math.min(...spar.filter(x => x.bp.antal).map(x => x.bp.minPx)).toFixed(1) + ' px');
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
@@ -740,6 +757,17 @@ const PROVSCENARIO = String.raw`async () => {
   prova('prov: rörelsespår med tider – en tid per prick (0 s, 1 s …) och beskrivningen ur data',
     tider.join(',') === '0 s,1 s,2 s,3 s,4 s,5 s' && /^Rörelsespår: sex prickar med lika lång tid emellan, avstånden krymper – retarderad rörelse\./.test(ret.closest('.figur-bild').getAttribute('aria-label')),
     tider.join(',') + ' | ' + (ret && ret.closest('.figur-bild').getAttribute('aria-label')));
+  // Lutande plan med två steg: två rader (Lika branta, Flackare), den streckade starthöjden i varje, kulan som stannar
+  // på starthöjden i det flackare steget, och beskrivningen ur motorn
+  const lpE = await etikett('lutande-plan-2'), lp = $('.scen [data-post="lutande-plan-2"] svg[data-lutande-plan]');
+  const lpSteg = lp ? [...lp.querySelectorAll('g.fig-lp-steg')] : [];
+  const lpNamn = lpSteg.map(g => g.querySelector('text').textContent), lpHojd = lpSteg.map(g => g.querySelectorAll('line.fig-hojd').length);
+  const lpFlack = lpSteg[1] && (() => { const h = lpSteg[1].querySelector('line.fig-hojd').y1.baseVal.value, k = lpSteg[1].querySelector('circle.fig-tonad');
+    return k && Math.abs(k.cy.baseVal.value - h) < 6.5; })();
+  prova('prov: lutande plan i två steg – Lika branta och Flackare, starthöjden streckad i varje steg, kulan når starthöjden på det flackare planet, beskrivningen ur motorn',
+    lp && lp.dataset.lutandePlan === '2' && lpNamn.join(',') === 'Lika branta,Flackare' && lpHojd.every(n => n === 1) && lpFlack &&
+    lpE === 'Två steg: kulan rullar ner för ett plan och upp för ett annat. Ju flackare det andra planet är, desto längre rullar kulan för att nå starthöjden.',
+    lpNamn.join(',') + ' | ' + lpHojd.join('/') + ' | ' + lpE);
   synlig('.bok-stang').click(); await v(450);
   const dd = $$('.niva-valjare .niva-knapp').find(b => b.textContent.startsWith('Djupdykning'));
   prova('prov: i hubben är Djupdykning "kommer" när texten Tryck är vald', !oppen() && $('.underdel-knapp.aktiv').dataset.text === 'tryck' && dd && dd.getAttribute('aria-disabled') === 'true',

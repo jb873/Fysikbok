@@ -36,6 +36,9 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Provrubrik: tyngdfaktorn g i N/kg' },
         { typ: 'underrubrik', text: 'Provunderrubrik: F = m · g' },
         { typ: 'tabell', rubriker: ['Prov', 'g (N/kg)', 'm (kg)'], rader: [['Jorden', '9,8', '1'], ['Månen', '1,6', '1']] },
+        // Lutande plan (Galileos tankeexperiment) med två steg och motorns egen beskrivning
+        { typ: 'text', text: 'Provtext: lutande plan i två steg.' },
+        { typ: 'figur', id: 'lutande-plan-2', namn: 'lutande_plan', steg: 2, bildtext: 'Provbildtext under de lutande planen.' },
         // Kraftparen: grinden mäter att pilarna är lika långa, motriktade och börjar i var sitt föremåls mitt
         { typ: 'rubrik', text: 'Provrubrik: kraftpar' },
         { typ: 'text', text: 'Provtext: ett kraftpar med snöre, med värdet.' },

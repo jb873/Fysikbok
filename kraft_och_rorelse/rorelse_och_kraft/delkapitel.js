@@ -22,7 +22,12 @@ Bok.delkapitel({
     { id: 'tyngdkraften', titel: 'Tyngdkraften' }
   ],
 
-  // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning).
+  // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning) och Djupdykning (2026-11-04: text A, "Galileo
+  // mot Aristoteles"). En text utan djupdykning har en tom fil, och nivån visas som "kommer".
+  nivaer: [
+    { id: 'enkel', namn: 'Enkel', ikon: '📗' }, { id: 'standard', namn: 'Standard', ikon: '📘' },
+    { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }, { id: 'djupdykning', namn: 'Djupdykning' }
+  ],
 
   // Plattformens hjälpmedel. Föreläsning, Öva och Elevboken är flikarna på delkapitlets sida; Öva, Självskattning och
   // Begreppslista länkas också inifrån boken. Fysikens finns inte än: utan adress är de synliga, märkta "kommer" och

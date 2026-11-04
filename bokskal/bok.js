@@ -395,9 +395,12 @@
   const harOmslag = () => !!kapitel;
   const forstaSida = () => harOmslag() ? 0 : 1;
   const sida = n => n === 0 ? OMSLAGET : sidor[n - 1];
+  // En nivå utöver plattformens tre (Djupdykning) står på omslaget: "Rörelse – djupdykning"
+  const egenNiva = n => n && !NIVAER.some(x => x.id === n);
   function omslagsdata(t = textId) {
     const mall = (info.omslag && info.omslag.undertitel) || '{text}';
-    return { overrad: kapitel.overrad, titel: kapitel.titel, undertitel: mall.replace('{text}', textInfo(t).titel),
+    const niva = egenNiva(nivaId) ? ' – ' + nivaNamn(nivaId).toLowerCase() : '';
+    return { overrad: kapitel.overrad, titel: kapitel.titel, undertitel: mall.replace('{text}', textInfo(t).titel) + niva,
       illustration: kapitel.illustration, upphov: kapitel.upphov || info.upphov };
   }
   // Textens bredd i omslagets enheter, med filmens spärrning (tracking: lika mycket efter varje tecken utom det sista)
@@ -430,7 +433,7 @@
 
   function omslagElement() {
     const g = aktuell.g, d = omslagsdata();
-    const nyck = [geoNyckel(g), textId, typsnittKlara, d.undertitel].join('|');
+    const nyck = [geoNyckel(g), textId, nivaId, typsnittKlara, d.undertitel].join('|');
     if (OMSLAGET.el && OMSLAGET.nyckel === nyck) return OMSLAGET.el;
     const H = OMSLAG_H, W = Math.round(H * g.sb / g.sh), id = 'omslag' + (++omslagNr), o = OMSLAG;
     const r1 = v => Math.round(v * 10) / 10;
@@ -1377,8 +1380,9 @@
       const a = bok.ankare.get(p.id);
       if (a && a !== p) ut.problem.push(`${kalla}: blockets id ”${p.id}” är också adressen till rubriken ”${renText(a.b ? a.b.text : a.avsnitt.titel)}” – byt id`);
     }
-    // Länken till hjälpmedlen står sist i det sista numrerade avsnittet (och i Sammanfattningen), inte i varje avsnitt
-    const numrerade = bok.delar.filter(d => d.avsnitt.nummer), d = numrerade[numrerade.length - 1];
+    // Länken till hjälpmedlen står sist i det sista numrerade avsnittet (och i Sammanfattningen), inte i varje avsnitt.
+    // En nivå utöver plattformens tre (Djupdykning) behöver ingen länk.
+    const numrerade = egenNiva(bok.niva) ? [] : bok.delar.filter(d => d.avsnitt.nummer), d = numrerade[numrerade.length - 1];
     const sista = d && d.poster.filter(p => p.typ !== 'upphov').pop();
     if (d && (!sista || sista.typ !== 'lank')) ut.varningar.push(`${bok.id}: det sista avsnittet ”${d.avsnitt.titel}” slutar inte med en länk till hjälpmedlen`);
   }

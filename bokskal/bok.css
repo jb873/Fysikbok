@@ -543,6 +543,10 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-pil.fig-bildpil-rod { stroke: #b3261e; stroke-width: calc(3.4px * var(--bp-k, 1)); }
 .fig-pilspets.fig-bildpil-rod { fill: #b3261e; }
 .fig-bildpil-prick { fill: #b3261e; stroke: #fff; stroke-width: calc(2px * var(--bp-k, 1)); r: calc(4.5px * var(--bp-k, 1)); }
+.fig-bildpil-lage { fill: #b3261e; stroke: #fff; stroke-width: calc(2.4px * var(--bp-k, 1)); r: calc(6px * var(--bp-k, 1)); }
+/* lutande_plan: starthöjden streckad i guld, kulan där den stannar tonad */
+.fig-hojd { stroke: var(--accent-2); stroke-width: 1.6; stroke-dasharray: 6 4; }
+.fig-tonad { opacity: .5; }
 .fig-bildpil-text { font-family: var(--text); font-size: calc(18px * var(--bp-k, 1)); font-weight: 650; fill: #b3261e; text-anchor: middle;
   paint-order: stroke; stroke: #fff; stroke-width: calc(5px * var(--bp-k, 1)); stroke-linejoin: round; }
 

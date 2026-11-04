@@ -17,7 +17,9 @@
  *                       rader?: ['protoner'|'neutroner'|'elektroner'|'laddning'|'masstal', …]
  *   rorelsespar         rorelse: 'likformig'|'olikformig'|'accelererande'|'retarderad', prickar?: 6 (4–8), tider?: false
  *   friktion            foremal?: 'Block', underlag?: 'Bord', pilar?: true, ytor?: 'normal'|'grov'|'slat'
+ *   lutande_plan        steg?: 3 (1–3) – Galileos tankeexperiment: lika branta, flackare, vågrätt
  *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h], maxhojd?: 0.2–0.45 (standard 0.45),
+ *                       prickar?: [[x, y], …] (lägesmarkeringar), stråle?: {fran, till} (riktningen under prickarna),
  *                       pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}], lika?: [[0, 1]], beskrivning (krävs)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
@@ -473,7 +475,10 @@
   Bok.figur('bildpilar', d => {
     if (!d.bild || !(d.bredd > 0) || !(d.hojd > 0)) fel('bildpilar behöver bild, bredd och hojd (fotots pixlar)');
     if (!d.beskrivning) fel('bildpilar behöver en beskrivning – fotot kan inte beskrivas ur data');
-    const pilar = d.pilar || fel('bildpilar behöver pilar: [{namn, fran: [x, y], till: [x, y], etikett?}]');
+    // prickar: lägesmarkeringar (som i rörelsespåren) med lika lång tid emellan, och stråle: riktningen under dem.
+    // Utan pilar går det också, om prickarna finns (curlingstenen i III A Djupdykning).
+    const prickar = d.prickar || [], strale = d.stråle || d.strale || null;
+    const pilar = d.pilar || (prickar.length ? [] : fel('bildpilar behöver pilar: [{namn, fran: [x, y], till: [x, y], etikett?}] (eller prickar)'));
     const [ux, uy, ub, uh] = d.utsnitt || [0, 0, d.bredd, d.hojd];
     if (ux < 0 || uy < 0 || ub <= 0 || uh <= 0 || ux + ub > d.bredd || uy + uh > d.hojd) fel('bildpilar: utsnittet går utanför bilden');
     const inne = ([x, y]) => x >= ux && x <= ux + ub && y >= uy && y <= uy + uh;
@@ -486,6 +491,14 @@
     });
     const k = 440 / ub, H = f(uh * k), X = x => (x - ux) * k, Y = y => (y - uy) * k;
     let s = `<image href="${esc(d.bild)}" x="${f(-ux * k)}" y="${f(-uy * k)}" width="${f(d.bredd * k)}" height="${f(d.hojd * k)}" preserveAspectRatio="none"/>`;
+    // lägesmarkeringarna och strålen under dem, i pilarnas röda färg med vit kant
+    prickar.forEach(p => { if (!Array.isArray(p) || !inne(p)) fel('bildpilar: en prick går utanför utsnittet'); });
+    if (strale && (!strale.fran || !strale.till || !inne(strale.fran) || !inne(strale.till))) fel('bildpilar: strålen går utanför utsnittet');
+    if (strale) {
+      const [x1, y1, x2, y2] = [X(strale.fran[0]), Y(strale.fran[1]), X(strale.till[0]), Y(strale.till[1])];
+      s += `<g class="fig-bildpil-strale">${pil(x1, y1, x2, y2, 9, 'fig-bildpil-kant')}${pil(x1, y1, x2, y2, 9, 'fig-bildpil-rod')}</g>`;
+    }
+    s += prickar.map(([x, y]) => `<circle class="fig-bildpil-lage" cx="${f(X(x))}" cy="${f(Y(y))}" r="6"/>`).join('');
     pilar.forEach((p, i) => {
       const [x1, y1, x2, y2] = [X(p.fran[0]), Y(p.fran[1]), X(p.till[0]), Y(p.till[1])];
       // först den vita kanten, sedan den röda pilen; pricken i angreppspunkten
@@ -502,7 +515,52 @@
     // ett stående foto som annars inte ryms på samma sida som stycket före (III D, BILD M: 0,43)
     if (d.maxhojd != null && !(d.maxhojd >= 0.2 && d.maxhojd <= 0.45)) fel('bildpilar: maxhojd ska vara mellan 0.2 och 0.45 (andel av sidhöjden)');
     const stil = d.maxhojd != null ? ` style="max-height: calc(var(--sh) * ${d.maxhojd})" data-maxhojd="${d.maxhojd}"` : '';
-    return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-bildpilar="${pilar.length}" data-lika="${data}"${stil}>${s}</svg>`, beskrivning: d.beskrivning };
+    return { svg: `<svg viewBox="0 0 440 ${H}" xmlns="http://www.w3.org/2000/svg" data-bildpilar="${pilar.length}" data-lika="${data}"${prickar.length ? ` data-prickar="${prickar.length}"` : ''}${stil}>${s}</svg>`, beskrivning: d.beskrivning };
+  });
+
+  /* Galileos tankeexperiment med två lutande plan (III A Djupdykning, 2026-11-04), i tre steg under varandra:
+   *   1. Lika branta – kulan släpps högt upp till vänster och når nästan samma höjd till höger.
+   *   2. Flackare – det högra planet är flackare, och kulan rullar längre för att nå samma höjd.
+   *   3. Vågrätt – det högra planet är vågrätt: kulan når aldrig höjden. Rörelsespåret (lika långa avstånd, lika lång
+   *      tid emellan) och strålen visar att den rullar vidare i samma fart.
+   * Den streckade linjen (guld) är starthöjden; kulan har sandfärg, där den stannar är den tonad. steg: 1–3 (3). */
+  Bok.figur('lutande_plan', d => {
+    const n = d.steg == null ? 3 : d.steg;
+    if (![1, 2, 3].includes(n)) fel('lutande_plan ritar 1–3 steg');
+    const RAD = 60, X0 = 110, X1 = 436, DAL = 170, H = 34, R = 5.5;
+    // en kula som ligger på ett plan från p till q, en bit (andel t) från p: mittpunkten en radie ut från planet
+    const pa = (p, q, t) => { const dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy);
+      return [p[0] + dx * t + (dy / l) * R, p[1] + dy * t - (dx / l) * R]; };
+    const NAMN = ['Lika branta', 'Flackare', 'Vågrätt'];
+    let s = '';
+    for (let i = 0; i < n; i++) {
+      const yt = i * RAD, yb = yt + 44, yh = yb - H;
+      const hoger = i === 0 ? DAL + 60 : i === 1 ? 400 : null;          // var det högra planet når starthöjden
+      s += `<g class="fig-lp-steg" data-steg="${i + 1}">`;
+      s += text(0, yb - 8, NAMN[i], 'fig-text fig-vanster');
+      // planen: det vänstra lika brant i alla steg, det högra brant, flackt eller vågrätt
+      s += `<polygon class="fig-foremal" points="${X0},${yh} ${DAL},${yb} ${X0},${yb}"/>`;
+      if (hoger) s += `<polygon class="fig-foremal" points="${DAL},${yb} ${hoger},${yh} ${hoger},${yb}"/>`;
+      s += `<line class="fig-bord" x1="${X0}" y1="${yb}" x2="${X1}" y2="${yb}"/>`;
+      s += `<line class="fig-hojd" x1="${X0}" y1="${yh}" x2="${X1}" y2="${yh}"/>`;
+      const [kx, ky] = pa([X0, yh], [DAL, yb], 0.1);
+      s += `<circle class="fig-partikel" cx="${f(kx)}" cy="${f(ky)}" r="${R}"/>`;
+      if (hoger) {
+        // där kulan stannar: nästan samma höjd (steg 1, med friktion), samma höjd (steg 2, tänkt utan friktion)
+        const [ex, ey] = pa([DAL, yb], [hoger, yh], i === 0 ? 0.88 : 0.97);
+        s += `<circle class="fig-partikel fig-tonad" cx="${f(ex)}" cy="${f(ey)}" r="${R}"/>`;
+      } else {
+        // vågrätt: rörelsespåret (lika långa avstånd) och strålen åt höger
+        for (let x = 200; x <= 380; x += 45) s += `<circle class="fig-prick" cx="${x}" cy="${f(yb - R)}" r="3.5"/>`;
+        s += pil(DAL + 10, yb + 11, X1 - 2, yb + 11, 7, 'fig-strale');
+      }
+      s += '</g>';
+    }
+    const hojd = (n - 1) * RAD + (n === 3 ? 44 + 17 : 48);
+    const beskr = d.beskrivning || (n === 3
+      ? 'Tre steg: kulan rullar ner för ett plan och upp för ett annat. Ju flackare det andra planet är, desto längre rullar kulan för att nå starthöjden. När planet är vågrätt når den aldrig höjden och rullar vidare i samma fart.'
+      : `${n === 1 ? 'Ett steg' : 'Två steg'}: kulan rullar ner för ett plan och upp för ett annat${n === 2 ? '. Ju flackare det andra planet är, desto längre rullar kulan för att nå starthöjden' : ' och når nästan samma höjd'}.`);
+    return { svg: svg(440, hojd, s).replace('<svg ', `<svg data-lutande-plan="${n}" `), beskrivning: beskr };
   });
 
   /* ---------- Omslagsmotiven (Bok.illustration): ett per kapitel, i kapitel.js som illustration ----------
