@@ -357,7 +357,7 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `skalmodell` | `atomer: [{namn, protoner, skal: [2, 8, …], neutroner?, symbol?}]` (1–3), `overgang?: 'tar upp 2 elektroner'`, `rader?` | laddningen (protoner − elektroner), formeln (O²⁻), masstalet, och vilka elektroner som flyttar vid en övergång (markerade i guld). Med `neutroner` och högst fyra kärnpartiklar ritas protoner och neutroner i kärnan (isotoper). |
 | `rorelsespar` | `rorelse: 'likformig' \| 'olikformig' \| 'accelererande' \| 'retarderad'`, `prickar?: 6` (4–8), `tider?: false` | prickmodellen: lika lång tid mellan prickarna, och prickarnas lägen. Likformig: lika stora avstånd. Accelererande: avstånden växer jämnt (1, 2, 3 …). Retarderad: avstånden krymper jämnt, och de två sista ligger nästan ihop. Olikformig: ett fast ojämnt mönster (kort, långt, mellan …). Under prickarna står en stråle med pilspets åt höger (rörelseriktningen). `tider: true` skriver 0 s, 1 s … under prickarna. Figuren är låg och bred. |
 | `friktion` | `foremal?: 'Block'`, `underlag?: 'Bord'`, `pilar?: true`, `ytor?: 'normal' \| 'grov' \| 'slat'` | ytorna i förstoring. Överst "Så ser det ut": blocket på bordslinjen och kontaktytan i en streckad ruta. Nederst "I förstoring": blockets undersida och bordets yta med oregelbundna toppar och gropar som hakar i varandra (samma mönster varje gång; `ytor` avgör hur ojämnt), i olika dämpade färger. Strecklinjerna från rutan går till förstoringens hörn och korsar aldrig rubrikerna. Pilarna verkar på blocket: draget framåt och friktionen bakåt, lika långa; `pilar: false` ritar bara ytorna. Med andra namn än Block och Bord blir beskrivningen enklare ("Låda på hylla.") – skriv gärna en egen. |
-| `bildpilar` | `bild` (adress från delkapitlets sida), `bredd`, `hojd` (fotots pixlar), `utsnitt?: [x, y, b, h]`, `pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}]`, `lika?: [[0, 1]]`, `beskrivning` (krävs), `bildtext?`, `maxhojd?: 0.2–0.45` | ett foto med kraftpilar ritade ovanpå. Allt i fotots pixlar. Fotot visar den verkliga situationen; pilarna ritas ur data, så att de alltid blir rätt. Pilarna är röda (#b3261e) med vit kant och en prick i angreppspunkten; etiketten (namnet, mitt på `etikett`, annars över pilens mitt) i samma röda, halvfet med vit kant. `lika`: pilar som ska vara lika långa – motorn vägrar rita annars (högst 1 px skillnad i fotot), och grinden mäter. En pil utanför utsnittet är fel. Fotot görs utan pilar. Figuren får vara upp till 45 % av sidhöjden; `maxhojd` ger en lägre gräns för just den bilden (ett stående foto som annars inte ryms med stycket före, som dynamometern i III D: 0,43). |
+| `bildpilar` | `bild` (adress från delkapitlets sida), `bredd`, `hojd` (fotots pixlar), `utsnitt?: [x, y, b, h]`, `pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}]`, `lika?: [[0, 1]]`, `beskrivning` (krävs), `bildtext?`, `maxhojd?: 0.2–0.45` | ett foto med kraftpilar ritade ovanpå. Allt i fotots pixlar. Fotot visar den verkliga situationen; pilarna ritas ur data, så att de alltid blir rätt. Pilarna är röda (#b3261e) med vit kant och en prick i angreppspunkten; etiketten (namnet, mitt på `etikett`, annars över pilens mitt) i samma röda, halvfet med vit kant. `lika`: pilar som ska vara lika långa – motorn vägrar rita annars (högst 1 px skillnad i fotot), och grinden mäter. En pil utanför utsnittet är fel. Fotot görs utan pilar. Figuren får vara upp till 45 % av sidhöjden; `maxhojd` ger en lägre gräns för just den bilden (ett stående foto som annars inte ryms med stycket före, som dynamometern i III D: 0,43). Etiketterna är aldrig mindre än 14 px på skärmen: när fotot skalas ner växer etiketten och pilarnas tjocklek (`passaEtiketter` i `bok.js`), och grinden mäter det i alla lägen. |
 
 - `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data (inte `bildpilar`: ett foto
   kan inte beskrivas ur data).
@@ -439,7 +439,9 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
        kraftparens pilar ska vara lika långa, motriktade och börja i var sitt föremåls mitt. I friktionen ska ytorna
        haka i varandra utan att gå in i varandra, strecklinjerna inte korsa rubrikerna, draget peka framåt och
        friktionen bakåt (lika långa, på blocket), och samma ytor ge samma mönster i alla böcker. Ingen sida får ha ett
-       vanligt (brytbart) mellanslag mellan tal och enhet eller i ett tusental.
+       vanligt (brytbart) mellanslag mellan tal och enhet eller i ett tusental. Varje g och N/kg i rubriker,
+       innehållsförteckningen, sidhuvudet och tabellhuvuden ska stå i vanlig stil med rätt skiftläge, och bildpilarnas
+       etiketter ska vara minst 14 px på skärmen.
        **Omslaget** (när delkapitlet har `kapitel`) prövas också:
        - Första gången öppnas boken på omslaget, med textens namn i undertiteln.
        - Överrad, titel, undertitel och upphov står innanför ramen och i ordning uppifrån, och motivet står under
@@ -682,3 +684,18 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     bilden inte på samma sida i 1366 × 633. Sidan före blev då tunn (37 %). Med 0,43 för BILD M ryms de ihop.
   - Fördjupningen har formeln F = m · g och tabellen över g på jorden, månen, Mars och Jupiter. Det är formel- och
     tabellblocken, med data ur arbetsordern.
+- **2026-11-04, symboler i rubriker och etiketter i bildpilar (Joachims order efter III D):**
+  - **Symboler och enheter:** rubriker, innehållsförteckningen, sidhuvudet och tabellhuvuden står i kapitäler, och
+    där blev g ett G och kg KG. Motorn märker nu bokstavssymboler (g, m, F, v, s, t) och enheter (N, kg, N/kg, m/s,
+    °C, cm³ … ur enhetslistan) med `span.sym`, som står i EB Garamond med rätt skiftläge. "min" och "ton" märks
+    inte, eftersom de också är vanliga ord. Grinden prövar g och N/kg i varje rubrik och tabellhuvud. Provboken har en
+    rubrik, en underrubrik och ett tabellhuvud med symbolerna.
+  - **III D Fördjupning (Joachims beslut):**
+    - "Tyngden räknas ut som massan gånger g" → "Tyngden räknas ut med massan och tyngdfaktorn"
+    - "g är olika på olika himlakroppar" → "Tyngdfaktorn är olika på olika himlakroppar"
+    - tabellhuvudet "g (N/kg)" → "Tyngdfaktor (N/kg)"
+  - **Bildpilarnas etiketter** är minst 14 px på skärmen. Etiketten och pilarnas tjocklek växer när fotot skalas ner.
+    Skalan räknas på bilden och inte på figurens ruta, eftersom ett stående foto står i mitten av en bredare ruta.
+    Grindens bildpilprov räknar nu också på bilden. Förut jämförde provet etiketterna med rutan, och för ett stående
+    foto var det fel.
+  - **Kapitelindexet, kort IV:** "Fall, kast och balans" – "Fritt fall, kaströrelse, tyngdpunkt och balans."

@@ -147,6 +147,9 @@ async function chrome() {
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
     const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set();
+    // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
+    // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
+    const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
     // ett vanligt (brytbart) mellanslag mellan ett tal och en enhet, eller i ett tusental, i texten (inte i figurerna)
     const BRYTS = /\d (?:\d{3}(?!\d)|(?:km\/h|m\/s|g\/cm³|kg\/m³|cm³|m³|°C|kN|N|kJ|J|kW|W|kg|g|km|cm|mm|m|min|h|s|%)(?![\p{L}\p{N}]))/u;
     for (let n = 1; n <= $$('.lr-sida').length; n++) {
@@ -155,6 +158,16 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); let t;
         while ((t = w.nextNode())) if (!t.parentElement.closest('svg')) { const m = t.textContent.match(BRYTS); if (m) tal.add('s. ' + n + ': ”' + t.textContent.slice(Math.max(0, m.index - 12), m.index + 10) + '”'); }
       });
+      $$('.scen .sida[data-nr="' + n + '"]').forEach(s => s.querySelectorAll('h1, h2, h3, h4, thead th, .toc-titel, .sh-namn, .boktitel').forEach(e => {
+        const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let t;
+        while ((t = w.nextNode())) for (const m of t.textContent.matchAll(SYMKOLL)) {
+          const p = t.parentElement, cs = getComputedStyle(p), id = e.tagName + ' ' + m[0] + ' i ”' + e.textContent.trim().slice(0, 50) + '”';
+          if (symSett.has(id)) continue;
+          symSett.add(id);
+          if (!(p.classList.contains('sym') && p.textContent === m[0] && cs.fontVariantCaps === 'normal' && cs.textTransform === 'none' && cs.fontFamily.includes('EB Garamond')))
+            symFel.push('s. ' + n + ': ' + id + ' (' + cs.fontFamily.split(',')[0] + ', ' + cs.fontVariantCaps + ')');
+        }
+      }));
       $$('.scen svg[data-rorelse]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (!sett.has(id)) sett.set(id, { typ: s.dataset.rorelse, xs: [...s.querySelectorAll('circle.fig-prick')].map(c => c.cx.baseVal.value),
@@ -182,13 +195,17 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       $$('.scen svg[data-bildpilar]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (bp.has(id)) return;
+        // bildens yta i rutan: ett stående foto begränsas av höjden och står i mitten av en bredare ruta
         const r = s.getBoundingClientRect(), vb = s.viewBox.baseVal, img = s.querySelector('image');
-        const ruta = e => { const q = e.getBoundingClientRect(); return [q.left - r.left, q.top - r.top, q.right - r.left, q.bottom - r.top]; };
-        bp.set(id, { vb: [vb.width, vb.height], px: r.width / vb.width, lika: JSON.parse(s.dataset.lika || '[]'), antal: +s.dataset.bildpilar,
+        const sk = Math.min(r.width / vb.width, r.height / vb.height), ox = (r.width - vb.width * sk) / 2, oy = (r.height - vb.height * sk) / 2;
+        const ruta = e => { const q = e.getBoundingClientRect(); return [q.left - r.left - ox, q.top - r.top - oy, q.right - r.left - ox, q.bottom - r.top - oy]; };
+        bp.set(id, { vb: [vb.width, vb.height], px: sk, lika: JSON.parse(s.dataset.lika || '[]'), antal: +s.dataset.bildpilar,
           bild: img ? { href: new URL(img.getAttribute('href'), location.href).href, b: img.width.baseVal.value, h: img.height.baseVal.value } : null,
           pilar: [...s.querySelectorAll('g.fig-bildpil')].map(g => { const l = g.querySelector('line.fig-bildpil-rod'), t = g.querySelector('polygon.fig-bildpil-rod').points[0];
             return { x1: l.x1.baseVal.value, y1: l.y1.baseVal.value, x2: t.x, y2: t.y }; }),
-          etiketter: [...s.querySelectorAll('text.fig-bildpil-text')].map(t => ({ namn: t.textContent, ruta: ruta(t) })), bredd: r.width, hojd: r.height });
+          etiketter: [...s.querySelectorAll('text.fig-bildpil-text')].map(t => ({ namn: t.textContent, ruta: ruta(t) })), bredd: vb.width * sk, hojd: vb.height * sk,
+          // etikettens storlek på skärmen: textens storlek i figurens enheter gånger figurens skala
+          minPx: Math.min(...[...s.querySelectorAll('text.fig-bildpil-text')].map(t => parseFloat(getComputedStyle(t).fontSize) * sk)) });
       });
     }
     const fel = [], lika = (p, q) => Math.abs(p - q) < 0.6;
@@ -260,11 +277,14 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       x.etiketter.forEach(e => { if (e.ruta[0] < -0.5 || e.ruta[1] < -0.5 || e.ruta[2] > x.bredd + 0.5 || e.ruta[3] > x.hojd + 0.5) f_.push('etiketten ”' + e.namn + '” utanför utsnittet'); });
       x.etiketter.forEach((e, i) => x.etiketter.slice(i + 1).forEach(g => { const [a, b] = [e.ruta, g.ruta];
         if (a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]) f_.push('etiketterna ”' + e.namn + '” och ”' + g.namn + '” överlappar'); }));
+      if (!(x.minPx >= 13.95)) f_.push('en etikett är bara ' + x.minPx.toFixed(1) + ' px på skärmen (minst 14)');
       if (f_.length) bpFel.push(id + ': ' + f_.join(', '));
     }
     return { antal: sett.size, typer: [...new Set([...sett.values()].map(x => x.typ))], fel,
       par: { antal: par.size, satt: [...new Set([...par.values()].map(x => x.satt))], fel: parFel },
-      bp: { antal: bp.size, pilar: [...bp.values()].reduce((a, x) => a + x.pilar.length, 0), fel: bpFel },
+      bp: { antal: bp.size, pilar: [...bp.values()].reduce((a, x) => a + x.pilar.length, 0), fel: bpFel,
+        minPx: bp.size ? Math.min(...[...bp.values()].map(x => x.minPx)) : null },
+      sym: { antal: symSett.size, fel: symFel },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
@@ -537,10 +557,13 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     prova('figur: friktionen – ytorna hakar i varandra, strecklinjerna korsar inga rubriker, draget framåt och friktionen bakåt på blocket, samma mönster varje gång (' + spar.map(x => x.fr.antal).join(' + ') + ' figurer)',
       spar.every(x => !x.fr.fel.length) && !olika.length, spar.flatMap(x => x.fr.fel).concat(olika.map(y => 'mönstret för ' + y + ' skiljer sig mellan böckerna')).join(' | ') || spar.flatMap(x => x.fr.ytor).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   }
-  if (spar.some(x => x.bp.antal)) prova('figur: bildpilarna – fotot laddas, pilarna i lika är lika långa (±1 px), ingen pil eller etikett utanför utsnittet, etiketterna överlappar inte (' + spar.map(x => x.bp.antal).join(' + ') + ' bilder)',
-    spar.every(x => !x.bp.fel.length), spar.flatMap(x => x.bp.fel).join(' | ') || spar.reduce((a, x) => a + x.bp.pilar, 0) + ' pilar');
+  if (spar.some(x => x.bp.antal)) prova('figur: bildpilarna – fotot laddas, pilarna i lika är lika långa (±1 px), ingen pil eller etikett utanför utsnittet, etiketterna överlappar inte och är minst 14 px på skärmen (' + spar.map(x => x.bp.antal).join(' + ') + ' bilder)',
+    spar.every(x => !x.bp.fel.length), spar.flatMap(x => x.bp.fel).join(' | ') ||
+      spar.reduce((a, x) => a + x.bp.pilar, 0) + ' pilar, minsta etiketten ' + Math.min(...spar.filter(x => x.bp.antal).map(x => x.bp.minPx)).toFixed(1) + ' px');
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
+  prova('text: g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden står i vanlig stil med rätt skiftläge, inte i kapitäler (' + spar.reduce((a, x) => a + x.sym.antal, 0) + ' ställen)',
+    spar.every(x => !x.sym.fel.length), spar.flatMap(x => x.sym.fel).slice(0, 6).join(' | '));
   if (andraTexter.length) prova('figur: figurerna i de andra texterna (' + andraTexter.join(', ') + ') är mätta på varje nivå', stangd(), 'hash=' + location.hash);
   return k;
 }`;

@@ -462,6 +462,9 @@ sub, sup { font-size: .7em; line-height: 0; }
 .b-tabell thead th { font-weight: 450; font-size: .82em; letter-spacing: .04em; font-variant-caps: all-small-caps;
   color: var(--dampad); border-bottom-color: var(--dampad); }
 .b-tabell tbody th { font-weight: 560; }
+/* Bokstavssymboler och enheter i rubriker och tabellhuvuden (bok.js: symboler): vanlig stil, rätt skiftläge – inte
+   kapitäler, där g blir G och kg KG */
+.sym { font-family: var(--text); font-variant-caps: normal; text-transform: none; letter-spacing: normal; font-weight: 500; }
 .tabell-fotnot { font-size: .82em; color: var(--dampad); margin: .3em 0 0; }
 
 /* Länken ut till hjälpmedlen (blocktypen lank), t.ex. i slutet av ett avsnitt. Den står i sidans fot (bok.js:
@@ -533,13 +536,15 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-ytlinje.fig-ytlinje-underlag { stroke: #7f8b88; }
 /* bildpilar: röda pilar med vit kant på foto (guldet försvinner mot trä); fotot får vara upp till 45 % av sidhöjden */
 .figur-bild svg[data-bildpilar] { max-height: calc(var(--sh) * .45); }
-.fig-pil.fig-bildpil-kant { stroke: #fff; stroke-width: 7.5; }
-.fig-pilspets.fig-bildpil-kant { fill: #fff; stroke: #fff; stroke-width: 4.5; stroke-linejoin: round; }
-.fig-pil.fig-bildpil-rod { stroke: #b3261e; stroke-width: 3.4; }
+/* --bp-k (bok.js: passaEtiketter): när fotot skalas ner växer etiketterna och pilarnas tjocklek, så att etiketten
+   aldrig blir mindre än 14 px på skärmen */
+.fig-pil.fig-bildpil-kant { stroke: #fff; stroke-width: calc(7.5px * var(--bp-k, 1)); }
+.fig-pilspets.fig-bildpil-kant { fill: #fff; stroke: #fff; stroke-width: calc(4.5px * var(--bp-k, 1)); stroke-linejoin: round; }
+.fig-pil.fig-bildpil-rod { stroke: #b3261e; stroke-width: calc(3.4px * var(--bp-k, 1)); }
 .fig-pilspets.fig-bildpil-rod { fill: #b3261e; }
-.fig-bildpil-prick { fill: #b3261e; stroke: #fff; stroke-width: 2; }
-.fig-bildpil-text { font-family: var(--text); font-size: 18px; font-weight: 650; fill: #b3261e; text-anchor: middle;
-  paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round; }
+.fig-bildpil-prick { fill: #b3261e; stroke: #fff; stroke-width: calc(2px * var(--bp-k, 1)); r: calc(4.5px * var(--bp-k, 1)); }
+.fig-bildpil-text { font-family: var(--text); font-size: calc(18px * var(--bp-k, 1)); font-weight: 650; fill: #b3261e; text-anchor: middle;
+  paint-order: stroke; stroke: #fff; stroke-width: calc(5px * var(--bp-k, 1)); stroke-linejoin: round; }
 
 /* ---------- Innehållsförteckningen (sida 1 och menyn) ---------- */
 

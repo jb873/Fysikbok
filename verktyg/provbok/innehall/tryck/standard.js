@@ -31,6 +31,11 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'spar-olikformig', namn: 'rorelsespar', rorelse: 'olikformig', prickar: 4, bildtext: 'Provbildtext under ett rörelsespår.' },
         // Tal och enhet: skrivet med vanliga mellanslag – motorn gör dem hårda, så att raden aldrig bryts där
         { typ: 'text', id: 'tal-och-enhet', text: 'Provtext: resultanten blir 16 − 6 = 10 N, och järn smälter vid 1 538 °C. Farten är 5 m/s, eller 18 km/h.' },
+        // Symboler och enheter i rubriker och tabellhuvuden: grinden prövar att g och N/kg står i vanlig stil med rätt
+        // skiftläge (inte kapitäler, där g blir G)
+        { typ: 'rubrik', text: 'Provrubrik: tyngdfaktorn g i N/kg' },
+        { typ: 'underrubrik', text: 'Provunderrubrik: F = m · g' },
+        { typ: 'tabell', rubriker: ['Prov', 'g (N/kg)', 'm (kg)'], rader: [['Jorden', '9,8', '1'], ['Månen', '1,6', '1']] },
         // Kraftparen: grinden mäter att pilarna är lika långa, motriktade och börjar i var sitt föremåls mitt
         { typ: 'rubrik', text: 'Provrubrik: kraftpar' },
         { typ: 'text', text: 'Provtext: ett kraftpar med snöre, med värdet.' },

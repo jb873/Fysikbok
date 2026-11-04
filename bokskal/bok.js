@@ -96,6 +96,16 @@
   const TAL_ENHET = new RegExp(`(\\d) (?=(?:${ENHETER.join('|')})(?![\\p{L}\\p{N}]))`, 'gu');
   const bindTal = s => String(s == null ? '' : s).replace(/(\d) (?=\d{3}(?!\d))/g, '$1 ').replace(TAL_ENHET, '$1 ');
 
+  // Rubriker, innehållsförteckningen, sidhuvudet och tabellhuvuden sätts i kapitäler (Marcellus SC, all-small-caps), och
+  // där blev ett g ett G och kg KG. Bokstavssymboler (g, m, F, v, s, t) och enheter (N, kg, N/kg, m/s, °C, cm³ …) märks
+  // där (span.sym) och står i vanlig stil: EB Garamond med rätt skiftläge (bok.css). Inte "min" och "ton", som också är
+  // vanliga ord. (2026-11-04, Joachims order)
+  const SYM_ORD = [...new Set([...ENHETER.filter(e => !['min', 'ton'].includes(e)), 'N/kg', 'g', 'm', 'F', 'v', 's', 't'])]
+    .sort((a, b) => b.length - a.length).map(e => e.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&'));
+  const SYM = new RegExp(`(?<![\\p{L}\\p{N}/])(?:${SYM_ORD.join('|')})(?![\\p{L}\\p{N}/²³])`, 'gu');
+  const symboler = html => html.split(/(<[^>]*>)/).map((d, i) => i % 2 ? d : d.replace(SYM, x => `<span class="sym">${x}</span>`)).join('');
+  const symText = s => h('span', { html: symboler(esc(s)) });
+
   // Textens enda markering: *begrepp* (betonat, djupblått), *böjd form|grundform* när begreppet står böjt,
   // [[täljare|nämnare]] (bråk) och <sub>/<sup>. Har delkapitlet en begreppslista blir varje begrepp en länk dit.
   function inline(s, lankar = true) {
@@ -160,23 +170,23 @@
   blocktyper.text = d => h('p', { class: 'b-text', html: inline(d.text) });
   // rubrik: påståenderubriken (i innehållsförteckningen). underrubrik: en liten rubrik inne i texten.
   // (I det äldre sidformatet är sidans titel rubriken och {typ: 'rubrik'} en underrubrik – se normalisera.)
-  blocktyper.rubrik = d => h('h2', { class: 'sidtitel', html: inline(d.text, false) });
-  blocktyper.underrubrik = d => h('h3', { class: 'b-rubrik', html: inline(d.text) });
+  blocktyper.rubrik = d => h('h2', { class: 'sidtitel', html: symboler(inline(d.text, false)) });
+  blocktyper.underrubrik = d => h('h3', { class: 'b-rubrik', html: symboler(inline(d.text)) });
   blocktyper.punkter = d => lista(d.punkter);
   blocktyper.ruta = d => h('aside', { class: 'b-ruta' + (d.stil ? ' b-ruta-' + d.stil : '') },
-    d.rubrik && h('h4', { html: inline(d.rubrik) }),
+    d.rubrik && h('h4', { html: symboler(inline(d.rubrik)) }),
     d.text && h('p', { html: inline(d.text) }),
     d.punkter && lista(d.punkter));
   blocktyper.jamforelse = d => h('div', { class: 'b-jamforelse' },
-    d.kolumner.map(k => h('section', null, h('h4', { html: inline(k.rubrik) }), lista(k.punkter))));
+    d.kolumner.map(k => h('section', null, h('h4', { html: symboler(inline(k.rubrik)) }), lista(k.punkter))));
   blocktyper.formel = d => h('div', { class: 'b-formel' },
     h('div', { class: 'formel-uttryck', html: inline(d.uttryck) }),
     d.forklaring && h('dl', null, d.forklaring.map(([t, f]) => [h('dt', { html: inline(t) }), h('dd', { html: inline(f) })])));
   blocktyper.exempel = d => h('div', { class: 'b-exempel' },
-    h('h4', null, d.rubrik || 'Exempel'), d.rader.map(r => h('p', { html: inline(r) })));
+    h('h4', null, symText(d.rubrik || 'Exempel')), d.rader.map(r => h('p', { html: inline(r) })));
   blocktyper.tabell = d => h('div', { class: 'b-tabell' },
     h('table', null,
-      d.rubriker && h('thead', null, h('tr', null, d.rubriker.map(r => h('th', { scope: 'col', html: inline(r) })))),
+      d.rubriker && h('thead', null, h('tr', null, d.rubriker.map(r => h('th', { scope: 'col', html: symboler(inline(r)) })))),
       h('tbody', null, d.rader.map(rad => h('tr', null,
         rad.map((c, i) => h(i ? 'td' : 'th', { scope: i ? null : 'row', html: inline(c) })))))),
     d.fotnot && h('p', { class: 'tabell-fotnot', html: inline(d.fotnot) }));
@@ -220,7 +230,7 @@
     if (p.el !== undefined) return p.el;
     const a = p.avsnitt;
     p.el = p.typ === 'sidbrytning' ? null
-      : p.typ === 'avsnittsstart' ? h('div', { class: 'avsnittsstart' }, h('span', { class: 'avsnittsnr' }, a.nummer), h('h1', { html: inline(a.titel, false) }))
+      : p.typ === 'avsnittsstart' ? h('div', { class: 'avsnittsstart' }, h('span', { class: 'avsnittsnr' }, a.nummer), h('h1', { html: symboler(inline(a.titel, false)) }))
       : p.typ === 'upphov' ? h('p', { class: 'upphov' }, `© ${info.upphov.ar} ${info.upphov.namn}`)
       : blockElement(p, bok);
     if (p.el) p.el.setAttribute('data-post', p.id);
@@ -320,7 +330,7 @@
   const sidhuvud = s => s.typ === 'omslag' ? 'Omslag' : s.typ === 'innehall' ? bokTitlar(s.bok.text).filter(Boolean).join(' · ')
     : (s.avsnitt.nummer ? `${s.avsnitt.nummer} · ` : '') + (s.avsnitt.kort || s.avsnitt.titel);
   const sidhuvudNoder = s => s.avsnitt && s.avsnitt.nummer
-    ? [h('span', { class: 'nr' }, s.avsnitt.nummer), ' · ', s.avsnitt.kort || s.avsnitt.titel] : [sidhuvud(s)];
+    ? [h('span', { class: 'nr' }, s.avsnitt.nummer), ' · ', symText(s.avsnitt.kort || s.avsnitt.titel)] : [symText(sidhuvud(s))];
 
   // En sidas element. Blockens element flyttas hit; har de flyttats sedan (en ny brytning) byggs sidan om.
   function sidElement(s) {
@@ -349,7 +359,7 @@
     return [
       h('div', { class: 'titelblock', 'data-post': 'innehall' },
         info.overrad && h('p', { class: 'overrad' }, info.overrad),
-        h('h1', { class: 'boktitel' }, titel, undertitel && h('span', { class: 'undertitel' }, undertitel))),
+        h('h1', { class: 'boktitel' }, symText(titel), undertitel && h('span', { class: 'undertitel' }, undertitel))),
       h('h2', { class: 'innehall-rubrik' }, 'Innehåll'),
       innehallslista(bok, r)
     ];
@@ -362,9 +372,9 @@
     return h('ol', { class: 'toc' }, bok.delar.map(d => {
       const a = d.avsnitt, rubriker = d.poster.filter(p => p.typ === 'rubrik');
       return h('li', null,
-        tocKnapp(r.postSida.get(d.poster.find(iFlodet)).nr, 'toc-a', h('span', { class: 'toc-nr' }, a.nummer || ''), h('span', { class: 'toc-titel', html: inline(a.titel, false) })),
+        tocKnapp(r.postSida.get(d.poster.find(iFlodet)).nr, 'toc-a', h('span', { class: 'toc-nr' }, a.nummer || ''), h('span', { class: 'toc-titel', html: symboler(inline(a.titel, false)) })),
         rubriker.length > 1 && h('ol', { class: 'toc-sidor' }, rubriker.map(p =>
-          h('li', null, tocKnapp(r.postSida.get(p).nr, 'toc-s', h('span', { class: 'toc-titel', html: inline(p.b.text, false) }))))));
+          h('li', null, tocKnapp(r.postSida.get(p).nr, 'toc-s', h('span', { class: 'toc-titel', html: symboler(inline(p.b.text, false)) }))))));
     }));
   }
 
@@ -774,10 +784,28 @@
     const vand = rorelse && blad && gamla.length === u.children.length && !gamla.some(e => u.contains(e));
     if (rorelse && !vand) u.classList.add(riktning > 0 ? 'in-framat' : 'in-bakat');
     ui.scen.replaceChildren(u);
+    vis.forEach(n => passaEtiketter(sida(n).el));
     if (vand) vandBlad(gamla, u, riktning);
     if (riktning !== null) vis.forEach(n => { const inne = sida(n).el.querySelector('.sidinnehall'); if (inne) inne.scrollTop = 0; });
     requestAnimationFrame(() => vis.forEach(n => markeraMer(sida(n))));
     uppdateraLage(vis, riktning !== null);
+  }
+
+  // Bildpilarnas etiketter är aldrig mindre än 14 px på skärmen (Joachims order 2026-11-04). figurer.js ritar dem 18
+  // enheter höga i figurens 440 enheter; när fotot skalas ner (ett stående foto, en smal sida) växer etiketten och
+  // pilarnas tjocklek i figurens enheter (--bp-k, bok.css), så att de syns lika stora. Figurens storlek, och därmed
+  // brytningen, ändras inte.
+  const ETIKETT_MIN = 14;
+  function passaEtiketter(rot) {
+    if (!rot) return;
+    rot.querySelectorAll('svg[data-bildpilar]').forEach(s => {
+      // figurens skala: rutan kan vara bredare än bilden (ett stående foto begränsas av höjden och står i mitten)
+      const r = s.getBoundingClientRect(), vb = s.viewBox.baseVal;
+      if (!r.width || !vb || !vb.width) return;
+      const skala = Math.min(r.width / vb.width, r.height / vb.height);
+      const k = Math.max(1, Math.ceil(1000 * ETIKETT_MIN / (18 * skala)) / 1000);
+      if (s.style.getPropertyValue('--bp-k') !== String(k)) s.style.setProperty('--bp-k', String(k));
+    });
   }
 
   /* Bladvändningen – modellen ur filmernas bok (1800-talet/verktyg/bok.py, turn_frame), det som går lätt i CSS:

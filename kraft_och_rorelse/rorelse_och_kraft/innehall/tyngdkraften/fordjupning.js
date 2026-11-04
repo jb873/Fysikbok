@@ -2,6 +2,8 @@
  * Joachims källa (III-D-Tyngdkraften-alla-nivaer.md, 2026-11-04), införd ordagrant i strömformatet: ### = rubrik,
  * ett stycke = ett textblock. Samma bilder som Standard ([BILD T], [BILD F], [BILD M], bildpilar). [FORMEL] och
  * [TABELL] är formel- och tabellblocket, med data ur arbetsordern III D. "F = m · g" i löptexten står som text.
+ * Joachims beslut 2026-11-04: rubrikerna "… gånger g" och "g är olika …" och tabellhuvudet "g (N/kg)" är omskrivna
+ * ("Tyngden räknas ut med massan och tyngdfaktorn", "Tyngdfaktorn är olika på olika himlakroppar", "Tyngdfaktor (N/kg)").
  * "Det här lär du dig:" står som liten rubrik utan kolon, som i text A–C.
  * Avsnittens id (inledning, tyngdkraft-och-normalkraft, massa-och-tyngd, sammanfattning) är desamma på alla nivåer. */
 Bok.niva('fordjupning', {
@@ -72,14 +74,14 @@ Bok.niva('fordjupning', {
           bildtext: 'Dynamometern visar 2 N. Påsen har tyngden 2 N – och massan ungefär 0,2 kg.',
           beskrivning: 'En dynamometer med en fjäder och en skala från 0 till 5 newton hänger från en krok. I den nedre kroken hänger en tygpåse. Visaren står på 2. Två lika långa pilar på påsen: tyngdkraften nedåt och fjäderns kraft uppåt.' },
 
-        { typ: 'rubrik', text: 'Tyngden räknas ut som massan gånger g' },
+        { typ: 'rubrik', text: 'Tyngden räknas ut med massan och tyngdfaktorn' },
         { typ: 'text', text: 'Tyngden beror på massan och på hur hårt den plats man är på drar. Sambandet skrivs F = m · g, där F är tyngden i newton, m är massan i kilogram och g är tyngdfaktorn i newton per kilogram (N/kg). På jorden är g ungefär 9,8 N/kg, som ofta avrundas till 10 N/kg. En ryggsäck med massan 5 kg har tyngden F = 5 · 9,8 = 49 N, alltså ungefär 50 N.' },
         { typ: 'formel', uttryck: 'F = m · g',
           forklaring: [['F', 'tyngd (N)'], ['m', 'massa (kg)'], ['g', 'tyngdfaktor (N/kg)']] },
 
-        { typ: 'rubrik', text: 'g är olika på olika himlakroppar' },
+        { typ: 'rubrik', text: 'Tyngdfaktorn är olika på olika himlakroppar' },
         { typ: 'text', text: 'Tyngdfaktorn g beror på himlakroppens massa och storlek. På månen är g ungefär 1,6 N/kg, på Mars ungefär 3,7 N/kg och på Jupiter ungefär 25 N/kg. En person med massan 60 kg har därför tyngden ungefär 590 N på jorden, 96 N på månen, 220 N på Mars och 1 500 N på Jupiter – men massan är 60 kg överallt.' },
-        { typ: 'tabell', rubriker: ['Himlakropp', 'g (N/kg)', 'Tyngd för 60 kg'],
+        { typ: 'tabell', rubriker: ['Himlakropp', 'Tyngdfaktor (N/kg)', 'Tyngd för 60 kg'],
           rader: [['Jorden', '9,8', '590 N'], ['Månen', '1,6', '96 N'],
                   ['Mars', '3,7', '220 N'], ['Jupiter', '25', '1 500 N']] },
 
