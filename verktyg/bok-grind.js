@@ -641,6 +641,134 @@ const PROVSCENARIO = String.raw`async () => {
   return k;
 }`;
 
+/* ---------- Bladvändningen: bläddring vänder ett blad, hopp gör det inte, aldrig en kö ----------
+ * Körs i varje läge efter scenariot. BLAD: vändning framåt och bakåt (det nya uppslaget syns direkt, lagret ovanpå
+ * försvinner), hopp via innehållet utan vändning, en snabb serie om 10 sidbyten (rätt sida, högst ett blad åt gången,
+ * inget kvar efteråt) och inställningen Av. BLADTID: en vändning med CPU:n strypt 6 gånger – från tangenten tills
+ * lagret är borta, och det längsta glappet mellan två bildrutor. BLADRM: med prefers-reduced-motion inga animationer. */
+const BLADHJALP = String.raw`const v = ms => new Promise(r => setTimeout(r, ms));
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const synlig = s => $$(s).find(e => e.offsetParent !== null);
+  const tangent = t => document.dispatchEvent(new KeyboardEvent('keydown', { key: t, bubbles: true }));
+  const syns = () => $$('.scen .uppslag > .sida[data-nr]').map(s => +s.dataset.nr);
+  const lager = () => $$('.blad-lager').length;
+  // animationer i boken (bladlagret och scenen) – inte reglagens toningar
+  const iBoken = a => a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.blad-lager, .scen');
+  const igang = () => document.getAnimations().filter(a => a.playState === 'running' && iBoken(a)).length;
+  const oppna = async () => { if (Bok.oppen) return; ($('.underdel-knapp.aktiv[data-oppna]') || $('[data-oppna]')).click(); await v(800); };`;
+const BLAD = String.raw`async () => {
+  ${BLADHJALP}
+  const k = [], prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
+  await oppna();
+  const antal = $$('.lr-sida').length, upp = !!$('.scen .uppslag.ar-uppslag'), steg = upp ? 2 : 1;
+  Bok.gaTill(1); await v(300);
+  prova('blad: ett hopp (Bok.gaTill) vänder inget blad', !lager(), lager() + ' lager');
+  // framåt: det nya uppslaget står i scenen direkt, bladet i ett lager ovanpå, som försvinner
+  tangent('ArrowRight');
+  const direkt = syns(), under = lager(), mot = !!$('.blad-lager .blad.fran-hoger'), tid = document.getAnimations().filter(iBoken).map(a => a.effect.getComputedTiming().duration);
+  await v(520);
+  prova('blad: → vänder ett blad (' + (upp ? 'från höger till vänster' : 'sidan lyfts åt vänster') + '), det nya uppslaget syns direkt och lagret är borta efteråt',
+    direkt[0] === 1 + steg && under === 1 && mot && !lager() && !igang() && tid.length > 0 && tid.every(t => t <= 450),
+    'syns ' + direkt + ', lager ' + under + ', längd ' + [...new Set(tid)].join('/') + ' ms, efteråt ' + lager() + ' lager');
+  tangent('ArrowLeft');
+  const bak = syns(), underB = lager(), motB = upp ? !!$('.blad-lager .blad.fran-vanster') : !!$('.blad-lager .blad-fast');
+  await v(520);
+  prova('blad: ← vänder bladet tillbaka och visar förra uppslaget direkt', bak[0] === 1 && underB === 1 && motB && !lager(), 'syns ' + bak + ', lager ' + underB);
+  // hopp via innehållet: ingen vändning
+  synlig('.bok-innehall').click(); await v(150);
+  const mal = $$('.meny .toc-knapp').map(b => +b.dataset.till).find(n => n > 1 + steg);
+  if (mal) { $('.meny .toc-knapp[data-till="' + mal + '"]').click(); await v(20); }
+  prova('blad: ett hopp i innehållet vänder inget blad, bara direkt till sidan', !mal || (syns().includes(mal) && !lager()), 'mål ' + mal + ', syns ' + syns() + ', lager ' + lager());
+  await v(300); Bok.gaTill(1); await v(300);
+  // snabb serie: 7 framåt och 3 bakåt med 15 ms emellan – rätt sida på slutet, högst ett blad åt gången, ingen kö
+  let i = 0, mest = 0;
+  const maxI = upp ? Math.floor((antal - 1) / 2) : antal - 1;
+  for (const t of [...Array(7).fill('ArrowRight'), ...Array(3).fill('ArrowLeft')]) {
+    i = Math.max(0, Math.min(maxI, i + (t === 'ArrowRight' ? 1 : -1)));
+    tangent(t); mest = Math.max(mest, lager()); await v(15);
+  }
+  const vantat = 1 + i * steg, slut = syns()[0];
+  await v(470);
+  prova('blad: en snabb serie om 10 sidbyten hamnar rätt, med högst ett blad åt gången och inget kvar efteråt (ingen kö)',
+    slut === vantat && mest <= 1 && !lager() && !igang(), 'sida ' + slut + ' (väntat ' + vantat + '), högst ' + mest + ' lager, efteråt ' + lager() + ' lager, ' + igang() + ' animationer');
+  // inställningen Av: direkt sidbyte
+  synlig('.bok-innehall').click(); await v(150);
+  $('.meny .val button[data-v="direkt"]').click(); tangent('Escape'); await v(100);
+  tangent('ArrowRight');
+  const av = lager() + igang();
+  await v(100);
+  synlig('.bok-innehall').click(); await v(150);
+  $('.meny .val button[data-v="blad"]').click(); tangent('Escape'); await v(100);
+  prova('blad: inställningen "Bladvändning: Av" ger direkt sidbyte, utan animation', av === 0, av + ' lager/animationer');
+  return k;
+}`;
+// En vändning: från tangenten (sidbytet ingår) tills lagret är borta, och glappen mellan bildrutorna
+const BLADEN = String.raw`async () => {
+  const lager = () => document.querySelectorAll('.blad-lager').length;
+  const tangent = t => document.dispatchEvent(new KeyboardEvent('keydown', { key: t, bubbles: true }));
+  const ramar = [];
+  let t0 = performance.now(), slut = null;
+  // när lagret tas bort (exakt, inte vid nästa bildruta)
+  const obs = new MutationObserver(() => { if (!lager() && slut === null) slut = performance.now(); });
+  obs.observe(document.querySelector('.scen-ram'), { childList: true });
+  tangent('ArrowRight');
+  const upplagt = performance.now() - t0;                     // själva sidbytet (synkront, innan vändningen spelas)
+  await new Promise(ok => { const ram = t => { ramar.push(t); if (lager()) requestAnimationFrame(ram); else ok(); };
+    requestAnimationFrame(ram); setTimeout(ok, 3000); });
+  obs.disconnect();
+  const glapp = ramar.slice(1).map((t, j) => t - ramar[j]);
+  // hela vändningen: från tangenten (sidbytet ingår) tills lagret är borta
+  return { total: Math.round((slut || performance.now()) - t0), upplagt: Math.round(upplagt), ramar: ramar.length, maxGlapp: Math.round(Math.max(0, ...glapp)) };
+}`;
+// Som brytningstiden: en uppvärmningsvändning som inte räknas (sidorna byggs första gången), sedan tre vändningar;
+// medianen jämförs med 450 ms
+const BLADTID = String.raw`async () => {
+  ${BLADHJALP}
+  await oppna();
+  const en = async () => { Bok.gaTill(1); await v(400); return await (${BLADEN})(); };
+  await en();
+  const m = [await en(), await en(), await en()], tot = m.map(x => x.total).sort((a, b) => a - b);
+  return { total: tot[1], max: tot[2], upplagt: Math.max(...m.map(x => x.upplagt)), ramar: m[1].ramar, maxGlapp: Math.max(...m.map(x => x.maxGlapp)) };
+}`;
+const BLADRM = String.raw`async () => {
+  ${BLADHJALP}
+  await oppna(); Bok.gaTill(1); await v(300);
+  tangent('ArrowRight'); const a = lager() + igang() + $$('.in-framat, .in-bakat').length; await v(60);
+  Bok.gaTill(5); const b = lager() + igang(); await v(60);
+  tangent('ArrowLeft'); const c = lager() + igang() + $$('.in-framat, .in-bakat').length;
+  return { a, b, c };
+}`;
+
+// På batteri mäts ingen tid (Windows: Win32_Battery, BatteryStatus 1 = på batteri)
+let paBatteri = null;
+function batteri() {
+  if (paBatteri !== null) return paBatteri;
+  try {
+    const ut = require('child_process').execSync('powershell -NoProfile -Command "(Get-CimInstance Win32_Battery | Select-Object -First 1).BatteryStatus"', { encoding: 'utf8', timeout: 15000 }).trim();
+    paBatteri = ut === '1';
+  } catch (e) { paBatteri = false; }
+  return paBatteri;
+}
+
+async function provaBlad(c, lage) {
+  const k = await c.ev(`(${BLAD})()`);
+  if (batteri()) k.push({ namn: 'blad: tidtagning med CPU:n strypt 6 gånger – ej mätt (datorn går på batteri)', ok: true, detalj: '' });
+  else {
+    await c.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+    const t = await c.ev(`(${BLADTID})()`);
+    await c.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    k.push({ namn: 'blad: en vändning tar högst 450 ms med CPU:n strypt 6 gånger (medianen av 3 efter en uppvärmning), utan hack (inget glapp över 50 ms mellan bildrutorna)',
+      ok: t.total <= 450 && t.maxGlapp <= 50, detalj: `median ${t.total} ms från tangenten, max ${t.max} ms (sidbytet högst ${t.upplagt} ms), ${t.ramar} bildrutor, längsta glapp ${t.maxGlapp} ms` });
+    k.tid = t;
+  }
+  await c.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  const rm = await c.ev(`(${BLADRM})()`);
+  await c.send('Emulation.setEmulatedMedia', { features: [] });
+  k.push({ namn: 'blad: med prefers-reduced-motion inga animationer – direkt sidbyte, också vid hopp', ok: !rm.a && !rm.b && !rm.c, detalj: JSON.stringify(rm) });
+  await c.ev(`(async () => { if (Bok.oppen) { [...document.querySelectorAll('.bok-stang')].find(e => e.offsetParent).click(); await new Promise(r => setTimeout(r, 450)); } })()`);
+  return k;
+}
+
 /* ---------- En körning: ett delkapitel i ett läge ---------- */
 
 async function kor(dk, lage, felkod) {
@@ -664,6 +792,8 @@ async function kor(dk, lage, felkod) {
     if (BILDER) await bild(c, dk, lage, 'hubb');
     res.kontroller = await c.ev(`(${SCENARIO})(${lage.helskarm})`);
     if (dk.prov && !lage.mobil) res.kontroller.push(...await c.ev(`(${PROVSCENARIO})()`));
+    const blad = await provaBlad(c, lage);
+    res.kontroller.push(...blad); res.bladTid = blad.tid || null;
     // En adress som pekar på en rubrik (#atomer-2) öppnar boken där rubriken står; Stäng leder till hubben i samma
     // delkapitel. Rubrikernas adresser kommer ur kontrolläget (adress → block).
     const ankare = ((res.kontroll && res.kontroll.ankare) || []).filter(([a, p]) => p !== a && /-\d+$/.test(a));
@@ -879,6 +1009,7 @@ async function jamforWebben(lista) {
         `${r.plats ? 'alla sidor får plats' : 'PLATS/STRUKTUR RÖTT'}, JS-fel ${r.fel.length}`);
       if (matt && lage === LAGEN[0]) console.log(`       text: ${matt}`);
       if (r.brytTid) console.log(`       brytningen (CPU×6, median/max av 5 varv): ` + r.brytTid.bocker.map(b => `${b.bok || 'boken'} ${b.median}/${b.max}`).join(' · ') + ' ms');
+      if (r.bladTid) console.log(`       bladvändningen (CPU×6, median/max av 3 efter uppvärmning): ${r.bladTid.total}/${r.bladTid.max} ms från tangenten (sidbytet högst ${r.bladTid.upplagt} ms), längsta glapp ${r.bladTid.maxGlapp} ms`);
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
       r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
       if (r.kontroll) r.kontroll.problem.forEach(p => console.log(`       problem: ${p}`));

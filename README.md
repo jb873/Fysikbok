@@ -47,9 +47,19 @@ länkas de ändå: begreppen till begreppslistan och slutet av varje text till �
 - **Var är jag:** sidhuvudet på varje sida visar avsnittets nummer och namn, och sidnumret står i det yttre hörnet.
 - **Bläddra** med pilarna, ← och → (och PageUp/PageDown, Home/End) eller genom att svepa. Klick i
   innehållsförteckningen (sida 1) hoppar.
-- **Sidvändning:** en snabb toning på 0,17 s eller *Direkt*. Animationen är av när datorn är inställd på minskad
-  rörelse.
+- **Bladvändning** (På, standard / Av): vid bläddring vänds ett blad på 0,34 s, på ett uppslag runt ryggen från
+  höger till vänster (bakåt tvärtom), på mobilen lyfts sidan runt sin vänsterkant. Ett hopp (innehållet, en länk,
+  Home/End, Tillbaka) vänder inget blad, bara en kort glidning på 0,17 s. *Av* och minskad rörelse i datorns
+  inställningar: direkt sidbyte. Läsningen väntar aldrig: det nya uppslaget står i scenen direkt, och vändningen
+  spelas i ett lager ovanpå. En ny vändning medan en pågår gör den pågående klar direkt – aldrig en kö.
+  - Modellen kommer ur filmernas bok (`1800-talet/verktyg/bok.py`, `turn_frame`): perspektiv (≈ 5 sidbredder,
+    som filmens kamera; 8 på en enkel sida), mjuk start och slut, skugga på sidan under bladet och ett blad som
+    mörknar när det står på högkant. Här i CSS 3D (`rotateY`, `perspective`, `backface-visibility`) med Web
+    Animations, utan bibliotek (`vandBlad` i `bok.js`, `.blad-*` i `bok.css`).
+  - De gamla sidornas egna element flyttas in i lagret; den nya sidan på bladet är en kopia utan id. Lagret tar
+    inga klick och klipps vid scenens kant.
 - **Inställningar** (under Innehåll):
+  - *Bladvändning:* På / Av (den som hade valt Snabb får På, Direkt blir Av).
   - *Boken öppnas:* I helskärm / I fönstret.
   - *Sidnummer och remsa:* Syns alltid / Vid musrörelse. Med *Vid musrörelse* tonar reglagen bort efter 2,5 s,
     som kontrollerna i en videospelare. Sidhuvudet med sidnumret ligger alltid kvar på papperet.
@@ -382,6 +392,12 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
      - **Att brytningen följer reglerna och alla sidor får plats** (kontrolläget), och att brytningen tar under
        200 ms med CPU:n strypt 6 gånger: medianen av 5 mätvarv efter en uppvärmning, för varje bok. Grinden skriver
        ut median och max per bok. (Ett enda varv var för brusigt när datorn var belastad eller gick på batteri.)
+     - **Bladvändningen:** → och ← vänder ett blad (det nya uppslaget syns direkt, lagret är borta efteråt, längden
+       högst 450 ms); ett hopp vänder inget; en snabb serie om 10 sidbyten hamnar rätt med högst ett blad åt gången
+       och inget kvar (ingen kö); *Av* ger direkt sidbyte; med prefers-reduced-motion inga animationer. Med CPU:n
+       strypt 6 gånger: en vändning högst 450 ms från tangenten (medianen av 3 efter en uppvärmningsvändning, som
+       brytningstiden; max redovisas) och inget glapp över 50 ms mellan bildrutorna – bara med laddaren i (på
+       batteri: "ej mätt").
      - **Att inga JS-fel uppstår.** De fångas med `window.onerror`, `unhandledrejection` och Chromes egna undantag.
 
   Startsidan och kapitelindexet prövas på dator och mobil: startsida → kapitelindex → avsnittssidorna → brödsmulorna
@@ -567,4 +583,10 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - Motorfix: ett stycke följt av två figurer (C Fördjupning) delas före den första figur som inte ryms, inte alltid
     före den första; resten får följa en figur som flyttats fram (mobilen: BILD B och C på samma sida).
   - Grinden: en Chrome som stängs mitt i ett musklick ger rött i stället för att krascha grinden.
+  - Joachims beslut efter granskningen: BILD C har utsnittet [440, 330, 1152, 520], så att handen och repet fyller
+    bilden; BILD A och B visar hela fotot.
+- **2026-11-04, bladvändning (arbetsordern bladvändning, alternativ A):** modellen ur `turn_frame` i filmernas
+  bok, byggd i CSS 3D (se *Bladvändning* ovan). Läsinställningen *Sidvändning: Snabb / Direkt* blev
+  *Bladvändning: På / Av*; Snabb finns kvar bara som glidningen vid hopp. 0,34 s, så att en vändning med CPU:n
+  strypt 6 gånger håller sig under 450 ms också med sidbytet (med 0,40 och 0,38 s blev den 450–500 ms i en del lägen).
 - Namn och © står på sista sidan och i sidans fot, ur `upphov`.

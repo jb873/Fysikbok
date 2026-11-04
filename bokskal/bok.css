@@ -331,6 +331,23 @@ a.resurs-kort:hover { background-color: #faf4e4; transform: translateY(-1px); }
 @keyframes in-bakat { from { opacity: 0; transform: translateX(-14px); } }
 @media (prefers-reduced-motion: reduce) { .in-framat, .in-bakat { animation: none; } }
 
+/* Bladvändningen (bok.js: vandBlad): ett lager ovanpå scenen, med bladet vridet runt ryggen i perspektiv (som
+   kameran i filmernas bok, ≈ 5 sidbredder). Bladets två ytor döljer sin baksida; ljuset (bladet mörknar på högkant)
+   och skuggan på sidan under bladet tonas av bok.js. Lagret tar inga klick. */
+.blad-lager { position: absolute; z-index: 1; pointer-events: none; perspective: calc(var(--sb) * 5); }
+.blad-lager.ar-enkel { perspective: calc(var(--sb) * 8); }          /* en sida vrids bara till högkant: svagare */
+.blad-lager > div { position: absolute; top: 0; bottom: 0; }
+.blad { transform-style: preserve-3d; will-change: transform; }
+.blad.fran-hoger { transform-origin: left center; }
+.blad.fran-vanster { transform-origin: right center; }
+.blad-sida { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.blad-sida.bak { transform: rotateY(180deg); }
+.blad-ljus { position: absolute; inset: 0; background: #000; opacity: 0; }
+.blad-skugga { opacity: 0; }
+.blad-skugga.mot-hoger { background: linear-gradient(to right, rgba(20, 14, 4, .34), rgba(20, 14, 4, 0) 55%); }
+.blad-skugga.mot-vanster { background: linear-gradient(to left, rgba(20, 14, 4, .34), rgba(20, 14, 4, 0) 55%); }
+.blad-fast .sida, .blad-sida .sida { box-shadow: none; }
+
 .sida {
   position: relative; display: flex; flex-direction: column;
   width: var(--sb); height: var(--sh); background: var(--papper);

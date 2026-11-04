@@ -57,7 +57,7 @@
   // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id) eller 'innehall'.
   // flytt räknas upp när blockens element flyttas mellan sidor (en ny brytning), så att sidorna byggs om.
   let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false;
-  let tillbaka = null, vandning = 'snabb', helskarm = true, reglage = 'alltid', vilaTimer = null;
+  let tillbaka = null, vandning = 'blad', helskarm = true, reglage = 'alltid', vilaTimer = null;
   let fokusEfter = null, panelFran = null, senasteEsc = 0;
   const ui = {};
 
@@ -632,7 +632,10 @@
     return v + 1 <= sidor.length ? [v, v + 1] : [v];
   }
 
-  function rita(riktning) {
+  // riktning: +1/−1 vid ett sidbyte (null: samma sidor ritas om); blad: ett blad vänds (bläddring, inte hopp)
+  function rita(riktning, blad = false) {
+    if (bladKlar) bladKlar();                    // en pågående vändning blir klar direkt – aldrig en kö
+    const gammal = ui.scen.firstElementChild, gamla = gammal && gammal.classList.contains('uppslag') ? [...gammal.children] : [];
     const vis = synliga(nr);
     const u = h('div', { class: 'uppslag ' + (uppslag ? 'ar-uppslag' : 'ar-enkel') + (smal ? ' smal' : '') });
     vis.forEach((n, i) => {
@@ -642,11 +645,77 @@
       u.append(e);
     });
     if (uppslag && vis.length === 1) u.append(h('div', { class: 'sida hogersida tom-sida', 'aria-hidden': 'true' }));
-    if (riktning && vandning === 'snabb' && !minskadRorelse()) u.classList.add(riktning > 0 ? 'in-framat' : 'in-bakat');
+    // Bladvändning vid bläddring; vid ett hopp (innehållet, en länk, Home/End) bara den korta glidningen
+    const rorelse = riktning && vandning === 'blad' && !minskadRorelse();
+    const vand = rorelse && blad && gamla.length === u.children.length && !gamla.some(e => u.contains(e));
+    if (rorelse && !vand) u.classList.add(riktning > 0 ? 'in-framat' : 'in-bakat');
     ui.scen.replaceChildren(u);
+    if (vand) vandBlad(gamla, u, riktning);
     if (riktning !== null) vis.forEach(n => { sidor[n - 1].el.querySelector('.sidinnehall').scrollTop = 0; });
     requestAnimationFrame(() => vis.forEach(n => markeraMer(sidor[n - 1])));
     uppdateraLage(vis, riktning !== null);
+  }
+
+  /* Bladvändningen – modellen ur filmernas bok (1800-talet/verktyg/bok.py, turn_frame), det som går lätt i CSS:
+   * bladet vrids runt ryggen i perspektiv (rotateY, perspektivet ≈ 5 sidbredder som filmens kamera), med mjuk start
+   * och slut, en skugga på sidan under bladet och ett blad som mörknar när det står på högkant.
+   * Det nya uppslaget står redan i scenen när vändningen börjar: läsplatsen, adressen och skärmläsaren väntar aldrig.
+   * Vändningen spelas i ett eget lager ovanpå scenen (utanför den), som tas bort när den är klar.
+   *   Uppslag framåt: den gamla vänstersidan ligger kvar; bladet har den gamla högersidan på framsidan och den nya
+   *   vänstersidan på baksidan och vänds från höger till vänster. Bakåt: spegelvänt.
+   *   En sida (mobil) framåt: sidan lyfts runt sin vänsterkant och den nya syns under. Bakåt: den förra sidan läggs
+   *   ner över den gamla.
+   * De gamla sidornas egna element flyttas in i lagret. Den nya sidan på bladet (den står också i scenen) är en kopia
+   * utan id; på ett uppslag syns den först när bladet passerat högkant, så att ett foto i den hinner ritas. */
+  const BLAD_MS = 340, BLAD_EASE = 'cubic-bezier(.33, 0, .67, 1)';   // ungefär filmens smoothstep
+  let bladKlar = null;                                                // gör en pågående vändning klar
+  function vandBlad(gamla, u, riktning) {
+    const nya = [...u.children], fram = riktning > 0;
+    const ram = ui.scenRam.getBoundingClientRect(), r = u.getBoundingClientRect();
+    const lager = h('div', { class: 'blad-lager' + (uppslag ? ' blad-uppslag' : ' ar-enkel') + (smal ? ' smal' : ''), 'aria-hidden': 'true' });
+    ['--sb', '--sh', '--fs'].forEach(p => lager.style.setProperty(p, ui.scen.style.getPropertyValue(p)));
+    Object.assign(lager.style, { left: r.left - ram.left + 'px', top: r.top - ram.top + 'px', width: r.width + 'px', height: r.height + 'px',
+      // bladet växer i perspektivet men går aldrig ut över listerna: klipps vid scenens kant
+      clipPath: `inset(${ram.top - r.top}px ${r.right - ram.right}px ${r.bottom - ram.bottom}px ${ram.left - r.left}px)` });
+    const kopia = el => { const k = el.cloneNode(true); k.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); return k; };
+    const del = (klass, vanster, ...barn) => h('div', { class: klass, style: `left: ${vanster}; width: ${uppslag ? '50%' : '100%'}` }, ...barn);
+    const yta = (el, klass) => h('div', { class: 'blad-sida ' + klass }, el, h('div', { class: 'blad-ljus' }));
+    let blad, fast = null, skugga, vinkel, ljus;
+    if (uppslag) {
+      // [vänster, höger]: framåt vänds den gamla högersidan, bakåt den gamla vänstersidan
+      const [stilla, vands, under] = fram ? [gamla[0], gamla[1], nya[0]] : [gamla[1], gamla[0], nya[1]];
+      fast = del('blad-fast', fram ? '0' : '50%', stilla);
+      skugga = del('blad-skugga ' + (fram ? 'mot-hoger' : 'mot-vanster'), fram ? '50%' : '0');
+      blad = del('blad ' + (fram ? 'fran-hoger' : 'fran-vanster'), fram ? '50%' : '0', yta(vands, 'fram'), yta(kopia(under), 'bak'));
+      vinkel = fram ? ['rotateY(0deg)', 'rotateY(-180deg)'] : ['rotateY(0deg)', 'rotateY(180deg)'];
+      ljus = [{ opacity: 0 }, { opacity: .35, offset: .5 }, { opacity: 0 }];
+    } else if (fram) {
+      skugga = del('blad-skugga mot-hoger', '0');
+      blad = del('blad fran-hoger', '0', yta(gamla[0], 'fram'));
+      vinkel = ['rotateY(0deg)', 'rotateY(-90deg)'];
+      ljus = [{ opacity: 0 }, { opacity: .35 }];
+    } else {
+      fast = del('blad-fast', '0', gamla[0]);
+      skugga = del('blad-skugga mot-hoger', '0');
+      blad = del('blad fran-hoger', '0', yta(kopia(nya[0]), 'fram'));
+      vinkel = ['rotateY(-90deg)', 'rotateY(0deg)'];
+      ljus = [{ opacity: .35 }, { opacity: 0 }];
+    }
+    lager.append(...[fast, skugga, blad].filter(Boolean));
+    ui.scenRam.insertBefore(lager, ui.scen.nextSibling);
+    // fill: slutläget står kvar tills lagret tas bort (annars syns det gamla uppslaget en bildruta när den är klar)
+    const t = { duration: BLAD_MS, easing: BLAD_EASE, fill: 'forwards' };
+    const anim = [blad.animate(vinkel.map(transform => ({ transform })), t),
+      skugga.animate([{ opacity: 0 }, { opacity: 1, offset: .5 }, { opacity: 0 }], t),
+      ...[...blad.querySelectorAll('.blad-ljus')].map(e => e.animate(ljus, t))];
+    let klar = false;
+    bladKlar = () => {
+      if (klar) return;
+      klar = true; bladKlar = null;
+      anim.forEach(a => a.cancel());
+      lager.remove();
+    };
+    anim[0].finished.then(() => bladKlar && !klar && bladKlar(), () => {});
   }
 
   function uppdateraLage(vis, nyttLage) {
@@ -697,7 +766,7 @@
     nr = n;
     plats = platsFor(sidor[n - 1]);
     history.replaceState({ bok: true }, '', adress(sidor[n - 1].ankare));
-    rita(Math.sign(efter - fore));
+    rita(Math.sign(efter - fore), !hopp);           // bläddring vänder ett blad, ett hopp gör det inte
   }
   const bladdra = steg => { const v = synliga(nr); gaTill(steg > 0 ? v[v.length - 1] + 1 : v[0] - 1); };
   // Adressen: #<rubrik>, och med texter #<text>/<rubrik> (#atomen/periodiska-systemet-2), så att en länk öppnar rätt bok
@@ -851,6 +920,7 @@
   function stangBokNu() {
     if (!oppen) return;
     oppen = false;
+    if (bladKlar) bladKlar();
     stangMeny(false); stangPanel(false); visaNivaLista(false);
     clearTimeout(vilaTimer);
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -902,7 +972,7 @@
 
     ui.menyLista = h('nav', { 'aria-label': 'Innehåll' });
     ui.val = [
-      valGrupp('Sidvändning', [['snabb', 'Snabb'], ['direkt', 'Direkt']], () => vandning,
+      valGrupp('Bladvändning', [['blad', 'På'], ['direkt', 'Av']], () => vandning,
         v => { vandning = v; lager.spara(nyckel('vandning'), v); }),
       valGrupp('Boken öppnas', [['ja', 'I helskärm'], ['nej', 'I fönstret']], () => helskarm ? 'ja' : 'nej',
         v => { helskarm = v === 'ja'; lager.spara(nyckel('lashelskarm'), helskarm); }),
@@ -915,7 +985,7 @@
           h('button', { type: 'button', class: 'stang', onclick: () => stangMeny() }, 'Stäng')),
         ui.menyLista,
         h('section', { class: 'installningar' },
-          h('h3', null, 'Sidvändning'), ui.val[0],
+          h('h3', null, 'Bladvändning'), ui.val[0],
           h('h3', null, 'Boken öppnas'), ui.val[1],
           h('h3', { class: 'underrubrik' }, 'Sidnummer och remsa'), ui.val[2],
           h('p', { class: 'tangenter' }, 'Bläddra med pilarna bredvid boken, med ← och → på tangentbordet eller genom att svepa. Esc eller Stäng tar dig tillbaka till delkapitlet.'))));
@@ -1212,7 +1282,8 @@
       kontroll = adress.has('kontroll');
       provaRubrikSist = kontroll && adress.get('prova') === 'rubrik-sist';   // grindens negativa prov, se paginera
       provaLangsam = kontroll && adress.get('prova') === 'langsam';
-      vandning = lager.hamta(nyckel('vandning'), 'snabb');
+      // Bladvändning På (blad) eller Av (direkt); den som valt "Snabb" (före 2026-11-04) får På
+      vandning = lager.hamta(nyckel('vandning'), 'blad') === 'direkt' ? 'direkt' : 'blad';
       helskarm = lager.hamta(nyckel('lashelskarm'), true);
       reglage = lager.hamta(nyckel('lasreglage'), 'alltid');
       byggHubb();
