@@ -552,6 +552,17 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-stopp-broms { fill: var(--black); }
 .fig-stopp-markering { stroke: var(--accent); stroke-width: 1.8; stroke-dasharray: 5 4; }
 .fig-stopp-markering-text { fill: var(--accent); font-weight: 600; }
+/* fallande_hiss och newtons_kanon */
+.fig-hiss-rubrik { font-weight: 600; }
+.fig-hiss-korg { fill: rgba(27, 42, 54, .04); stroke: var(--dampad); stroke-width: 2; }
+.fig-hiss-kabel { fill: none; stroke: var(--dampad); stroke-width: 2; stroke-linejoin: round; }
+.fig-hiss-display { font-size: 13px; font-weight: 600; }
+.fig-gubbe { stroke: var(--black); stroke-width: 2.4; stroke-linecap: round; fill: var(--papper); }
+.fig-jorden { fill: #cddbe6; stroke: #7d9fba; stroke-width: 1.6; }
+.fig-berg { fill: #e4dccd; stroke: #8f846f; stroke-width: 1.5; stroke-linejoin: round; }
+.fig-kanon { fill: var(--black); }
+.fig-kanon-bana path.fig-pil { fill: none; }
+.fig-pil.fig-kanon-runt { fill: none; stroke-dasharray: 6 5; }
 .fig-bildpil-text { font-family: var(--text); font-size: calc(18px * var(--bp-k, 1)); font-weight: 650; fill: #b3261e; text-anchor: middle;
   paint-order: stroke; stroke: #fff; stroke-width: calc(5px * var(--bp-k, 1)); stroke-linejoin: round; }
 

@@ -45,6 +45,11 @@ Bok.niva('standard', {
           markering: { varde: 15, text: 'provmärke' }, enhet: 'm' },
         { typ: 'text', text: 'Provtext: två ytor i förstoring.' },
         { typ: 'figur', id: 'friktion-paneler', namn: 'friktion', paneler: [{ rubrik: 'Prov grov', foremal: 'Låda', underlag: 'Golv', ytor: 'grov' }, { rubrik: 'Prov slät', foremal: 'Låda', underlag: 'Is', ytor: 'slat' }] },
+        // Den fallande hissen och Newtons kanon med motorns egna beskrivningar
+        { typ: 'text', text: 'Provtext: den fallande hissen.' },
+        { typ: 'figur', id: 'fallande-hiss-prov', namn: 'fallande_hiss' },
+        { typ: 'text', text: 'Provtext: Newtons kanon.' },
+        { typ: 'figur', id: 'newtons-kanon-prov', namn: 'newtons_kanon', bildtext: 'Provbildtext under kanonen.' },
         // Kraftparen: grinden mäter att pilarna är lika långa, motriktade och börjar i var sitt föremåls mitt
         { typ: 'rubrik', text: 'Provrubrik: kraftpar' },
         { typ: 'text', text: 'Provtext: ett kraftpar med snöre, med värdet.' },

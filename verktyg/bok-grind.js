@@ -146,7 +146,7 @@ async function chrome() {
  *    utsnittet, etiketterna överlappar inte varandra.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -208,6 +208,23 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         const m = s.querySelector('line.fig-stopp-markering');
         if (m && Math.abs(m.x1.baseVal.value - (x0 + +m.dataset.varde * k)) * sk > 1) f_.push('markeringen på fel ställe');
         st.set(id, { rader: s.querySelectorAll('g.fig-stopp-rad').length, markering: !!m, fel: f_ });
+      });
+      // den fallande hissen: tyngdkraften lika lång i båda panelerna, och i den stilla hissen lika lång som normalkraften
+      // (åt motsatt håll); i den fallande ingen normalkraft
+      $$('.scen svg[data-fallande-hiss]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (hs.has(id)) return;
+        const pil = g => { const l = g.querySelector('line'), t = g.querySelector('polygon').points[0]; return t.y - l.y1.baseVal.value; };
+        const paneler = [...s.querySelectorAll('g.fig-hiss')].map(g => ({ faller: g.dataset.faller === 'true',
+          tyngd: [...g.querySelectorAll('g.fig-hiss-pil[data-kraft="tyngd"]')].map(pil), normal: [...g.querySelectorAll('g.fig-hiss-pil[data-kraft="normal"]')].map(pil) }));
+        const f_ = [], still = paneler.find(p => !p.faller), faller = paneler.find(p => p.faller);
+        if (!still || !faller || still.tyngd.length !== 1 || faller.tyngd.length !== 1) f_.push('panelerna saknar tyngdkraften');
+        else {
+          if (Math.abs(still.tyngd[0] - faller.tyngd[0]) > 0.5) f_.push('tyngdkraften olika lång i panelerna: ' + still.tyngd[0] + '/' + faller.tyngd[0]);
+          if (still.normal.length !== 1 || Math.abs(still.normal[0] + still.tyngd[0]) > 0.5 || !(still.tyngd[0] > 0)) f_.push('normalkraften i den stilla hissen: ' + still.normal.join(','));
+          if (faller.normal.length) f_.push('normalkraft i den fallande hissen');
+        }
+        hs.set(id, { fel: f_ });
       });
       // friktion i paneler: i varje panel ligger ytorna an utan att gå in i varandra, och panelen har en rubrik
       $$('.scen svg[data-friktion-paneler]').forEach(s => {
@@ -325,6 +342,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       sym: { antal: symSett.size, fel: symFel },
       st: { antal: st.size, fel: [...st].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       fp: { antal: fp.size, fel: [...fp].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
+      hs: { antal: hs.size, fel: [...hs].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
@@ -644,6 +662,8 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     spar.every(x => !x.st.fel.length), spar.flatMap(x => x.st.fel).join(' | '));
   if (spar.some(x => x.fp.antal)) prova('figur: friktion i paneler – i varje panel ligger ytorna an utan att gå in i varandra, och panelen har en rubrik (' + spar.map(x => x.fp.antal).join(' + ') + ' figurer)',
     spar.every(x => !x.fp.fel.length), spar.flatMap(x => x.fp.fel).join(' | '));
+  if (spar.some(x => x.hs.antal)) prova('figur: den fallande hissen – tyngdkraften lika lång i båda panelerna, i den stilla hissen lika lång som normalkraften, i den fallande ingen normalkraft (' + spar.map(x => x.hs.antal).join(' + ') + ' figurer)',
+    spar.every(x => !x.hs.fel.length), spar.flatMap(x => x.hs.fel).join(' | '));
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   prova('text: g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden står i vanlig stil med rätt skiftläge, inte i kapitäler (' + spar.reduce((a, x) => a + x.sym.antal, 0) + ' ställen)',
@@ -794,6 +814,12 @@ const PROVSCENARIO = String.raw`async () => {
   prova('prov: rörelsespår med tider – en tid per prick (0 s, 1 s …) och beskrivningen ur data',
     tider.join(',') === '0 s,1 s,2 s,3 s,4 s,5 s' && /^Rörelsespår: sex prickar med lika lång tid emellan, avstånden krymper – retarderad rörelse\./.test(ret.closest('.figur-bild').getAttribute('aria-label')),
     tider.join(',') + ' | ' + (ret && ret.closest('.figur-bild').getAttribute('aria-label')));
+  // Newtons kanon: tre banor (två som landar, en runt jorden), namnen och beskrivningen ur motorn
+  const kanonE = await etikett('newtons-kanon-prov'), kanon = $('.scen [data-post="newtons-kanon-prov"] svg[data-newtons-kanon]');
+  const kanonBanor = kanon ? [...kanon.querySelectorAll('g.fig-kanon-bana')].map(g => g.dataset.bana).join(',') : '', kanonText = kanon ? [...kanon.querySelectorAll('text')].map(t => t.textContent) : [];
+  prova('prov: Newtons kanon – tre banor (låg fart, högre fart, runt jorden) med namn, och beskrivningen ur motorn',
+    kanonBanor === '1,2,3' && ['låg fart', 'högre fart', 'tillräckligt hög fart'].every(t => kanonText.includes(t)) && !!kanon.querySelector('circle.fig-kanon-runt') &&
+    /^Jorden med ett mycket högt berg och en kanon på toppen\./.test(kanonE), kanonBanor + ' | ' + kanonText.join(', ') + ' | ' + kanonE);
   // Lutande plan med två steg: två rader (Lika branta, Flackare), den streckade starthöjden i varje, kulan som stannar
   // på starthöjden i det flackare steget, och beskrivningen ur motorn
   const lpE = await etikett('lutande-plan-2'), lp = $('.scen [data-post="lutande-plan-2"] svg[data-lutande-plan]');

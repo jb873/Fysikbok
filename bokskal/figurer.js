@@ -20,6 +20,8 @@
  *   lutande_plan        steg?: 3 (1–3) – Galileos tankeexperiment: lika branta, flackare, vågrätt
  *   stoppstracka        rader: [{fart, reaktion, broms}] (1–5), markering?: {varde, text}, enhet?: 'm'
  *   friktion (paneler)  paneler: [{rubrik, foremal, underlag, ytor}] (2–3) – förstoringarna bredvid varandra
+ *   fallande_hiss       (inga data) – hissen som står still och hissen som faller fritt
+ *   newtons_kanon       (inga data) – jorden, berget, kanonen och tre kulbanor
  *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h], maxhojd?: 0.2–0.45 (standard 0.45),
  *                       prickar?: [[x, y], …] (lägesmarkeringar), stråle?: {fran, till} (riktningen under prickarna),
  *                       pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}], lika?: [[0, 1]], beskrivning (krävs)
@@ -583,6 +585,76 @@
       rader.map(r => `${tal(r.reaktion)} + ${tal(r.broms)} = ${hart(summa(r))}`).join(', ').replace(/, ([^,]*)$/, ' och $1') + '.' +
       (m ? ` En streckad linje vid ${hart(m.varde)}${m.text ? ' visar ' + m.text : ''}.` : '');
     return { svg: `<svg viewBox="0 0 440 ${yF + 6}" xmlns="http://www.w3.org/2000/svg" data-stoppstracka="${rader.length}" data-x0="${X0}" data-k="${k}">${s}</svg>`, beskrivning: beskr };
+  });
+
+  /* Den fallande hissen (III D Djupdykning, 2026-11-04): två hissar i genomskärning bredvid varandra. Till vänster står
+   * hissen still: kabeln, en person på en våg som visar 70 kg, tyngdkraften nedåt och lika stor normalkraft uppåt
+   * (kraftpilarnas stil, utan värden), bollen på golvet. Till höger faller hissen fritt: kabeln avklippt, vågen visar 0,
+   * bara tyngdkraften, bollen svävar och en stråle utanför korgen visar att hela hissen faller. */
+  const pilBoje = (pts, klass = '') => {                 // en böjd pil: en bana (path) och en spets i banans riktning
+    const n = pts.length, [x2, y2] = pts[n - 1], [x1, y1] = pts[n - 2];
+    const a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), sn = Math.sin(a), sp = 8, bx = x2 - sp * 1.4 * c, by = y2 - sp * 1.4 * sn, w = sp * 0.75;
+    const d = n === 3 ? `M${f(pts[0][0])} ${f(pts[0][1])}Q${f(x1)} ${f(y1)} ${f(bx)} ${f(by)}`
+      : `M${f(pts[0][0])} ${f(pts[0][1])}C${f(pts[1][0])} ${f(pts[1][1])} ${f(x1)} ${f(y1)} ${f(bx)} ${f(by)}`;
+    return `<path class="fig-pil ${klass}" d="${d}"/><polygon class="fig-pilspets ${klass}" points="${f(x2)},${f(y2)} ${f(bx - w * sn)},${f(by + w * c)} ${f(bx + w * sn)},${f(by - w * c)}"/>`;
+  };
+  Bok.figur('fallande_hiss', d => {
+    const L = 42, GOLV = 178;
+    const panel = (px, faller) => {
+      const cx = px + 40, cy = 124;                       // personen; kraftpilarna utgår från (cx + 14, cy)
+      let s = `<g class="fig-hiss" data-faller="${faller}">` +
+        text(px + 98, 14, faller ? 'Hissen faller fritt' : 'Hissen står still', 'fig-text fig-mitt fig-hiss-rubrik');
+      // kabeln – eller den avklippta stumpen
+      s += faller ? `<polyline class="fig-hiss-kabel" points="${px + 90},26 ${px + 94},21 ${px + 98},26 ${px + 102},21 ${px + 106},26"/><line class="fig-hiss-kabel" x1="${px + 98}" y1="26" x2="${px + 98}" y2="34"/>`
+        : `<line class="fig-hiss-kabel" x1="${px + 98}" y1="20" x2="${px + 98}" y2="34"/>`;
+      s += `<rect class="fig-hiss-korg" x="${px + 8}" y="34" width="180" height="${GOLV - 34}"/>`;
+      // vågen med sin display, och personen på den
+      s += `<rect class="fig-foremal" x="${cx - 24}" y="${GOLV - 16}" width="48" height="16"/>` +
+        text(cx, GOLV - 3.5, faller ? '0' : '70 kg', 'fig-text fig-mitt fig-liten fig-hiss-display');
+      const fot = GOLV - 16;
+      s += `<g class="fig-gubbe"><line x1="${cx - 7}" y1="${fot}" x2="${cx}" y2="${fot - 24}"/><line x1="${cx + 7}" y1="${fot}" x2="${cx}" y2="${fot - 24}"/>` +
+        `<line x1="${cx}" y1="${fot - 24}" x2="${cx}" y2="${fot - 54}"/><line x1="${cx}" y1="${fot - 46}" x2="${cx - 12}" y2="${fot - 30}"/>` +
+        `<line x1="${cx}" y1="${fot - 46}" x2="${cx + 12}" y2="${fot - 30}"/><circle cx="${cx}" cy="${fot - 63}" r="8.5"/></g>`;
+      // kraftpilarna från en punkt bredvid personen, med namnen till höger
+      const ax = cx + 16;
+      s += `<g class="fig-hiss-pil" data-kraft="tyngd">${pil(ax, cy, ax, cy + L, 8)}</g>` + text(ax + 8, cy + L - 2, 'tyngdkraft', 'fig-pil-text fig-vanster');
+      if (!faller) s += `<g class="fig-hiss-pil" data-kraft="normal">${pil(ax, cy, ax, cy - L, 8)}</g>` + text(ax + 8, cy - L + 10, 'normalkraft', 'fig-pil-text fig-vanster');
+      s += `<circle class="fig-angrepp" cx="${ax}" cy="${cy}" r="3.5"/>`;
+      // bollen: på golvet – eller svävande bredvid personen
+      s += `<circle class="fig-partikel" cx="${px + 160}" cy="${faller ? 112 : GOLV - 7}" r="7"/>`;
+      // hela hissen faller: en stråle utanför korgen
+      if (faller) s += pil(px + 196, 56, px + 196, 168, 7, 'fig-strale');
+      return s + '</g>';
+    };
+    const s = panel(0, false) + panel(240, true);
+    const beskr = d.beskrivning || 'Två hissar. I den som står still står en person på en våg som visar 70 kg; tyngdkraften drar nedåt och golvet trycker uppåt lika mycket. I den som faller fritt finns ingen kabel, vågen visar 0, bollen svävar och bara tyngdkraften verkar – nedåt.';
+    return { svg: `<svg viewBox="0 0 440 ${GOLV + 4}" xmlns="http://www.w3.org/2000/svg" data-fallande-hiss="2">${s}</svg>`, beskrivning: beskr };
+  });
+
+  /* Newtons kanon (III D Djupdykning, 2026-11-04): jorden, ett alldeles för högt berg upptill och en kanon som skjuter
+   * vågrätt. Tre banor i samma pilfärg: låg fart landar nära berget, högre fart längre bort, och med tillräckligt hög
+   * fart går kulan runt hela jorden (streckad cirkel med pil). */
+  Bok.figur('newtons_kanon', d => {
+    const C = [220, 100], R = 46, B = 84, rad = g => g * Math.PI / 180;
+    const paJorden = (g, r = R) => [C[0] + r * Math.sin(rad(g)), C[1] - r * Math.cos(rad(g))];   // g grader medurs från toppen
+    const M = [C[0] + 12, C[1] - B];                       // kanonens mynning, högst upp på berget
+    let s = `<circle class="fig-jorden" cx="${C[0]}" cy="${C[1]}" r="${R}"/>`;
+    // berget: alldeles för högt, med kanonen på toppen
+    const [v1, v2] = [paJorden(-12), paJorden(12)];
+    s += `<polygon class="fig-berg" points="${f(v1[0])},${f(v1[1])} ${C[0]},${f(C[1] - B + 4)} ${f(v2[0])},${f(v2[1])}"/>`;
+    s += `<rect class="fig-kanon" x="${C[0] - 4}" y="${C[1] - B - 3}" width="16" height="6" rx="1.5"/>`;
+    // banorna: låg fart, högre fart, och runt hela jorden
+    const L1 = paJorden(40), L2 = paJorden(100);
+    s += `<g class="fig-kanon-bana" data-bana="1">${pilBoje([M, [M[0] + 24, M[1]], L1])}</g>`;
+    s += `<g class="fig-kanon-bana" data-bana="2">${pilBoje([M, [M[0] + 70, M[1]], [C[0] + R + 34, C[1] - 30], L2])}</g>`;
+    const Q = paJorden(156, B);
+    s += `<g class="fig-kanon-bana" data-bana="3"><circle class="fig-pil fig-kanon-runt" cx="${C[0]}" cy="${C[1]}" r="${B}"/>${pilBoje([paJorden(140, B), paJorden(146, B), Q])}</g>`;
+    // namnen: den låga banan på jorden intill landningen (med papperskant), de andra utanför omloppsbanan
+    s += text(L1[0] - 2, L1[1] + 18, 'låg fart', 'fig-pil-text fig-vanster fig-halo');
+    s += text(C[0] + B + 8, C[1] + 16, 'högre fart', 'fig-pil-text fig-vanster');
+    s += text(C[0] - B - 6, C[1] + 4, 'tillräckligt hög fart', 'fig-pil-text fig-hoger');
+    const beskr = d.beskrivning || 'Jorden med ett mycket högt berg och en kanon på toppen. Tre kulbanor: med låg fart landar kulan nära berget, med högre fart längre bort, och med tillräckligt hög fart går den runt hela jorden utan att landa.';
+    return { svg: `<svg viewBox="0 0 440 ${C[1] + B + 6}" xmlns="http://www.w3.org/2000/svg" data-newtons-kanon="3">${s}</svg>`, beskrivning: beskr };
   });
 
   /* Galileos tankeexperiment med två lutande plan (III A Djupdykning, 2026-11-04), i tre steg under varandra:
