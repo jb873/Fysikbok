@@ -789,3 +789,9 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Grinden:** två nya prov. *Två paneler:* lika stora, ingen text under 14 px och ingen överlappning, bredvid
     varandra eller staplade. *Jorden och månen:* pilarnas förhållande (±1 px), personerna lika stora och samma massa
     i båda. Provboken har ett fall med andra värden.
+- **2026-11-05, III textändringar (A medelfart, B friktion, D Fördjupning v2):**
+  - **A Rörelse:** rubriken "Vid en olikformig rörelse räknar man ut medelfarten" med sina stycken, ordagrant ur
+    `III-A-medelfart-Standard-Enkel.md`, i avsnittet `rorelsen-i-prickarna`. I Standard står den efter figuren
+    olikformig, i Enkel efter stycket om cykeln i stan, och i båda före accelerationen. Begreppet är
+    `*medelfarten|medelfart*`. "Det här lär du dig" har fått punkten `*medelfart*`, som begrepp som de andra
+    punkterna, och Sammanfattningen punkten ur ordern. Fördjupning är oförändrad.

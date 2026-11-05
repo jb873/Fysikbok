@@ -1,6 +1,8 @@
 /* Avsnittssida III, text A: Rörelse – nivån Enkel. En självbärande bok ur samma kärna som Standard (packar upp:
  * samma fakta, fler steg, vardag före begrepp). Joachims granskade källa (III-A-Rorelse-alla-nivaer-v2.md,
- * 2026-11-03), införd ordagrant i strömformatet – se standard.js. Samma avsnitts-id som Standard. */
+ * 2026-11-03), införd ordagrant i strömformatet – se standard.js. Samma avsnitts-id som Standard.
+ * Medelfarten (2026-11-05, III-A-medelfart-Standard-Enkel.md, ordagrant): rubriken och dess fyra stycken efter stycket
+ * om cykeln i stan; "medelfart" i "Det här lär du dig" och en punkt i Sammanfattningen (arbetsordern III textändringar). */
 Bok.niva('enkel', {
   avsnitt: [
     {
@@ -11,6 +13,7 @@ Bok.niva('enkel', {
         { typ: 'underrubrik', text: 'Det här lär du dig' },
         { typ: 'punkter', punkter: [
           '*likformig rörelse|likformig rörelse* och *olikformig rörelse|olikformig rörelse*',
+          '*medelfart*',
           '*acceleration* och *retardation*',
           '*tröghetslagen*'
         ] },
@@ -40,6 +43,12 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Ofta ligger prickarna inte jämnt. Ibland ligger de tätt, ibland glest. Det betyder att föremålet hann olika långt under olika sekunder. En sådan rörelse kallas *olikformig rörelse|olikformig rörelse*. De flesta rörelser du ser varje dag är olikformiga.' },
         { typ: 'figur', namn: 'rorelsespar', rorelse: 'olikformig' },
         { typ: 'text', text: 'Tänk på när du cyklar genom stan. Du saktar in vid en korsning, du stannar vid ett rödljus och sedan trampar du i gång igen. Farten ändras hela tiden. Varje gång farten ändras är det en kraft som gör det. Det kan vara dina ben som trampar, bromsarna som tar i eller friktionen mot vägen.' },
+
+        { typ: 'rubrik', text: 'Vid en olikformig rörelse räknar man ut medelfarten' },
+        { typ: 'text', text: 'När du åker en lång sträcka är farten nästan aldrig densamma hela tiden. Tänk på en bussresa. Bussen kör fort på landsvägen, saktar in i samhällen och står still vid hållplatserna. Farten ändras hela tiden. Om någon frågar hur fort bussen åkte går det därför inte att svara med en enda fart.' },
+        { typ: 'text', text: 'I stället kan man räkna ut *medelfarten|medelfart*. Medelfarten är den fart du skulle ha haft om du hade åkt lika fort hela vägen och kommit fram på exakt samma tid. Det är alltså ett sätt att beskriva hela resan med ett enda tal, fast farten egentligen har varierat.' },
+        { typ: 'text', text: 'Så här räknar man ut medelfarten. Ta hela sträckan och dela med hela tiden. Tänk dig att du cyklar 30 km till en sjö och att det tar 2 timmar. Sträckan är 30 km. Tiden är 2 timmar. 30 delat med 2 är 15. Medelfarten är alltså 15 km/h. Det gäller även om du ibland cyklade fortare, ibland långsammare och ibland stod helt still vid ett rödljus.' },
+        { typ: 'text', text: 'Kanske har du sett ordet medelhastighet i en annan bok, till exempel i matematiken. Där betyder det oftast samma sak. Men i fysiken är medelfart det rätta ordet. Ordet hastighet säger nämligen också åt vilket håll man rör sig, och det bryr sig inte medelfarten om. Den säger bara hur fort det gick i genomsnitt.' },
 
         { typ: 'rubrik', text: 'När avstånden blir längre och längre accelererar föremålet' },
         { typ: 'text', text: 'Ibland blir avståndet mellan prickarna längre för varje sekund. Det betyder att föremålet hinner lite längre för varje sekund som går – farten ökar. Då säger man att föremålet *accelererar|acceleration*.' },
@@ -81,6 +90,7 @@ Bok.niva('enkel', {
         { typ: 'punkter', punkter: [
           'Vid *likformig rörelse|likformig rörelse* hinner föremålet lika långt varje sekund. Ingen kraft verkar, eller krafterna tar ut varandra.',
           'Vid *olikformig rörelse|olikformig rörelse* ändras farten eller riktningen. Då är det en kraft som påverkar föremålet.',
+          'Vid en olikformig rörelse räknar man ut medelfarten: hela sträckan delad med hela tiden.',
           'Ökar farten *accelererar|acceleration* föremålet. Minskar farten *retarderar|retardation* det.',
           '*Tröghetslagen*: det som ligger stilla fortsätter att ligga stilla, och det som rör sig fortsätter i samma fart och riktning – om ingen kraft ändrar det.',
           'En kraft behövs för att ändra en rörelse, inte för att den ska fortsätta.'

@@ -4,7 +4,9 @@
  * "Det här lär du dig:" står som liten rubrik utan kolon, som "Det här repeterar du" i Repetition I.
  * Avsnittens id (inledning, rorelsen-i-prickarna, troghetslagen, sammanfattning) är desamma på alla nivåer – nivåbytet hittar samma
  * avsnitt. Fördjupning har dessutom att-rakna-pa-rorelse; nivåbytet därifrån går till troghetslagen. Huvudrubrikerna (avsnitten)
- * står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
+ * står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04).
+ * Medelfarten (2026-11-05, III-A-medelfart-Standard-Enkel.md, ordagrant): rubriken och dess två stycken efter figuren
+ * olikformig; "medelfart" i "Det här lär du dig" och en punkt i Sammanfattningen (arbetsordern III textändringar). */
 Bok.niva('standard', {
   avsnitt: [
     {
@@ -15,6 +17,7 @@ Bok.niva('standard', {
         { typ: 'underrubrik', text: 'Det här lär du dig' },
         { typ: 'punkter', punkter: [
           '*likformig rörelse|likformig rörelse* och *olikformig rörelse|olikformig rörelse*',
+          '*medelfart*',
           '*acceleration* och *retardation*',
           '*tröghetslagen*'
         ] },
@@ -39,6 +42,10 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Vid olikformig rörelse är avstånden olika långa' },
         { typ: 'text', text: 'Om föremålet hinner olika långt under lika långa tider är rörelsen *olikformig|olikformig rörelse*. Prickarna ligger då ojämnt – ibland tätt, ibland glest. De flesta rörelser i vardagen är olikformiga. En cykel i stadstrafik saktar in vid korsningar, står still vid rödljus och trampar i gång igen. När en rörelse ändras på det sättet är det alltid en kraft som påverkar föremålet: en knuff, ett drag, en broms eller något som tar emot.' },
         { typ: 'figur', namn: 'rorelsespar', rorelse: 'olikformig' },
+
+        { typ: 'rubrik', text: 'Vid en olikformig rörelse räknar man ut medelfarten' },
+        { typ: 'text', text: 'Under en längre resa är farten nästan aldrig densamma hela tiden. Bussen stannar vid hållplatser, och cyklisten saktar in i uppförsbackar och rullar fort i nedförsbackar. Därför går det inte att säga vilken fart man hade under hela resan. I stället räknar man ut *medelfarten|medelfart*: den jämna fart man skulle ha haft om man rört sig lika fort hela vägen och kommit fram på samma tid.' },
+        { typ: 'text', text: 'Medelfarten räknas ut med hela sträckan delad med hela tiden. Cyklar du 30 km på 2 timmar är medelfarten 30 / 2 = 15 km/h, även om du ibland cyklade 25 km/h och ibland stod still vid ett rödljus. I många böcker kallas det här medelhastighet, men i fysiken är medelfart det rätta ordet. Hastighet säger också åt vilket håll man rör sig, och det tar medelfarten inte hänsyn till. Hur man räknar med fart övar du mer på i matematiken.' },
 
         { typ: 'rubrik', text: 'Vid accelererande rörelse blir avstånden längre och längre' },
         { typ: 'text', text: 'När avståndet mellan prickarna växer för varje tidsenhet ökar farten. Då säger man att föremålet *accelererar|acceleration*. En bil som startar vid grönt ljus hinner bara en liten bit den första sekunden, lite längre nästa och ännu längre sekunden därpå. Det som får bilen att accelerera är en kraft framåt från motorn som är större än krafterna som bromsar.' },
@@ -72,6 +79,7 @@ Bok.niva('standard', {
         { typ: 'punkter', punkter: [
           'Vid *likformig rörelse|likformig rörelse* hinner föremålet lika långt varje tidsenhet. Ingen kraft verkar, eller krafterna tar ut varandra.',
           'Vid *olikformig rörelse|olikformig rörelse* ändras farten eller riktningen – då påverkar en kraft föremålet.',
+          'Vid en olikformig rörelse räknar man ut medelfarten: hela sträckan delad med hela tiden.',
           'Ökar farten *accelererar|acceleration* föremålet, minskar den *retarderar|retardation* det.',
           '*Tröghetslagen*: ett föremål förblir i vila eller fortsätter i samma fart och riktning om ingen kraft ändrar det.',
           'En kraft behövs för att ändra en rörelse, inte för att hålla den igång.'
