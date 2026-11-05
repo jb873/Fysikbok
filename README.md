@@ -799,3 +799,20 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     stycken, sist i avsnittet `friktion`, är ersatta med källans sex rubriker och deras stycken, ordagrant ur
     `III-B-Standard-friktion-hinder-nodvandighet-v2.md`. Den första rubriken är densamma som förut. Den gamla filen
     ligger i `Arkiv/2026-11-05-fore-textandringar/kraft-och-friktion/`. Enkel och Fördjupning är oförändrade.
+  - **D Tyngdkraften, ny Fördjupning (v2):** `innehall/tyngdkraften/fordjupning.js` är ersatt med
+    `III-D-Tyngdkraften-Fordjupning-v2.md`, ordagrant. Den gamla filen ligger i
+    `Arkiv/2026-11-05-fore-fordjupning-v2/tyngdkraften/`. Joachims nya regel: Fördjupning förutsätter Standard och
+    upprepar den inte.
+    - **Avsnitt:** Inledning, *Gravitationen och normalkraften* (`tyngdkraft-och-normalkraft`), *Massa och tyngd*
+      och Sammanfattning. Det finns inget `att-mata-kraft` (dynamometern står i Standard). Nivåbytet från
+      `att-mata-kraft` går till närmaste föregående avsnitt, `tyngdkraft-och-normalkraft`. Det är samma regel som i
+      A, och motorn är oförändrad (Joachims beslut 2026-11-05).
+    - **Formeln:** gravitationslagen skrivs `F = G · [[m₁ · m₂|r²]]`. Förklaringen till r är källans "avståndet
+      mellan deras mittpunkter (m)".
+    - **Tabellerna:** två tabeller (g på olika avstånd och g på olika himlakroppar). Huvudena har stor bokstav först,
+      som i v1, och "g (N/kg)" står med gemener.
+    - **BILD J** är samma `jord_och_mane` som förut (590 N och 96 N), efter den andra tabellen.
+    - **Sammanfattningen:** källans åtta punkter står i två punktlistor (4 + 4). Med åtta punkter i ett block rymdes
+      sidan inte (65–91 px för hög), och motorn delar aldrig ett block. Texten är oförändrad.
+  - **RAM.md:** regeln "Fördjupning förutsätter Standard" och raden om medelfart ersätter "Enkel och Fördjupning ur
+    samma kärna".

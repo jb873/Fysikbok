@@ -5,8 +5,8 @@
  * "Det här lär du dig:" står som liten rubrik utan kolon, som i text A–C.
  * [BILD J] är figuren jord_och_mane, och jämförelsen "vad ändras på månen?" står sist i avsnittet massa-och-tyngd
  * (arbetsordern III D massa och tyngd v2, 2026-11-05).
- * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma på alla
- * nivåer; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
+ * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma i Standard
+ * och Enkel; Fördjupning (v2, 2026-11-05) har inte att-mata-kraft – nivåbytet därifrån går till tyngdkraft-och-normalkraft; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('standard', {
   avsnitt: [
     {
