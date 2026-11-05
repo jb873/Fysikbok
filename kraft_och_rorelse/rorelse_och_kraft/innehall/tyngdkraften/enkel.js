@@ -2,6 +2,8 @@
  * Joachims källa (III-D-Tyngdkraften-alla-nivaer.md, 2026-11-04), införd ordagrant i strömformatet: ### = rubrik,
  * ett stycke = ett textblock. Samma bilder som Standard ([BILD T], [BILD F], [BILD M], bildpilar). "Det här lär du
  * dig:" står som liten rubrik utan kolon, som i text A–C.
+ * [BILD J] är figuren jord_och_mane, och jämförelsen "vad ändras på månen?" står sist i avsnittet massa-och-tyngd
+ * (arbetsordern III D massa och tyngd v2, 2026-11-05).
  * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma på alla
  * nivåer; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('enkel', {
@@ -124,6 +126,9 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'På månen är massan densamma' },
         { typ: 'text', text: 'Tänk dig att du reser till månen. Där skulle du kunna hoppa mycket högre, och tunga saker skulle kännas lätta. Det beror på att månen drar mycket svagare än jorden. Månens dragningskraft är bara ungefär en sjättedel av jordens.' },
         { typ: 'text', text: 'En person med massan 60 kg har tyngden ungefär 600 N på jorden. På månen drar månen bara en sjättedel så hårt. En sjättedel av 600 är 100. Tyngden på månen är alltså ungefär 100 N. Men massan är fortfarande 60 kg. Personen innehåller precis lika mycket materia som förut.' },
+        { typ: 'figur', namn: 'jord_och_mane', massa: 60, tyngd: [600, 100], vag: [60, 10],
+          bildtext: 'Samma person på jorden och på månen: massan är densamma, men månen drar bara en sjättedel så hårt. Vågen mäter kraften och visar därför fel på månen.',
+          beskrivning: 'Två bilder bredvid varandra. På jorden står en person med massan 60 kg på en våg som visar 60 kg; en lång pil nedåt visar tyngden 600 N. På månen står samma person, fortfarande 60 kg, på en våg som visar 10 kg; pilen nedåt är bara en sjättedel så lång, 100 N.' },
         { typ: 'text', text: 'Om personen tog med sig sin badrumsvåg till månen skulle vågen visa ungefär 10 kg. Det är inte för att personen har blivit mindre. Det är för att vågen mäter hur hårt man trycker – och på månen trycker man inte lika hårt. Vågen är bara gjord för att räkna rätt på jorden.' },
 
         { typ: 'rubrik', text: 'Ingenting försvinner på månen' },
@@ -136,6 +141,16 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Här kommer något som överraskar många. Blocket har samma massa på månen. Därför är det lika trögt som på jorden. Det är lika svårt att få upp farten snabbt, och lika svårt att stoppa det när det väl rör sig.' },
         { typ: 'text', text: 'Tänk dig en stor sten på månen. Du kan lyfta den lätt, eftersom månen drar så svagt i den. Men om stenen kommer rullande mot dig är den lika svår att stoppa som på jorden. Den innehåller lika mycket materia, och den är lika trög. Astronauterna som var på månen fick lära sig det. De kunde bära tung utrustning, men de var tvungna att röra sig försiktigt, för det var svårt att stanna.' },
         { typ: 'text', text: 'Massan bestämmer alltså hur trögt något är. Tyngden bestämmer hur hårt något trycks mot underlaget – och därmed hur stor friktionen blir. Det är därför massa och tyngd är två olika saker.' },
+        { typ: 'jamforelse', kolumner: [
+            { rubrik: 'Ändras på månen', punkter: [
+                'tyngden – månen drar mycket svagare',
+                'normalkraften från underlaget',
+                'friktionen',
+                'det badrumsvågen visar' ] },
+            { rubrik: 'Samma på månen', punkter: [
+                'massan',
+                'mängden materia',
+                'trögheten – lika svårt att starta och stoppa' ] } ] },
         { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]
     },

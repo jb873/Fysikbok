@@ -3,6 +3,8 @@
  * ett stycke = ett textblock. [BILD T] och [BILD F] är fotot block-rep.jpg och [BILD M] fotot dynamometer.jpg, med
  * kraftpilar (bildpilar, data ur arbetsordern III D; lägena justerade så att pilar och etiketter inte överlappar).
  * "Det här lär du dig:" står som liten rubrik utan kolon, som i text A–C.
+ * [BILD J] är figuren jord_och_mane, och jämförelsen "vad ändras på månen?" står sist i avsnittet massa-och-tyngd
+ * (arbetsordern III D massa och tyngd v2, 2026-11-05).
  * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma på alla
  * nivåer; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('standard', {
@@ -99,12 +101,25 @@ Bok.niva('standard', {
 
         { typ: 'rubrik', text: 'På månen är massan densamma men tyngden mindre' },
         { typ: 'text', text: 'Om du kunde resa till månen skulle du märka att det är betydligt lättare att hoppa högt och lyfta tunga föremål. Det beror på att månens dragningskraft är ungefär en sjättedel av jordens. En person med massan 60 kg har tyngden ungefär 600 N på jorden men bara omkring 100 N på månen. Massan är däremot fortfarande exakt densamma, 60 kg.' },
+        { typ: 'figur', namn: 'jord_och_mane', massa: 60, tyngd: [600, 100], vag: [60, 10],
+          bildtext: 'Samma person på jorden och på månen: massan är densamma, men månen drar bara en sjättedel så hårt. Vågen mäter kraften och visar därför fel på månen.',
+          beskrivning: 'Två bilder bredvid varandra. På jorden står en person med massan 60 kg på en våg som visar 60 kg; en lång pil nedåt visar tyngden 600 N. På månen står samma person, fortfarande 60 kg, på en våg som visar 10 kg; pilen nedåt är bara en sjättedel så lång, 100 N.' },
         { typ: 'text', text: 'Många tror att man blir lättare på månen därför att en del av massan försvinner, men det stämmer inte. Kroppen innehåller fortfarande lika mycket materia och samma antal partiklar som på jorden. Skillnaden är att månen drar i kroppen med en svagare kraft. Därför kan en astronaut hoppa högre på månen utan att ha förlorat någon massa.' },
 
         { typ: 'rubrik', text: 'På månen blir friktionen mindre men trögheten är densamma' },
         { typ: 'text', text: 'Tänk dig att vi tar med oss träblocket från bordet och placerar det på ett liknande underlag på månen. Eftersom månens tyngdkraft är svagare trycks blocket inte lika hårt mot underlaget, vilket innebär att normalkraften blir mindre. Om materialet och kontaktytorna är desamma blir även friktionen mindre, och det behövs därför mindre kraft för att övervinna friktionen när vi drar blocket.' },
         { typ: 'text', text: 'Men blockets massa har inte förändrats, och därför är dess tröghet fortfarande densamma. Många tror att ett föremål som väger mindre på månen automatiskt är lättare att få i gång eller stoppa, men så är det inte. Om vi bortser från friktionen krävs samma kraft för att ge blocket en viss acceleration på månen som på jorden, eftersom massan är oförändrad. Blocket har alltså lika stor tröghet även om tyngdkraften är mycket mindre.' },
         { typ: 'text', text: 'Detta visar den avgörande skillnaden mellan massa och tyngd. Tyngden bestämmer hur hårt ett föremål trycks mot underlaget – och därmed hur stor friktionen blir. Massan bestämmer däremot hur trögt föremålet är, alltså hur svårt det är att ändra dess fart. Genom att skilja mellan dessa begrepp kan vi förstå både varför friktionen förändras på månen och varför föremålets tröghet är densamma.' },
+        { typ: 'jamforelse', kolumner: [
+            { rubrik: 'Ändras på månen', punkter: [
+                'tyngden – en sjättedel',
+                'normalkraften från underlaget',
+                'friktionen',
+                'det badrumsvågen visar' ] },
+            { rubrik: 'Samma på månen', punkter: [
+                'massan',
+                'mängden materia',
+                'trögheten – lika svårt att starta och stoppa' ] } ] },
         { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]
     },

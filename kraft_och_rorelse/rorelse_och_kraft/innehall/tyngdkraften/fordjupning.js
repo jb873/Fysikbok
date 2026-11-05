@@ -5,6 +5,8 @@
  * Joachims beslut 2026-11-04: rubrikerna "… gånger g" och "g är olika …" och tabellhuvudet "g (N/kg)" är omskrivna
  * ("Tyngden räknas ut med massan och tyngdfaktorn", "Tyngdfaktorn är olika på olika himlakroppar", "Tyngdfaktor (N/kg)").
  * "Det här lär du dig:" står som liten rubrik utan kolon, som i text A–C.
+ * [BILD J] är figuren jord_och_mane med Fördjupningens värden (590 N och 96 N); jämförelsen står bara i Standard och
+ * Enkel (arbetsordern III D massa och tyngd v2, 2026-11-05).
  * Avsnittens id (inledning, tyngdkraft-och-normalkraft, att-mata-kraft, massa-och-tyngd, sammanfattning) är desamma på alla
  * nivåer; huvudrubrikerna (avsnitten) står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04). */
 Bok.niva('fordjupning', {
@@ -89,6 +91,9 @@ Bok.niva('fordjupning', {
         { typ: 'tabell', rubriker: ['Himlakropp', 'Tyngdfaktor (N/kg)', 'Tyngd för 60 kg'],
           rader: [['Jorden', '9,8', '590 N'], ['Månen', '1,6', '96 N'],
                   ['Mars', '3,7', '220 N'], ['Jupiter', '25', '1 500 N']] },
+        { typ: 'figur', namn: 'jord_och_mane', massa: 60, tyngd: [590, 96], vag: [60, 10],
+          bildtext: 'Samma person på jorden och på månen: massan är densamma, men månen drar bara en sjättedel så hårt. Vågen mäter kraften och visar därför fel på månen.',
+          beskrivning: 'Två bilder bredvid varandra. På jorden står en person med massan 60 kg på en våg som visar 60 kg; en lång pil nedåt visar tyngden 590 N. På månen står samma person, fortfarande 60 kg, på en våg som visar 10 kg; pilen nedåt är bara en sjättedel så lång, 96 N.' },
 
         { typ: 'rubrik', text: 'Massa och tyngd mäts på olika sätt' },
         { typ: 'text', text: '*Massa* mäts i kilogram och är densamma överallt. *Tyngd* är en kraft och mäts i newton. En badrumsvåg mäter egentligen kraften du trycker med, och räknar om den till kilogram med jordens g. Tar du med vågen till månen visar den därför bara en sjättedel av din massa – vågen är ”inställd fel”. En balansvåg, som jämför två föremål, visar däremot rätt på månen, eftersom båda sidorna dras lika mycket svagare.' },

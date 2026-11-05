@@ -643,7 +643,7 @@
             // (står det kvar figurer med stycket får den delen fortfarande delas enligt 40 %-regeln nedan; resten
             // behöver då ingen egen sida – den ryms ändå inte med stycket, men får följa en figur som flyttats fram)
             E.splice(i, 1, Object.assign({}, u, { poster: u.poster.slice(0, vid), delVid: vid > u.delVid ? u.delVid : null }),
-              { poster: u.poster.slice(vid), brytFore: vid === u.delVid, rubrik: false, delVid: null });
+              { poster: u.poster.slice(vid), brytFore: vid === u.delVid, delad: vid === u.delVid, rubrik: false, delVid: null });
             u = E[i];
           }
           // …och om sidan annars skulle bli under 40 % fylld: då stannar stycket här och figuren börjar nästa sida.
@@ -659,7 +659,7 @@
           if (forDel && s.enheter.length && !u.brytFore && hojd(s.poster.concat(u.poster)) > kap(s.poster.concat(u.poster)) &&
             hojd(s.poster.concat(forDel)) <= kap(s.poster.concat(forDel)) && tunnUtan()) {
             E.splice(i, 1, Object.assign({}, u, { poster: forDel, delVid: null }),
-              { poster: u.poster.slice(u.delVid), brytFore: true, rubrik: false, delVid: null });
+              { poster: u.poster.slice(u.delVid), brytFore: true, delad: true, rubrik: false, delVid: null });
             u = E[i];
           }
           const med = s.poster.concat(u.poster);
@@ -689,9 +689,11 @@
         const prov = { bok, avsnitt: d.avsnitt, poster: ps };
         prova(prov); return prov.fyll < TUNN;
       };
+      // Sidan före en sidbrytning får vara tunn och lämnas; sidan före en figur som delats från sitt stycke balanseras
+      // (2026-11-05, III D Djupdykning på mobilen: hissarna staplade är 63 % av sidan, så stycket före stod ensamt, 32 %).
       for (let j = fran + 1; j < sidor.length; j++) {
         const t = sidor[j], P = sidor[j - 1], nasta = sidor[j + 1];
-        if (t.sist || !tunn(t.poster) || (nasta && nasta.avsnitt === t.avsnitt && nasta.enheter[0].brytFore)) continue;
+        if (t.sist || !tunn(t.poster) || (nasta && nasta.avsnitt === t.avsnitt && nasta.enheter[0].brytFore && !nasta.enheter[0].delad)) continue;
         const u = P.enheter[P.enheter.length - 1];
         if (P.enheter.length < 2 || u.brytFore || t.enheter[0].brytFore) continue;
         const ihop = u.poster.concat(t.poster), kvar = P.poster.slice(0, P.poster.length - u.poster.length);

@@ -50,6 +50,9 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'fallande-hiss-prov', namn: 'fallande_hiss' },
         { typ: 'text', text: 'Provtext: Newtons kanon.' },
         { typ: 'figur', id: 'newtons-kanon-prov', namn: 'newtons_kanon', bildtext: 'Provbildtext under kanonen.' },
+        // Jorden och månen med andra värden och motorns egen beskrivning (grinden mäter pilarnas förhållande)
+        { typ: 'text', text: 'Provtext: jorden och månen.' },
+        { typ: 'figur', id: 'jord-och-mane-prov', namn: 'jord_och_mane', massa: 50, tyngd: [490, 80], vag: [50, 8] },
         // Kraftparen: grinden mäter att pilarna är lika långa, motriktade och börjar i var sitt föremåls mitt
         { typ: 'rubrik', text: 'Provrubrik: kraftpar' },
         { typ: 'text', text: 'Provtext: ett kraftpar med snöre, med värdet.' },

@@ -568,6 +568,32 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-hiss-fransar { stroke: var(--dampad); stroke-width: 1.2; stroke-linecap: round; }
 .fig-bildpil-text { font-family: var(--text); font-size: calc(18px * var(--bp-k, 1)); font-weight: 650; fill: #b3261e; text-anchor: middle;
   paint-order: stroke; stroke: #fff; stroke-width: calc(5px * var(--bp-k, 1)); stroke-linejoin: round; }
+/* Två paneler (figurer.js: paneler): bredvid varandra lika stora som en figur på 440 enheter med samma höjdgräns
+   (--fig-kvot = 440 / höjden). Blir texten under 14 px när de står bredvid varandra staplas de under varandra, så
+   stora att den minsta texten blir 14 px: gränsen är 440 · 14 / minsta texten (i figurens enheter), storleken
+   220 · 14 / minsta texten. Sidinnehållet är containern, så brytningen mäter samma sak som eleven ser. */
+.fig-paneler { display: flex; justify-content: center; margin: 0 auto; max-width: calc(var(--sh) * .32 * var(--fig-kvot)); }
+.figur-bild .fig-paneler svg { flex: 1 1 0; min-width: 0; width: 50%; max-height: none; margin: 0; }
+/* fallande_hiss: minsta texten är displayen (13), alltså staplad under 474 px; staplad blir displayen 14,5, och den
+   högra panelen flyttas 20 enheter åt vänster så att korgarna står rakt under varandra */
+@container (max-width: 473.9px) {
+  .fig-paneler[data-paneler="fallande_hiss"] { flex-direction: column; align-items: center; gap: .45em; max-width: none; }
+  .figur-bild .fig-paneler[data-paneler="fallande_hiss"] svg { flex: none; width: min(100%, 213px); }
+  .fig-paneler[data-paneler="fallande_hiss"] svg + svg { translate: -9.091% 0; }
+  .fig-paneler[data-paneler="fallande_hiss"] .fig-hiss-display { font-size: 14.5px; }
+}
+/* jord_och_mane: minsta texten är 15,5 (tyngden och vågens display), alltså staplad under 397 px, 199 px bred */
+.fig-jm-jord { fill: #d3d8a8; }                                     /* grönaktig sand: syns mot papperets sandfärg */
+.fig-jm-jord-kant { stroke: #8fae6e; stroke-width: 3.5; }
+.fig-jm-mane { fill: #dcdcd8; }
+.fig-jm-mane-kant { stroke: #9b9b95; stroke-width: 2; }
+.fig-jm-krater { fill: #c4c4bf; stroke: #a3a39d; stroke-width: 1; }
+.fig-jm-display { fill: #f7f5ef; stroke: #8f846f; stroke-width: 1; }
+.fig-jm-vag { font-size: 15.5px; font-weight: 600; }
+@container (max-width: 397px) {
+  .fig-paneler[data-paneler="jord_och_mane"] { flex-direction: column; align-items: center; gap: .45em; max-width: none; }
+  .figur-bild .fig-paneler[data-paneler="jord_och_mane"] svg { flex: none; width: min(100%, 199px); }
+}
 
 /* ---------- Innehållsförteckningen (sida 1 och menyn) ---------- */
 

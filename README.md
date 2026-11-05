@@ -306,7 +306,8 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
 - **Balansen:** sidorna packas en i taget, så en sida blir tunn när nästa grupp inte får plats. Då tar den tunna sidan
   den sista gruppen (rubriken och dess stycke) från sidan före, om gruppen ryms och sidan före inte själv blir tunn.
   En grupp efter en sidbrytning eller en delad figur flyttas inte. (2026-11-03: Rörelse, Fördjupning, där sida 4
-  annars blev 40 % fylld.)
+  annars blev 40 % fylld.) Sidan före en sidbrytning lämnas. Sidan före en figur som skilts från sitt stycke
+  balanseras som andra sidor (2026-11-05: de staplade hissarna på mobilen).
 
 Brytningen väntar på typsnitten (annars mäts fel), sparas per sidmått och görs om bara när sidmåttet ändras. Den
 tar ungefär 10–90 ms med CPU:n strypt 6 gånger, som på en Chromebook (grinden: medianen under 200 ms). Innehållsförteckningen räknar ut sidnumren för
@@ -363,13 +364,19 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `friktion` | `foremal?: 'Block'`, `underlag?: 'Bord'`, `pilar?: true`, `ytor?: 'normal' \| 'grov' \| 'slat'` | ytorna i förstoring. Överst "Så ser det ut": blocket på bordslinjen och kontaktytan i en streckad ruta. Nederst "I förstoring": blockets undersida och bordets yta med oregelbundna toppar och gropar som hakar i varandra (samma mönster varje gång; `ytor` avgör hur ojämnt), i olika dämpade färger. Strecklinjerna från rutan går till förstoringens hörn och korsar aldrig rubrikerna. Pilarna verkar på blocket: draget framåt och friktionen bakåt, lika långa; `pilar: false` ritar bara ytorna. Med andra namn än Block och Bord blir beskrivningen enklare ("Låda på hylla.") – skriv gärna en egen. **`paneler: [{rubrik, foremal, underlag, ytor}]`** (2–3): bara förstoringarna, bredvid varandra med en rubrik var och inga pilar (III B Djupdykning: däcket mot torr asfalt och mot blank is); grinden prövar att ytorna ligger an i varje panel. |
 | `lutande_plan` | `steg?: 3` (1–3), `bildtext?`, `beskrivning?` | Galileos tankeexperiment i tre steg under varandra, med en kort rubrik per steg: *Lika branta* (kulan släpps högt upp till vänster och når nästan samma höjd till höger), *Flackare* (kulan rullar längre för att nå samma höjd) och *Vågrätt* (kulan når aldrig höjden: ett rörelsespår med lika långa avstånd och en stråle åt höger). Starthöjden är en streckad linje i guld, planen har sandfärg och kulan där den stannar är tonad. Beskrivningen skrivs av motorn om den inte står i data. |
 | `stoppstracka` | `rader: [{fart, reaktion, broms}]` (1–5), `markering?: {varde, text}`, `enhet?: 'm'`, `bildtext?`, `beskrivning?` | liggande staplar, en rad per fart, varje stapel i två delar: reaktionssträckan (ljust bläck) och bromssträckan (mörkt). Fartens namn till vänster, stoppsträckan (summan) till höger med hårt mellanslag, en gemensam skala under staplarna (var tionde enhet upp till den längsta stapeln) och förklaringen en gång. `markering`: en streckad lodrät linje genom alla rader med en etikett överst (III B: barnet vid 26 m). Grinden mäter delarna mot värdena (±1 px), totalen och markeringen. |
-| `fallande_hiss` | `bildtext?`, `beskrivning?` | två hissar i genomskärning bredvid varandra. *Hissen står still:* kabeln, en person (streckgubbe) på en våg som visar 70 kg, tyngdkraften nedåt och lika stor normalkraft uppåt (kraftpilarnas stil, från en punkt bredvid personen, med namnen) och bollen på golvet. *Hissen faller fritt:* kabeln avklippt, vågen visar 0, bara tyngdkraften, bollen svävar och en stråle utanför korgen visar att hissen faller. Grinden mäter att tyngdkraften är lika lång i båda panelerna och lika lång som normalkraften i den stilla hissen. |
+| `fallande_hiss` | `bildtext?`, `beskrivning?` | två hissar i genomskärning bredvid varandra. *Hissen står still:* kabeln, en person (streckgubbe) på en våg som visar 70 kg, tyngdkraften nedåt och lika stor normalkraft uppåt (kraftpilarnas stil, från en punkt bredvid personen, med namnen) och bollen på golvet. *Hissen faller fritt:* kabeln avklippt, vågen visar 0, bara tyngdkraften, bollen svävar och en stråle utanför korgen visar att hissen faller. Grinden mäter att tyngdkraften är lika lång i båda panelerna och lika lång som normalkraften i den stilla hissen. På mobilen staplas panelerna (se nedan). |
+| `jord_och_mane` | `massa`, `tyngd: [jorden, månen]` (N), `vag: [jorden, månen]` (kg), `bildtext?`, `beskrivning?` | två lika stora paneler, *På jorden* och *På månen*, med samma person (streckgubbe som i hissen) på en badrumsvåg. Jorden är grönaktig sand med grön kant, månen grå med två kratrar. Under personen står samma etikett i båda ("massa 60 kg"). Tyngdkraften går från personens tyngdpunkt rakt nedåt, i kraftpilarnas stil, med en gemensam skala: den största tyngden får pilen 96 enheter, så månens pil blir tyngd[1]/tyngd[0] av jordens. Vid pilen står "tyngd 600 N", och vågens display visar `vag`. Grinden mäter pilarnas förhållande (±1 px), att personerna är lika stora och att massan är densamma. På mobilen staplas panelerna (se nedan). |
 | `newtons_kanon` | `bildtext?`, `beskrivning?` | jorden, ett alldeles för högt berg upptill med en kanon som skjuter vågrätt, och tre banor i samma pilfärg: *låg fart* landar nära berget, *högre fart* längre bort och *tillräckligt hög fart* går runt hela jorden (streckad cirkel med pil). |
 | `bildpilar` | `bild` (adress från delkapitlets sida), `bredd`, `hojd` (fotots pixlar), `utsnitt?: [x, y, b, h]`, `pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}]`, `lika?: [[0, 1]]`, `beskrivning` (krävs), `bildtext?`, `maxhojd?: 0.2–0.45`, `prickar?: [[x, y], …]`, `stråle?: {fran, till}` | ett foto med kraftpilar ritade ovanpå. Allt i fotots pixlar. Fotot visar den verkliga situationen; pilarna ritas ur data, så att de alltid blir rätt. Pilarna är röda (#b3261e) med vit kant och en prick i angreppspunkten; etiketten (namnet, mitt på `etikett`, annars över pilens mitt) i samma röda, halvfet med vit kant. `lika`: pilar som ska vara lika långa – motorn vägrar rita annars (högst 1 px skillnad i fotot), och grinden mäter. En pil utanför utsnittet är fel. Fotot görs utan pilar. Figuren får vara upp till 45 % av sidhöjden; `maxhojd` ger en lägre gräns för just den bilden (ett stående foto som annars inte ryms med stycket före, som dynamometern i III D: 0,43). Etiketterna är aldrig mindre än 14 px på skärmen: när fotot skalas ner växer etiketten och pilarnas tjocklek (`passaEtiketter` i `bok.js`), och grinden mäter det i alla lägen. `prickar` är lägesmarkeringar (som i rörelsespåren) i samma röda färg med vit kant, och `stråle` en pil under dem som visar riktningen; med prickar behövs inga pilar. Grinden mäter att prickarna har lika stora avstånd (±1 px) och att allt ligger inom bilden. |
 
 - `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data (inte `bildpilar`: ett foto
   kan inte beskrivas ur data).
 - Figuren tar högst 32 % av sidhöjden, ett foto (`bildpilar`) högst 45 %.
+- **Två paneler** (`fallande_hiss`, `jord_och_mane`; `paneler` i `figurer.js`): var panel är en egen svg, 220
+  enheter bred. På datorn står de bredvid varandra lika stora som en figur på 440 enheter. Blir texten då under
+  14 px (mobilen) staplas de under varandra, så stora att den minsta texten blir 14 px. Gränsen är 440 · 14 / minsta
+  texten, i `bok.css` per figur. Staplade får de ta mer än 32 % av sidan: hissarna 63 %, jorden och månen 59 % på
+  390 × 664. Grinden mäter att ingen text är under 14 px i något läge.
 - En figur med fel data visas som en markering på sidan, och kontrolläget säger vad som är fel.
 - **En ny sorts figur** (inte en ny figur av en befintlig sort) är en ny funktion i `bokskal/figurer.js`. Det är
   utbyggnad av motorn, inte innehåll.
@@ -764,3 +771,21 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Nya figurtyper:** `fallande_hiss` (BILD H) och `newtons_kanon` (BILD N).
   - **I hissen** utgår kraftpilarna från en punkt bredvid personen, som i `kraftpilar` där pilarna utgår från
     föremålets mitt, och namnen står till höger.
+- **2026-11-05, III D: bilder till avsnittet "Massa och tyngd" (arbetsordern v2):**
+  - **Ny figurtyp `jord_och_mane` (BILD J)** i alla tre nivåerna, direkt efter månens första stycke (Fördjupning:
+    efter tabellen, med 590 N och 96 N). Bildtexten och beskrivningen är ordagrant ur ordern. Den ryms inom 32 % av
+    sidhöjden med text på minst 16,8 px på datorn, så den behövde inte gå upp till 45 %.
+  - **Jämförelsen "vad ändras på månen?"** (`jamforelse`) står sist i avsnittet `massa-och-tyngd`, före länkarna, i
+    Standard och Enkel (Enkel: "tyngden – månen drar mycket svagare"). Den står inte i Fördjupning.
+  - **Två paneler staplas på mobilen** (`fallande_hiss` och `jord_och_mane`): var panel är en egen svg. Bredvid
+    varandra är de exakt som förut på datorn. När texten bredvid varandra skulle bli under 14 px staplas de, så stora
+    att den minsta texten blir 14 px. Det styrs av en containerfråga på sidinnehållet, så brytningen mäter samma sak
+    som eleven ser. På mobilen (390 × 664) är de staplade hissarna 63 % av sidan och jorden och månen 59 %.
+  - **I den staplade hissen** är vågens display 14,5 i stället för 13 (bara staplad). Den högra panelen flyttas 20
+    enheter åt vänster, så att korgarna står rakt under varandra.
+  - **Motorfix i balansregeln (`paginera`):** sidan före en figur som skilts från sitt stycke balanserades inte. I
+    D:s djupdykning på mobilen stod stycket före de staplade hissarna då ensamt (32 %). Nu tar den sidan den sista
+    gruppen från sidan före, som andra tunna sidor. Sidan före en sidbrytning lämnas som förut.
+  - **Grinden:** två nya prov. *Två paneler:* lika stora, ingen text under 14 px och ingen överlappning, bredvid
+    varandra eller staplade. *Jorden och månen:* pilarnas förhållande (±1 px), personerna lika stora och samma massa
+    i båda. Provboken har ett fall med andra värden.

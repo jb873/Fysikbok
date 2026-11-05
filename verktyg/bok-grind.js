@@ -143,10 +143,13 @@ async function chrome() {
  *  - friktionen: ytorna hakar i varandra utan att gå in i varandra, strecklinjerna korsar inga rubriker, draget åt
  *    höger och friktionen åt vänster, lika långa och från samma punkt på blocket; samma ytor ger samma mönster;
  *  - bildpilarna: fotot laddas, pilarna i lika är lika långa (±1 px på skärmen), ingen pil eller etikett utanför
- *    utsnittet, etiketterna överlappar inte varandra.
+ *    utsnittet, etiketterna överlappar inte varandra;
+ *  - två paneler (fallande_hiss, jord_och_mane): lika stora, ingen text under 14 px på skärmen och ingen som överlappar
+ *    en annan – bredvid varandra eller staplade (mobilen);
+ *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -211,7 +214,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       });
       // den fallande hissen: tyngdkraften lika lång i båda panelerna, och i den stilla hissen lika lång som normalkraften
       // (åt motsatt håll); i den fallande ingen normalkraft
-      $$('.scen svg[data-fallande-hiss]').forEach(s => {
+      $$('.scen [data-fallande-hiss]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (hs.has(id)) return;
         const pil = g => { const l = g.querySelector('line'), t = g.querySelector('polygon').points[0]; return t.y - l.y1.baseVal.value; };
@@ -225,6 +228,43 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           if (faller.normal.length) f_.push('normalkraft i den fallande hissen');
         }
         hs.set(id, { fel: f_ });
+      });
+      // två paneler (fallande_hiss, jord_och_mane): lika stora på skärmen, ingen text under 14 px – bredvid varandra
+      // eller staplade (mobilen) – och ingen text som överlappar en annan i samma panel
+      $$('.scen .fig-paneler').forEach(w => {
+        const id = w.closest('[data-post]').dataset.post;
+        if (pn.has(id)) return;
+        const f_ = [], sv = [...w.querySelectorAll(':scope > svg')];
+        const sk = sv.map(s => s.getBoundingClientRect().width / s.viewBox.baseVal.width);
+        if (sv.length !== 2 || Math.abs(sk[0] - sk[1]) > 0.002) f_.push('panelerna är olika stora: ' + sk.map(k => k.toFixed(3)).join('/'));
+        const minPx = Math.min(...sv.flatMap((s, i) => [...s.querySelectorAll('text')].map(t => parseFloat(getComputedStyle(t).fontSize) * sk[i])));
+        if (!(minPx >= 13.95)) f_.push('en text är bara ' + minPx.toFixed(1) + ' px på skärmen (minst 14)');
+        sv.forEach((s, i) => { const r = [...s.querySelectorAll('text')].map(t => [t.textContent, t.getBoundingClientRect()]);
+          r.forEach(([a, p], j) => r.slice(j + 1).forEach(([b, q]) => { if (p.left < q.right - 0.5 && q.left < p.right - 0.5 && p.top < q.bottom - 0.5 && q.top < p.bottom - 0.5) f_.push('panel ' + (i + 1) + ': ”' + a + '” och ”' + b + '” överlappar'); })); });
+        const r0 = sv[0].getBoundingClientRect(), r1 = sv[1] ? sv[1].getBoundingClientRect() : r0;
+        pn.set(id, { fig: w.dataset.paneler, staplad: r1.top >= r0.bottom - 0.5, minPx, fel: f_ });
+      });
+      // jorden och månen: pilen på månen = pilen på jorden × tyngden på månen / tyngden på jorden (±1 px på skärmen),
+      // samma person lika stor i båda, samma massa i båda och etiketterna ur data
+      $$('.scen [data-jord-och-mane]').forEach(w => {
+        const id = w.closest('[data-post]').dataset.post;
+        if (jm.has(id)) return;
+        const f_ = [], sv = [...w.querySelectorAll(':scope > svg')], sk = sv.map(s => s.getBoundingClientRect().width / s.viewBox.baseVal.width);
+        const p = sv.map((s, i) => { const g = s.querySelector('g.fig-jm-pil'), l = g.querySelector('line'), t = g.querySelector('polygon').points[0];
+          const gb = s.querySelector('g.fig-gubbe').getBBox();
+          return { tyngd: +g.dataset.tyngd, px: (t.y - l.y1.baseVal.value) * sk[i], lodrat: Math.abs(t.x - l.x1.baseVal.value) < 0.01 && t.y > l.y1.baseVal.value,
+            gubbe: [gb.width * sk[i], gb.height * sk[i]], massa: s.querySelector('text.fig-jm-massa').textContent.replace(/\s/g, ' '),
+            tyngdText: s.querySelector('text.fig-jm-tyngd').textContent.replace(/\s/g, ' '), vag: s.querySelector('text.fig-jm-vag').textContent.replace(/\s/g, ' ') }; });
+        if (p.length !== 2) f_.push(p.length + ' paneler');
+        else {
+          const [j, m] = p, bor = j.px * m.tyngd / j.tyngd;
+          if (!(Math.abs(m.px - bor) <= 1)) f_.push('pilen på månen är ' + m.px.toFixed(1) + ' px, ska vara ' + bor.toFixed(1));
+          if (!j.lodrat || !m.lodrat) f_.push('en pil pekar inte rakt nedåt');
+          if (Math.abs(j.gubbe[0] - m.gubbe[0]) > 0.5 || Math.abs(j.gubbe[1] - m.gubbe[1]) > 0.5) f_.push('personerna är olika stora');
+          if (j.massa !== m.massa || !/^massa \d/.test(j.massa)) f_.push('massan: ”' + j.massa + '” / ”' + m.massa + '”');
+          p.forEach(x => { if (x.tyngdText !== 'tyngd ' + String(x.tyngd).replace('.', ',') + ' N') f_.push('etiketten ”' + x.tyngdText + '” för ' + x.tyngd + ' N'); });
+        }
+        jm.set(id, { vag: p.map(x => x.vag), fel: f_ });
       });
       // friktion i paneler: i varje panel ligger ytorna an utan att gå in i varandra, och panelen har en rubrik
       $$('.scen svg[data-friktion-paneler]').forEach(s => {
@@ -343,6 +383,9 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       st: { antal: st.size, fel: [...st].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       fp: { antal: fp.size, fel: [...fp].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       hs: { antal: hs.size, fel: [...hs].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
+      pn: { antal: pn.size, staplade: [...pn.values()].filter(x => x.staplad).length, minPx: pn.size ? Math.min(...[...pn.values()].map(x => x.minPx)) : null,
+        fel: [...pn].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
+      jm: { antal: jm.size, fel: [...jm].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
@@ -664,6 +707,11 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     spar.every(x => !x.fp.fel.length), spar.flatMap(x => x.fp.fel).join(' | '));
   if (spar.some(x => x.hs.antal)) prova('figur: den fallande hissen – tyngdkraften lika lång i båda panelerna, i den stilla hissen lika lång som normalkraften, i den fallande ingen normalkraft (' + spar.map(x => x.hs.antal).join(' + ') + ' figurer)',
     spar.every(x => !x.hs.fel.length), spar.flatMap(x => x.hs.fel).join(' | '));
+  if (spar.some(x => x.pn.antal)) prova('figur: två paneler – lika stora, ingen text under 14 px på skärmen (bredvid varandra eller staplade), ingen text överlappar en annan (' + spar.map(x => x.pn.antal).join(' + ') + ' figurer)',
+    spar.every(x => !x.pn.fel.length), spar.flatMap(x => x.pn.fel).join(' | ') ||
+      spar.reduce((a, x) => a + x.pn.staplade, 0) + ' staplade, minsta texten ' + Math.min(...spar.filter(x => x.pn.antal).map(x => x.pn.minPx)).toFixed(1) + ' px');
+  if (spar.some(x => x.jm.antal)) prova('figur: jorden och månen – pilen på månen = pilen på jorden × tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda, tyngden ur data (' + spar.map(x => x.jm.antal).join(' + ') + ' figurer)',
+    spar.every(x => !x.jm.fel.length), spar.flatMap(x => x.jm.fel).join(' | '));
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   prova('text: g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden står i vanlig stil med rätt skiftläge, inte i kapitäler (' + spar.reduce((a, x) => a + x.sym.antal, 0) + ' ställen)',

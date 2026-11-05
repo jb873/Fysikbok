@@ -20,7 +20,8 @@
  *   lutande_plan        steg?: 3 (1–3) – Galileos tankeexperiment: lika branta, flackare, vågrätt
  *   stoppstracka        rader: [{fart, reaktion, broms}] (1–5), markering?: {varde, text}, enhet?: 'm'
  *   friktion (paneler)  paneler: [{rubrik, foremal, underlag, ytor}] (2–3) – förstoringarna bredvid varandra
- *   fallande_hiss       (inga data) – hissen som står still och hissen som faller fritt
+ *   fallande_hiss       (inga data) – hissen som står still och hissen som faller fritt (två paneler)
+ *   jord_och_mane       massa, tyngd: [jorden, månen], vag: [jorden, månen] – samma person på jorden och på månen (två paneler)
  *   newtons_kanon       (inga data) – jorden, berget, kanonen och tre kulbanor
  *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h], maxhojd?: 0.2–0.45 (standard 0.45),
  *                       prickar?: [[x, y], …] (lägesmarkeringar), stråle?: {fran, till} (riktningen under prickarna),
@@ -629,9 +630,57 @@
       if (faller) s += pil(px + 196, 56, px + 196, 168, 7, 'fig-strale');
       return s + '</g>';
     };
-    const s = panel(0, false) + panel(240, true);
+    // Två paneler (III D massa, 2026-11-05): var hiss i en egen svg, så att de kan staplas på mobilen. På datorn står de
+    // bredvid varandra precis som förut (den högra panelen visar figurens enheter 220–440).
     const beskr = d.beskrivning || 'Två hissar. I den som står still står en person på en våg som visar 70 kg; tyngdkraften drar nedåt och golvet trycker uppåt lika mycket. I den som faller fritt finns ingen kabel, vågen visar 0, bollen svävar och bara tyngdkraften verkar – nedåt.';
-    return { svg: `<svg viewBox="0 0 440 ${GOLV + 4}" xmlns="http://www.w3.org/2000/svg" data-fallande-hiss="2">${s}</svg>`, beskrivning: beskr };
+    return { svg: paneler('fallande_hiss', GOLV + 4, [panel(0, false), panel(240, true)], 'data-fallande-hiss="2"'), beskrivning: beskr };
+  });
+
+  /* Två paneler bredvid varandra (fallande_hiss, jord_och_mane), var och en en egen svg 220 enheter bred – den andra
+   * visar enheterna 220–440, så att en figur ritad i 440 enheter delas utan att något flyttas. På datorn står de
+   * bredvid varandra som en figur (samma storlek som en svg på 440 enheter, med samma gräns för höjden). Blir texten
+   * under 14 px när de står bredvid varandra (mobilen) staplas de under varandra, så stora att den minsta texten är
+   * 14 px – gränsen och storleken per figur står i bok.css (.fig-paneler). H: panelernas höjd i figurens enheter. */
+  function paneler(namn, H, inne, attr = '') {
+    return `<div class="fig-paneler" data-paneler="${namn}" ${attr} style="--fig-kvot: ${f(440 / H * 1000) / 1000}">` +
+      inne.map((s, i) => `<svg viewBox="${i * 220} 0 220 ${H}" xmlns="http://www.w3.org/2000/svg" data-panel="${i + 1}">${s}</svg>`).join('') + '</div>';
+  }
+
+  /* Massa och tyngd på jorden och på månen (III D, BILD J, 2026-11-05): två lika stora paneler med samma person (en
+   * streckgubbe som i hissen) på en badrumsvåg. Samma etikett "massa 60 kg" i båda; tyngdkraftspilen från personens
+   * tyngdpunkt rakt nedåt (kraftpilarnas stil) med en gemensam skala – den största tyngden får pilen L – och vågens
+   * display ur data. Jorden: sand med en grön kant; månen: grå med två kratrar i horisonten.
+   * Data: massa, tyngd: [jorden, månen] (N), vag: [jorden, månen] (kg). */
+  Bok.figur('jord_och_mane', d => {
+    const massa = d.massa, tyngd = d.tyngd, vag = d.vag;
+    if (!(massa > 0) || !Array.isArray(tyngd) || tyngd.length !== 2 || !Array.isArray(vag) || vag.length !== 2 || !tyngd.every(t => t > 0) || !vag.every(v => v >= 0))
+      fel('jord_och_mane behöver massa, tyngd: [jorden, månen] och vag: [jorden, månen]');
+    const L = 96, H = 182, cx = 104, fot = 104, GOLV = fot + 18, ty = fot - 30, k = L / Math.max(...tyngd);
+    const NAMN = ['På jorden', 'På månen'], hart = (v, e) => `${tal(v)} ${e}`;
+    const panel = (i, px) => {
+      const x = v => px + v, l = tyngd[i] * k, spets = ty + l, mane = i === 1;
+      let s = `<g class="fig-jm-panel" data-${mane ? 'mane' : 'jorden'}="1">` + text(x(110), 20, NAMN[i], 'fig-rubrik');
+      // marken: jordens sand med grön kant, månens grå yta med två kratrar i horisonten
+      s += `<rect class="${mane ? 'fig-jm-mane' : 'fig-jm-jord'}" x="${px}" y="${GOLV}" width="220" height="${H - GOLV}"/>` +
+        `<line class="${mane ? 'fig-jm-mane-kant' : 'fig-jm-jord-kant'}" x1="${px}" y1="${GOLV}" x2="${px + 220}" y2="${GOLV}"/>`;
+      if (mane) s += `<ellipse class="fig-jm-krater" cx="${x(172)}" cy="${GOLV + 5}" rx="15" ry="3.5"/><ellipse class="fig-jm-krater" cx="${x(204)}" cy="${GOLV + 12}" rx="9" ry="2.5"/>`;
+      // vågen med displayen till vänster om pilen
+      s += `<rect class="fig-foremal" x="${x(cx - 60)}" y="${fot}" width="84" height="18" rx="3"/>` +
+        `<rect class="fig-jm-display" x="${x(cx - 54)}" y="${fot + 2}" width="46" height="14" rx="1.5"/>` +
+        text(x(cx - 31), fot + 13.2, hart(vag[i], 'kg'), 'fig-text fig-mitt fig-jm-vag');
+      // personen (samma som i hissen) och massan under den, till vänster om pilen
+      s += `<g class="fig-gubbe"><line x1="${x(cx - 7)}" y1="${fot}" x2="${x(cx)}" y2="${fot - 24}"/><line x1="${x(cx + 7)}" y1="${fot}" x2="${x(cx)}" y2="${fot - 24}"/>` +
+        `<line x1="${x(cx)}" y1="${fot - 24}" x2="${x(cx)}" y2="${fot - 54}"/><line x1="${x(cx)}" y1="${fot - 46}" x2="${x(cx - 12)}" y2="${fot - 30}"/>` +
+        `<line x1="${x(cx)}" y1="${fot - 46}" x2="${x(cx + 12)}" y2="${fot - 30}"/><circle cx="${x(cx)}" cy="${fot - 63}" r="8.5"/></g>`;
+      s += text(x(cx - 10), GOLV + 24, 'massa ' + hart(massa, 'kg'), 'fig-text fig-hoger fig-halo fig-jm-massa');
+      // tyngdkraften från tyngdpunkten rakt nedåt, med etiketten till höger om spetsen
+      s += `<g class="fig-jm-pil" data-tyngd="${tyngd[i]}">${pil(x(cx), ty, x(cx), spets, 9)}</g><circle class="fig-angrepp" cx="${x(cx)}" cy="${ty}" r="3.5"/>`;
+      s += text(x(cx + 11), spets + 1, 'tyngd ' + hart(tyngd[i], 'N'), 'fig-pil-text fig-vanster fig-halo fig-jm-tyngd');
+      return s + '</g>';
+    };
+    const beskr = d.beskrivning || `Två bilder bredvid varandra. På jorden står en person med massan ${hart(massa, 'kg')} på en våg som visar ${hart(vag[0], 'kg')}; en pil nedåt visar tyngden ${hart(tyngd[0], 'N')}. ` +
+      `På månen står samma person, fortfarande ${hart(massa, 'kg')}, på en våg som visar ${hart(vag[1], 'kg')}; pilen nedåt visar tyngden ${hart(tyngd[1], 'N')}.`;
+    return { svg: paneler('jord_och_mane', H, [panel(0, 0), panel(1, 220)], 'data-jord-och-mane="2"'), beskrivning: beskr };
   });
 
   /* Newtons kanon (III D Djupdykning, 2026-11-04): jorden, ett alldeles för högt berg upptill och en kanon som skjuter
