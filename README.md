@@ -795,3 +795,7 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     olikformig, i Enkel efter stycket om cykeln i stan, och i båda före accelerationen. Begreppet är
     `*medelfarten|medelfart*`. "Det här lär du dig" har fått punkten `*medelfart*`, som begrepp som de andra
     punkterna, och Sammanfattningen punkten ur ordern. Fördjupning är oförändrad.
+  - **B Kraft och friktion, Standard:** "Friktion är ibland ett hinder och ibland en nödvändighet" och dess två
+    stycken, sist i avsnittet `friktion`, är ersatta med källans sex rubriker och deras stycken, ordagrant ur
+    `III-B-Standard-friktion-hinder-nodvandighet-v2.md`. Den första rubriken är densamma som förut. Den gamla filen
+    ligger i `Arkiv/2026-11-05-fore-textandringar/kraft-och-friktion/`. Enkel och Fördjupning är oförändrade.
