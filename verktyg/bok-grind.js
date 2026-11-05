@@ -1216,6 +1216,9 @@ async function jamforWebben(lista) {
       console.log(`${rott ? 'GRÖNT' : 'RÖTT '}  negativ "${namn}", ${lage.namn}: grinden blev ${rott ? 'röd, som den ska' : 'GRÖN – fångar inte felet'}` +
         ` (navigering ${r.navigering}, plats ${r.plats ? 'grön' : 'röd'}, JS-fel ${r.fel.length}` +
         (r.brytTid ? `, brytningen median högst ${r.brytTid.median} ms` : '') + ')');
+      // fångas felet inte: vad som hände i stället (JS-fel och prov som inte gick igenom)
+      if (!rott) { r.fel.forEach(f => console.log(`       JS-fel: ${f.split('\n').slice(0, 3).join(' ')}`));
+        r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`)); }
     }
   }
   console.log(`\n${gront ? 'GRÖNT' : 'RÖTT'}: ${NEGATIV ? 'den negativa verifieringen' : 'bokmotorn och delkapitlen'}` +

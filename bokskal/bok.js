@@ -679,13 +679,23 @@
       // efter en sidbrytning eller en delad figur (brytFore) står kvar först på sin sida. Avgörs med räkningen och
       // marginalen NARA, så att elevens snabba brytning och kontrollägets provade blir samma vid 40-procentsgränsen.
       const tunn = ps => hojd(ps) < TUNN * kap(ps) + NARA;
+      // Sidan före får inte själv bli tunn. Nära gränsen (inom NARA) avgör en riktig sida, som vid delningen av stycke
+      // och figur (tunnUtan): båda brytningarna mäter då likadant (2026-11-04, III C Djupdykning – sidan före hade blivit
+      // 44 %, men räkningen med marginalen kallade den tunn och den efter blev 37 %).
+      const tunnKvar = ps => {
+        const hh = hojd(ps), k = kap(ps);
+        if (hh < TUNN * k) return true;
+        if (hh >= TUNN * k + NARA) return false;
+        const prov = { bok, avsnitt: d.avsnitt, poster: ps };
+        prova(prov); return prov.fyll < TUNN;
+      };
       for (let j = fran + 1; j < sidor.length; j++) {
         const t = sidor[j], P = sidor[j - 1], nasta = sidor[j + 1];
         if (t.sist || !tunn(t.poster) || (nasta && nasta.avsnitt === t.avsnitt && nasta.enheter[0].brytFore)) continue;
         const u = P.enheter[P.enheter.length - 1];
         if (P.enheter.length < 2 || u.brytFore || t.enheter[0].brytFore) continue;
         const ihop = u.poster.concat(t.poster), kvar = P.poster.slice(0, P.poster.length - u.poster.length);
-        if (hojd(ihop) > kap(ihop) - NARA || tunn(kvar)) continue;
+        if (hojd(ihop) > kap(ihop) - NARA || tunnKvar(kvar)) continue;
         P.enheter.pop(); P.poster = kvar; t.enheter.unshift(u); t.poster = ihop;
         if (mat(t) || mat(P)) {                       // ryms inte i en riktig sida: tillbaka
           t.enheter.shift(); t.poster = t.poster.slice(u.poster.length); P.enheter.push(u); P.poster = P.poster.concat(u.poster);

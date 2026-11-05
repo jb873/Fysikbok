@@ -744,3 +744,15 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **`friktion` har fått `paneler`** (BILD Y). Det är ingen ny figurtyp. Ytorna ritas av samma funktion som förut,
     och den vanliga friktionsfiguren är byte för byte oförändrad. Panelerna står bredvid varandra också på mobilen,
     eftersom figuren är en SVG; de är läsbara där.
+- **2026-11-04, djupdykning till III C, "Raketer":**
+  - `innehall/kraft-och-motkraft/djupdykning.js` är införd ordagrant ur `Djupdykning-C-Raketer-redigerad.md`. Den
+    har en Inledning och sex numrerade avsnitt.
+  - **BILD R** (raket.jpg) och **BILD A** (astronaut.jpg) är `bildpilar` med två lika långa pilar på två föremål.
+    Etiketterna är långa i förhållande till fotona och fick egna lägen:
+    - **BILD R:** pilarna ligger på y 590 som i ordern. "raketen trycker gasen" står under sin pil (y 695), och
+      "gasen trycker raketen" till höger om sin pils spets, under raketen.
+    - **BILD A:** pilen på lådan går från lådans mitt åt höger, och pilen på astronauten från händerna längs armen
+      åt vänster; båda är 250 px. Etiketterna står i rymden, inte på jorden och inte på hjälmen.
+  - **Motorfix i balansregeln (`paginera`):** sidan före fick inte bli tunn, och inom marginalen NARA räknades den
+    som tunn. I C:s djupdykning (1366 × 633) hade sidan före fått 44 %, men den räknades som tunn, och då blev sidan
+    efter 37 %. Nu avgör en riktig sida inom marginalen, som vid delningen av stycke och figur (`fyllFore`).
