@@ -563,6 +563,9 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-kanon { fill: var(--black); }
 .fig-kanon-bana path.fig-pil { fill: none; }
 .fig-pil.fig-kanon-runt { fill: none; stroke-dasharray: 6 5; }
+.figur-bild svg[data-newtons-kanon] { max-height: calc(var(--sh) * .48); }      /* jorden och banorna behöver plats */
+.fig-hiss-stump { fill: var(--dampad); }
+.fig-hiss-fransar { stroke: var(--dampad); stroke-width: 1.2; stroke-linecap: round; }
 .fig-bildpil-text { font-family: var(--text); font-size: calc(18px * var(--bp-k, 1)); font-weight: 650; fill: #b3261e; text-anchor: middle;
   paint-order: stroke; stroke: #fff; stroke-width: calc(5px * var(--bp-k, 1)); stroke-linejoin: round; }
 

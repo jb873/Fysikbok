@@ -605,8 +605,11 @@
       let s = `<g class="fig-hiss" data-faller="${faller}">` +
         text(px + 98, 14, faller ? 'Hissen faller fritt' : 'Hissen står still', 'fig-text fig-mitt fig-hiss-rubrik');
       // kabeln – eller den avklippta stumpen
-      s += faller ? `<polyline class="fig-hiss-kabel" points="${px + 90},26 ${px + 94},21 ${px + 98},26 ${px + 102},21 ${px + 106},26"/><line class="fig-hiss-kabel" x1="${px + 98}" y1="26" x2="${px + 98}" y2="34"/>`
-        : `<line class="fig-hiss-kabel" x1="${px + 98}" y1="20" x2="${px + 98}" y2="34"/>`;
+      // (den avklippta: en kort lodrät stump från taket med en sned, trasig ände och några lösa trådar)
+      const kx = px + 98;
+      s += faller ? `<polygon class="fig-hiss-stump" points="${kx - 2},34 ${kx - 2},25 ${kx - 0.7},26.5 ${kx + 0.4},23 ${kx + 1.2},24 ${kx + 2},20.5 ${kx + 2},34"/>` +
+          `<path class="fig-hiss-fransar" d="M${kx - 1.4} 25.6L${kx - 4.5} 22M${kx + 0.4} 23.4L${kx - 0.4} 19M${kx + 2} 21L${kx + 5} 17.5"/>`
+        : `<line class="fig-hiss-kabel" x1="${kx}" y1="20" x2="${kx}" y2="34" style="stroke-width: 4"/>`;
       s += `<rect class="fig-hiss-korg" x="${px + 8}" y="34" width="180" height="${GOLV - 34}"/>`;
       // vågen med sin display, och personen på den
       s += `<rect class="fig-foremal" x="${cx - 24}" y="${GOLV - 16}" width="48" height="16"/>` +
@@ -635,24 +638,26 @@
    * vågrätt. Tre banor i samma pilfärg: låg fart landar nära berget, högre fart längre bort, och med tillräckligt hög
    * fart går kulan runt hela jorden (streckad cirkel med pil). */
   Bok.figur('newtons_kanon', d => {
-    const C = [220, 100], R = 46, B = 84, rad = g => g * Math.PI / 180;
+    // Stor (Joachims justering 2026-11-05: 1,5 gånger större), och får vara upp till 48 % av sidhöjden (bok.css)
+    const C = [220, 132], R = 69, B = 126, rad = g => g * Math.PI / 180;
     const paJorden = (g, r = R) => [C[0] + r * Math.sin(rad(g)), C[1] - r * Math.cos(rad(g))];   // g grader medurs från toppen
-    const M = [C[0] + 12, C[1] - B];                       // kanonens mynning, högst upp på berget
+    const M = [C[0] + 18, C[1] - B];                       // kanonens mynning, högst upp på berget
     let s = `<circle class="fig-jorden" cx="${C[0]}" cy="${C[1]}" r="${R}"/>`;
     // berget: alldeles för högt, med kanonen på toppen
     const [v1, v2] = [paJorden(-12), paJorden(12)];
-    s += `<polygon class="fig-berg" points="${f(v1[0])},${f(v1[1])} ${C[0]},${f(C[1] - B + 4)} ${f(v2[0])},${f(v2[1])}"/>`;
-    s += `<rect class="fig-kanon" x="${C[0] - 4}" y="${C[1] - B - 3}" width="16" height="6" rx="1.5"/>`;
+    s += `<polygon class="fig-berg" points="${f(v1[0])},${f(v1[1])} ${C[0]},${f(C[1] - B + 6)} ${f(v2[0])},${f(v2[1])}"/>`;
+    s += `<rect class="fig-kanon" x="${C[0] - 6}" y="${C[1] - B - 4.5}" width="24" height="9" rx="2"/>`;
     // banorna: låg fart, högre fart, och runt hela jorden
     const L1 = paJorden(40), L2 = paJorden(100);
-    s += `<g class="fig-kanon-bana" data-bana="1">${pilBoje([M, [M[0] + 24, M[1]], L1])}</g>`;
-    s += `<g class="fig-kanon-bana" data-bana="2">${pilBoje([M, [M[0] + 70, M[1]], [C[0] + R + 34, C[1] - 30], L2])}</g>`;
+    s += `<g class="fig-kanon-bana" data-bana="1">${pilBoje([M, [M[0] + 36, M[1]], L1])}</g>`;
+    s += `<g class="fig-kanon-bana" data-bana="2">${pilBoje([M, [M[0] + 105, M[1]], [C[0] + R + 51, C[1] - 45], L2])}</g>`;
     const Q = paJorden(156, B);
-    s += `<g class="fig-kanon-bana" data-bana="3"><circle class="fig-pil fig-kanon-runt" cx="${C[0]}" cy="${C[1]}" r="${B}"/>${pilBoje([paJorden(140, B), paJorden(146, B), Q])}</g>`;
-    // namnen: den låga banan på jorden intill landningen (med papperskant), de andra utanför omloppsbanan
-    s += text(L1[0] - 2, L1[1] + 18, 'låg fart', 'fig-pil-text fig-vanster fig-halo');
-    s += text(C[0] + B + 8, C[1] + 16, 'högre fart', 'fig-pil-text fig-vanster');
-    s += text(C[0] - B - 6, C[1] + 4, 'tillräckligt hög fart', 'fig-pil-text fig-hoger');
+    s += `<g class="fig-kanon-bana" data-bana="3"><circle class="fig-pil fig-kanon-runt" cx="${C[0]}" cy="${C[1]}" r="${B}"/>${pilBoje([paJorden(146, B), paJorden(151, B), Q])}</g>`;
+    // namnen intill sina banor: den låga på jorden vid landningen (med papperskant), den högre strax utanför
+    // omloppsbanan där den landar, omloppsbanans på två rader strax utanför den till vänster
+    s += text(L1[0] + 2, L1[1] + 20, 'låg fart', 'fig-pil-text fig-vanster fig-halo');
+    s += text(C[0] + B + 6, L2[1] + 6, 'högre fart', 'fig-pil-text fig-vanster');
+    s += `<text class="fig-pil-text fig-hoger" x="${C[0] - B - 6}" y="${C[1] - 4}">tillräckligt <tspan x="${C[0] - B - 6}" dy="18">hög fart</tspan></text>`;
     const beskr = d.beskrivning || 'Jorden med ett mycket högt berg och en kanon på toppen. Tre kulbanor: med låg fart landar kulan nära berget, med högre fart längre bort, och med tillräckligt hög fart går den runt hela jorden utan att landa.';
     return { svg: `<svg viewBox="0 0 440 ${C[1] + B + 6}" xmlns="http://www.w3.org/2000/svg" data-newtons-kanon="3">${s}</svg>`, beskrivning: beskr };
   });
