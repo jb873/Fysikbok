@@ -860,6 +860,15 @@ const PROVSCENARIO = String.raw`async () => {
   smal.remove();
   prova('prov: tal och enhet bryts aldrig isär – "16 − 6 = 10 N" och "1 538 °C" (hårda mellanslag, också i tusentalet)',
     tePar.every(t => t.endsWith('en rad')) && kontroll === false, tePar.join(' | ') + ' | 16 − 6 (vanliga mellanslag): ' + (kontroll ? 'en rad – spalten bryter inte' : 'bruten, som den ska'));
+  // Ett intervall (80–90) bryts inte efter tankstrecket (ordskarvstecken, 2026-11-06): på en rad i den 1 px breda spalten
+  Bok.gaTill(sf('intervall')); await v(60);
+  const iv = $('.scen [data-post="intervall"]').cloneNode(true); iv.style.cssText = smal.style.cssText; document.body.appendChild(iv);
+  const ivRad = (() => { const w = document.createTreeWalker(iv, NodeFilter.SHOW_TEXT); let nod;
+    while ((nod = w.nextNode()) && !/80–/.test(nod.textContent));
+    if (!nod) return null; const i = nod.textContent.indexOf('80–'), r = document.createRange(); r.setStart(nod, i); r.setEnd(nod, Math.min(nod.textContent.length, i + 5));
+    return new Set([...r.getClientRects()].map(q => Math.round(q.top))).size === 1; })();
+  iv.remove();
+  prova('prov: ett intervall ("80–90 procent") bryts inte efter tankstrecket', ivRad === true, ivRad === null ? '"80–" hittas inte' : ivRad ? 'en rad' : 'BRUTET efter strecket');
   // Kraftparen i Tryck: drag och knuff, lika långa motriktade pilar från var sitt föremåls mitt
   prova('prov: kraftparen – pilarna lika långa och motriktade, mot det andra föremålet (drag) och ifrån det (knuff)',
     sp.par.antal === 2 && sp.par.satt.length === 2 && !sp.par.fel.length, sp.par.antal + ' par: ' + (sp.par.fel.join(' | ') || sp.par.satt.join(', ')));
@@ -1091,16 +1100,69 @@ async function provaBlad(c, lage, hack) {
 /* ---------- Tomma sidor (2026-11-06, arbetsorder 7: "texten försvinner") ----------
  * Felet: en sida visade sidhuvudet men inga block. Blockens element finns en gång per bok och flyttas in i sidan som
  * byggs; en sparad brytning för ett annat sidmått togs fram utan att sidorna byggdes om, så sidor vars block flyttats
- * till det andra måttets sidor visades tomma eller utan en del block (sidmåttet A → B → A → B, t.ex. helskärm av och på).
- * Provet: boken öppen mitt i, sidmåttet A → B → A → B – inget uppslag får bli tomt, och samma mått ska visa samma
- * block varje gång (återskapar felet: rött före rättningen i layout(), med 2–3 block borta i alla fyra lägen). */
+ * till det andra måttets sidor visades tomma (sidmåttet A → B → A → B, t.ex. helskärm av och på).
+ * SIDMATT: boken öppen mitt i, sidmåttet A → B → A → B – inget uppslag får bli tomt (återskapar felet).
+ * SVEP: varje sida i varje bok (texterna på varje nivå och djupdykningarna) har block; sedan bladvändning fram och
+ * tillbaka i den första boken, en annan bok öppnas och stängs, och den första boken gås igenom igen. */
 const TOMMA = String.raw`const v = ms => new Promise(r => setTimeout(r, ms)), $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   // sidor i scenen med sidhuvud men utan block (omslaget, nr 0, har inget sidinnehåll)
   const tomma = () => $$('.scen .uppslag > .sida[data-nr]').filter(s => s.dataset.nr !== '0' && s.querySelector('.sidhuvud') && !s.querySelector('.sidinnehall > *')).map(s => s.dataset.nr);
   const stang = async () => { if (!Bok.oppen) return; const s = $$('.bok-stang').find(e => e.offsetParent); if (s) s.click(); await v(500); };`;
+const TOMMA_SVEP = String.raw`async () => {
+  ${TOMMA}
+  await stang();
+  const fel = [], bocker = [];
+  const start = { text: ($('.underdel-knapp.aktiv') || { dataset: {} }).dataset.text, niva: ($('.niva-valjare .niva-knapp.aktiv') || { dataset: {} }).dataset.niva };
+  // varje sida i den öppna boken: inga tomma, och blocken (data-post) per sida – jämför (en tidigare genomgång) säger
+  // till om en sida har tappat block
+  const hela = async (namn, jamfor) => { const n = $$('.lr-sida').length, ids = {};
+    for (let s = 1; s <= n; s += 1) { Bok.gaTill(s); await v(25); const t = tomma(); if (t.length) fel.push(namn + ': sida ' + t.join(','));
+      $$('.scen .uppslag > .sida[data-nr]').forEach(e => { ids[e.dataset.nr] = [...e.querySelectorAll('[data-post]')].map(p => p.dataset.post).join(','); }); }
+    if (jamfor) Object.keys(jamfor).forEach(nr => { if (jamfor[nr] !== ids[nr]) fel.push(namn + ': sida ' + nr + ' har inte samma block som förut (' + (ids[nr] || '').split(',').filter(Boolean).length + ' av ' + jamfor[nr].split(',').filter(Boolean).length + ')'); });
+    return { n, ids }; };
+  // böckerna: varje text på varje nivå (en nivå som är "kommer" för texten hoppas över), och varje djupdykning
+  const texter = $$('.underdel-knapp[data-oppna]').map(b => b.dataset.text), nivaer = $$('.niva-valjare .niva-knapp').map(b => b.dataset.niva);
+  const lista = [];
+  for (const text of (texter.length ? texter : [null])) for (const niva of (nivaer.length ? nivaer : [null])) lista.push({ text, niva });
+  const textKnapp = x => x.text ? $$('.underdel-knapp[data-oppna]').find(b => b.dataset.text === x.text) : $('[data-oppna]');
+  // texten väljs först (knappen öppnar boken), sedan nivån i hubben, och boken öppnas igen: då är det rätt bok
+  const oppnaBok = async x => {
+    await stang();
+    const tb = textKnapp(x); if (!tb) return false;
+    tb.click(); await v(500); await stang();
+    const nb = x.niva && $$('.niva-valjare .niva-knapp').find(b => b.dataset.niva === x.niva);
+    if (nb) { if (nb.getAttribute('aria-disabled') === 'true') return false; nb.click(); await v(150);
+      // (hubben ritas om: knapparna byts ut)
+      if (!$$('.niva-valjare .niva-knapp.aktiv').some(b => b.dataset.niva === x.niva)) return false; }
+    textKnapp(x).click(); await v(700); return Bok.oppen;
+  };
+  const oppnade = [];
+  for (const x of lista) if (await oppnaBok(x)) { const namn = (x.text || 'boken') + '/' + (x.niva || ''), r = await hela(namn); bocker.push([namn, r.n]); oppnade.push(Object.assign({ ids: r.ids }, x)); }
+  for (const kort of $$('.fordj-kort:not([aria-disabled="true"])')) { await stang(); kort.click(); await v(700);
+    if (Bok.oppen) { const namn = kort.textContent.trim().slice(0, 30); bocker.push([namn, (await hela(namn)).n]); } }
+  const svep = { bocker: bocker.length, sidor: bocker.reduce((s, b) => s + b[1], 0), fel: fel.slice() };
+  // bladvändning fram och tillbaka i den första boken, en annan bok öppnas och stängs, och den första gås igenom igen
+  // (blocken på varje sida ska vara desamma som i den första genomgången)
+  fel.length = 0;
+  const forsta = oppnade[0], annan = oppnade.find(x => forsta && x.text !== forsta.text) || oppnade[1];
+  let efter = null;
+  if (forsta && await oppnaBok(forsta)) {
+    Bok.gaTill(3); await v(200);
+    const tangent = t => document.dispatchEvent(new KeyboardEvent('keydown', { key: t, bubbles: true }));
+    for (const t of ['ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowLeft', 'ArrowLeft', 'ArrowLeft', 'ArrowRight']) { tangent(t); await v(450); const tm = tomma(); if (tm.length) fel.push('efter ' + t + ': sida ' + tm.join(',')); }
+    if (annan && await oppnaBok(annan)) { Bok.gaTill(4); await v(200); tangent('ArrowRight'); await v(450); }
+    if (await oppnaBok(forsta)) await hela('tillbaka i ' + (forsta.text || 'boken') + '/' + (forsta.niva || ''), forsta.ids);
+    efter = fel.slice();
+  }
+  await stang();
+  // tillbaka till texten och nivån från före svepet (resten av körningen väntar sig dem)
+  const nb = start.niva && $$('.niva-valjare .niva-knapp').find(b => b.dataset.niva === start.niva); if (nb) { nb.click(); await v(150); }
+  const tb = start.text && $$('.underdel-knapp[data-oppna]').find(b => b.dataset.text === start.text); if (tb) { tb.click(); await v(700); await stang(); }
+  return { svep, efter };
+}`;
 async function provaTommaSidor(c, lage) {
   const k = [];
-  // sidmåttet byts från node med CDP (som ett nytt fönstermått eller helskärm av och på)
+  // SIDMATT: från node, eftersom sidmåttet byts med CDP (som ett nytt fönstermått eller helskärm av och på)
   const A = { width: lage.B, height: lage.H }, B = lage.mobil ? { width: 430, height: 900 } : { width: 1807, height: 1068 };
   const satt = m => c.send('Emulation.setDeviceMetricsOverride', { width: m.width, height: m.height, deviceScaleFactor: 1, mobile: !!lage.mobil });
   await c.ev(`(async () => { ${TOMMA} await stang(); ($('.underdel-knapp.aktiv[data-oppna]') || $('[data-oppna]')).click(); await v(800);
@@ -1123,6 +1185,11 @@ async function provaTommaSidor(c, lage) {
   await c.ev(`(async () => { ${TOMMA} await stang(); })()`);
   k.push({ namn: 'tomma sidor: sidmåttet A → B → A → B med boken öppen – inget uppslag blir tomt eller tappar block (samma mått, samma block)',
     ok: !tappat, detalj: `A ${A.width}×${A.height}, B ${B.width}×${B.height}: ` + steg.join(' · ') });
+  const r = await c.ev(`(${TOMMA_SVEP})()`);
+  k.push({ namn: 'tomma sidor: varje sida i varje bok (texterna på varje nivå, djupdykningarna) har block',
+    ok: r.svep.bocker > 0 && !r.svep.fel.length, detalj: `${r.svep.bocker} böcker, ${r.svep.sidor} sidor` + (r.svep.fel.length ? ' – TOMMA: ' + r.svep.fel.join('; ') : '') });
+  k.push({ namn: 'tomma sidor: inget blir tomt efter bladvändning fram och tillbaka och efter att en annan bok öppnats och stängts',
+    ok: !!r.efter && !r.efter.length, detalj: r.efter ? (r.efter.length ? 'TOMMA: ' + r.efter.join('; ') : 'inga') : 'kunde inte öppna boken' });
   return k;
 }
 

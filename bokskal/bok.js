@@ -95,7 +95,10 @@
     'kPa', 'hPa', 'MPa', 'Pa', 'kHz', 'Hz', 'dB', 'kN', 'N', 'kJ', 'MJ', 'J', 'kW', 'MW', 'W', 'kg', 'mg', 'g', 'ton',
     'km', 'dm', 'cm', 'mm', 'nm', 'm', 'min', 'ms', 'h', 's', 'dl', 'cl', 'ml', 'l', 'K', 'mA', 'A', 'kV', 'V', 'Ω', '%'];
   const TAL_ENHET = new RegExp(`(\\d) (?=(?:${ENHETER.join('|')})(?![\\p{L}\\p{N}]))`, 'gu');
-  const bindTal = s => String(s == null ? '' : s).replace(/(\d) (?=\d{3}(?!\d))/g, '$1 ').replace(TAL_ENHET, '$1 ');
+  // …och ett intervall (80–90) bryts inte efter tankstrecket: ett ordskarvstecken (U+2060, syns inte) efter strecket
+  // (2026-11-06, Joachims order: "80–" och "90" hamnade på var sin rad i III B Fördjupning)
+  const bindTal = s => String(s == null ? '' : s).replace(/(\d) (?=\d{3}(?!\d))/g, '$1 ').replace(TAL_ENHET, '$1 ')
+    .replace(/(\d)–(?=\d)/g, '$1–\u2060');
 
   // Rubriker, innehållsförteckningen, sidhuvudet och tabellhuvuden sätts i kapitäler (Marcellus SC, all-small-caps), och
   // där blev ett g ett G och kg KG. Bokstavssymboler (g, m, F, v, s, t) och enheter (N, kg, N/kg, m/s, °C, cm³ …) märks

@@ -965,4 +965,7 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     dess brytning räknade upp `flytt`.
   - **Rättningen:** en rad i `layout()`. `flytt` räknas upp när en annan brytning tas fram, så att dess sidor byggs om.
   - **Grinden:** sidmåttet A → B → A → B med boken öppen, där samma mått ska visa samma block. Provet var rött före
-    rättningen, med 2–3 block borta i alla fyra lägen.
+    rättningen, med 2–3 block borta i alla fyra lägen. Dessutom ett svep där varje sida i varje bok har block, också
+    efter bladvändning fram och tillbaka och efter att en annan bok öppnats och stängts.
+  - **Samtidigt:** ett intervall ("80–90") bryts inte efter tankstrecket. `bindTal` lägger ett ordskarvstecken
+    (U+2060) efter strecket. Det provas med "80–90 procent" i provbokens Tryck, i en 1 px bred spalt.

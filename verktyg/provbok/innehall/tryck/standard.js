@@ -68,7 +68,8 @@ Bok.niva('standard', {
         // Friktion: ytorna i förstoring, med pilar (som i texten) och utan pilar, grova ytor och andra namn
         { typ: 'text', text: 'Provtext: friktion i förstoring.' },
         { typ: 'figur', id: 'friktion-pilar', namn: 'friktion', bildtext: 'Provbildtext under friktionen.' },
-        { typ: 'text', text: 'Provtext: friktion utan pilar, grova ytor.' },
+        // (intervallet 80–90: grinden prövar att det inte bryts efter tankstrecket)
+        { typ: 'text', id: 'intervall', text: 'Provtext: friktion utan pilar, grova ytor, 80–90 procent.' },
         { typ: 'figur', id: 'friktion-grov', namn: 'friktion', foremal: 'Låda', underlag: 'Hylla', pilar: false, ytor: 'grov' },
         // Bildpilar: ett utsnitt av fotot (avsnittssida III), två lika långa pilar, beskrivningen ur data
         { typ: 'text', text: 'Provtext: ett foto med kraftpilar, ett utsnitt.' },
