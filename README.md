@@ -956,3 +956,13 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - Sidorna i 1366 × 633: Enkel 17 → 20, Standard 16 → 18, Fördjupning 11 → 14. Inga brott och inga tunna sidor.
   - **Elevboken, fråga 6:** underfrågan d (`q_iii_06d`, "Vad är luftmotstånd och vad beror det på?"), och
     "luftmotstånd, farten, formen" sist i "Använd begreppen". De andra id:na och texterna är oförändrade.
+- **2026-11-06, felet "texten försvinner" (arbetsorder 7):** en sida visade sidhuvudet men inga block.
+  - **Orsaken:** varje blocks element finns en gång per bok och flyttas in i sidan som byggs. `byggSida` återanvänder
+    en byggd sida så länge `flytt` är oförändrad, men `flytt` räknades bara upp av `paginera`, inte när `layout()`
+    tog fram en sparad brytning för ett annat sidmått. Med sidmåttet A → B → A → B (till exempel helskärm av och på,
+    eller ett fönster som ändrar storlek) flyttades blocken till A:s sidor, och B:s gamla sidor visades sedan utan dem.
+    Att stänga och öppna boken hjälpte inte, eftersom brytningen var sparad. Att öppna en annan bok hjälpte, eftersom
+    dess brytning räknade upp `flytt`.
+  - **Rättningen:** en rad i `layout()`. `flytt` räknas upp när en annan brytning tas fram, så att dess sidor byggs om.
+  - **Grinden:** sidmåttet A → B → A → B med boken öppen, där samma mått ska visa samma block. Provet var rött före
+    rättningen, med 2–3 block borta i alla fyra lägen.

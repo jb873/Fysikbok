@@ -1088,6 +1088,44 @@ async function provaBlad(c, lage, hack) {
   return k;
 }
 
+/* ---------- Tomma sidor (2026-11-06, arbetsorder 7: "texten försvinner") ----------
+ * Felet: en sida visade sidhuvudet men inga block. Blockens element finns en gång per bok och flyttas in i sidan som
+ * byggs; en sparad brytning för ett annat sidmått togs fram utan att sidorna byggdes om, så sidor vars block flyttats
+ * till det andra måttets sidor visades tomma eller utan en del block (sidmåttet A → B → A → B, t.ex. helskärm av och på).
+ * Provet: boken öppen mitt i, sidmåttet A → B → A → B – inget uppslag får bli tomt, och samma mått ska visa samma
+ * block varje gång (återskapar felet: rött före rättningen i layout(), med 2–3 block borta i alla fyra lägen). */
+const TOMMA = String.raw`const v = ms => new Promise(r => setTimeout(r, ms)), $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  // sidor i scenen med sidhuvud men utan block (omslaget, nr 0, har inget sidinnehåll)
+  const tomma = () => $$('.scen .uppslag > .sida[data-nr]').filter(s => s.dataset.nr !== '0' && s.querySelector('.sidhuvud') && !s.querySelector('.sidinnehall > *')).map(s => s.dataset.nr);
+  const stang = async () => { if (!Bok.oppen) return; const s = $$('.bok-stang').find(e => e.offsetParent); if (s) s.click(); await v(500); };`;
+async function provaTommaSidor(c, lage) {
+  const k = [];
+  // sidmåttet byts från node med CDP (som ett nytt fönstermått eller helskärm av och på)
+  const A = { width: lage.B, height: lage.H }, B = lage.mobil ? { width: 430, height: 900 } : { width: 1807, height: 1068 };
+  const satt = m => c.send('Emulation.setDeviceMetricsOverride', { width: m.width, height: m.height, deviceScaleFactor: 1, mobile: !!lage.mobil });
+  await c.ev(`(async () => { ${TOMMA} await stang(); ($('.underdel-knapp.aktiv[data-oppna]') || $('[data-oppna]')).click(); await v(800);
+    Bok.gaTill(Math.max(2, Math.floor($$('.lr-sida').length / 2))); await v(300); })()`);
+  // per steg: tomma sidor, och uppslagets block (data-post) – samma sidmått ska visa samma block varje gång
+  const steg = [], forra = {};
+  let tappat = false;
+  for (const [namn, m] of [['A', A], ['B', B], ['A', A], ['B', B]]) {
+    await satt(m); await vanta(700);
+    const x = await c.ev(`(() => { ${TOMMA} return { tomma: tomma(), nr: $$('.scen .uppslag > .sida[data-nr]').map(s => s.dataset.nr).join('–'),
+      block: $$('.scen .uppslag > .sida[data-nr] [data-post]').map(p => p.dataset.post) }; })()`);
+    // (jämförs när samma sidor visas; läsplatsen kan flytta uppslaget)
+    const f = forra[namn], olika = f && f.nr === x.nr && f.block.join() !== x.block.join();
+    if (olika || x.tomma.length) tappat = true;
+    steg.push(`${namn}: sida ${x.nr}, ${x.block.length} block` + (x.tomma.length ? ` – TOM sida ${x.tomma.join(',')}` : '') +
+      (olika ? ` – ${f.block.length - x.block.filter(b => f.block.includes(b)).length} block BORTA` : f && f.nr !== x.nr ? ' (annat uppslag än förra gången)' : ''));
+    forra[namn] = f || x;
+  }
+  await satt(A); await vanta(700);
+  await c.ev(`(async () => { ${TOMMA} await stang(); })()`);
+  k.push({ namn: 'tomma sidor: sidmåttet A → B → A → B med boken öppen – inget uppslag blir tomt eller tappar block (samma mått, samma block)',
+    ok: !tappat, detalj: `A ${A.width}×${A.height}, B ${B.width}×${B.height}: ` + steg.join(' · ') });
+  return k;
+}
+
 /* ---------- En körning: ett delkapitel i ett läge ---------- */
 
 async function kor(dk, lage, felkod) {
@@ -1113,6 +1151,7 @@ async function kor(dk, lage, felkod) {
     if (dk.prov && !lage.mobil) res.kontroller.push(...await c.ev(`(${PROVSCENARIO})()`));
     const blad = await provaBlad(c, lage, felkod && felkod.blad);
     res.kontroller.push(...blad); res.bladTid = blad.tid || null;
+    res.kontroller.push(...await provaTommaSidor(c, lage));
     // En adress som pekar på en rubrik (#atomer-2) öppnar boken där rubriken står; Stäng leder till hubben i samma
     // delkapitel. Rubrikernas adresser kommer ur kontrolläget (adress → block).
     const ankare = ((res.kontroll && res.kontroll.ankare) || []).filter(([a, p]) => p !== a && /-\d+$/.test(a));

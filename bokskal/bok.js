@@ -544,6 +544,7 @@
     const b = bryt(byggBok(nivaId), g);
     if (b !== aktuell) {
       aktuell = b;
+      flytt++;            // en sparad brytning (ett annat sidmått) tas fram: dess sidor byggs om, blockens element flyttas dit
       sidor = b.sidor;
       tillbaka = null;
       byggRemsa();
