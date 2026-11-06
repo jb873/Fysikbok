@@ -1,6 +1,6 @@
 {
   "delkapitel": "fysik-rorelse-och-kraft",
-  "_kommentar": "Elevboken för Avsnitt III. Rörelse och kraft, ordagrant ur Elevboken-III-Rorelse-och-kraft-v2.md (Joachim, 2026-11-05). Ritningen enligt Joachims beslut 2026-11-06: fraga = själva frågan (fetstil, radbrytning där källan har två rader), hjalp = \"Använd begreppen\" och \"Läs i\" (vanlig stil), underfragor = a, b, c … med en svarsruta var (huvudfrågan har då ingen egen ruta). q-id:na är stabila och byts aldrig; underfrågorna har huvudfrågans id + bokstav (q_iii_01a …).",
+  "_kommentar": "Elevboken för Avsnitt III. Rörelse och kraft, ordagrant ur Elevboken-III-Rorelse-och-kraft-v2.md (Joachim, 2026-11-05). Ritningen enligt Joachims beslut 2026-11-06: fraga = själva frågan (fetstil, radbrytning där källan har två rader), hjalp = \"Använd begreppen\" och \"Läs i\" (vanlig stil), underfragor = a, b, c … med en svarsruta var (huvudfrågan har då ingen egen ruta). q-id:na är stabila och byts aldrig; underfrågorna har huvudfrågans id + bokstav (q_iii_01a …). 2026-11-06 (arbetsorder 6, III B luftmotstånd): fråga 6 fick underfrågan d (q_iii_06d) och \"luftmotstånd, farten, formen\" sist i \"Använd begreppen\".",
   "avsnitt": [
     {
       "id": "a3_rorelse_och_kraft",
@@ -96,7 +96,7 @@
           "typ": "grund",
           "fraga": "Redogör för friktion",
           "hjalp": [
-            "Använd begreppen: friktion, ytor, ojämnheter, gräns, glida, kullager, smörjning, grepp",
+            "Använd begreppen: friktion, ytor, ojämnheter, gräns, glida, kullager, smörjning, grepp, luftmotstånd, farten, formen",
             "Läs i: B Kraft och friktion – Friktion"
           ],
           "underfragor": [
@@ -114,6 +114,11 @@
               "id": "q_iii_06c",
               "bokstav": "c",
               "fraga": "Redogör för friktion i vardagen – när vi vill ha mer och när vi vill ha mindre."
+            },
+            {
+              "id": "q_iii_06d",
+              "bokstav": "d",
+              "fraga": "Vad är luftmotstånd och vad beror det på?"
             }
           ]
         },

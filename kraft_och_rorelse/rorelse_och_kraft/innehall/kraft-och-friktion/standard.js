@@ -88,6 +88,16 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Friktionen beror på ytorna och på hur hårt de trycks mot varandra' },
         { typ: 'text', text: 'Hur stor friktionen kan bli beror på två saker. Den första är ytorna. Gummi mot asfalt ger stor friktion, medan stål mot is ger liten. Den andra är hur hårt ytorna trycks mot varandra. Ett tungt block trycks hårdare mot bordet än ett lätt, och därför är det svårare att dra.' },
 
+        // Luftmotstånd (III-B-luftmotstand-alla-nivaer.md, 2026-11-05, ordagrant)
+        { typ: 'rubrik', text: 'Luftmotstånd är en bromsande kraft från luften' },
+        { typ: 'text', text: 'När något rör sig genom luften måste det tränga undan luften framför sig. Luften trycker då tillbaka, och det blir en kraft som bromsar rörelsen. Den kallas *luftmotstånd*. Du känner den om du sträcker ut handen genom bilfönstret eller cyklar i motvind. Luftmotståndet verkar alltid mot rörelsens riktning, precis som friktionen.' },
+
+        { typ: 'rubrik', text: 'Luftmotståndet växer med farten' },
+        { typ: 'text', text: 'Till skillnad från friktionen mellan två ytor blir luftmotståndet mycket större ju fortare något rör sig. När du cyklar långsamt märker du det knappt, men i hög fart är det luftmotståndet som tar mest av dina krafter. Därför drar en bil mer bränsle på motorvägen än i 70 km/h. Luftmotståndet beror också på formen och storleken: en cyklist som böjer sig ner över styret får mindre luftmotstånd än en som sitter rak. Bilar, tåg och flygplan görs därför strömlinjeformade.' },
+
+        { typ: 'rubrik', text: 'Många tror att luftmotstånd bara finns när det blåser' },
+        { typ: 'text', text: 'Men luften behöver inte röra sig för att bromsa. Det räcker att föremålet rör sig genom luften. En cyklist får luftmotstånd också en helt stilla dag, och motvind gör det bara ännu större.' },
+
         { typ: 'rubrik', text: 'Friktion är ibland ett hinder och ibland en nödvändighet' },
         { typ: 'text', text: 'Friktion bromsar och sliter, och därför försöker man ofta minska den. Samtidigt skulle nästan ingenting i vardagen fungera utan den. Om friktionen är bra eller dålig beror alltså på vad man vill göra. Ibland vill man att saker ska glida så lätt som möjligt, och ibland vill man att de ska sitta fast.' },
 
@@ -118,7 +128,8 @@ Bok.niva('standard', {
           '*Resultanten|resultant* är alla krafter tillsammans. Är den noll ändras inte rörelsen – föremålet ligger still eller rör sig likformigt.',
           'Pekar resultanten framåt accelererar föremålet. Pekar den bakåt retarderar det.',
           '*Friktion* bromsar när ytor gnids mot varandra. Den växer med draget upp till en gräns, och den beror på ytorna och hur hårt de trycks mot varandra.',
-          'Friktion kan vara ett hinder, men utan den kan vi varken gå eller bromsa.'
+          'Friktion kan vara ett hinder, men utan den kan vi varken gå eller bromsa.',
+          '*Luftmotstånd* är en bromsande kraft från luften. Den växer med farten och beror på formen.'
         ] },
         { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]

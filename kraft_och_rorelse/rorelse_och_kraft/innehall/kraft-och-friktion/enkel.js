@@ -92,6 +92,23 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Hur stor friktionen kan bli beror på två saker. Den första är vilka ytor det är. Gummi mot asfalt ger mycket friktion – därför har bilar gummidäck. Metall mot is ger nästan ingen friktion – därför har skridskor metallskenor.' },
         { typ: 'text', text: 'Den andra saken är hur hårt ytorna trycks mot varandra. Ett tungt block trycks hårdare mot bordet än ett lätt block. Då blir friktionen större, och det tunga blocket blir svårare att dra.' },
 
+        // Luftmotstånd (III-B-luftmotstand-alla-nivaer.md, 2026-11-05, ordagrant)
+        { typ: 'rubrik', text: 'Luften bromsar också det som rör sig' },
+        { typ: 'text', text: 'Sträck ut handen genom fönstret när bilen kör. Du känner hur luften trycker handen bakåt. Det beror på att handen måste knuffa undan luften framför sig. Luften knuffar då tillbaka. Den kraften kallas *luftmotstånd*.' },
+        { typ: 'text', text: 'Luftmotståndet bromsar, precis som friktionen. Det pekar alltid bakåt, mot rörelsen. När du cyklar framåt trycker luftmotståndet dig bakåt.' },
+
+        { typ: 'rubrik', text: 'Ju fortare det går, desto mer bromsar luften' },
+        { typ: 'text', text: 'När du går märker du nästan inget luftmotstånd. När du cyklar fort känner du det tydligt i ansiktet. Det är för att luftmotståndet blir större när farten ökar. Det blir mycket större, inte bara lite.' },
+        { typ: 'text', text: 'Därför blir det tyngre och tyngre att trampa ju fortare du cyklar. Och därför drar en bil mer bensin på motorvägen än på en vanlig landsväg.' },
+
+        { typ: 'rubrik', text: 'Formen avgör hur mycket luften bromsar' },
+        { typ: 'text', text: 'En cyklist som sitter rak får mycket luftmotstånd. En cyklist som böjer sig ner över styret får mindre. Det är för att mindre av kroppen trycker mot luften.' },
+        { typ: 'text', text: 'Därför byggs bilar, tåg och flygplan med en form som är rundad och spetsig framtill. Då glider luften lättare förbi. En sådan form kallas strömlinjeformad.' },
+
+        { typ: 'rubrik', text: 'Luftmotstånd finns också när det inte blåser' },
+        { typ: 'text', text: 'Många tror att luften bara bromsar när det blåser. Men det stämmer inte. Det räcker att du själv rör dig genom luften.' },
+        { typ: 'text', text: 'En helt stilla dag får du ändå luftmotstånd när du cyklar. Om det dessutom blåser emot dig blir luftmotståndet ännu större. Det är därför motvind känns så jobbigt.' },
+
         { typ: 'rubrik', text: 'Ibland vill vi ha mindre friktion' },
         { typ: 'text', text: 'Friktion bromsar. Den gör också att saker slits ut och blir varma. Därför vill man ofta minska friktionen. I hjul och maskiner sitter kullager. Kullager är små kulor som gör att delarna rullar i stället för att gnidas mot varandra. Olja och smörjfett gör ytorna glattare. Och skidvalla gör att skidorna glider lättare på snön.' },
 
@@ -110,7 +127,8 @@ Bok.niva('enkel', {
           '*Resultanten|resultant* är alla krafter tillsammans. Är den noll ändras inte rörelsen. Föremålet ligger still, eller fortsätter i samma fart.',
           'Är kraften framåt störst accelererar föremålet. Är kraften bakåt störst retarderar det.',
           '*Friktion* är kraften som bromsar när två ytor gnids mot varandra. Den växer med ditt drag, upp till en gräns.',
-          'Friktion kan vara i vägen, men utan friktion kan vi varken gå eller bromsa.'
+          'Friktion kan vara i vägen, men utan friktion kan vi varken gå eller bromsa.',
+          '*Luftmotstånd* är när luften bromsar något som rör sig. Det blir större ju fortare det går.'
         ] },
         { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]

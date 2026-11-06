@@ -947,3 +947,12 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
 - **2026-11-06, grinden: bladvändningens tidsprov körs om en gång vid rött (Joachims order):** rött bara om båda
   körningarna är röda, gränserna 450 ms och 50 ms är desamma, och omkörningen står i utskriften. `--negativ` har
   fått "hackig bladvändning" (rött i båda körningarna) och "hackig bladvändning en gång" (grönt efter omkörningen).
+- **2026-11-06, III B: luftmotstånd på alla nivåer (arbetsorder 6):** ordagrant ur `III-B-luftmotstand-alla-nivaer.md`,
+  i avsnittet `friktion`.
+  - **Standard:** tre rubriker efter "Friktionen beror på ytorna …", före "Friktion är ibland ett hinder …", och en
+    punkt sist i Sammanfattningen.
+  - **Enkel:** fyra rubriker på samma plats, och en punkt i Sammanfattningen.
+  - **Fördjupning:** tre rubriker efter "Luftmotstånd växer med farten", som står kvar.
+  - Sidorna i 1366 × 633: Enkel 17 → 20, Standard 16 → 18, Fördjupning 11 → 14. Inga brott och inga tunna sidor.
+  - **Elevboken, fråga 6:** underfrågan d (`q_iii_06d`, "Vad är luftmotstånd och vad beror det på?"), och
+    "luftmotstånd, farten, formen" sist i "Använd begreppen". De andra id:na och texterna är oförändrade.

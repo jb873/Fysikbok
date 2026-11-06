@@ -64,6 +64,18 @@ Bok.niva('fordjupning', {
 
         { typ: 'rubrik', text: 'Luftmotstånd växer med farten' },
         { typ: 'text', text: 'Friktionen mellan ytor är ungefär densamma oavsett fart, men *luftmotstånd* är annorlunda. Ju fortare något rör sig, desto större blir luftmotståndet. En cyklist som trampar lika hårt hela tiden accelererar först, men luftmotståndet växer med farten. Till slut är luftmotståndet och friktionen tillsammans lika stora som cyklistens kraft framåt, resultanten blir noll och cyklisten fortsätter i jämn fart. Det är därför man inte kan cykla hur fort som helst.' },
+
+        // Luftmotstånd (III-B-luftmotstand-alla-nivaer.md, 2026-11-05, ordagrant)
+        { typ: 'rubrik', text: 'Dubbelt så hög fart ger fyra gånger så stort luftmotstånd' },
+        { typ: 'text', text: 'Luftmotståndet växer inte i takt med farten, utan mycket snabbare. Dubblar du farten blir luftmotståndet ungefär fyra gånger så stort, och tredubblar du den blir det nio gånger så stort. Man säger att luftmotståndet är proportionellt mot farten i kvadrat. Förklaringen är att två saker ökar samtidigt. I dubbelt så hög fart träffar du dubbelt så mycket luft varje sekund, och varje del av luften måste knuffas undan dubbelt så snabbt. Två gånger två blir fyra.' },
+        { typ: 'text', text: 'Samma sak gäller en bil. Kör den i 110 km/h i stället för 70 km/h blir luftmotståndet ungefär (110/70)² ≈ 2,5 gånger så stort. Det är den största anledningen till att bränsleförbrukningen ökar så mycket på motorvägen.' },
+
+        { typ: 'rubrik', text: 'Därför är det så svårt att cykla fortare när du redan cyklar fort' },
+        { typ: 'text', text: 'I låg fart är luftmotståndet litet, och det mesta av din kraft går åt till rullfriktionen mot vägen. Men luftmotståndet växer så snabbt att det tar över. Redan vid ungefär 20 km/h är det den största bromsande kraften, och vid 40 km/h går ungefär 80–90 procent av din kraft åt till att tränga undan luft.' },
+        { typ: 'text', text: 'Att öka från 20 till 40 km/h kräver alltså ungefär fyra gånger så stor kraft. Men du måste dessutom hålla den kraften över dubbelt så lång sträcka varje sekund. Det du orkar med i benen – hur mycket arbete du gör varje sekund – måste därför bli ungefär åtta gånger så stort. Det är därför en vältränad cyklist kan hålla 40 km/h en stund, men 50 km/h kräver nästan dubbelt så mycket som 40 km/h. Arbete och energi per sekund kallas effekt, och den lär du dig mer om i avsnittet om arbete och energi.' },
+
+        { typ: 'rubrik', text: 'Cyklister och fåglar ligger i rad för att minska luftmotståndet' },
+        { typ: 'text', text: 'Den som cyklar tätt bakom någon annan slipper en stor del av luftmotståndet, eftersom den främsta cyklisten redan har knuffat undan luften. Bakom en annan cyklist kan man spara ungefär en tredjedel av kraften. Därför cyklar tävlingscyklister i klunga och turas om att ligga först. Flyttfåglar som flyger i V-form sparar också kraft, genom att utnyttja luftströmmarna från fågeln framför, och lastbilar som kör i tät kolonn drar mindre bränsle.' },
         { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]
     },
