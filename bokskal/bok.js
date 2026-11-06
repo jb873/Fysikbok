@@ -48,7 +48,8 @@
   // Ett svep som börjar här bläddrar inte (fält och sådant som eleven drar i). Ett svep över en knapp bläddrar,
   // och klicket som följer på svepet tas bort.
   const INTERAKTIVT = 'input, textarea, select, [contenteditable], [data-ingen-svep]';
-  // Plattformens nivåer och standardhjälpmedel. Delkapitlet kan lägga till (t.ex. djupdykning) och byta namn i data.
+  // Plattformens nivåer och standardhjälpmedel. Delkapitlet kan lägga till en nivå och byta namn i data.
+  // (Djupdykningar är ingen nivå: de är egna böcker på avsnittssidan, se djupdykningar.)
   const NIVAER = [{ id: 'enkel', namn: 'Enkel', ikon: '📗' }, { id: 'standard', namn: 'Standard', ikon: '📘' },
     { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }];
   const HJALPMEDEL = [['forelasning', 'Föreläsning'], ['ova', 'Öva'], ['sjalvskattning', 'Självskattning'],
@@ -131,7 +132,19 @@
   // En bok per text och nivå. Ett delkapitel utan texter har en enda text utan id (''), och då är nycklarna desamma
   // som förut – det eleven sparat ligger kvar.
   const texter = () => info.texter || [{ id: '', titel: info.titel, undertitel: info.undertitel }];
-  const textInfo = t => (t && info.texter && info.texter.find(x => x.id === t)) || { id: '', titel: info.titel, undertitel: info.undertitel };
+  // Djupdykningarna (djupdykningar i delkapitel.js) hör till avsnittssidan, inte till en text: var och en är en egen
+  // bok med en enda nivå, öppnad från avsnittssidans fot. Internt är den en "text" med id djupdykning-<id>, så att
+  // brytning, läsplats och adress fungerar som för texterna – men den står inte bland texterna och har ingen nivåväljare.
+  const DJUPDYKNING = { id: 'djupdykning', namn: 'Djupdykning' };
+  const djupdykningar = () => info.djupdykningar || [];
+  const ddText = d => 'djupdykning-' + d.id;
+  const ddFor = t => !!t && djupdykningar().find(d => ddText(d) === t) || null;
+  const nivaerFor = t => ddFor(t) ? [DJUPDYKNING] : info.nivaer;
+  // Alla böcker: varje text på varje nivå, och varje djupdykning
+  const allaBocker = () => texter().flatMap(t => info.nivaer.map(n => ({ t: t.id, n, titel: t.titel })))
+    .concat(djupdykningar().map(d => ({ t: ddText(d), n: DJUPDYKNING, titel: d.titel, fil: d.fil })));
+  const textInfo = t => ddFor(t) ? { id: t, titel: ddFor(t).titel }
+    : (t && info.texter && info.texter.find(x => x.id === t)) || { id: '', titel: info.titel, undertitel: info.undertitel };
   const bokNyckel = (t, n) => t ? `${t}/${n}` : n;
   // Läsplatsen per bok: ett block (post-id), så att den stämmer på alla sidmått. (Före 2026-11-02: ':sida', ett
   // sidnummer – den nyckeln läses inte längre.)
@@ -245,7 +258,7 @@
    *           rubrik, sidor i följd med samma titel (en tät sida som delats för hand) slås ihop, och {typ: 'rubrik'}
    *           inne på en sida är en underrubrik. Blockens id blir desamma som förut (det eleven sparat i ett block). */
 
-  const nivaFil = (t, id) => `innehall/${t ? t + '/' : ''}${id}.js`;
+  const nivaFil = (t, id) => ddFor(t) ? ddFor(t).fil : `innehall/${t ? t + '/' : ''}${id}.js`;
   const RUBRIKER = ['avsnittsstart', 'rubrik', 'underrubrik'];      // står aldrig sist på en sida
   const MED_STYCKET = ['figur', 'formel', 'exempel'];               // står på samma sida som stycket före
   const INNEHALL = { id: 'innehall', titel: 'Innehåll', nummer: null };
@@ -271,9 +284,9 @@
     return data;
   }
   const harInnehall = (id, t = textId) => { const d = nivadata[bokNyckel(t, id)]; return !!(d && d.avsnitt.length); };
-  const nivaNamn = id => (info.nivaer.find(n => n.id === id) || { namn: id }).namn;
+  const nivaNamn = id => (info.nivaer.concat(DJUPDYKNING).find(n => n.id === id) || { namn: id }).namn;
   // Nivån som en text öppnas på: den valda om texten har den, annars standardnivån eller den första med innehåll.
-  const nivaFor = t => [nivaId, info.standardniva, ...info.nivaer.map(n => n.id)].find(x => x && harInnehall(x, t)) || null;
+  const nivaFor = t => [nivaId, info.standardniva, ...nivaerFor(t).map(n => n.id)].find(x => x && harInnehall(x, t)) || null;
 
   function byggBok(id, t = textId) {
     const nyck = bokNyckel(t, id);
@@ -322,7 +335,7 @@
   function satsNiva(id) {
     nivaId = id;
     aktuell = null; sidor = [];                  // bryts när boken visas (layout), efter sidmåttet
-    lager.spara(nyckel('niva'), id);
+    if (!ddFor(textId)) lager.spara(nyckel('niva'), id);   // en djupdykning ändrar inte elevens nivå
   }
 
   // Sidhuvudets text: avsnittets nummer och namn. Numret sätts i Garamond (span.nr), där 1 inte liknar ett I.
@@ -395,12 +408,11 @@
   const harOmslag = () => !!kapitel;
   const forstaSida = () => harOmslag() ? 0 : 1;
   const sida = n => n === 0 ? OMSLAGET : sidor[n - 1];
-  // En nivå utöver plattformens tre (Djupdykning) står på omslaget: "Rörelse – djupdykning"
-  const egenNiva = n => n && !NIVAER.some(x => x.id === n);
+  // En djupdykning: överraden "Djupdykning" och djupdykningens titel som undertitel
   function omslagsdata(t = textId) {
-    const mall = (info.omslag && info.omslag.undertitel) || '{text}';
-    const niva = egenNiva(nivaId) ? ' – ' + nivaNamn(nivaId).toLowerCase() : '';
-    return { overrad: kapitel.overrad, titel: kapitel.titel, undertitel: mall.replace('{text}', textInfo(t).titel) + niva,
+    const mall = (info.omslag && info.omslag.undertitel) || '{text}', dd = ddFor(t);
+    return { overrad: dd ? 'Djupdykning' : kapitel.overrad, titel: kapitel.titel,
+      undertitel: dd ? dd.titel : mall.replace('{text}', textInfo(t).titel),
       illustration: kapitel.illustration, upphov: kapitel.upphov || info.upphov };
   }
   // Textens bredd i omslagets enheter, med filmens spärrning (tracking: lika mycket efter varje tecken utom det sista)
@@ -433,7 +445,7 @@
 
   function omslagElement() {
     const g = aktuell.g, d = omslagsdata();
-    const nyck = [geoNyckel(g), textId, nivaId, typsnittKlara, d.undertitel].join('|');
+    const nyck = [geoNyckel(g), textId, typsnittKlara, d.overrad, d.undertitel].join('|');
     if (OMSLAGET.el && OMSLAGET.nyckel === nyck) return OMSLAGET.el;
     const H = OMSLAG_H, W = Math.round(H * g.sb / g.sh), id = 'omslag' + (++omslagNr), o = OMSLAG;
     const r1 = v => Math.round(v * 10) / 10;
@@ -941,12 +953,14 @@
   }
   const bladdra = steg => { const v = synliga(nr); gaTill(steg > 0 ? v[v.length - 1] + 1 : v[0] - 1); };
   // Adressen: #<rubrik>, och med texter #<text>/<rubrik> (#atomen/periodiska-systemet-2), så att en länk öppnar rätt bok
-  const adress = ankare => '#' + (info.texter ? textId + '/' : '') + ankare;
+  // (en djupdykning: #djupdykning-<id>/<rubrik>)
+  const adress = ankare => '#' + (info.texter || ddFor(textId) ? textId + '/' : '') + ankare;
   const platsIAdressen = () => { const x = decodeURIComponent(location.hash.slice(1)); return x || null; };
-  // Öppnar boken på en adress: byter först text om adressen säger det
+  // Öppnar boken på en adress: byter först text (eller djupdykning) om adressen säger det
   function oppnaAdress(x, valfritt) {
-    const i = x.indexOf('/');
-    if (i > 0 && info.texter) { valjText(x.slice(0, i)); x = x.slice(i + 1); }
+    const i = x.indexOf('/'), t = i > 0 ? x.slice(0, i) : null;
+    if (t && ddFor(t)) { valjDjupdykning(t); x = x.slice(i + 1); }
+    else if (t && info.texter) { valjText(t); x = x.slice(i + 1); }
     oppnaBok(x, valfritt);
   }
   const utanHash = () => location.pathname + location.search;
@@ -972,8 +986,12 @@
     ui.texter = h('div', { class: 'underdel-valjare', role: 'group', 'aria-label': 'Textval' });
     ui.nivaval = h('div', { class: 'niva-valjare', role: 'group', 'aria-label': 'Textnivå' });
     ui.lasLage = h('p', { class: 'intro' });
+    // Djupdykningarna längst ned, som plattformens "Vill du veta mer?" (geografi.css: .vill-veta-mer, .fordj-kort)
+    ui.ddGrid = h('div', { class: 'fordj-kort-grid' });
+    ui.djupdykningar = h('section', { class: 'vill-veta-mer', hidden: !djupdykningar().length },
+      h('h2', null, 'Vill du veta mer?'), ui.ddGrid);
     ui.flikInnehall = FLIKAR.map(([id, namn]) => h('section', { class: 'flik-innehall' + (id === 'laes' ? '' : ' dold'),
-      'data-flik': id, role: 'tabpanel', 'aria-label': namn }, id === 'laes' && [ui.texter, ui.nivaval, ui.lasLage]));
+      'data-flik': id, role: 'tabpanel', 'aria-label': namn }, id === 'laes' && [ui.texter, ui.nivaval, ui.lasLage, ui.djupdykningar]));
     const hero = h('header', { class: 'hero-banner' },
       h('div', { class: 'hero-inner' },
         h('nav', { class: 'brodsmulor', 'aria-label': 'Brödsmulor' },
@@ -1005,6 +1023,7 @@
   // Utan texter är texterna bokens numrerade avsnitt; Inledning och Sammanfattning ligger i boken runt dem. Texten där
   // eleven är markeras och öppnar boken på sidan eleven var på; de andra öppnar boken där texten börjar.
   function ritaHubb() {
+    ritaDjupdykningar();
     ui.nivaval.replaceChildren(...info.nivaer.map(n => {
       const har = harInnehall(n.id);
       return h('button', { type: 'button', class: 'niva-knapp' + (n.id === nivaId ? ' aktiv' : ''), 'data-niva': n.id,
@@ -1047,6 +1066,27 @@
     const rubrik = d && d.poster.slice(0, d.poster.indexOf(sp) + 1).reverse().find(p => p.typ === 'rubrik');
     const vid = rubrik ? `”${renText(rubrik.b.text)}”` : sp ? `”${renText(sp.avsnitt.titel)}”` : '';
     ui.lasLage.textContent = (sp ? `Du läste senast vid ${vid}${iText}. ` : '') + 'Välj en text så öppnas boken.';
+  }
+
+  // Djupdykningarna: ett kort var, i delkapitel.js ordning. Ett tryck öppnar djupdykningen där eleven var i den
+  // (annars omslaget), oavsett vilken text och nivå som är vald. Utan innehåll är kortet tonat ("kommer").
+  function ritaDjupdykningar() {
+    ui.ddGrid.replaceChildren(...djupdykningar().map(d => {
+      const t = ddText(d), n = DJUPDYKNING.id, har = harInnehall(n, t);
+      const sparad = har ? lager.hamta(platsNyckel(t, n), null) : null, p = har && postFor(byggBok(n, t), sparad);
+      const oppna = !har ? null : p ? p.id : harOmslag() && sparad !== 'innehall' ? 'omslag' : 'innehall';
+      return h('button', { type: 'button', class: 'fordj-kort', 'data-text': t, 'data-oppna': oppna, 'data-fokus': 'dd-' + d.id,
+        'aria-disabled': har ? null : 'true', title: har ? null : `${d.titel} – kommer` },
+        h('span', { class: 'fordj-kort-text' }, h('span', { class: 'fordj-kort-titel', html: inline(d.titel, false) })));
+    }));
+  }
+  // En djupdykning väljs: dess bok. Texten och nivån eleven har valt sparas inte om, och de gäller igen när boken stängs.
+  let ddFore = null;
+  function valjDjupdykning(t) {
+    if (!ddFor(t) || !harInnehall(DJUPDYKNING.id, t)) return;
+    if (!ddFore) ddFore = { text: textId, niva: nivaId };
+    textId = t;
+    satsNiva(DJUPDYKNING.id);
   }
 
   // En text väljs (ett tryck på den i hubben): dess bok, på den valda nivån om texten har den.
@@ -1103,8 +1143,10 @@
     ui.app.classList.remove('vila');
     ui.hubb.forEach(d => { d.inert = false; });
     document.body.classList.remove('bok-oppen');
+    // efter en djupdykning: texten och nivån eleven hade valt
+    if (ddFore) { textId = ddFore.text; nivaId = ddFore.niva; aktuell = null; sidor = []; ddFore = null; }
     ritaHubb();                                                  // texten där eleven är, och sidan
-    const f = fokusEfter && ui.texter.querySelector(`[data-fokus="${fokusEfter}"]`);
+    const f = fokusEfter && ui.hubb[1].querySelector(`[data-fokus="${fokusEfter}"]`);
     (f || ui.texter.querySelector('[data-oppna]') || ui.hubb[1]).focus({ preventScroll: !f });
   }
 
@@ -1197,7 +1239,7 @@
       if (!t) return;
       if (!oppen) {
         const o = t.closest('[data-oppna]');
-        if (o && iHubben(o)) { fokusEfter = o.dataset.fokus; if (o.dataset.text) valjText(o.dataset.text); oppnaBok(o.dataset.oppna); }
+        if (o && iHubben(o)) { fokusEfter = o.dataset.fokus; if (o.dataset.text) (ddFor(o.dataset.text) ? valjDjupdykning : valjText)(o.dataset.text); oppnaBok(o.dataset.oppna); }
         return;
       }
       if (!ui.niva.contains(t)) visaNivaLista(false);
@@ -1267,6 +1309,7 @@
   }
 
   function ritaNivaval() {
+    ui.niva.style.display = ddFor(textId) ? 'none' : '';       // en djupdykning har bara en nivå: ingen nivåväljare
     ui.nivaKnapp.replaceChildren(h('span', null, nivaNamn(nivaId)), h('span', { class: 'niva-pil', 'aria-hidden': 'true' }, '▾'));
     ui.nivaKnapp.setAttribute('aria-label', `Nivå: ${nivaNamn(nivaId)}. Byt nivå`);
     ui.nivaLista.replaceChildren(...info.nivaer.map(n => {
@@ -1393,8 +1436,8 @@
       if (a && a !== p) ut.problem.push(`${kalla}: blockets id ”${p.id}” är också adressen till rubriken ”${renText(a.b ? a.b.text : a.avsnitt.titel)}” – byt id`);
     }
     // Länken till hjälpmedlen står sist i det sista numrerade avsnittet (och i Sammanfattningen), inte i varje avsnitt.
-    // En nivå utöver plattformens tre (Djupdykning) behöver ingen länk.
-    const numrerade = egenNiva(bok.niva) ? [] : bok.delar.filter(d => d.avsnitt.nummer), d = numrerade[numrerade.length - 1];
+    // En djupdykning behöver ingen länk.
+    const numrerade = ddFor(bok.text) ? [] : bok.delar.filter(d => d.avsnitt.nummer), d = numrerade[numrerade.length - 1];
     const sista = d && d.poster.filter(p => p.typ !== 'upphov').pop();
     if (d && (!sista || sista.typ !== 'lank')) ut.varningar.push(`${bok.id}: det sista avsnittet ”${d.avsnitt.titel}” slutar inte med en länk till hjälpmedlen`);
   }
@@ -1412,9 +1455,10 @@
     storlekar.push(mobil ? ['mobilen (det här fönstret)', innerWidth, innerHeight - 96, true] : ['det här fönstret', innerWidth, innerHeight, false]);
     let antalFel = 0;
     const rader = [];
-    // Varje bok: en per nivå, och per text om delkapitlet har texter (nyckeln då "text/nivå")
-    for (const t of texter()) for (const n of info.nivaer) {
-      const nyck = bokNyckel(t.id, n.id), namn = (t.id ? t.titel + ', ' : '') + nivaNamn(n.id);
+    // Varje bok: en per nivå, och per text om delkapitlet har texter (nyckeln då "text/nivå"); varje djupdykning
+    for (const x of allaBocker()) {
+      const t = { id: x.t, titel: x.titel }, n = x.n;
+      const nyck = bokNyckel(t.id, n.id), namn = ddFor(t.id) ? `Djupdykning ”${t.titel}”` : (t.id ? t.titel + ', ' : '') + nivaNamn(n.id);
       if (!(nyck in nivadata)) { ut.nivaer[nyck] = 'saknas'; rader.push(`${namn}: saknas`); continue; }
       if (!harInnehall(n.id, t.id)) { ut.nivaer[nyck] = 'tom – kommer'; rader.push(`${namn}: tom – kommer`); continue; }
       const bok = byggBok(n.id, t.id), matt = {};
@@ -1464,6 +1508,10 @@
         if (!t.id || !/^[a-z0-9-]+$/.test(t.id) || info.texter.findIndex(x => x.id === t.id) !== i) anmal(`delkapitel.js: text ${i + 1} behöver ett eget id (a–z, 0–9, -), det blir mappen innehall/<id>/`);
         if (!t.titel) anmal(`delkapitel.js: texten ”${t.id}” saknar titel`);
       });
+      djupdykningar().forEach((d, i, l) => {
+        if (!d.id || !/^[a-z0-9-]+$/.test(d.id) || l.findIndex(x => x.id === d.id) !== i) anmal(`delkapitel.js: djupdykning ${i + 1} behöver ett eget id (a–z, 0–9, -)`);
+        if (!d.titel || !d.fil) anmal(`delkapitel.js: djupdykningen ”${d.id}” behöver titel och fil`);
+      });
       // som i plattformens andra böcker: "Fysik – Kraft och rörelse – 1. Repetition"
       const smulor = (info.smulor || [info.amne]).map(x => typeof x === 'string' ? x : x.text);
       document.title = smulor.concat(delkapitelNamn()).filter(Boolean).join(' – ');
@@ -1477,7 +1525,7 @@
       reglage = lager.hamta(nyckel('lasreglage'), 'alltid');
       byggHubb();
       byggBokram();
-      Promise.all([laddaKapitel(), ...texter().flatMap(t => info.nivaer.map(n => laddaNiva(n, t.id)))]).then(() => {
+      Promise.all([laddaKapitel(), ...allaBocker().map(x => laddaNiva(x.n, x.t))]).then(() => {
         // Texten: den i adressen (?text=), den eleven läste senast, annars den första som har innehåll
         if (info.texter) textId = [adress.get('text'), lager.hamta(nyckel('text'), null), ...info.texter.map(t => t.id)]
           .find(t => t && info.texter.some(x => x.id === t) && info.nivaer.some(n => harInnehall(n.id, t))) || info.texter[0].id;
@@ -1535,13 +1583,14 @@
       varv = Math.max(5, varv);
       const median = a => { const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
       const rund = x => Math.round(10 * x) / 10;
-      const ut = texter().flatMap(t => info.nivaer.filter(n => harInnehall(n.id, t.id)).map(n => {
-        const bok = byggBok(n.id, t.id);
+      // varje bok: texterna på varje nivå och djupdykningarna
+      const ut = allaBocker().filter(x => harInnehall(x.n.id, x.t)).map(({ t, n }) => {
+        const bok = byggBok(n.id, t);
         const ettVarv = () => Math.max(...MALSKARMAR.map(([, B, H]) => { void document.body.offsetHeight; return paginera(bok, geometri(B, H, false), false).ms; }));
         ettVarv();                                                     // uppvärmning, räknas inte
         const tider = Array.from({ length: varv }, ettVarv);
-        return { bok: bokNyckel(t.id, n.id), median: rund(median(tider)), max: rund(Math.max(...tider)), varv: tider };
-      }));
+        return { bok: bokNyckel(t, n.id), median: rund(median(tider)), max: rund(Math.max(...tider)), varv: tider };
+      });
       if (oppen) { aktuell = null; layout(); rita(null); }
       return { bocker: ut, median: Math.max(...ut.map(b => b.median)), max: Math.max(...ut.map(b => b.max)) };
     },

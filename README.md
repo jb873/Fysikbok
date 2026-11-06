@@ -244,13 +244,36 @@ sidor, och eleven läser den utan de andra nivåerna.
 - **Ge en tom nivå innehåll:** skriv avsnitt i dess fil, som nu är `Bok.niva('enkel', { avsnitt: [] })`. Statusen
   härleds ur innehållet: med avsnitt blir nivån valbar, och utan avsnitt är den "kommer". Statusen skrivs aldrig för
   hand.
-- **En ny sorts nivå,** till exempel *Djupdykning* bara där ämnet bär det:
+- **En ny sorts nivå** (provboken prövar det med *Extranivå*). Djupdykningar är ingen nivå, se *Djupdykningar*.
   - Skriv ut hela listan `nivaer` i `delkapitel.js`, de tre plattformsnivåerna och den nya:
     `[{ id: 'enkel', namn: 'Enkel', ikon: '📗' }, { id: 'standard', namn: 'Standard', ikon: '📘' },
-    { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }, { id: 'djupdykning', namn: 'Djupdykning' }]`.
-  - Skapa `innehall/djupdykning.js` med `Bok.niva('djupdykning', {...})`.
+    { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }, { id: 'extra', namn: 'Extranivå' }]`.
+  - Skapa `innehall/extra.js` med `Bok.niva('extra', {...})`.
 
   Ordningen i `nivaer` är ordningen i nivåvalet. `ikon` står före namnet på nivåknappen.
+
+## Djupdykningar
+
+Djupdykningarna hör till **avsnittssidan**, inte till en text, och de är **ingen nivå**. De står längst ned på
+avsnittssidan i plattformens sektion *Vill du veta mer?*, med ett kort per djupdykning. Ett tryck öppnar
+djupdykningen som en egen bok, oavsett vilken text eller nivå eleven har valt. Joachims beslut 2026-11-05.
+
+```js
+djupdykningar: [
+  { id: 'galileo', titel: 'Galileo mot Aristoteles – hur tröghetslagen upptäcktes', fil: 'innehall/djupdykningar/galileo.js' }
+]
+```
+
+- **Filen** anropar `Bok.niva('djupdykning', {...})` och är skriven i strömformatet som texterna.
+- **Boken** har en enda nivå och ingen nivåväljare.
+  - Omslaget har överraden *Djupdykning* och djupdykningens titel som undertitel. Förteckningen har titeln.
+  - Boken har ingen Sammanfattning och inget länkblock, och kontrolläget varnar inte för det.
+- **Läsplatsen** är egen per djupdykning (nyckeln `djupdykning-<id>:djupdykning:plats`).
+- **Adressen** är `#djupdykning-<id>/<rubrik>`.
+- **Elevens val ändras inte:** en djupdykning byter varken elevens text eller nivå, och när den stängs gäller de igen.
+- **Korten** visar bara titeln, utan ikon och sammanfattning (Joachims val). Stilen är plattformens
+  (`.vill-veta-mer`, `.fordj-kort` ur geografi.css).
+- **Id:t** är nyckeln för det eleven sparat. Byt det aldrig.
 - **Avsnittens `id`** ska vara desamma på alla nivåer som har avsnittet. Det är så nivåbytet hittar rätt ställe.
   Ett avsnitt som bara finns på en nivå får ett eget id.
 - **Varje nivå i `nivaer` har en fil,** också en tom (med texter: en per text). Saknas filen säger kontrolläget till.
@@ -457,7 +480,7 @@ beslut 2026-11-05.
   - Underfrågorna, "Använd begreppen" och "Läs i" står i frågetexten, med radbrytning mellan delarna. "Läs i"
     pekar på Standard.
   - Id:na (`q_iii_01` …) byts aldrig, eftersom elevernas svar sparas under dem.
-- **Inifrån boken:** länkblocket i Sammanfattningen (III A–D, alla nivåer utom djupdykningen) är
+- **Inifrån boken:** länkblocket i Sammanfattningen (III A–D, alla tre nivåer) är
   `['ova', 'sjalvskattning', 'elevbok']`. Elevboken öppnas då ovanpå boken, och Esc leder tillbaka till samma sida.
   Det finns ingen koppling från avsnitt till fråga än.
 - **Inte från disken:** plattformens elevbok hämtar frågorna med `fetch`, och det fungerar inte från `file://`. På
@@ -534,7 +557,7 @@ beslut 2026-11-05.
   tillbaka, och att tonade kort (kapitel, avsnitt, resurser som kommer) inte är länkar och inte leder någonstans.
   `verktyg/provbok-utan-texter/` prövar läget utan texter med samma scenario. Provboken har tre texter (Krafter,
   Tryck, Energi) och prövar dessutom:
-  - en bok per text, en text som är "kommer" (Energi) och en nivå som bara en text har (Djupdykning)
+  - en bok per text, en text som är "kommer" (Energi) och en nivå som bara en text har (Extranivå)
   - strömformatet (Tryck): en sidbrytning, och ett långt stycke + figur som inte ryms tillsammans
   - rörelsespåren (Tryck): alla fyra rörelsetyperna, 4–8 prickar, med och utan tider
   - kraftparen (Tryck): drag och knuff, med och utan värde, och beskrivningen ur data
@@ -547,7 +570,7 @@ beslut 2026-11-05.
   - hjälpmedel med adress, också som inbäddad flik (Öva)
   - begreppslänkar
   - inbäddningen
-  - en fjärde nivå
+  - en extra nivå ur data (Extranivå)
   - nivåbyte i boken
   - kraftpilarna
 - **`node verktyg/bok-grind.js --negativ`:** lägger in fem fel med flit, ett i taget, i varje läge. Felen är ett
@@ -781,24 +804,18 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     på omslaget.
   - Repetition I och II och djupdykningen tas i en senare order.
 - **2026-11-04, djupdykning till III A, "Galileo mot Aristoteles" (arbetsordern djupdykning A):**
-  - Text A har en fjärde nivå, Djupdykning (`innehall/rorelse/djupdykning.js`), som är införd ordagrant ur
-    `Djupdykning-A-Galileo-v2.md`. Den har en Inledning och sex numrerade avsnitt, men ingen Sammanfattning och inget
-    länkblock. Förteckningen har sju rader.
-  - III:s `delkapitel.js` har nivålistan med Djupdykning. B–D har tomma djupdykningsfiler och visar nivån som
-    "kommer".
-  - **Nivåbytet** från djupdykningen går till Inledningen, eftersom det är det enda avsnittet som finns på båda
-    nivåerna. Det följer regeln om närmaste föregående avsnitt.
-  - **Omslaget:** en nivå utöver plattformens tre står i undertiteln, "Rörelse – djupdykning".
-  - **Kontrolläget** varnar inte för ett saknat länkblock i en sådan nivå.
+  - Djupdykningen (i dag `innehall/djupdykningar/galileo.js`) är införd ordagrant ur `Djupdykning-A-Galileo-v2.md`.
+    Den har en Inledning och sex numrerade avsnitt, men ingen Sammanfattning och inget länkblock. Förteckningen har
+    sju rader.
+  - Den låg först som en nivå i text A. 2026-11-05 flyttades alla fyra till avsnittssidan, se nedan och *Djupdykningar*.
   - **Ny figurtyp `lutande_plan`** (BILD L). `bildpilar` har fått `prickar` och `stråle` (BILD C, curling.jpg).
   - **Mina val för BILD C:** prickarna ligger 20 px till vänster om orderns förslag, på x 210–1170 och y 560, med
     240 px emellan. Strålen ligger på y 690 i stället för 640, så att den går fritt under stenen.
   - **Grinden:**
-    - nivåbytet genom alla nivåer väntas landa i samma avsnitt, eller i det närmaste föregående som finns på nivån;
     - prickarnas avstånd mäts;
     - provboken har lutande plan i två steg.
 - **2026-11-04, djupdykning till III B, "Bromssträckan":**
-  - `innehall/kraft-och-friktion/djupdykning.js` är införd ordagrant ur `Djupdykning-B-Bromsstrackan-redigerad.md`.
+  - `innehall/djupdykningar/bromsstrackan.js` är införd ordagrant ur `Djupdykning-B-Bromsstrackan-redigerad.md`.
     Den har en Inledning och sex numrerade avsnitt.
   - **Ny figurtyp `stoppstracka`** (BILD S). Skalan har en markering var tionde meter upp till den längsta
     stapeln, alltså 0, 10, 20, 30 och 40 m; stapeln för 70 km/h går till 43 m.
@@ -806,7 +823,7 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     och den vanliga friktionsfiguren är byte för byte oförändrad. Panelerna står bredvid varandra också på mobilen,
     eftersom figuren är en SVG; de är läsbara där.
 - **2026-11-04, djupdykning till III C, "Raketer":**
-  - `innehall/kraft-och-motkraft/djupdykning.js` är införd ordagrant ur `Djupdykning-C-Raketer-redigerad.md`. Den
+  - `innehall/djupdykningar/raketer.js` är införd ordagrant ur `Djupdykning-C-Raketer-redigerad.md`. Den
     har en Inledning och sex numrerade avsnitt.
   - **BILD R** (raket.jpg) och **BILD A** (astronaut.jpg) är `bildpilar` med två lika långa pilar på två föremål.
     Etiketterna är långa i förhållande till fotona och fick egna lägen:
@@ -818,7 +835,7 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     som tunn. I C:s djupdykning (1366 × 633) hade sidan före fått 44 %, men den räknades som tunn, och då blev sidan
     efter 37 %. Nu avgör en riktig sida inom marginalen, som vid delningen av stycke och figur (`fyllFore`).
 - **2026-11-05, djupdykning till III D, "Är astronauterna tyngdlösa?":**
-  - `innehall/tyngdkraften/djupdykning.js` är införd ordagrant ur `Djupdykning-D-Tyngdloshet-redigerad.md`. Den har
+  - `innehall/djupdykningar/tyngdloshet.js` är införd ordagrant ur `Djupdykning-D-Tyngdloshet-redigerad.md`. Den har
     en Inledning och sju numrerade avsnitt, och förteckningen har åtta rader.
   - **Nya figurtyper:** `fallande_hiss` (BILD H) och `newtons_kanon` (BILD N).
   - **I hissen** utgår kraftpilarna från en punkt bredvid personen, som i `kraftpilar` där pilarna utgår från
@@ -872,3 +889,21 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   (`cd9251d`), med fysikens frågor ur `Elevboken-III-Rorelse-och-kraft-v2.md`. Det står mer under *Elevboken*.
   - Prefixet `fys-elev-` är en parameter. Standardvärdet `geo-elev-` är oförändrat.
   - Länkblocket i Sammanfattningen i III A–D har fått `'elevbok'`.
+- **2026-11-05, djupdykningarna tillbaka längst ned på avsnittssidan (Joachims beslut):** de var en fjärde nivå i
+  varje text, och det var fel i ordrarna. Nu hör de till avsnittssidan och är egna böcker, se *Djupdykningar*.
+  - **Filerna** är flyttade oförändrade, byte för byte: `innehall/<text>/djupdykning.js` blev
+    `innehall/djupdykningar/{galileo, bromsstrackan, raketer, tyngdloshet}.js`.
+  - **Titlarna** är källornas fulla titlar, och korten har bara titeln (Joachims svar).
+  - **Ur motorn borttaget:**
+    - `egenNiva`, alltså nivån i omslagets undertitel ("Rörelse – djupdykning");
+    - nivån i omslagets cachenyckel;
+    - undantaget för länkblocket, som nu gäller djupdykningsböcker i stället för en nivå utöver de tre.
+  - **Kvar i motorn:** nivåbytet och fler nivåer ur data. De fanns före djupdykningarna och prövas av provboken, vars
+    extra nivå heter Extranivå.
+  - **Gamla läsplatser** för nivån djupdykning läses inte längre.
+  - **Grinden:**
+    - nivåraden har inga djupdykningar;
+    - sektionen står sist i Läs, med ett kort per djupdykning;
+    - varje kort öppnar rätt bok (omslaget, förteckningen, ingen nivåväljare), och texten och nivån är desamma
+      efteråt;
+    - figurerna i djupdykningarna mäts där.

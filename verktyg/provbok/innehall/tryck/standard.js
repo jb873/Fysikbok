@@ -1,4 +1,4 @@
-/* PROVDATA för verktyg/bok-grind.js – inte elevinnehåll. Text B: en egen bok, bara på standardnivån (Djupdykning
+/* PROVDATA för verktyg/bok-grind.js – inte elevinnehåll. Text B: en egen bok, bara på standardnivån (Extranivån
  * och de andra nivåerna är "kommer" för den här texten). Skriven i strömformatet (block, inga sidor): grinden prövar
  * en sidbrytning och regelkonflikten – ett stycke och en figur som inte ryms tillsammans på en sida – och
  * rörelsespåren (alla fyra rörelsetyperna, med och utan tider, 4–8 prickar), kraftparen (drag och knuff, med och

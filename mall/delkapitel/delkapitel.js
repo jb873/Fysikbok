@@ -27,11 +27,13 @@ Bok.delkapitel({
   // ],
 
   // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning), en självbärande bok per nivå i
-  // innehall/<id>.js. En nivå utan avsnitt visas som "kommer". Djupdykning läggs bara till där ämnet bär det – då
-  // skrivs hela listan ut:
-  // nivaer: [
-  //   { id: 'enkel', namn: 'Enkel', ikon: '📗' }, { id: 'standard', namn: 'Standard', ikon: '📘' },
-  //   { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }, { id: 'djupdykning', namn: 'Djupdykning' }
+  // innehall/<id>.js. En nivå utan avsnitt visas som "kommer".
+
+  // Djupdykningarna hör till delkapitlets sida, inte till en text och inte till en nivå: de står längst ned
+  // ("Vill du veta mer?") och öppnas som egna böcker med en nivå. id är nyckeln för det eleven sparat – byt det aldrig.
+  // Filen anropar Bok.niva('djupdykning', {...}).
+  // djupdykningar: [
+  //   { id: 'galileo', titel: 'Galileo mot Aristoteles – hur tröghetslagen upptäcktes', fil: 'innehall/djupdykningar/galileo.js' }
   // ],
 
   // Plattformens hjälpmedel – länkas, byggs aldrig här. Föreläsning, Öva och Elevboken är flikarna på delkapitlets

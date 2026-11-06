@@ -15,7 +15,7 @@
 // sin sida. Har det ett kapitel (kapitel.js) prövas omslaget: första öppningen, texterna innanför ramen och i
 // ordning, motivet under undertiteln, Home till innehållet, och bladvändningen till och från omslaget. Provboken (verktyg/provbok/) har texter och prövar dessutom det som det riktiga innehållet inte använder
 // än: en text som är "kommer", en nivå som bara en text har, hjälpmedel med adress, begrepp som länkar, en fjärde
-// nivå (djupdykning) och kraftpilarna. Har ett delkapitel plattformens elevbok (hjalpmedel.elevbok = en sida i mappen)
+// nivå ur data (Extranivå) och kraftpilarna. Har ett delkapitel plattformens elevbok (hjalpmedel.elevbok = en sida i mappen)
 // prövas den över http på dator och mobil (provaElevboken nedan).
 'use strict';
 const { spawn } = require('child_process');
@@ -585,7 +585,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   const valjNiva = async i => { await klicka(synlig('.bokapp .niva-knapp')); await klicka(nivaVal()[i], 250); };
   const spar = [];
   if (ovriga.length) {
-    // Avsnitten på varje nivå (förteckningen). Djupdykningen har andra avsnitt än de andra nivåerna.
+    // Avsnitten på varje nivå (förteckningen). En nivå kan ha avsnitt som de andra saknar (III A Fördjupning).
     const avsnittPa = async i => { await valjNiva(i); await klicka(synlig('.bok-innehall'));
       const r = $$('.meny .toc-a').map(b => ({ till: +b.dataset.till, id: b.dataset.avsnitt, titel: b.querySelector('.toc-titel').textContent.trim() }));
       tangent('Escape'); await v(80); return r; };
@@ -688,6 +688,43 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     for (const i of nivaVal().map((b, i) => i).filter(i => !nivaVal()[i].hasAttribute('aria-disabled'))) { await valjNiva(i); spar.push(await figurKoll()); }
     await klicka(synlig('.bok-stang'), 450);
   }
+
+  // Djupdykningarna (djupdykningar i delkapitel.js, Joachims beslut 2026-11-05): ingen nivå, utan egna böcker längst
+  // ned i Läs ("Vill du veta mer?"). Varje kort öppnar sin bok – omslaget "Djupdykning" med titeln, förteckningen,
+  // ingen nivåväljare – och figurerna i den mäts; efteråt är texten och nivån eleven valt desamma.
+  const ddAntal = Object.keys(JSON.parse(document.body.dataset.kontroll).nivaer).filter(n => n.startsWith('djupdykning-')).length;
+  const ddKort = () => $$('section[data-flik="laes"] > .vill-veta-mer:not([hidden]) .fordj-kort');
+  if (ddAntal || ddKort().length) {
+    const sek = $('section[data-flik="laes"] > .vill-veta-mer');
+    const nivarad = $$('section[data-flik="laes"] > .niva-valjare > button.niva-knapp').map(b => b.textContent);
+    prova('djupdykningar: nivåraden har bara nivåerna, ingen djupdykning (' + nivarad.join(' · ') + ')',
+      !nivarad.some(t => /djupdykning/i.test(t)) && (nivarad.length === 3 || /Provbok/.test(document.title)), nivarad.join(' · '));
+    prova('djupdykningar: "Vill du veta mer?" står längst ned i Läs, ett kort per djupdykning (' + ddAntal + ')',
+      sek && !sek.hidden && sek.parentElement.lastElementChild === sek && sek.querySelector('h2').textContent === 'Vill du veta mer?' && ddKort().length === ddAntal,
+      ddKort().map(b => b.textContent).join(' | '));
+    const valt = () => ({ text: ($('.underdel-knapp.aktiv') || { dataset: {} }).dataset.text, niva: ($('.niva-valjare .niva-knapp.aktiv') || { dataset: {} }).dataset.niva });
+    const f0 = valt(), ddFel = [];
+    for (let i = 0; i < ddKort().length; i++) {
+      const kort = ddKort()[i], titel = kort.querySelector('.fordj-kort-titel').textContent.trim(), t = kort.dataset.text;
+      if (!kort.dataset.oppna) { ddFel.push(titel + ': "kommer"'); continue; }
+      await gest(kort, 900);
+      const hash = location.hash, utanNiva = getComputedStyle($('.bokapp .niva')).display === 'none';
+      Bok.gaTill(0); await v(150);
+      const omslag = $$('.scen .sida.omslag text').map(x => x.textContent).join(' ');
+      Bok.gaTill(1); await v(150);
+      const toc = (synlig('.scen .boktitel') || {}).textContent || '';
+      if (!oppen() || !hash.startsWith('#' + t + '/')) ddFel.push(titel + ': öppnade ' + hash);
+      if (!utanNiva) ddFel.push(titel + ': nivåväljaren syns');
+      if (harOmslag && !(omslag.includes('DJUPDYKNING') && omslag.includes(titel.split(' ')[0]))) ddFel.push(titel + ': omslaget ”' + omslag.slice(0, 90) + '”');
+      if (!toc.includes(titel)) ddFel.push(titel + ': förteckningen ”' + toc + '”');
+      spar.push(await figurKoll());
+      await klicka(synlig('.bok-stang'), 450);
+      const f1 = valt();
+      if (!stangd() || f1.text !== f0.text || f1.niva !== f0.niva) ddFel.push(titel + ': efter stängningen ' + JSON.stringify(f1) + ' (före ' + JSON.stringify(f0) + ')');
+    }
+    prova('djupdykningar: varje kort öppnar sin djupdykning som en egen bok (omslaget "Djupdykning" med titeln, förteckningen, ingen nivåväljare) och efteråt är texten och nivån desamma',
+      !ddFel.length, ddFel.join(' | ') || ddKort().map(b => b.dataset.text).join(', '));
+  }
   if (spar.some(x => x.antal)) prova('figur: rörelsespårens avstånd följer rörelsetypen (' + spar.map(x => x.antal).join(' + ') + ' spår)',
     spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   if (spar.some(x => x.par.antal)) prova('figur: kraftparens pilar är lika långa, motriktade och börjar i var sitt föremåls mitt (' + spar.map(x => x.par.antal).join(' + ') + ' par)',
@@ -722,7 +759,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
 }`;
 
 // Provboken: det som Materia inte använder än (texter som egna böcker, hjälpmedel med adress, begreppslänkar,
-// djupdykning, kraftpilar).
+// en extra nivå ur data, kraftpilar).
 const PROVSCENARIO = String.raw`async () => {
   const v = ms => new Promise(r => setTimeout(r, ms));
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -731,7 +768,7 @@ const PROVSCENARIO = String.raw`async () => {
   const prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
   const tangent = t => document.dispatchEvent(new KeyboardEvent('keydown', { key: t, bubbles: true }));
   const oppen = () => !$('.bokapp').hidden;
-  prova('prov: en fjärde nivå (Djupdykning) ur data, utan ändring i motorn', $$('.niva-valjare .niva-knapp').map(b => b.textContent).some(t => t.startsWith('Djupdykning')));
+  prova('prov: en extra nivå (Extranivå) ur data, utan ändring i motorn', $$('.niva-valjare .niva-knapp').map(b => b.textContent).some(t => t.startsWith('Extranivå')));
   $('.flik[data-flik="ova"]').click(); await v(300);
   const ovaRam = $('section.flik-innehall[data-flik="ova"]:not(.dold) iframe.flik-ram');
   prova('prov: en flik med adress (Öva) visar hjälpmedlet inbäddat (embed=1)', ovaRam && ovaRam.getAttribute('src') === 'hjalpmedel.html?vad=ova&avsnitt=&embed=1' &&
@@ -770,12 +807,12 @@ const PROVSCENARIO = String.raw`async () => {
   prova('prov: flyter/sjunker räknar läget ur densiteten (0,25 → 75 % ovanför ytan)', rects.length === 2 && Math.abs(under[0] - 0.75) < 0.01 && +rects[1].getAttribute('y') + +rects[1].getAttribute('height') === 239, under.map(x => x.toFixed(2)));
   // Byt nivå i boken: samma avsnitt på den andra nivån
   synlig('.bokapp .niva-knapp').click(); await v(100);
-  [...$('.niva-lista').querySelectorAll('button')].find(x => x.textContent.startsWith('Djupdykning')).click(); await v(200);
+  [...$('.niva-lista').querySelectorAll('button')].find(x => x.textContent.startsWith('Extranivå')).click(); await v(200);
   const huvuden = $$('.scen .sida[data-nr] .sh-namn').map(e => e.textContent);
-  prova('prov: nivåbyte i boken hamnar i samma avsnitt', huvuden.some(t => /Krafter/.test(t)) && synlig('.bokapp .niva-knapp').textContent.startsWith('Djupdykning'), huvuden.join(' | '));
+  prova('prov: nivåbyte i boken hamnar i samma avsnitt', huvuden.some(t => /Krafter/.test(t)) && synlig('.bokapp .niva-knapp').textContent.startsWith('Extranivå'), huvuden.join(' | '));
   synlig('.bok-stang').click(); await v(450);
   const vald = $('.niva-valjare .niva-knapp.aktiv');
-  prova('prov: hubben följer nivåbytet', !oppen() && vald && vald.textContent.startsWith('Djupdykning'), 'öppen=' + oppen() + ' hash=' + location.hash + ' vald=' + (vald && vald.textContent));
+  prova('prov: hubben följer nivåbytet', !oppen() && vald && vald.textContent.startsWith('Extranivå'), 'öppen=' + oppen() + ' hash=' + location.hash + ' vald=' + (vald && vald.textContent));
   // En bok per text: en text utan innehåll är "kommer"; en text utan den valda nivån öppnas på en nivå den har
   const text = id => $$('.underdel-knapp').find(b => b.dataset.text === id);
   const tom = text('energi');
@@ -784,7 +821,7 @@ const PROVSCENARIO = String.raw`async () => {
     tom && tom.getAttribute('aria-disabled') === 'true' && tom.title.includes('kommer') && !tom.hasAttribute('data-oppna') && !oppen(), tom && tom.title);
   text('tryck').click(); await v(600);
   const nk = synlig('.bokapp .niva-knapp');
-  prova('prov: en text utan den valda nivån (Djupdykning) öppnas på Standard', oppen() && nk && nk.textContent.startsWith('Standard'), nk && nk.textContent);
+  prova('prov: en text utan den valda nivån (Extranivå) öppnas på Standard', oppen() && nk && nk.textContent.startsWith('Standard'), nk && nk.textContent);
   // Strömformatet (Tryck): en sidbrytning ger ny sida; ett långt stycke + figur som inte ryms tillsammans – stycket
   // stannar och figuren står först på nästa sida
   const sf = id => Bok.sidaFor(id);
@@ -881,9 +918,9 @@ const PROVSCENARIO = String.raw`async () => {
     lpE === 'Två steg: kulan rullar ner för ett plan och upp för ett annat. Ju flackare det andra planet är, desto längre rullar kulan för att nå starthöjden.',
     lpNamn.join(',') + ' | ' + lpHojd.join('/') + ' | ' + lpE);
   synlig('.bok-stang').click(); await v(450);
-  const dd = $$('.niva-valjare .niva-knapp').find(b => b.textContent.startsWith('Djupdykning'));
-  prova('prov: i hubben är Djupdykning "kommer" när texten Tryck är vald', !oppen() && $('.underdel-knapp.aktiv').dataset.text === 'tryck' && dd && dd.getAttribute('aria-disabled') === 'true',
-    'markerad: ' + $('.underdel-knapp.aktiv').dataset.text + ', Djupdykning ' + (dd && dd.getAttribute('aria-disabled')));
+  const dd = $$('.niva-valjare .niva-knapp').find(b => b.textContent.startsWith('Extranivå'));
+  prova('prov: i hubben är Extranivå "kommer" när texten Tryck är vald', !oppen() && $('.underdel-knapp.aktiv').dataset.text === 'tryck' && dd && dd.getAttribute('aria-disabled') === 'true',
+    'markerad: ' + $('.underdel-knapp.aktiv').dataset.text + ', Extranivå ' + (dd && dd.getAttribute('aria-disabled')));
   return k;
 }`;
 

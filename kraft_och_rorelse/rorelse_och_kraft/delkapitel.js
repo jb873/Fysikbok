@@ -22,11 +22,20 @@ Bok.delkapitel({
     { id: 'tyngdkraften', titel: 'Tyngdkraften' }
   ],
 
-  // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning) och Djupdykning (2026-11-04: text A, "Galileo
-  // mot Aristoteles"). En text utan djupdykning har en tom fil, och nivån visas som "kommer".
+  // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning).
   nivaer: [
     { id: 'enkel', namn: 'Enkel', ikon: '📗' }, { id: 'standard', namn: 'Standard', ikon: '📘' },
-    { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }, { id: 'djupdykning', namn: 'Djupdykning' }
+    { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }
+  ],
+
+  // Djupdykningarna hör till avsnittssidan, inte till en text (Joachims beslut 2026-11-05): de står längst ned på
+  // avsnittssidan ("Vill du veta mer?") och öppnas som egna böcker, med en nivå och en egen läsplats. id är nyckeln
+  // för det eleven sparat – byt det aldrig. Titlarna är källornas.
+  djupdykningar: [
+    { id: 'galileo', titel: 'Galileo mot Aristoteles – hur tröghetslagen upptäcktes', fil: 'innehall/djupdykningar/galileo.js' },
+    { id: 'bromsstrackan', titel: 'Bromssträckan – varför fart och halka är farligt', fil: 'innehall/djupdykningar/bromsstrackan.js' },
+    { id: 'raketer', titel: 'Raketer – att färdas där det inte finns något att trycka mot', fil: 'innehall/djupdykningar/raketer.js' },
+    { id: 'tyngdloshet', titel: 'Är astronauterna tyngdlösa?', fil: 'innehall/djupdykningar/tyngdloshet.js' }
   ],
 
   // Plattformens hjälpmedel. Föreläsning, Öva och Elevboken är flikarna på delkapitlets sida; Öva, Självskattning,
