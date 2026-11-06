@@ -447,8 +447,8 @@ window.Elevbok = (function () {
     // Titel: använd frågetexten om den går att hitta, annars id:t.
     var fragetext = fraga_id;
     if (textarea) {
-      var block = textarea.closest('.elevbok-fraga-block');
-      var fragaP = block && block.querySelector('.elevbok-fraga-titel, .elevbok-fraga');
+      var block = textarea.closest('.elevbok-underfraga') || textarea.closest('.elevbok-fraga-block');
+      var fragaP = block && block.querySelector('.elevbok-fraga-titel, .elevbok-fraga, .elevbok-underfraga-titel');
       if (fragaP) {
         fragetext = fragaP.textContent.trim();
       }

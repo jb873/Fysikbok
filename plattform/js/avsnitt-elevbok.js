@@ -67,16 +67,58 @@
     titel.textContent = nummer + '. ' + fraga.fraga;
     block.appendChild(titel);
 
+    // Valfria hjälprader (t.ex. "Använd begreppen: …", "Läs i: …") i vanlig stil under frågan.
+    if (fraga.hjalp && fraga.hjalp.length) {
+      var hjalp = nyEl('div', 'elevbok-fraga-hjalp');
+      fraga.hjalp.forEach(function (rad) {
+        var p = nyEl('p');
+        p.textContent = rad;
+        hjalp.appendChild(p);
+      });
+      block.appendChild(hjalp);
+    }
+
     // Bildgalleri ovanför textarean om frågan har bilder.
     if (fraga.bilder && fraga.bilder.length) {
       block.appendChild(skapaBildgalleri(fraga.bilder));
     }
 
+    // Valfria underfrågor (a, b, c …): en ruta under varje, ingen ruta för huvudfrågan.
+    if (fraga.underfragor && fraga.underfragor.length) {
+      fraga.underfragor.forEach(function (u) {
+        var del = nyEl('div', 'elevbok-underfraga');
+        del.setAttribute('data-fraga-id', u.id);
+        del.id = u.id;
+        var uTitel = nyEl('p', 'elevbok-underfraga-titel');
+        uTitel.textContent = u.bokstav + '. ' + u.fraga;
+        del.appendChild(uTitel);
+        laggTillSvarsruta(del, u.id, delkapitel);
+        block.appendChild(del);
+      });
+      // Ett svar som sparats under huvudfrågan innan den fick underfrågor står kvar under dem.
+      if (window.Elevbok && Elevbok.hamtaSvar(delkapitel, fraga.id)) {
+        var tidigare = nyEl('div', 'elevbok-underfraga elevbok-tidigare-svar');
+        var tTitel = nyEl('p', 'elevbok-underfraga-titel');
+        tTitel.textContent = 'Ditt tidigare svar';
+        tidigare.appendChild(tTitel);
+        laggTillSvarsruta(tidigare, fraga.id, delkapitel);
+        block.appendChild(tidigare);
+      }
+      return block;
+    }
+
+    laggTillSvarsruta(block, fraga.id, delkapitel);
+
+    return block;
+  }
+
+  // Svarsrutan (textarea + historik-ikon + sparstatus) för ett fråge-id.
+  function laggTillSvarsruta(block, fragaId, delkapitel) {
     var wrapper = nyEl('div', 'elevbok-textarea-wrapper');
 
     var textarea = nyEl('textarea', 'elevbok-textarea');
     textarea.setAttribute('data-delkapitel', delkapitel);
-    textarea.setAttribute('data-fraga-id', fraga.id);
+    textarea.setAttribute('data-fraga-id', fragaId);
     textarea.setAttribute('placeholder', 'Skriv ditt svar här …');
     textarea.setAttribute('spellcheck', 'true');
     wrapper.appendChild(textarea);
@@ -93,8 +135,6 @@
     var status = nyEl('div', 'sparstatus');
     status.setAttribute('aria-live', 'polite');
     block.appendChild(status);
-
-    return block;
   }
 
   function skapaSeparator() {
@@ -110,7 +150,7 @@
     container.querySelectorAll('.elevbok-textarea').forEach(function (textarea) {
       var delkapitel = textarea.dataset.delkapitel;
       var fragaId = textarea.dataset.fragaId;
-      var block = textarea.closest('.elevbok-fraga-block');
+      var block = textarea.closest('.elevbok-underfraga') || textarea.closest('.elevbok-fraga-block');
       var status = block.querySelector('.sparstatus');
 
       // Fyll i tidigare sparat svar.

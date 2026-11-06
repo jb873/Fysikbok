@@ -1249,9 +1249,13 @@ async function provaSidorna(lage) {
  * Plattformens elevbok (plattform/, ur Geografibok) hämtar sina frågor med fetch (data/fragor.json), och det går inte
  * från file:// – därför serveras Fysik/ här över http (127.0.0.1); med --webb prövas Pages. Prövas för varje
  * delkapitel vars hjalpmedel.elevbok är en sida i mappen med en data/fragor.json:
- *  - sidan inbäddad: frågorna ritas, numrerade 1–n i datafilens ordning, underfrågorna på egna rader, ingen banner;
- *  - ett svar sparas under fysikens prefix (fys-elev-), inget under geografins (geo-elev-), och finns kvar efter
- *    omladdning; exporten (Spara mitt arbete) innehåller bara fys-elev-nycklar, fast geografin har data på samma ursprung;
+ *  - sidan inbäddad: frågorna ritas, numrerade 1–n i datafilens ordning, med frågans text; hjälpraderna (hjalp) under
+ *    frågan i vanlig stil, bara frågan i fetstil; underfrågorna (underfragor) som a, b, c … utan eget nummer, med en
+ *    ruta var och ingen ruta för huvudfrågan (2026-11-06); ingen banner;
+ *  - ett svar i en underfrågas ruta sparas under fysikens prefix (fys-elev-), inget under geografins (geo-elev-), och
+ *    finns kvar efter omladdning; exporten (Spara mitt arbete) innehåller bara fys-elev-nycklar, med underfrågans svar,
+ *    fast geografin har data på samma ursprung; ett svar som sparats under huvudfrågan innan den fick underfrågor står
+ *    kvar under dem, märkt "Ditt tidigare svar";
  *  - fliken Elevboken på avsnittssidan visar sidan inbäddad, med svaret;
  *  - länken i Sammanfattningen öppnar elevboken ovanpå boken, och Esc leder tillbaka till samma sida.
  * Negativt prov (--negativ): ?prova=prefix låter sidan använda plattformens standardprefix – provet ska bli rött. */
@@ -1290,34 +1294,68 @@ async function provaElevboken(dk, lage, prova = '') {
     await c.send('Page.addScriptToEvaluateOnNewDocument', { source: FANGA_FEL });
     const mapp = (await httpAdress()) + path.relative(ROT, dk.mapp).split(path.sep).join('/') + '/';
     const sida = elevbokSida(dk), fragor = JSON.parse(fs.readFileSync(path.join(dk.mapp, 'data', 'fragor.json'), 'utf8'));
-    const antal = fragor.avsnitt.reduce((a, x) => a + x.fragor.length, 0), forstaId = fragor.avsnitt[0].fragor[0].id;
+    const alla = fragor.avsnitt.flatMap(x => x.fragor), antal = alla.length;
+    // svaret prövas i den första underfrågans ruta (finns ingen: den första frågans)
+    const medUnder = alla.find(f => f.underfragor && f.underfragor.length), malId = medUnder ? medUnder.underfragor[0].id : alla[0].id;
     const ga = async url => { await c.send('Page.navigate', { url }); for (let i = 0; i < 60; i++) { await vanta(150);
       if (await c.ev(`document.querySelectorAll('.elevbok-fraga-block').length > 0 || !!(document.body && document.body.dataset.klar)`).catch(() => false)) break; } await vanta(300); };
-    // frågorna i ett dokument (sidan själv eller en inbäddad ram)
-    const LAS = `d => { const t = [...d.querySelectorAll('.elevbok-fraga-titel')];
-      const b = d.querySelector('.hero-banner'); return { antal: t.length, nr: t.map(e => e.textContent.split('.')[0]).join(','),
-      rader: t.map(e => e.innerText.split('\\n').length), banner: !!b && getComputedStyle(b).display !== 'none' && b.getBoundingClientRect().height > 0,
-      svar: (d.querySelector('.elevbok-textarea') || {}).value || '' }; }`;
+    // frågorna i ett dokument (sidan själv eller en inbäddad ram): per fråga numret, textens rader, hjälpraderna och
+    // deras stil, underfrågornas bokstäver och rutornas fråge-id
+    const LAS = `d => { const bl = [...d.querySelectorAll('.elevbok-fraga-block')], t = [...d.querySelectorAll('.elevbok-fraga-titel')];
+      const b = d.querySelector('.hero-banner'), ta = d.querySelector('.elevbok-textarea[data-fraga-id="${malId}"]');
+      return { antal: t.length, nr: t.map(e => e.textContent.split('.')[0]).join(','), banner: !!b && getComputedStyle(b).display !== 'none' && b.getBoundingClientRect().height > 0,
+        fragor: bl.map(x => { const ti = x.querySelector('.elevbok-fraga-titel'), hj = [...x.querySelectorAll('.elevbok-fraga-hjalp p')];
+          return { id: x.dataset.fragaId, text: ti.textContent.replace(/^\\d+\\. /, ''), rader: ti.innerText.split('\\n').length, vikt: +getComputedStyle(ti).fontWeight,
+            hjalp: hj.map(p => p.textContent), hjalpStil: hj.map(p => { const s = getComputedStyle(p); return +s.fontWeight + ' ' + s.fontStyle; }),
+            under: [...x.querySelectorAll('.elevbok-underfraga:not(.elevbok-tidigare-svar)')].map(u => ({ id: u.dataset.fragaId,
+              titel: u.querySelector('.elevbok-underfraga-titel').textContent, rutor: [...u.querySelectorAll('.elevbok-textarea')].map(r => r.dataset.fragaId) })),
+            rutor: [...x.querySelectorAll('.elevbok-textarea')].map(r => r.dataset.fragaId),
+            tidigare: [...x.querySelectorAll('.elevbok-tidigare-svar')].map(u => ({ titel: u.querySelector('.elevbok-underfraga-titel').textContent,
+              id: (u.querySelector('.elevbok-textarea') || {}).dataset.fragaId, svar: (u.querySelector('.elevbok-textarea') || {}).value })) }; }),
+        svar: ta ? ta.value : '' }; }`;
 
-    // 1. Sidan inbäddad
+    // 1. Sidan inbäddad: numren, frågans text, hjälpraderna i vanlig stil, underfrågorna med en ruta var
     await ga(mapp + sida + '?embed=1' + prova);
     const a = await c.ev(`(${LAS})(document)`);
     const nr = Array.from({ length: antal }, (_, i) => i + 1).join(',');
-    const underRader = fragor.avsnitt.flatMap(x => x.fragor).map(f => f.fraga.split('\n').length);
-    provaK(`elevboken: ${antal} frågor ritas, numrerade 1–${antal}, varje del av frågetexten på en egen rad`,
-      a.antal === antal && a.nr === nr && a.rader.every((r, i) => r === underRader[i]), `${a.antal} frågor, nr ${a.nr}, rader ${a.rader.join('/')} (väntat ${underRader.join('/')})`);
+    provaK(`elevboken: ${antal} frågor ritas, numrerade 1–${antal} (underfrågorna utan eget nummer), frågans text som i datafilen`,
+      a.antal === antal && a.nr === nr && a.fragor.every((x, i) => x.id === alla[i].id && x.text === alla[i].fraga && x.rader === alla[i].fraga.split('\n').length),
+      `${a.antal} frågor, nr ${a.nr}` + a.fragor.filter((x, i) => !alla[i] || x.text !== alla[i].fraga).map(x => ` | ${x.id}: ${JSON.stringify(x.text).slice(0, 60)}`).join(''));
+    provaK('elevboken: hjälpraderna ("Använd begreppen", "Läs i") under frågan i vanlig stil – bara frågan i fetstil',
+      a.fragor.every((x, i) => JSON.stringify(x.hjalp) === JSON.stringify(alla[i].hjalp || []) && x.vikt >= 600 && x.hjalpStil.every(s => s === '400 normal')),
+      a.fragor.map(x => `${x.id}: ${x.hjalp.length} rader ${[...new Set(x.hjalpStil)].join('/')}, frågan ${x.vikt}`).join(' · '));
+    provaK('elevboken: underfrågorna a, b, c … med var sin ruta (deras id), huvudfrågan utan egen ruta; en fråga utan underfrågor har en ruta',
+      a.fragor.every((x, i) => { const u = alla[i].underfragor || [];
+        return u.length ? x.under.length === u.length && x.under.every((y, j) => y.id === u[j].id && y.titel === u[j].bokstav + '. ' + u[j].fraga && y.rutor.join() === u[j].id)
+          && x.rutor.join() === u.map(y => y.id).join() : !x.under.length && x.rutor.join() === alla[i].id; }),
+      a.fragor.map(x => `${x.id}: ${x.under.length ? x.under.map(y => y.titel.split('.')[0]).join('') : '–'} (${x.rutor.length} ${x.rutor.length === 1 ? 'ruta' : 'rutor'})`).join(' · '));
     provaK('elevboken: inbäddad (?embed=1) syns varken banner eller brödsmulor', !a.banner);
     const text = 'Grindens provsvar ' + Date.now();
-    const spar = await c.ev(`(async () => { const ta = document.querySelector('.elevbok-textarea'); ta.value = ${JSON.stringify(text)};
+    const spar = await c.ev(`(async () => { const ta = document.querySelector('.elevbok-textarea[data-fraga-id="${malId}"]'); ta.value = ${JSON.stringify(text)};
       ta.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 2600));
       const nycklar = Object.keys(localStorage), egen = nycklar.find(n => n === '${ELEV_PREFIX}svar-' + DELKAPITEL_ID);
-      let svar = null; try { svar = JSON.parse(localStorage.getItem(egen))['${forstaId}']; } catch (e) {}
+      let svar = null; try { svar = JSON.parse(localStorage.getItem(egen))['${malId}']; } catch (e) {}
       return { nycklar, egen, svar, dk: DELKAPITEL_ID }; })()`);
-    provaK(`elevboken: ett svar sparas under ${ELEV_PREFIX}svar-…, inget under geo-elev-`,
+    provaK(`elevboken: ett svar i en underfrågas ruta (${malId}) sparas under ${ELEV_PREFIX}svar-…, inget under geo-elev-`,
       spar.svar === text && !spar.nycklar.some(n => n.startsWith('geo-elev-')), spar.nycklar.join(', '));
     await ga(mapp + sida + '?embed=1' + prova);
     const b = await c.ev(`(${LAS})(document)`);
     provaK('elevboken: svaret finns kvar efter omladdning', b.svar === text, b.svar.slice(0, 40));
+    // Ett svar som sparades under en huvudfråga innan den fick underfrågor står kvar under dem, märkt "Ditt tidigare svar"
+    if (medUnder) {
+      const gammalt = 'Grindens tidigare svar ' + Date.now();
+      await c.ev(`(() => { const n = '${ELEV_PREFIX}svar-' + DELKAPITEL_ID, o = JSON.parse(localStorage.getItem(n) || '{}');
+        o['${medUnder.id}'] = ${JSON.stringify(gammalt)}; localStorage.setItem(n, JSON.stringify(o)); })()`);
+      await ga(mapp + sida + '?embed=1' + prova);
+      const g = await c.ev(`(${LAS})(document)`), gf = g.fragor.find(x => x.id === medUnder.id) || { tidigare: [] };
+      const ovriga = g.fragor.filter(x => x.id !== medUnder.id).every(x => !x.tidigare.length);
+      provaK(`elevboken: ett tidigare svar under huvudfrågan (${medUnder.id}) står kvar under underfrågorna, märkt "Ditt tidigare svar"`,
+        gf.tidigare.length === 1 && gf.tidigare[0].titel === 'Ditt tidigare svar' && gf.tidigare[0].id === medUnder.id && gf.tidigare[0].svar === gammalt && ovriga,
+        JSON.stringify(gf.tidigare));
+      await c.ev(`(() => { const n = '${ELEV_PREFIX}svar-' + DELKAPITEL_ID, o = JSON.parse(localStorage.getItem(n) || '{}');
+        delete o['${medUnder.id}']; localStorage.setItem(n, JSON.stringify(o)); })()`);
+      await ga(mapp + sida + '?embed=1' + prova);
+    }
     // geografin har data på samma ursprung (jb873.github.io): den ska inte komma med i fysikens export
     const exp = await c.ev(`(async () => {
       localStorage.setItem('geo-elev-svar-geologi', JSON.stringify({ q_prov: 'geografins svar' }));
@@ -1325,9 +1363,12 @@ async function provaElevboken(dk, lage, prova = '') {
       const knapp = [...document.querySelectorAll('.elevdata-knapp')][0]; if (!knapp) return null;
       HTMLAnchorElement.prototype.click = function () {};          // ingen nedladdning i provet
       knapp.click(); await new Promise(r => setTimeout(r, 200)); URL.createObjectURL = orig;
-      if (!blob) return null; const p = JSON.parse(await blob.text()); return Object.keys(p.data); })()`);
-    provaK(`elevboken: exporten (Spara mitt arbete) innehåller bara ${ELEV_PREFIX}nycklar, med svaret`,
-      exp && exp.length && exp.every(n => n.startsWith(ELEV_PREFIX)) && exp.includes(ELEV_PREFIX + 'svar-' + spar.dk), exp ? exp.join(', ') : 'ingen export');
+      if (!blob) return null; const p = JSON.parse(await blob.text()), s = p.data['${ELEV_PREFIX}svar-' + DELKAPITEL_ID];
+      let under = null; try { under = JSON.parse(s)['${malId}']; } catch (e) {}
+      return { nycklar: Object.keys(p.data), under }; })()`);
+    provaK(`elevboken: exporten (Spara mitt arbete) innehåller bara ${ELEV_PREFIX}nycklar, med underfrågans svar`,
+      exp && exp.nycklar.length && exp.nycklar.every(n => n.startsWith(ELEV_PREFIX)) && exp.nycklar.includes(ELEV_PREFIX + 'svar-' + spar.dk) && exp.under === text,
+      exp ? exp.nycklar.join(', ') + `; ${malId}: ${exp.under === text ? 'med' : 'SAKNAS'}` : 'ingen export');
 
     // 2. Fliken Elevboken på avsnittssidan
     await ga(mapp + 'index.html');
@@ -1367,6 +1408,48 @@ async function provaElevboken(dk, lage, prova = '') {
     await c.ev(`(async () => { const s = [...document.querySelectorAll('.bok-stang')].find(e => e.offsetParent); if (s) s.click(); })()`);
     const ramFel = await c.ev(`[...document.querySelectorAll('iframe')].flatMap(r => { try { return r.contentWindow.__fel || []; } catch (e) { return []; } })`);
     fel.push(...(await c.ev('window.__fel')), ...ramFel);
+  } catch (e) {
+    fel.push('grinden: ' + e.message);
+  } finally { await c.stang(); }
+  const ok = k.filter(x => x.ok).length;
+  return { kontroller: k, fel: [...new Set(fel.concat(c.undantag.map(u => 'undantag: ' + u)))], navigering: `${ok}/${k.length}`, gron: k.length > 0 && ok === k.length && !fel.length && !c.undantag.length };
+}
+
+/* Geografins frågor ritas som förut (2026-11-06): plattformens ritning fick valfria fält (hjalp, underfragor), och
+ * utan dem ska allt ritas exakt som i geografin. verktyg/elevbok-geografi/ har en ordagrann kopia av geografins
+ * fragor.json (demografi, cd9251d), ett avsnitt per ruta: varje fråga med sitt nummer (grund- och fördjupningsfrågor
+ * för sig) och sin text, EN ruta med frågans id, inga hjälprader eller underfrågor, separatorn före fördjupningen,
+ * bilderna, och plattformens standardprefix (geo-elev-). */
+const GEO_ELEVBOK = path.join(__dirname, 'elevbok-geografi');
+async function provaGeografinsElevbok(lage) {
+  const c = await chrome(), k = [], fel = [];
+  try {
+    await c.send('Page.enable'); await c.send('Runtime.enable');
+    await c.send('Emulation.setDeviceMetricsOverride', { width: lage.B, height: lage.H, deviceScaleFactor: 1, mobile: !!lage.mobil });
+    await c.send('Page.addScriptToEvaluateOnNewDocument', { source: FANGA_FEL });
+    const data = JSON.parse(fs.readFileSync(path.join(GEO_ELEVBOK, 'data', 'fragor.json'), 'utf8'));
+    // väntat ur datafilen, med geografins numrering (grund 1…, fördjupning 1…, per avsnitt)
+    const vantat = data.avsnitt.map(a => { let g = 0, f = 0; return { id: a.id, fordj: a.fragor.some(x => x.typ === 'fordjupning'),
+      fragor: a.fragor.map(x => ({ id: x.id, titel: (x.typ === 'fordjupning' ? ++f : ++g) + '. ' + x.fraga, bilder: (x.bilder || []).length })) }; });
+    await c.send('Page.navigate', { url: (await httpAdress()) + 'verktyg/elevbok-geografi/elevbok.html' });
+    for (let i = 0; i < 60; i++) { await vanta(150); if (await c.ev(`document.querySelectorAll('.elevbok-fraga-block').length > 0`).catch(() => false)) break; }
+    await vanta(300);
+    const r = await c.ev(`[...document.querySelectorAll('.underdel')].map(u => ({ id: u.dataset.underdelId,
+      sep: !!u.querySelector('.fordjupning-separator'), egna: !!u.querySelector('.egna-fragor-host'),
+      nytt: u.querySelectorAll('.elevbok-fraga-hjalp, .elevbok-underfraga').length,
+      fragor: [...u.querySelectorAll('.elevbok-fraga-block')].map(b => ({ id: b.dataset.fragaId, titel: b.querySelector('.elevbok-fraga-titel').textContent,
+        rutor: [...b.querySelectorAll('.elevbok-textarea')].map(t => t.dataset.fragaId), bilder: b.querySelectorAll('.fraga-bild').length,
+        barn: [...b.children].map(e => e.className).join(' > ') })) })).concat([{ prefix: (window.ELEVBOK_PREFIX || 'geo-elev-') }])`);
+    const prefix = r.pop().prefix, felAvsnitt = [];
+    vantat.forEach((v, i) => { const u = r[i] || { fragor: [] };
+      const ok = u.id === v.id && u.sep === v.fordj && u.egna && !u.nytt && u.fragor.length === v.fragor.length && u.fragor.every((b, j) => { const w = v.fragor[j];
+        return b.id === w.id && b.titel === w.titel && b.rutor.join() === w.id && b.bilder === w.bilder &&
+          b.barn === ['elevbok-fraga-titel', ...(w.bilder ? ['fraga-bilder'] : []), 'elevbok-textarea-wrapper', 'sparstatus'].join(' > '); });
+      if (!ok) felAvsnitt.push(`${v.id}: ${JSON.stringify(u).slice(0, 300)}`); });
+    const antal = vantat.reduce((s, v) => s + v.fragor.length, 0);
+    k.push({ namn: `elevboken: geografins frågor (kopia av demografi, ${data.avsnitt.length} avsnitt, ${antal} frågor) ritas som förut – nummer, text, en ruta per fråga, inga hjälprader eller underfrågor, fördjupningen och bilderna`,
+      ok: !felAvsnitt.length && prefix === 'geo-elev-', detalj: felAvsnitt.join(' | ') || `prefix ${prefix}` });
+    fel.push(...(await c.ev('window.__fel')));
   } catch (e) {
     fel.push('grinden: ' + e.message);
   } finally { await c.stang(); }
@@ -1439,6 +1522,14 @@ async function jamforWebben(lista) {
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
       r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
     }
+    // geografins data ritas som förut med plattformens ritning
+    if (medElevbok.length && fs.existsSync(GEO_ELEVBOK)) for (const lage of [LAGEN[0], LAGEN[3]]) {
+      const r = await provaGeografinsElevbok(lage);
+      gront = gront && r.gron;
+      console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  elevboken med geografins data (verktyg/elevbok-geografi), ${lage.namn}: ${r.navigering}, JS-fel ${r.fel.length}`);
+      r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
+      r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
+    }
     if (medElevbok.length) console.log('');
     // 3. Varje delkapitel i varje läge
     for (const dk of lista) for (const lage of LAGEN) {
@@ -1474,7 +1565,7 @@ async function jamforWebben(lista) {
     // Elevbokens prefix: med plattformens standardprefix (?prova=prefix) ska provet för prefixet bli rött
     for (const dkE of lista.filter(d => !d.prov && elevbokSida(d))) for (const lage of [LAGEN[0], LAGEN[3]]) {
       const r = await provaElevboken(dkE, lage, '&prova=prefix');
-      const rott = r.kontroller.some(x => x.namn.startsWith('elevboken: ett svar sparas') && !x.ok);
+      const rott = r.kontroller.some(x => x.namn.startsWith('elevboken: ett svar i en underfrågas ruta') && !x.ok);
       gront = gront && rott;
       console.log(`${rott ? 'GRÖNT' : 'RÖTT '}  negativ "elevbokens prefix", ${dkE.namn}, ${lage.namn}: grinden blev ${rott ? 'röd, som den ska' : 'GRÖN – fångar inte felet'}`);
       if (!rott) r.kontroller.forEach(x => console.log(`       ${x.ok ? '✓' : '✗'} ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));

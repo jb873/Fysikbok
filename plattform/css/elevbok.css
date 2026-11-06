@@ -569,10 +569,47 @@
 }
 .flip-knapp.sekundar:hover { background-color: var(--paper-light); }
 
+/* ========== Plattformens nya regler 2026-11-06 (underfrågor och hjälprader, avsnitt-elevbok.js) ==========
+ * Nya i plattformen, skrivna här först: förs till geografi.css tillsammans med modulerna. Klasserna finns bara när
+ * en fråga har de valfria fälten hjalp eller underfragor, så geografins frågor ritas som förut. */
+
+/* Hjälpraderna ("Använd begreppen: …", "Läs i: …"): vanlig stil, dämpad och mindre – som plattformens
+   förklaringstext (.matris-forklaring: --muted, 0.92rem) – direkt under frågan */
+.elevbok-fraga-hjalp {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: -8px 0 16px;
+}
+.elevbok-fraga-hjalp p { margin: 0 0 0.2rem; }
+
+/* Underfrågorna a, b, c …: en ruta under varje (huvudfrågan har ingen egen ruta) */
+.elevbok-underfraga {
+  margin: 0 0 0.9rem;
+  scroll-margin-top: 1.5rem;
+}
+.elevbok-underfraga-titel {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+.elevbok-underfraga .elevbok-textarea { min-height: 110px; }
+/* Ett svar som sparades under huvudfrågan innan den fick underfrågor */
+.elevbok-tidigare-svar .elevbok-underfraga-titel {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--muted);
+}
+
 /* ========== Fysikens tillägg (inte plattformens) ========== */
 
-/* Frågetexten har radbrytningar mellan rubriken, underfrågorna, "Använd begreppen" och "Läs i" (data/fragor.json);
-   ritningen sätter texten som text, så radbrytningarna visas med pre-line. */
+/* Frågetexten i fragor.json kan ha en radbrytning (fråga 5, 8 och 10: två meningar på två rader); ritningen sätter
+   texten som text, så radbrytningen visas med pre-line. */
 .elevbok-fraga-titel { white-space: pre-line; }
 /* Hovringsfärgerna är skrivna som färgvärden i plattformen (geografins blå och mässing): här fysikens */
 .flip-borja-knapp:hover,

@@ -454,9 +454,12 @@ beslut 2026-11-05.
     `avsnitt-elevbok.js` (ritar frågorna ur `data/fragor.json`), `avsnitt.js` (`autoExpandTextarea`),
     `elevdata-overforing.js` (Spara mitt arbete / Ladda från fil) och `egna-fragor.js` (elevens egna frågor).
   - `plattform/css/elevbok.css`: reglerna ordagrant ur `css/geografi.css` och `css/flipcards.css`. Radnumren står
-    överst i filen. Geografins variabelnamn pekar där på fysikens färger. Sist finns fysikens tillägg:
-    radbrytningar i frågetexten, hovringsfärgerna och det inbäddade läget.
+    överst i filen. Geografins variabelnamn pekar där på fysikens färger. Därefter plattformens nya regler för
+    underfrågor och hjälprader (2026-11-06, skrivna här först). Sist finns fysikens tillägg: radbrytningen i
+    frågetexten, hovringsfärgerna och det inbäddade läget.
 - **Ändringar görs i plattformen först** (Geografibok) och kopieras sedan hit. Modulerna ändras inte här.
+  Undantag 2026-11-06 (Joachims order): underfrågorna och hjälpraderna skrevs här först. De är bakåtkompatibla och
+  ska föras till Geografibok (tabellen nedan och reglerna i `elevbok.css`).
 - **Prefixet är en parameter.** Sidan sätter `window.ELEVBOK_PREFIX = 'fys-elev-'` före modulerna. Utan parametern
   gäller plattformens standard `geo-elev-`, så geografin är oförändrad om modulerna förs tillbaka dit.
   - Fysikens svar ligger under `fys-elev-svar-<delkapitel>`. De blandas alltså inte in i geografins export, fast
@@ -466,8 +469,8 @@ beslut 2026-11-05.
 
     | Modul | Ändring |
     |---|---|
-    | `elevbok.js` | rad 18: `var PREFIX = window.ELEVBOK_PREFIX \|\| 'geo-elev-';` |
-    | `avsnitt-elevbok.js` | rad 149: `(window.ELEVBOK_PREFIX \|\| 'geo-elev-') + 'svar-' + DELKAPITEL_ID` |
+    | `elevbok.js` | rad 18: `var PREFIX = window.ELEVBOK_PREFIX \|\| 'geo-elev-';`<br>rad 450–451 (2026-11-06): versionshistorikens rubrik tas ur underfrågan när rutan hör till en underfråga |
+    | `avsnitt-elevbok.js` | rad 189: `(window.ELEVBOK_PREFIX \|\| 'geo-elev-') + 'svar-' + DELKAPITEL_ID`<br>2026-11-06, underfrågor och hjälprader: nya rad 70–80 (`hjalp`), 86–112 (`underfragor` och "Ditt tidigare svar"), 115–116 och 138 (svarsrutan är en egen funktion, `laggTillSvarsruta`; raderna 117–137 är de gamla 75–95 med `fragaId` i stället för `fraga.id`), rad 110 (anropet för en fråga utan underfrågor) och rad 153 (sparstatus i underfrågans ruta) |
     | `egna-fragor.js` | rad 15: `(window.ELEVBOK_PREFIX \|\| 'geo-elev-') + 'egna-fragor-'` |
     | `elevdata-overforing.js` | en ny rad 28 (`ELEV` = prefixet, `NIVA` = samma med `niva-`); rad 41–42, 50–54 och 74–77 läser `ELEV`/`NIVA` i stället för de utskrivna `'geo-elev-'`/`'geo-niva-'` |
     | `avsnitt.js` | oförändrad |
@@ -475,21 +478,34 @@ beslut 2026-11-05.
   `hjalpmedel.elevbok = { href: 'elevbok.html' }` i `delkapitel.js`.
   - `elevbok.html` har bannern och brödsmulorna.
   - Med `?embed=1` (fliken och länken inifrån boken) sätter sidan klassen `inbaddad`, och då visas bara frågorna.
-- **Frågorna** följer plattformens schema: `id`, `typ`, `fraga`.
-  - Det blir en svarsruta per huvudfråga.
-  - Underfrågorna, "Använd begreppen" och "Läs i" står i frågetexten, med radbrytning mellan delarna. "Läs i"
-    pekar på Standard.
-  - Id:na (`q_iii_01` …) byts aldrig, eftersom elevernas svar sparas under dem.
+- **Frågorna** följer plattformens schema: `id`, `typ`, `fraga`, och två valfria fält (Joachims beslut 2026-11-06):
+  ```js
+  { id, typ, fraga,
+    hjalp: ['Använd begreppen: …', 'Läs i: …'],          // rader i vanlig stil, dämpade, direkt under frågan
+    underfragor: [{ id: 'q_iii_01a', bokstav: 'a', fraga: '…' }, …] }   // en svarsruta under varje
+  ```
+  - Bara själva frågan (`fraga`) står i fetstil, med sitt nummer. En fråga med underfrågor har ingen egen ruta.
+    Underfrågorna står som a, b, c … och tar inget eget nummer, så numren 1–10 stämmer med frågelistan.
+  - Utan de valfria fälten ritas allt som i geografin. Grinden prövar det med en ordagrann kopia av geografins
+    `fragor.json` (`verktyg/elevbok-geografi/`).
+  - Har en elev ett svar sparat under en huvudfråga som senare fått underfrågor, står den gamla rutan kvar under
+    underfrågorna, med svaret och rubriken "Ditt tidigare svar". Inget försvinner.
+  - "Läs i" pekar på Standard.
+  - Id:na (`q_iii_01` …, underfrågorna `q_iii_01a` …) byts aldrig, eftersom elevernas svar sparas under dem.
+  - `data/fragor.json` byggs ur källan ordagrant: frågans rader, underfrågorna och hjälpraderna i källans ordning.
 - **Inifrån boken:** länkblocket i Sammanfattningen (III A–D, alla tre nivåer) är
   `['ova', 'sjalvskattning', 'elevbok']`. Elevboken öppnas då ovanpå boken, och Esc leder tillbaka till samma sida.
   Det finns ingen koppling från avsnitt till fråga än.
 - **Inte från disken:** plattformens elevbok hämtar frågorna med `fetch`, och det fungerar inte från `file://`. På
   Pages fungerar det. Lokalt behövs en http-server, och grinden startar en egen.
 - **Grinden** provar elevboken över http, på dator och mobil:
-  - frågorna 1–10, med en rad per del;
+  - frågorna 1–10 med frågans text, hjälpraderna i vanlig stil (bara frågan i fetstil);
+  - underfrågornas bokstäver, en ruta per underfråga och ingen för huvudfrågan;
   - ingen banner när sidan är inbäddad;
-  - att svaret sparas under `fys-elev-` och finns kvar efter omladdning;
-  - att exporten bara har `fys-elev-`-nycklar, fast geografin har data på samma ursprung;
+  - att ett svar i en underfrågas ruta sparas under `fys-elev-` och finns kvar efter omladdning;
+  - att exporten bara har `fys-elev-`-nycklar, med underfrågans svar, fast geografin har data på samma ursprung;
+  - att ett tidigare svar under en huvudfråga står kvar under underfrågorna ("Ditt tidigare svar");
+  - att geografins frågor ritas som förut (kopian i `verktyg/elevbok-geografi/`);
   - fliken, och länken inifrån boken med vägen tillbaka.
 
   Med `--negativ` provas fel prefix (`?prova=prefix`), och då ska grinden bli röd.
@@ -907,3 +923,17 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     - varje kort öppnar rätt bok (omslaget, förteckningen, ingen nivåväljare), och texten och nivån är desamma
       efteråt;
     - figurerna i djupdykningarna mäts där.
+- **2026-11-06, Elevboken: underfrågor med egna rutor (Joachims beslut, ändrar "en ruta per huvudfråga"):**
+  - **Plattformens ritning** fick två valfria fält, `hjalp` och `underfragor`. Ändringen är bakåtkompatibel och
+    ska föras till Geografibok. Raderna står i tabellen under *Elevboken*.
+  - **Utan fälten** ritas geografins frågor tecken för tecken som förut. Det jämfördes en gång med modulerna före
+    ändringen (demografi: 34 frågor, samma DOM), och grinden prövar det sedan dess med kopian i
+    `verktyg/elevbok-geografi/`.
+  - **`data/fragor.json`** är ombyggd ur källan v2, ordagrant (43 av 43 rader):
+    - fråga 1 har a–d, fråga 5 och 6 har a–c;
+    - frågorna 5, 8 och 10 har en andra mening på en egen rad;
+    - "Använd begreppen" och "Läs i" står i `hjalp` i alla tio.
+  - **Tidigare svar:** Elevboken var pushad (d26ebcd), och elever kan ha svarat under `q_iii_01`, `q_iii_05` och
+    `q_iii_06`. Ett sådant svar står kvar under underfrågorna, märkt "Ditt tidigare svar".
+  - **Hjälpraderna** har plattformens dämpade förklaringsstil (som `.matris-forklaring`: `--muted`, 0,92 rem, vanlig
+    vikt). Plattformen har ingen egen klass för hjälptext.

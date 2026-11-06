@@ -1,6 +1,6 @@
 {
   "delkapitel": "fysik-rorelse-och-kraft",
-  "_kommentar": "Elevboken för Avsnitt III. Rörelse och kraft, ordagrant ur Elevboken-III-Rorelse-och-kraft-v2.md (Joachim, 2026-11-05). En svarsruta per huvudfråga: underfrågorna, \"Använd begreppen\" och \"Läs i\" står i frågetexten, med radbrytning mellan delarna. q-id:na är stabila och byts aldrig.",
+  "_kommentar": "Elevboken för Avsnitt III. Rörelse och kraft, ordagrant ur Elevboken-III-Rorelse-och-kraft-v2.md (Joachim, 2026-11-05). Ritningen enligt Joachims beslut 2026-11-06: fraga = själva frågan (fetstil, radbrytning där källan har två rader), hjalp = \"Använd begreppen\" och \"Läs i\" (vanlig stil), underfragor = a, b, c … med en svarsruta var (huvudfrågan har då ingen egen ruta). q-id:na är stabila och byts aldrig; underfrågorna har huvudfrågans id + bokstav (q_iii_01a …).",
   "avsnitt": [
     {
       "id": "a3_rorelse_och_kraft",
@@ -10,52 +10,148 @@
         {
           "id": "q_iii_01",
           "typ": "grund",
-          "fraga": "Redogör för olika sorters rörelse: likformig, olikformig, accelererande och retarderad rörelse\na. Likformig rörelse\nb. Olikformig rörelse\nc. Accelererande rörelse\nd. Retarderad rörelse\nAnvänd begreppen: prickmodell, lika lång tid, avstånd, fart, likformig, olikformig, accelerera, retardera\nLäs i: A Rörelse – Rörelsen syns i prickarna"
+          "fraga": "Redogör för olika sorters rörelse: likformig, olikformig, accelererande och retarderad rörelse",
+          "hjalp": [
+            "Använd begreppen: prickmodell, lika lång tid, avstånd, fart, likformig, olikformig, accelerera, retardera",
+            "Läs i: A Rörelse – Rörelsen syns i prickarna"
+          ],
+          "underfragor": [
+            {
+              "id": "q_iii_01a",
+              "bokstav": "a",
+              "fraga": "Likformig rörelse"
+            },
+            {
+              "id": "q_iii_01b",
+              "bokstav": "b",
+              "fraga": "Olikformig rörelse"
+            },
+            {
+              "id": "q_iii_01c",
+              "bokstav": "c",
+              "fraga": "Accelererande rörelse"
+            },
+            {
+              "id": "q_iii_01d",
+              "bokstav": "d",
+              "fraga": "Retarderad rörelse"
+            }
+          ]
         },
         {
           "id": "q_iii_02",
           "typ": "grund",
-          "fraga": "Förklara begreppet medelfart och redogör för hur man räknar ut den\nAnvänd begreppen: olikformig rörelse, medelfart, hela sträckan, hela tiden, km/h\nLäs i: A Rörelse – Rörelsen syns i prickarna"
+          "fraga": "Förklara begreppet medelfart och redogör för hur man räknar ut den",
+          "hjalp": [
+            "Använd begreppen: olikformig rörelse, medelfart, hela sträckan, hela tiden, km/h",
+            "Läs i: A Rörelse – Rörelsen syns i prickarna"
+          ]
         },
         {
           "id": "q_iii_03",
           "typ": "grund",
-          "fraga": "Redogör för tröghetslagen (Newtons första lag)\nAnvänd begreppen: tröghet, kraft, fart, riktning, fortsätter\nLäs i: A Rörelse – Tröghetslagen"
+          "fraga": "Redogör för tröghetslagen (Newtons första lag)",
+          "hjalp": [
+            "Använd begreppen: tröghet, kraft, fart, riktning, fortsätter",
+            "Läs i: A Rörelse – Tröghetslagen"
+          ]
         },
         {
           "id": "q_iii_04",
           "typ": "grund",
-          "fraga": "Redogör för vad en kraft är och hur den ritas\nAnvänd begreppen: kraft, knuff, drag, kraftpil, riktning, storlek, newton\nLäs i: B Kraft och friktion – Kraft och kraftpilar"
+          "fraga": "Redogör för vad en kraft är och hur den ritas",
+          "hjalp": [
+            "Använd begreppen: kraft, knuff, drag, kraftpil, riktning, storlek, newton",
+            "Läs i: B Kraft och friktion – Kraft och kraftpilar"
+          ]
         },
         {
           "id": "q_iii_05",
           "typ": "grund",
-          "fraga": "Redogör för krafterna när du drar ett block över ett bord\nAnvänd dragkraft, bromsande kraft (friktion) och jämvikt. Förklara vilket föremål varje kraft verkar på.\na. Förklara med krafter och acceleration hur du får ett block att börja röra på sig.\nb. Förklara med krafter hur det blir en likformig rörelse.\nc. Förklara med krafter hur en rörelse börjar retardera och sedan upphör.\nAnvänd begreppen: dragkraft, friktion, jämvikt, tar ut varandra, större än, accelerera, likformig, retardera\nLäs i: B Kraft och friktion – Krafterna avgör rörelsen"
+          "fraga": "Redogör för krafterna när du drar ett block över ett bord\nAnvänd dragkraft, bromsande kraft (friktion) och jämvikt. Förklara vilket föremål varje kraft verkar på.",
+          "hjalp": [
+            "Använd begreppen: dragkraft, friktion, jämvikt, tar ut varandra, större än, accelerera, likformig, retardera",
+            "Läs i: B Kraft och friktion – Krafterna avgör rörelsen"
+          ],
+          "underfragor": [
+            {
+              "id": "q_iii_05a",
+              "bokstav": "a",
+              "fraga": "Förklara med krafter och acceleration hur du får ett block att börja röra på sig."
+            },
+            {
+              "id": "q_iii_05b",
+              "bokstav": "b",
+              "fraga": "Förklara med krafter hur det blir en likformig rörelse."
+            },
+            {
+              "id": "q_iii_05c",
+              "bokstav": "c",
+              "fraga": "Förklara med krafter hur en rörelse börjar retardera och sedan upphör."
+            }
+          ]
         },
         {
           "id": "q_iii_06",
           "typ": "grund",
-          "fraga": "Redogör för friktion\na. Vad är friktion och varför uppstår den\nb. Förklara vad som händer med friktionen när du drar hårdare och hårdare i blocket, och när blocket börjar glida\nc. Redogör för friktion i vardagen – när vi vill ha mer och när vi vill ha mindre.\nAnvänd begreppen: friktion, ytor, ojämnheter, gräns, glida, kullager, smörjning, grepp\nLäs i: B Kraft och friktion – Friktion"
+          "fraga": "Redogör för friktion",
+          "hjalp": [
+            "Använd begreppen: friktion, ytor, ojämnheter, gräns, glida, kullager, smörjning, grepp",
+            "Läs i: B Kraft och friktion – Friktion"
+          ],
+          "underfragor": [
+            {
+              "id": "q_iii_06a",
+              "bokstav": "a",
+              "fraga": "Vad är friktion och varför uppstår den"
+            },
+            {
+              "id": "q_iii_06b",
+              "bokstav": "b",
+              "fraga": "Förklara vad som händer med friktionen när du drar hårdare och hårdare i blocket, och när blocket börjar glida"
+            },
+            {
+              "id": "q_iii_06c",
+              "bokstav": "c",
+              "fraga": "Redogör för friktion i vardagen – när vi vill ha mer och när vi vill ha mindre."
+            }
+          ]
         },
         {
           "id": "q_iii_07",
           "typ": "grund",
-          "fraga": "Redogör för kraft och motkraft. Förklara skillnaden mellan motkraft och bromsande kraft\nAnvänd begreppen: kraft, motkraft, kraftpar, olika föremål, lika stora, motsatt riktning, friktion\nLäs i: C Kraft och motkraft – Kraft och motkraft · Motkraft eller jämvikt?"
+          "fraga": "Redogör för kraft och motkraft. Förklara skillnaden mellan motkraft och bromsande kraft",
+          "hjalp": [
+            "Använd begreppen: kraft, motkraft, kraftpar, olika föremål, lika stora, motsatt riktning, friktion",
+            "Läs i: C Kraft och motkraft – Kraft och motkraft · Motkraft eller jämvikt?"
+          ]
         },
         {
           "id": "q_iii_08",
           "typ": "grund",
-          "fraga": "Redogör för jordens dragningskraft och normalkraften\nFörklara varför tyngdkraften och normalkraften inte är kraft och motkraft.\nAnvänd begreppen: tyngdkraft, jordens mitt, normalkraft, jämvikt, samma föremål, motkraft\nLäs i: D Tyngdkraften – Tyngdkraften och normalkraften"
+          "fraga": "Redogör för jordens dragningskraft och normalkraften\nFörklara varför tyngdkraften och normalkraften inte är kraft och motkraft.",
+          "hjalp": [
+            "Använd begreppen: tyngdkraft, jordens mitt, normalkraft, jämvikt, samma föremål, motkraft",
+            "Läs i: D Tyngdkraften – Tyngdkraften och normalkraften"
+          ]
         },
         {
           "id": "q_iii_09",
           "typ": "grund",
-          "fraga": "Redogör för hur vi mäter krafter\nAnvänd begreppen: newton, dynamometer, fjäder, skala\nLäs i: D Tyngdkraften – Att mäta kraft"
+          "fraga": "Redogör för hur vi mäter krafter",
+          "hjalp": [
+            "Använd begreppen: newton, dynamometer, fjäder, skala",
+            "Läs i: D Tyngdkraften – Att mäta kraft"
+          ]
         },
         {
           "id": "q_iii_10",
           "typ": "grund",
-          "fraga": "Redogör för begreppen massa och tyngd. Använd jorden och månen som exempel\nFörklara varför friktionen blir mindre på månen men trögheten är densamma.\nAnvänd begreppen: massa, kilogram, tyngd, newton, 1 kg ≈ 10 N, månen, en sjättedel, friktion, tröghet\nLäs i: D Tyngdkraften – Massa och tyngd"
+          "fraga": "Redogör för begreppen massa och tyngd. Använd jorden och månen som exempel\nFörklara varför friktionen blir mindre på månen men trögheten är densamma.",
+          "hjalp": [
+            "Använd begreppen: massa, kilogram, tyngd, newton, 1 kg ≈ 10 N, månen, en sjättedel, friktion, tröghet",
+            "Läs i: D Tyngdkraften – Massa och tyngd"
+          ]
         }
       ]
     }
