@@ -566,7 +566,10 @@ beslut 2026-11-05.
        innehållet vänder bladet till omslaget och → vänder omslaget och öppnar boken. Med CPU:n
        strypt 6 gånger: en vändning högst 450 ms från tangenten (medianen av 3 efter en uppvärmningsvändning, som
        brytningstiden; max redovisas) och inget glapp över 50 ms mellan bildrutorna – bara med laddaren i (på
-       batteri: "ej mätt").
+       batteri: "ej mätt"). Blir tidsprovet rött körs det om automatiskt en gång (samma läge, samma delkapitel). Rött
+       är det bara om båda körningarna är röda. Gränserna är desamma, och en omkörning står i utskriften (`OMKÖRD`)
+       och i en sammanställning sist. En belastad dator gav ibland ett glapp på 67–150 ms i ett oförändrat
+       delkapitel, och omkörningen blev grön (Joachims order 2026-11-06).
      - **Att inga JS-fel uppstår.** De fångas med `window.onerror`, `unhandledrejection` och Chromes egna undantag.
 
   Startsidan och kapitelindexet prövas på dator och mobil: startsida → kapitelindex → avsnittssidorna → brödsmulorna
@@ -589,10 +592,14 @@ beslut 2026-11-05.
   - en extra nivå ur data (Extranivå)
   - nivåbyte i boken
   - kraftpilarna
-- **`node verktyg/bok-grind.js --negativ`:** lägger in fem fel med flit, ett i taget, i varje läge. Felen är ett
+- **`node verktyg/bok-grind.js --negativ`:** lägger in fel med flit, ett i taget, i varje läge. Felen är ett
   JS-fel, en för tät sida, en Stäng som inte fungerar, en sida som slutar med en rubrik (motorns provkrok
-  `?kontroll&prova=rubrik-sist`) och en brytning som tar 250 ms längre (`?kontroll&prova=langsam`). Grinden ska bli
-  röd för vart och ett; den långsamma brytningen ska fångas av just tidsprovet.
+  `?kontroll&prova=rubrik-sist`), en brytning som tar 250 ms längre (`?kontroll&prova=langsam`) och en hackig
+  bladvändning: grinden blockerar sidan 80 ms var 100:e ms medan vändningen mäts. Grinden ska bli röd för vart och
+  ett. Den långsamma brytningen ska fångas av just tidsprovet. Den hackiga bladvändningen ska fångas av
+  bladvändningens tidsprov i båda körningarna. Dessutom prövas omkörningen: med hacket bara i första körningen
+  ska tidsprovet bli grönt efter omkörningen ("hackig bladvändning en gång").
+  Med `--negativ` provas också elevbokens prefix (se *Elevboken*).
 - **`--bilder`** sparar skärmbilder av hubben och boken i `verktyg/bilder/grind/`. Alla skärmbilder sparas under
   `verktyg/bilder/`, med en undermapp per arbete (till exempel `repetition-1/`).
 - **`--webb`** prövar den publicerade boken på https://jb873.github.io/Fysikbok/ i stället för filerna på disken
@@ -937,3 +944,6 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     `q_iii_06`. Ett sådant svar står kvar under underfrågorna, märkt "Ditt tidigare svar".
   - **Hjälpraderna** har plattformens dämpade förklaringsstil (som `.matris-forklaring`: `--muted`, 0,92 rem, vanlig
     vikt). Plattformen har ingen egen klass för hjälptext.
+- **2026-11-06, grinden: bladvändningens tidsprov körs om en gång vid rött (Joachims order):** rött bara om båda
+  körningarna är röda, gränserna 450 ms och 50 ms är desamma, och omkörningen står i utskriften. `--negativ` har
+  fått "hackig bladvändning" (rött i båda körningarna) och "hackig bladvändning en gång" (grönt efter omkörningen).

@@ -1,8 +1,9 @@
 // bok-grind.js – verifierar bokmotorn och varje delkapitel i Fysik.
 //
 //   node verktyg/bok-grind.js              alla delkapitel (och provboken) i alla lägen
-//   node verktyg/bok-grind.js --negativ    negativ verifiering: fyra fel läggs in med flit, ett i taget, och grinden
-//                                          ska bli röd för vart och ett i varje läge
+//   node verktyg/bok-grind.js --negativ    negativ verifiering: felen i FEL läggs in med flit, ett i taget, och grinden
+//                                          ska bli röd för vart och ett i varje läge (utom "hackig bladvändning en
+//                                          gång", som ska bli grön efter omkörningen)
 //   node verktyg/bok-grind.js --bilder     sparar skärmbilder av hubben och boken (i verktyg/bilder/grind/)
 //
 // Delkapitlen letas upp på disken: varje mapp <område>/<delkapitel>/ med en delkapitel.js. Ett nytt delkapitel
@@ -45,7 +46,8 @@ const LAGEN = [
   { namn: 'mobil 390×664', B: 390, H: 664, helskarm: true, mobil: true }
 ];
 
-// De fyra felen i den negativa verifieringen. Vart och ett ska ge rött i varje läge (V12: samma läge som grinden).
+// Felen i den negativa verifieringen. Vart och ett ska ge rött i varje läge (V12: samma läge som grinden); "hackig
+// bladvändning en gång" prövar omkörningen av bladvändningens tidsprov och ska ge grönt.
 const FEL = {
   'js-fel': `addEventListener('load', () => setTimeout(() => { throw new Error('negativ verifiering: injicerat fel'); }, 0));`,
   'för tät sida': `addEventListener('DOMContentLoaded', () => { const s = document.createElement('style');
@@ -54,7 +56,11 @@ const FEL = {
   // motorns provkrok (bara med ?kontroll): en rubrik flyttas sist på sidan före – brytningsreglerna ska ge rött
   'rubrik sist på en sida': { adress: '&prova=rubrik-sist' },
   // en konstgjord fördröjning på 250 ms i varje brytning: medianen ska bli över 200 ms i varje läge
-  'långsam brytning': { adress: '&prova=langsam' }
+  'långsam brytning': { adress: '&prova=langsam' },
+  // sidan blockeras 80 ms var 100:e ms medan bladvändningen mäts: tidsprovet ska bli rött i båda körningarna
+  'hackig bladvändning': { blad: 'hack' },
+  // samma, men bara i den första körningen: omkörningen ska ge grönt, och utskriften visa att den behövdes
+  'hackig bladvändning en gång': { blad: 'forsta' }
 };
 
 const FANGA_FEL = `window.__fel = [];
@@ -928,7 +934,8 @@ const PROVSCENARIO = String.raw`async () => {
  * Körs i varje läge efter scenariot. BLAD: vändning framåt och bakåt (det nya uppslaget syns direkt, lagret ovanpå
  * försvinner), hopp via innehållet utan vändning, en snabb serie om 10 sidbyten (rätt sida, högst ett blad åt gången,
  * inget kvar efteråt) och inställningen Av. BLADTID: en vändning med CPU:n strypt 6 gånger – från tangenten tills
- * lagret är borta, och det längsta glappet mellan två bildrutor. BLADRM: med prefers-reduced-motion inga animationer. */
+ * lagret är borta, och det längsta glappet mellan två bildrutor; blir det rött körs det om en gång (provaBlad), och
+ * rött är det bara om båda körningarna är röda. BLADRM: med prefers-reduced-motion inga animationer. */
 const BLADHJALP = String.raw`const v = ms => new Promise(r => setTimeout(r, ms));
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const synlig = s => $$(s).find(e => e.offsetParent !== null);
@@ -1019,14 +1026,18 @@ const BLADEN = String.raw`async () => {
   return { total: Math.round((slut || performance.now()) - t0), upplagt: Math.round(upplagt), ramar: ramar.length, maxGlapp: Math.round(Math.max(0, ...glapp)) };
 }`;
 // Som brytningstiden: en uppvärmningsvändning som inte räknas (sidorna byggs första gången), sedan tre vändningar;
-// medianen jämförs med 450 ms
-const BLADTID = String.raw`async () => {
+// medianen jämförs med 450 ms. hack (bara --negativ, "hackig bladvändning"): sidan blockeras 80 ms var 100:e ms medan
+// vändningarna mäts – ett medvetet långsamt läge, som ska ge glapp över 50 ms i båda körningarna.
+const BLADTID = String.raw`async (hack) => {
   ${BLADHJALP}
   await oppna();
   const en = async () => { Bok.gaTill(1); await v(400); return await (${BLADEN})(); };
   await en();
-  const m = [await en(), await en(), await en()], tot = m.map(x => x.total).sort((a, b) => a - b);
-  return { total: tot[1], max: tot[2], upplagt: Math.max(...m.map(x => x.upplagt)), ramar: m[1].ramar, maxGlapp: Math.max(...m.map(x => x.maxGlapp)) };
+  const h = hack ? setInterval(() => { const t = performance.now(); while (performance.now() - t < 80); }, 100) : null;
+  try {
+    const m = [await en(), await en(), await en()], tot = m.map(x => x.total).sort((a, b) => a - b);
+    return { total: tot[1], max: tot[2], upplagt: Math.max(...m.map(x => x.upplagt)), ramar: m[1].ramar, maxGlapp: Math.max(...m.map(x => x.maxGlapp)) };
+  } finally { clearInterval(h); }
 }`;
 const BLADRM = String.raw`async () => {
   ${BLADHJALP}
@@ -1048,16 +1059,26 @@ function batteri() {
   return paBatteri;
 }
 
-async function provaBlad(c, lage) {
+// Tidsprovet körs om automatiskt en gång (samma läge, samma delkapitel, samma sida) om det blir rött: en belastad dator
+// ger ibland ett glapp över 50 ms i ett oförändrat delkapitel (Joachims order 2026-11-06). Rött bara om båda
+// körningarna är röda; gränserna (450 ms, 50 ms) är desamma. Omkörningen syns i utskriften (OMKÖRD).
+async function provaBlad(c, lage, hack) {
   const k = await c.ev(`(${BLAD})()`);
   if (batteri()) k.push({ namn: 'blad: tidtagning med CPU:n strypt 6 gånger – ej mätt (datorn går på batteri)', ok: true, detalj: '' });
   else {
-    await c.send('Emulation.setCPUThrottlingRate', { rate: 6 });
-    const t = await c.ev(`(${BLADTID})()`);
-    await c.send('Emulation.setCPUThrottlingRate', { rate: 1 });
-    k.push({ namn: 'blad: en vändning tar högst 450 ms med CPU:n strypt 6 gånger (medianen av 3 efter en uppvärmning), utan hack (inget glapp över 50 ms mellan bildrutorna)',
-      ok: t.total <= 450 && t.maxGlapp <= 50, detalj: `median ${t.total} ms från tangenten, max ${t.max} ms (sidbytet högst ${t.upplagt} ms), ${t.ramar} bildrutor, längsta glapp ${t.maxGlapp} ms` });
-    k.tid = t;
+    // hack (bara --negativ): 'hack' = hackigt i båda körningarna, 'forsta' = bara i den första (omkörningen ska rädda)
+    const mat = async n => {
+      await c.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+      const t = await c.ev(`(${BLADTID})(${hack === 'hack' || (hack === 'forsta' && n === 1)})`);
+      await c.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+      return t;
+    };
+    const godkand = t => t.total <= 450 && t.maxGlapp <= 50;
+    const beskriv = t => `median ${t.total} ms från tangenten, max ${t.max} ms (sidbytet högst ${t.upplagt} ms), ${t.ramar} bildrutor, längsta glapp ${t.maxGlapp} ms`;
+    const forsta = await mat(1), t = godkand(forsta) ? forsta : await mat(2), omkord = t === forsta ? null : forsta;
+    k.push({ namn: 'blad: en vändning tar högst 450 ms med CPU:n strypt 6 gånger (medianen av 3 efter en uppvärmning), utan hack (inget glapp över 50 ms mellan bildrutorna); vid rött körs provet om en gång, rött bara om båda körningarna är röda',
+      ok: godkand(t), detalj: omkord ? `båda körningarna röda – första: ${beskriv(omkord)}; andra: ${beskriv(t)}` : beskriv(t) });
+    k.tid = Object.assign({}, t, { omkord, gron: godkand(t) });
   }
   await c.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   const rm = await c.ev(`(${BLADRM})()`);
@@ -1090,7 +1111,7 @@ async function kor(dk, lage, felkod) {
     if (BILDER) await bild(c, dk, lage, 'hubb');
     res.kontroller = await c.ev(`(${SCENARIO})(${lage.helskarm})`);
     if (dk.prov && !lage.mobil) res.kontroller.push(...await c.ev(`(${PROVSCENARIO})()`));
-    const blad = await provaBlad(c, lage);
+    const blad = await provaBlad(c, lage, felkod && felkod.blad);
     res.kontroller.push(...blad); res.bladTid = blad.tid || null;
     // En adress som pekar på en rubrik (#atomer-2) öppnar boken där rubriken står; Stäng leder till hubben i samma
     // delkapitel. Rubrikernas adresser kommer ur kontrolläget (adress → block).
@@ -1484,6 +1505,7 @@ async function jamforWebben(lista) {
   const lista = delkapitel();
   const mall = fs.readFileSync(MALL);
   let gront = true;
+  const omkorningar = [];          // bladvändningens tidsprov som kördes om (rött i första körningen)
   console.log(`Bokmotorn: ${lista.length} delkapitel (${lista.map(d => d.namn).join(', ')})`);
   console.log(`Prövar: ${WEBB ? 'den publicerade boken, ' + BAS : 'filerna på disken'}\n`);
 
@@ -1542,6 +1564,11 @@ async function jamforWebben(lista) {
       if (matt && lage === LAGEN[0]) console.log(`       text: ${matt}`);
       if (r.brytTid) console.log(`       brytningen (CPU×6, median/max av 5 varv): ` + r.brytTid.bocker.map(b => `${b.bok || 'boken'} ${b.median}/${b.max}`).join(' · ') + ' ms');
       if (r.bladTid) console.log(`       bladvändningen (CPU×6, median/max av 3 efter uppvärmning): ${r.bladTid.total}/${r.bladTid.max} ms från tangenten (sidbytet högst ${r.bladTid.upplagt} ms), längsta glapp ${r.bladTid.maxGlapp} ms`);
+      if (r.bladTid && r.bladTid.omkord) {
+        const o = r.bladTid.omkord;
+        console.log(`       OMKÖRD: bladvändningens tidsprov var rött i första körningen (${o.total}/${o.max} ms, längsta glapp ${o.maxGlapp} ms) och ${r.bladTid.gron ? 'grönt' : 'rött'} i omkörningen`);
+        omkorningar.push(`${dk.namn}, ${lage.namn}: första ${o.total} ms / glapp ${o.maxGlapp} ms → omkörningen ${r.bladTid.total} ms / glapp ${r.bladTid.maxGlapp} ms (${r.bladTid.gron ? 'grönt' : 'rött'})`);
+      }
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
       r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
       if (r.kontroll) r.kontroll.problem.forEach(p => console.log(`       problem: ${p}`));
@@ -1552,12 +1579,20 @@ async function jamforWebben(lista) {
     const dk = lista.find(d => !d.prov) || lista[0];
     for (const [namn, kod] of Object.entries(FEL)) for (const lage of LAGEN) {
       const r = await kor(dk, lage, kod);
-      // den långsamma brytningen ska fångas av just tidsprovet
-      const rott = namn === 'långsam brytning' ? r.kontroller.some(x => x.namn.startsWith('prestanda') && !x.ok) : !r.gron;
+      // den långsamma brytningen ska fångas av just tidsprovet, den hackiga bladvändningen av bladvändningens tidsprov
+      // i båda körningarna (första körningen röd, omkörningen röd)
+      // "en gång": hacket bara i första körningen – omkörningen ska behövas och ge grönt (det enda felet som ska bli grönt)
+      const enGang = namn === 'hackig bladvändning en gång';
+      const rott = namn === 'långsam brytning' ? r.kontroller.some(x => x.namn.startsWith('prestanda') && !x.ok)
+        : namn === 'hackig bladvändning' ? r.kontroller.some(x => x.namn.startsWith('blad: en vändning') && !x.ok) && !!(r.bladTid && r.bladTid.omkord)
+        : enGang ? r.gron && !!(r.bladTid && r.bladTid.omkord)
+        : !r.gron;
       gront = gront && rott;
-      console.log(`${rott ? 'GRÖNT' : 'RÖTT '}  negativ "${namn}", ${lage.namn}: grinden blev ${rott ? 'röd, som den ska' : 'GRÖN – fångar inte felet'}` +
+      console.log(`${rott ? 'GRÖNT' : 'RÖTT '}  negativ "${namn}", ${lage.namn}: grinden blev ` +
+        (enGang ? (rott ? 'grön efter omkörningen, som den ska' : 'INTE grön efter en omkörning') : (rott ? 'röd, som den ska' : 'GRÖN – fångar inte felet')) +
         ` (navigering ${r.navigering}, plats ${r.plats ? 'grön' : 'röd'}, JS-fel ${r.fel.length}` +
-        (r.brytTid ? `, brytningen median högst ${r.brytTid.median} ms` : '') + ')');
+        (r.brytTid ? `, brytningen median högst ${r.brytTid.median} ms` : '') +
+        (namn.startsWith('hackig bladvändning') && r.bladTid ? `, bladvändningen: ${r.bladTid.omkord ? `första ${r.bladTid.omkord.total} ms / glapp ${r.bladTid.omkord.maxGlapp} ms (rött), omkörningen ` : 'ingen omkörning, '}${r.bladTid.total} ms / glapp ${r.bladTid.maxGlapp} ms (${r.bladTid.gron ? 'grönt' : 'rött'})` : '') + ')');
       // fångas felet inte: vad som hände i stället (JS-fel och prov som inte gick igenom)
       if (!rott) { r.fel.forEach(f => console.log(`       JS-fel: ${f.split('\n').slice(0, 3).join(' ')}`));
         r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`)); }
@@ -1571,6 +1606,8 @@ async function jamforWebben(lista) {
       if (!rott) r.kontroller.forEach(x => console.log(`       ${x.ok ? '✓' : '✗'} ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
     }
   }
+  if (!NEGATIV) console.log(`\nOmkörningar av bladvändningens tidsprov: ${omkorningar.length ? omkorningar.length : 'inga'}` +
+    omkorningar.map(o => `\n       ${o}`).join(''));
   console.log(`\n${gront ? 'GRÖNT' : 'RÖTT'}: ${NEGATIV ? 'den negativa verifieringen' : 'bokmotorn och delkapitlen'}` +
     (BARA ? ` – bara ”${BARA}” (--bara); hela grinden är inte körd` : ''));
   process.exit(gront ? 0 : 1);
