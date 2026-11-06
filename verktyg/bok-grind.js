@@ -15,7 +15,8 @@
 // sin sida. Har det ett kapitel (kapitel.js) prövas omslaget: första öppningen, texterna innanför ramen och i
 // ordning, motivet under undertiteln, Home till innehållet, och bladvändningen till och från omslaget. Provboken (verktyg/provbok/) har texter och prövar dessutom det som det riktiga innehållet inte använder
 // än: en text som är "kommer", en nivå som bara en text har, hjälpmedel med adress, begrepp som länkar, en fjärde
-// nivå (djupdykning) och kraftpilarna.
+// nivå (djupdykning) och kraftpilarna. Har ett delkapitel plattformens elevbok (hjalpmedel.elevbok = en sida i mappen)
+// prövas den över http på dator och mobil (provaElevboken nedan).
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs'), path = require('path'), http = require('http'), os = require('os');
@@ -1207,6 +1208,135 @@ async function provaSidorna(lage) {
   return { kontroller: k, fel: [...new Set(fel.concat(c.undantag.map(u => 'undantag: ' + u)))], navigering: `${ok}/${k.length}`, gron: k.length > 0 && ok === k.length && !fel.length && !c.undantag.length };
 }
 
+/* ---------- Elevboken: plattformens elevbok i fliken och inifrån boken (2026-11-05) ----------
+ * Plattformens elevbok (plattform/, ur Geografibok) hämtar sina frågor med fetch (data/fragor.json), och det går inte
+ * från file:// – därför serveras Fysik/ här över http (127.0.0.1); med --webb prövas Pages. Prövas för varje
+ * delkapitel vars hjalpmedel.elevbok är en sida i mappen med en data/fragor.json:
+ *  - sidan inbäddad: frågorna ritas, numrerade 1–n i datafilens ordning, underfrågorna på egna rader, ingen banner;
+ *  - ett svar sparas under fysikens prefix (fys-elev-), inget under geografins (geo-elev-), och finns kvar efter
+ *    omladdning; exporten (Spara mitt arbete) innehåller bara fys-elev-nycklar, fast geografin har data på samma ursprung;
+ *  - fliken Elevboken på avsnittssidan visar sidan inbäddad, med svaret;
+ *  - länken i Sammanfattningen öppnar elevboken ovanpå boken, och Esc leder tillbaka till samma sida.
+ * Negativt prov (--negativ): ?prova=prefix låter sidan använda plattformens standardprefix – provet ska bli rött. */
+const ELEV_PREFIX = 'fys-elev-';
+const TYPER = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8', '.ttf': 'font/ttf', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml' };
+let httpBas = null;
+async function httpAdress() {
+  if (WEBB) return BAS;
+  if (httpBas) return httpBas;
+  const server = http.createServer((q, r) => {
+    const fil = path.join(ROT, decodeURIComponent(new URL(q.url, 'http://x').pathname));
+    if (!fil.startsWith(ROT) || !fs.existsSync(fil) || fs.statSync(fil).isDirectory()) { r.writeHead(404); return r.end(); }
+    r.writeHead(200, { 'Content-Type': TYPER[path.extname(fil).toLowerCase()] || 'application/octet-stream' });
+    fs.createReadStream(fil).pipe(r);
+  });
+  await new Promise(ok => server.listen(0, '127.0.0.1', ok));
+  server.unref();
+  return (httpBas = `http://127.0.0.1:${server.address().port}/`);
+}
+// hjalpmedel.elevbok i delkapitel.js: en sida i delkapitlets mapp, med data/fragor.json bredvid – annars null
+function elevbokSida(dk) {
+  const m = /elevbok:\s*\{\s*href:\s*'([^']+)'/.exec(fs.readFileSync(path.join(dk.mapp, 'delkapitel.js'), 'utf8'));
+  if (!m || /^[a-z]+:|^\//i.test(m[1])) return null;
+  const fil = path.join(dk.mapp, m[1].split(/[?#]/)[0]);
+  return fs.existsSync(fil) && fs.existsSync(path.join(path.dirname(fil), 'data', 'fragor.json')) ? m[1] : null;
+}
+
+async function provaElevboken(dk, lage, prova = '') {
+  const c = await chrome(), k = [], fel = [];
+  const provaK = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
+  try {
+    await c.send('Page.enable'); await c.send('Runtime.enable');
+    await c.send('Emulation.setDeviceMetricsOverride', { width: lage.B, height: lage.H, deviceScaleFactor: 1, mobile: !!lage.mobil });
+    if (lage.mobil) await c.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+    await c.send('Page.addScriptToEvaluateOnNewDocument', { source: FANGA_FEL });
+    const mapp = (await httpAdress()) + path.relative(ROT, dk.mapp).split(path.sep).join('/') + '/';
+    const sida = elevbokSida(dk), fragor = JSON.parse(fs.readFileSync(path.join(dk.mapp, 'data', 'fragor.json'), 'utf8'));
+    const antal = fragor.avsnitt.reduce((a, x) => a + x.fragor.length, 0), forstaId = fragor.avsnitt[0].fragor[0].id;
+    const ga = async url => { await c.send('Page.navigate', { url }); for (let i = 0; i < 60; i++) { await vanta(150);
+      if (await c.ev(`document.querySelectorAll('.elevbok-fraga-block').length > 0 || !!(document.body && document.body.dataset.klar)`).catch(() => false)) break; } await vanta(300); };
+    // frågorna i ett dokument (sidan själv eller en inbäddad ram)
+    const LAS = `d => { const t = [...d.querySelectorAll('.elevbok-fraga-titel')];
+      const b = d.querySelector('.hero-banner'); return { antal: t.length, nr: t.map(e => e.textContent.split('.')[0]).join(','),
+      rader: t.map(e => e.innerText.split('\\n').length), banner: !!b && getComputedStyle(b).display !== 'none' && b.getBoundingClientRect().height > 0,
+      svar: (d.querySelector('.elevbok-textarea') || {}).value || '' }; }`;
+
+    // 1. Sidan inbäddad
+    await ga(mapp + sida + '?embed=1' + prova);
+    const a = await c.ev(`(${LAS})(document)`);
+    const nr = Array.from({ length: antal }, (_, i) => i + 1).join(',');
+    const underRader = fragor.avsnitt.flatMap(x => x.fragor).map(f => f.fraga.split('\n').length);
+    provaK(`elevboken: ${antal} frågor ritas, numrerade 1–${antal}, varje del av frågetexten på en egen rad`,
+      a.antal === antal && a.nr === nr && a.rader.every((r, i) => r === underRader[i]), `${a.antal} frågor, nr ${a.nr}, rader ${a.rader.join('/')} (väntat ${underRader.join('/')})`);
+    provaK('elevboken: inbäddad (?embed=1) syns varken banner eller brödsmulor', !a.banner);
+    const text = 'Grindens provsvar ' + Date.now();
+    const spar = await c.ev(`(async () => { const ta = document.querySelector('.elevbok-textarea'); ta.value = ${JSON.stringify(text)};
+      ta.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 2600));
+      const nycklar = Object.keys(localStorage), egen = nycklar.find(n => n === '${ELEV_PREFIX}svar-' + DELKAPITEL_ID);
+      let svar = null; try { svar = JSON.parse(localStorage.getItem(egen))['${forstaId}']; } catch (e) {}
+      return { nycklar, egen, svar, dk: DELKAPITEL_ID }; })()`);
+    provaK(`elevboken: ett svar sparas under ${ELEV_PREFIX}svar-…, inget under geo-elev-`,
+      spar.svar === text && !spar.nycklar.some(n => n.startsWith('geo-elev-')), spar.nycklar.join(', '));
+    await ga(mapp + sida + '?embed=1' + prova);
+    const b = await c.ev(`(${LAS})(document)`);
+    provaK('elevboken: svaret finns kvar efter omladdning', b.svar === text, b.svar.slice(0, 40));
+    // geografin har data på samma ursprung (jb873.github.io): den ska inte komma med i fysikens export
+    const exp = await c.ev(`(async () => {
+      localStorage.setItem('geo-elev-svar-geologi', JSON.stringify({ q_prov: 'geografins svar' }));
+      let blob = null; const orig = URL.createObjectURL; URL.createObjectURL = x => { blob = x; return orig.call(URL, x); };
+      const knapp = [...document.querySelectorAll('.elevdata-knapp')][0]; if (!knapp) return null;
+      HTMLAnchorElement.prototype.click = function () {};          // ingen nedladdning i provet
+      knapp.click(); await new Promise(r => setTimeout(r, 200)); URL.createObjectURL = orig;
+      if (!blob) return null; const p = JSON.parse(await blob.text()); return Object.keys(p.data); })()`);
+    provaK(`elevboken: exporten (Spara mitt arbete) innehåller bara ${ELEV_PREFIX}nycklar, med svaret`,
+      exp && exp.length && exp.every(n => n.startsWith(ELEV_PREFIX)) && exp.includes(ELEV_PREFIX + 'svar-' + spar.dk), exp ? exp.join(', ') : 'ingen export');
+
+    // 2. Fliken Elevboken på avsnittssidan
+    await ga(mapp + 'index.html');
+    const f = await c.ev(`(async () => {
+      const v = ms => new Promise(r => setTimeout(r, ms)), flik = document.querySelector('.flik[data-flik="elevboken"]');
+      if (!flik || flik.getAttribute('aria-disabled') === 'true') return { flik: false };
+      flik.click(); let ram = null, d = null;
+      for (let i = 0; i < 60; i++) { await v(150); ram = document.querySelector('section.flik-innehall[data-flik="elevboken"]:not(.dold) iframe.flik-ram');
+        d = ram && ram.contentDocument; if (d && d.querySelectorAll('.elevbok-fraga-titel').length) break; }
+      await v(300);
+      return { flik: true, src: ram && ram.getAttribute('src'), las: d ? (${LAS})(d) : null };
+    })()`);
+    provaK('elevboken: fliken Elevboken visar elevboken inbäddad (embed=1), utan banner, med svaret', f.flik && f.src === sida + '?embed=1' &&
+      f.las && f.las.antal === antal && !f.las.banner && f.las.svar === text, f.flik ? `${f.src}, ${f.las && f.las.antal} frågor, banner ${f.las && f.las.banner}` : 'fliken är "kommer"');
+
+    // 3. Länken inifrån boken (Sammanfattningen) och tillbaka till samma sida
+    const l = await c.ev(`(async () => {
+      const v = ms => new Promise(r => setTimeout(r, ms)), $ = s => document.querySelector(s);
+      const syns = () => [...document.querySelectorAll('.scen .uppslag > .sida[data-nr]')].map(s => s.dataset.nr).join('-');
+      document.querySelector('.flik[data-flik="laes"]').click(); await v(100);
+      document.querySelector('.underdel-knapp.aktiv').click(); await v(900);
+      const n = document.querySelectorAll('.lr-sida').length; let lank = null;
+      for (let s = n; s >= 1 && !lank; s--) { Bok.gaTill(s); await v(120);
+        lank = [...document.querySelectorAll('.scen .b-lank a.lank-post')].find(a => a.textContent.trim().startsWith('Elevbok') && !a.classList.contains('kommer')); }
+      if (!lank) return { lank: false };
+      const fore = syns(); lank.click();
+      let ram = null, d = null;
+      for (let i = 0; i < 60; i++) { await v(150); ram = $('.hm-panel:not([hidden]) iframe'); d = ram && ram.contentDocument;
+        if (d && d.querySelectorAll('.elevbok-fraga-titel').length) break; }
+      const las = d ? (${LAS})(d) : null, src = ram && ram.getAttribute('src');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); await v(500);
+      return { lank: true, fore, src, las, stangd: $('.hm-panel').hidden, oppen: !$('.bokapp').hidden, efter: syns() };
+    })()`);
+    provaK('elevboken: länken i Sammanfattningen öppnar elevboken ovanpå boken (embed=1), Esc leder tillbaka till samma sida',
+      l.lank && l.src === sida + '?embed=1' && l.las && l.las.antal === antal && !l.las.banner && l.stangd && l.oppen && l.efter === l.fore,
+      l.lank ? `${l.src}, ${l.las && l.las.antal} frågor, sida ${l.fore} → ${l.efter}, panelen stängd ${l.stangd}` : 'ingen länk till Elevbok i boken');
+    await c.ev(`(async () => { const s = [...document.querySelectorAll('.bok-stang')].find(e => e.offsetParent); if (s) s.click(); })()`);
+    const ramFel = await c.ev(`[...document.querySelectorAll('iframe')].flatMap(r => { try { return r.contentWindow.__fel || []; } catch (e) { return []; } })`);
+    fel.push(...(await c.ev('window.__fel')), ...ramFel);
+  } catch (e) {
+    fel.push('grinden: ' + e.message);
+  } finally { await c.stang(); }
+  const ok = k.filter(x => x.ok).length;
+  return { kontroller: k, fel: [...new Set(fel.concat(c.undantag.map(u => 'undantag: ' + u)))], navigering: `${ok}/${k.length}`, gron: k.length > 0 && ok === k.length && !fel.length && !c.undantag.length };
+}
+
 /* ---------- Webben: visar den samma filer som disken? ----------
  * Annars prövar --webb en annan version än den på disken (Pages har inte byggt klart, eller något är inte pushat). */
 
@@ -1214,7 +1344,7 @@ async function jamforWebben(lista) {
   const filer = [path.join(ROT, 'index.html'), path.join(ROT, 'kraft_och_rorelse', 'index.html')];
   const samla = mapp => fs.readdirSync(mapp, { withFileTypes: true }).forEach(f =>
     f.isDirectory() ? samla(path.join(mapp, f.name)) : filer.push(path.join(mapp, f.name)));
-  [path.join(ROT, 'bokskal'), ...lista.map(d => d.mapp)].forEach(samla);
+  [path.join(ROT, 'bokskal'), path.join(ROT, 'plattform'), ...lista.map(d => d.mapp)].filter(m => fs.existsSync(m)).forEach(samla);
   // och kapitlens kapitel.js (kapitel: '…' i delkapitel.js), som ligger utanför delkapitlens mappar
   lista.forEach(d => { const m = /^\s*kapitel:\s*'([^']+)'/m.exec(fs.readFileSync(path.join(d.mapp, 'delkapitel.js'), 'utf8'));
     const fil = m && path.resolve(d.mapp, m[1]); if (fil && !filer.includes(fil)) filer.push(fil); });
@@ -1263,6 +1393,16 @@ async function jamforWebben(lista) {
       r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
     }
     console.log('');
+    // 2 b. Elevboken (plattformens), på dator och mobil, för delkapitel som har den
+    const medElevbok = lista.filter(d => !d.prov && elevbokSida(d));
+    for (const dk of medElevbok) for (const lage of [LAGEN[0], LAGEN[3]]) {
+      const r = await provaElevboken(dk, lage);
+      gront = gront && r.gron;
+      console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  elevboken ${dk.namn}, ${lage.namn}: ${r.navigering}, JS-fel ${r.fel.length}`);
+      r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
+      r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
+    }
+    if (medElevbok.length) console.log('');
     // 3. Varje delkapitel i varje läge
     for (const dk of lista) for (const lage of LAGEN) {
       const r = await kor(dk, lage);
@@ -1293,6 +1433,14 @@ async function jamforWebben(lista) {
       // fångas felet inte: vad som hände i stället (JS-fel och prov som inte gick igenom)
       if (!rott) { r.fel.forEach(f => console.log(`       JS-fel: ${f.split('\n').slice(0, 3).join(' ')}`));
         r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`)); }
+    }
+    // Elevbokens prefix: med plattformens standardprefix (?prova=prefix) ska provet för prefixet bli rött
+    for (const dkE of lista.filter(d => !d.prov && elevbokSida(d))) for (const lage of [LAGEN[0], LAGEN[3]]) {
+      const r = await provaElevboken(dkE, lage, '&prova=prefix');
+      const rott = r.kontroller.some(x => x.namn.startsWith('elevboken: ett svar sparas') && !x.ok);
+      gront = gront && rott;
+      console.log(`${rott ? 'GRÖNT' : 'RÖTT '}  negativ "elevbokens prefix", ${dkE.namn}, ${lage.namn}: grinden blev ${rott ? 'röd, som den ska' : 'GRÖN – fångar inte felet'}`);
+      if (!rott) r.kontroller.forEach(x => console.log(`       ${x.ok ? '✓' : '✗'} ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
     }
   }
   console.log(`\n${gront ? 'GRÖNT' : 'RÖTT'}: ${NEGATIV ? 'den negativa verifieringen' : 'bokmotorn och delkapitlen'}` +

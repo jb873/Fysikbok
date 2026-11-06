@@ -389,7 +389,7 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
 |---|---|
 | `forelasning` | fliken **Föreläsning** på delkapitlets sida |
 | `ova` | fliken **Öva**, och länken i slutet av varje text i boken |
-| `elevbok` | fliken **Elevboken** |
+| `elevbok` | fliken **Elevboken**, och länken i Sammanfattningen i boken (se *Elevboken*) |
 | `sjalvskattning` | länken i slutet av varje text i boken (resurskortet hör till kapitlets index) |
 | `begreppslista` | varje `*begrepp*` i boken (resurskortet Begreppsbank hör till kapitlets index) |
 
@@ -410,7 +410,8 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
 - **Begrepp → begreppslistan:** när `begreppslista` har en adress blir varje `*begrepp*` i texten en länk dit, med en
   tunn prickad linje under. Böjda former skrivs `*atomer|atom*`.
 - **I slutet av texten → öva/självskattning:** blocket `{ typ: 'lank', till: ['ova', 'sjalvskattning'] }` sist
-  i det sista numrerade avsnittet och i Sammanfattningen (inte sist i varje avsnitt).
+  i det sista numrerade avsnittet och i Sammanfattningen (inte sist i varje avsnitt). I Sammanfattningen även
+  `'elevbok'` (2026-11-05).
   - Det står i sidans fot, som en tyst rad under en tunn linje.
   - Det står där redan innan hjälpmedlet finns, så att sidan rymmer det.
   - Kontrolläget varnar om det sista numrerade avsnittet saknar länken.
@@ -418,6 +419,57 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
   och helskärmen. Där finns också *Öppna i egen flik ↗* och *Tillbaka till boken* (eller Esc).
 - **Ett nytt hjälpmedel** utöver de fem läggs till i `hjalpmedel` med ett eget namn: `{ namn: '…', href: '…' }`.
   Det kan länkas inifrån boken med `lank`. Flikraden är plattformens och ändras inte.
+
+## Elevboken
+
+Elevboken är **plattformens** hjälpmedel. Koden är kopierad ordagrant från Geografibok, på samma sätt som varje
+ämnesrepo har sin kopia. Fysiken bidrar bara med frågorna och en sida som laddar plattformens moduler. Joachims
+beslut 2026-11-05.
+
+- **Varifrån:** `jb873/Geografibok`, commit `cd9251da18467e2732e7396a9e54001515249b73` (2026-11-05).
+  - `plattform/js/`: `elevbok.js` (datalagret: svar, autospar, versionshistorik, synk mellan flikar),
+    `avsnitt-elevbok.js` (ritar frågorna ur `data/fragor.json`), `avsnitt.js` (`autoExpandTextarea`),
+    `elevdata-overforing.js` (Spara mitt arbete / Ladda från fil) och `egna-fragor.js` (elevens egna frågor).
+  - `plattform/css/elevbok.css`: reglerna ordagrant ur `css/geografi.css` och `css/flipcards.css`. Radnumren står
+    överst i filen. Geografins variabelnamn pekar där på fysikens färger. Sist finns fysikens tillägg:
+    radbrytningar i frågetexten, hovringsfärgerna och det inbäddade läget.
+- **Ändringar görs i plattformen först** (Geografibok) och kopieras sedan hit. Modulerna ändras inte här.
+- **Prefixet är en parameter.** Sidan sätter `window.ELEVBOK_PREFIX = 'fys-elev-'` före modulerna. Utan parametern
+  gäller plattformens standard `geo-elev-`, så geografin är oförändrad om modulerna förs tillbaka dit.
+  - Fysikens svar ligger under `fys-elev-svar-<delkapitel>`. De blandas alltså inte in i geografins export, fast
+    båda böckerna har samma ursprung (jb873.github.io).
+  - Exporten tar bara med fysikens nycklar: `fys-elev-…`, och läsnivån `fys-niva-…`, som inte används.
+  - **De ändrade raderna** i plattformens moduler. Det är allt som skiljer från Geografibok:
+
+    | Modul | Ändring |
+    |---|---|
+    | `elevbok.js` | rad 18: `var PREFIX = window.ELEVBOK_PREFIX \|\| 'geo-elev-';` |
+    | `avsnitt-elevbok.js` | rad 149: `(window.ELEVBOK_PREFIX \|\| 'geo-elev-') + 'svar-' + DELKAPITEL_ID` |
+    | `egna-fragor.js` | rad 15: `(window.ELEVBOK_PREFIX \|\| 'geo-elev-') + 'egna-fragor-'` |
+    | `elevdata-overforing.js` | en ny rad 28 (`ELEV` = prefixet, `NIVA` = samma med `niva-`); rad 41–42, 50–54 och 74–77 läser `ELEV`/`NIVA` i stället för de utskrivna `'geo-elev-'`/`'geo-niva-'` |
+    | `avsnitt.js` | oförändrad |
+- **Per avsnittssida:** `elevbok.html` och `data/fragor.json` i delkapitlets mapp, och
+  `hjalpmedel.elevbok = { href: 'elevbok.html' }` i `delkapitel.js`.
+  - `elevbok.html` har bannern och brödsmulorna.
+  - Med `?embed=1` (fliken och länken inifrån boken) sätter sidan klassen `inbaddad`, och då visas bara frågorna.
+- **Frågorna** följer plattformens schema: `id`, `typ`, `fraga`.
+  - Det blir en svarsruta per huvudfråga.
+  - Underfrågorna, "Använd begreppen" och "Läs i" står i frågetexten, med radbrytning mellan delarna. "Läs i"
+    pekar på Standard.
+  - Id:na (`q_iii_01` …) byts aldrig, eftersom elevernas svar sparas under dem.
+- **Inifrån boken:** länkblocket i Sammanfattningen (III A–D, alla nivåer utom djupdykningen) är
+  `['ova', 'sjalvskattning', 'elevbok']`. Elevboken öppnas då ovanpå boken, och Esc leder tillbaka till samma sida.
+  Det finns ingen koppling från avsnitt till fråga än.
+- **Inte från disken:** plattformens elevbok hämtar frågorna med `fetch`, och det fungerar inte från `file://`. På
+  Pages fungerar det. Lokalt behövs en http-server, och grinden startar en egen.
+- **Grinden** provar elevboken över http, på dator och mobil:
+  - frågorna 1–10, med en rad per del;
+  - ingen banner när sidan är inbäddad;
+  - att svaret sparas under `fys-elev-` och finns kvar efter omladdning;
+  - att exporten bara har `fys-elev-`-nycklar, fast geografin har data på samma ursprung;
+  - fliken, och länken inifrån boken med vägen tillbaka.
+
+  Med `--negativ` provas fel prefix (`?prova=prefix`), och då ska grinden bli röd.
 
 ## Kontrollera
 
@@ -816,3 +868,7 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
       sidan inte (65–91 px för hög), och motorn delar aldrig ett block. Texten är oförändrad.
   - **RAM.md:** regeln "Fördjupning förutsätter Standard" och raden om medelfart ersätter "Enkel och Fördjupning ur
     samma kärna".
+- **2026-11-05, Elevboken för III. Rörelse och kraft:** plattformens elevbok, ordagrant ur Geografibok
+  (`cd9251d`), med fysikens frågor ur `Elevboken-III-Rorelse-och-kraft-v2.md`. Det står mer under *Elevboken*.
+  - Prefixet `fys-elev-` är en parameter. Standardvärdet `geo-elev-` är oförändrat.
+  - Länkblocket i Sammanfattningen i III A–D har fått `'elevbok'`.

@@ -84,7 +84,7 @@ Bok.niva('standard', {
           '*Tröghetslagen*: ett föremål förblir i vila eller fortsätter i samma fart och riktning om ingen kraft ändrar det.',
           'En kraft behövs för att ändra en rörelse, inte för att hålla den igång.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

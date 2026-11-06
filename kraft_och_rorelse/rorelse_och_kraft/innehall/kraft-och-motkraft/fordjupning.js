@@ -85,7 +85,7 @@ Bok.niva('fordjupning', {
           'Lika stora krafter ger olika rörelser om massorna är olika.',
           'I en dragkamp avgör friktionen mot marken, inte vem som drar hårdast.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

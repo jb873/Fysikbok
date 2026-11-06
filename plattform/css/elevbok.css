@@ -1,0 +1,588 @@
+/* Plattformens elevbok – stilarna ORDAGRANT ur Geografibok (jb873/Geografibok, commit cd9251d, 2026-11-05):
+ *   css/geografi.css rad 865–1138 (elevbokens frågor, sparstatus, historikmodalen), 1270–1288 (svarsrutan i egna
+ *   frågor), 1584–1592 (sparstatus i egna frågor), 2230–2376 (egna frågor), 2613–2673 (export/import) och
+ *   css/flipcards.css rad 82–104 (knapparna i export/import).
+ * Ändra dem i plattformen först (Geografibok) och kopiera sedan hit. Fysikens färger kommer genom variablerna nedan:
+ * geografins namn pekar på fysikens (bokskal/bok.css), så att reglerna kan stå oförändrade. Sist fysikens tillägg. */
+
+/* ---------- Geografins variabelnamn → fysikens färger och typsnitt ---------- */
+:root {
+  --paper: var(--papper);
+  --paper-light: var(--papper-ljus);
+  --ink: var(--black);
+  --ocean: var(--accent);            /* geografins primära accent → fysikens indigo */
+  --brass: var(--accent-2);          /* mässing → fysikens guld */
+  --brass-text: var(--accent-2-mork);
+  --muted: var(--dampad);
+  --blood: #6e2e1e;                  /* plattformens varningsfärg (geografi.css), oförändrad */
+  --font-heading: var(--rubrik);
+  --font-body: var(--text);
+}
+
+/* ========== Ur geografi.css rad 865–1138 ========== */
+/* ---------- Elevbok-fråga (Elevboken-fliken) ---------- */
+
+.elevbok-fraga-block {
+  margin-bottom: 2.25rem;
+  scroll-margin-top: 1.5rem;
+}
+
+.elevbok-fraga {
+  font-family: var(--font-heading);
+  color: var(--ink);
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  margin: 0 0 0.85rem;
+}
+
+.elevbok-fraga-titel {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 16px;
+  letter-spacing: 0;
+  /* ingen text-transform – behåll naturlig kapitalisering */
+}
+
+/* Omslag så historik-ikonen kan placeras i textarutans hörn */
+.elevbok-textarea-wrapper {
+  position: relative;
+}
+
+/* Fördjupningsseparator i Elevboken-fliken */
+.fordjupning-separator {
+  margin: 48px auto 24px auto;
+  text-align: center;
+  max-width: 200px;
+}
+.fordjupning-linje {
+  border: none;
+  border-top: 1px solid rgba(27, 42, 54, 0.2);
+  margin: 0 0 16px 0;
+}
+.fordjupning-label {
+  font-family: 'Marcellus SC', serif;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--brass-text);
+}
+
+/* Laddningsindikator / felmeddelande för dynamiska frågor */
+.laddar-fel {
+  text-align: center;
+  font-style: italic;
+  color: var(--blood);
+}
+
+.elevbok-textarea {
+  width: 100%;
+  /* min-height som utgångspunkt när rutan är tom; höjden växer sedan
+     med innehållet via auto-expand (avsnitt.js). */
+  min-height: 150px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink);
+  background-color: var(--paper-light);
+  border: 1px solid rgba(27, 42, 54, 0.18);
+  border-radius: 3px;
+  padding: 0.85rem 1rem;
+  /* utrymme uppe till höger för historik-ikonen */
+  padding-right: 2.75rem;
+  /* ingen intern scroll + ingen manuell resize – höjden styrs av JS */
+  overflow: hidden;
+  resize: none;
+}
+
+.elevbok-textarea:focus {
+  outline: none;
+  border-color: var(--brass-text);
+}
+
+/* Historik-ikon: uppe till höger i textarutan */
+.historik-ikon {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ink);
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.historik-ikon:hover {
+  opacity: 0.8;
+}
+
+.historik-ikon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Sparstatus: under textarean, högerjusterad */
+.sparstatus {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 13px;
+  padding-top: 4px;
+  text-align: right;
+  min-height: 1.2em; /* hoppar inte när texten dyker upp/försvinner */
+}
+
+/* ============================================================
+   Modal (historik m.m.)
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(27, 42, 54, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-overlay.dold {
+  display: none;
+}
+
+.modal {
+  max-width: 700px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: var(--paper-light);
+  border: 1px solid rgba(27, 42, 54, 0.25);
+  border-radius: 4px;
+  box-shadow: 0 12px 36px rgba(27, 42, 54, 0.3);
+  padding: 32px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-titel {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.modal-stang {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.modal-stang:hover {
+  color: var(--ink);
+}
+
+/* ---------- Historik-lista ---------- */
+
+.modal-historik-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.modal-tom {
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.historik-rad {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background-color: var(--paper-light);
+  border: 1px solid rgba(27, 42, 54, 0.15);
+  border-radius: 3px;
+  padding: 12px 16px;
+  transition: background-color 0.15s ease;
+}
+
+.historik-rad:hover {
+  background-color: #faf4e4;
+}
+
+.historik-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.historik-tid {
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.historik-ord {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.historik-knappar {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.historik-knapp {
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  background-color: transparent;
+  border: 1px solid rgba(27, 42, 54, 0.25);
+  border-radius: 3px;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.historik-knapp:hover {
+  background-color: rgba(184, 144, 42, 0.15);
+}
+
+.historik-knapp.aterstall:hover {
+  background-color: var(--brass-text);
+  color: var(--paper);
+  border-color: var(--brass-text);
+}
+
+/* ---------- Förhandsgranskning ---------- */
+
+.modal-preview {
+  background-color: rgba(27, 42, 54, 0.06);
+  border-left: 3px solid var(--brass);
+  border-radius: 0 3px 3px 0;
+  padding: 0.85rem 1rem;
+  margin: 0.1rem 0 0.4rem;
+  font-style: italic;
+  color: var(--ink);
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+/* ========== Ur geografi.css rad 1270–1288 ========== */
+
+.begrepp-textarea {
+  width: 100%;
+  min-height: 100px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink);
+  background-color: var(--paper);
+  border: 1px solid rgba(27, 42, 54, 0.18);
+  border-radius: 3px;
+  padding: 0.75rem 0.9rem;
+  overflow: hidden;
+  resize: none;
+}
+
+.begrepp-textarea:focus {
+  outline: none;
+  border-color: var(--brass-text);
+}
+
+/* ========== Ur geografi.css rad 1584–1592 ========== */
+
+.elevbok-sparstatus {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+  min-height: 1.1em;
+  margin-top: 0.3rem;
+}
+
+/* ========== Ur geografi.css rad 2230–2376 ========== */
+
+/* ============================================================
+   Egna frågor
+   ============================================================ */
+
+/* Separator + label (samma stil som fördjupningsseparatorn) */
+.egna-fragor-separator {
+  margin: 48px auto 24px auto;
+  text-align: center;
+  max-width: 240px;
+}
+
+.egna-fragor-label {
+  font-family: 'Marcellus SC', serif;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--brass-text);
+}
+
+/* Frågekort (som vanligt frågekort men med penn-ikon i hörnet) */
+.egen-fraga-kort {
+  position: relative;
+  background-color: var(--paper-light);
+  border: 1px solid rgba(27, 42, 54, 0.15);
+  border-radius: 3px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+
+.egen-fraga-ikon {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--brass-text);
+}
+
+.egen-fraga-titel-omrade {
+  margin: 0 1.75rem 0.7rem 0;
+}
+
+.egen-fraga-titel {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.egen-fraga-input {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.5rem 0.7rem;
+  background-color: var(--paper);
+  border: 1px solid rgba(27, 42, 54, 0.2);
+  border-radius: 3px;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.egen-fraga-input:focus {
+  outline: none;
+  border-color: var(--brass-text);
+}
+
+/* Länkrad: Redigera / Ta bort (diskreta knappar) */
+.egen-fraga-lankar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.egen-fraga-redigera-knapp,
+.egen-fraga-ta-bort-knapp {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.egen-fraga-redigera-knapp:hover,
+.egen-fraga-ta-bort-knapp:hover {
+  color: var(--brass-text);
+}
+
+/* Spara/Avbryt i frågeredigering och nytt-fråga-formulär */
+.egen-fraga-spara,
+.egen-fraga-avbryt {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  border-radius: 3px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+}
+
+.egen-fraga-spara {
+  color: var(--paper);
+  background-color: var(--brass-text);
+  border: 1px solid var(--brass);
+}
+
+.egen-fraga-avbryt {
+  color: var(--ink);
+  background-color: transparent;
+  border: 1px solid rgba(27, 42, 54, 0.25);
+}
+
+/* "+ Lägg till egen fråga"-knapp (centrerad) */
+.lagg-till-omrade {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.lagg-till-fraga-knapp {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  background-color: var(--brass-text);
+  border: 1px solid var(--brass);
+  border-radius: 3px;
+  padding: 0.5rem 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.lagg-till-fraga-knapp:hover {
+  background-color: #a37f24;
+}
+
+/* Kompakt nytt-fråga-formulär */
+.lagg-till-fraga-formular {
+  text-align: left;
+  background-color: var(--paper-light);
+  border: 1px solid rgba(27, 42, 54, 0.15);
+  border-radius: 3px;
+  padding: 16px 18px;
+}
+
+/* ========== Ur geografi.css rad 2613–2673 ========== */
+
+/* ============================================================
+   Export/Import av elevdata (js/elevdata-overforing.js)
+   ============================================================ */
+.elevdata-knappar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 0 1.25rem;
+}
+.elevdata-knapp {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  background-color: var(--paper-light);
+  border: 1px solid var(--brass);
+  border-radius: 4px;
+  color: var(--ink);
+  padding: 0.5rem 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.elevdata-knapp:hover { background-color: #faf4e4; }
+
+.elevdata-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(27, 42, 54, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  z-index: 1000;
+}
+.elevdata-panel {
+  background-color: var(--paper);
+  border: 1px solid var(--brass);
+  border-radius: 6px;
+  max-width: 30rem;
+  width: 100%;
+  padding: 1.5rem 1.6rem;
+  box-shadow: 0 8px 30px rgba(27, 42, 54, 0.35);
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+.elevdata-rubrik {
+  font-family: var(--font-heading);
+  color: var(--ocean);
+  margin: 0 0 0.7rem;
+}
+.elevdata-sammanfattning { font-weight: 600; }
+.elevdata-varning {
+  color: var(--blood);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+.elevdata-knapprad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+/* ========== Ur flipcards.css rad 82–104 ========== */
+
+.flip-borja-knapp,
+.flip-knapp {
+  min-height: 44px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  background-color: var(--ocean);
+  border: 1px solid var(--ocean);
+  border-radius: 3px;
+  padding: 0.6rem 1.3rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.flip-borja-knapp:hover,
+.flip-knapp:hover { background-color: #17485f; }
+
+.flip-knapp.sekundar {
+  color: var(--ink);
+  background-color: transparent;
+  border-color: rgba(27, 42, 54, 0.3);
+}
+.flip-knapp.sekundar:hover { background-color: var(--paper-light); }
+
+/* ========== Fysikens tillägg (inte plattformens) ========== */
+
+/* Frågetexten har radbrytningar mellan rubriken, underfrågorna, "Använd begreppen" och "Läs i" (data/fragor.json);
+   ritningen sätter texten som text, så radbrytningarna visas med pre-line. */
+.elevbok-fraga-titel { white-space: pre-line; }
+/* Hovringsfärgerna är skrivna som färgvärden i plattformen (geografins blå och mässing): här fysikens */
+.flip-borja-knapp:hover,
+.flip-knapp:hover { background-color: #3a2352; }
+.lagg-till-fraga-knapp:hover { background-color: #5b4518; }
+.historik-knapp:hover { background-color: rgba(160, 125, 47, 0.15); }
+/* Elevbokens sida: läsbredd som avsnittssidans text */
+main.sida.elevbok-sida { max-width: 820px; }
+.laddar-fragor { font-style: italic; color: var(--dampad); }
+/* Inbäddad (?embed=1: fliken på avsnittssidan och länken inifrån boken) – bara frågorna (elevbok.html sätter klassen) */
+html.inbaddad .hero-banner, html.inbaddad .footnote { display: none; }
+html.inbaddad main.sida { padding: 1.25rem 1rem 2rem; }
+html.inbaddad body { background-image: none; }

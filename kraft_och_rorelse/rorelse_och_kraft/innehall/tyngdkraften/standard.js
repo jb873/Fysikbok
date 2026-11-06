@@ -134,7 +134,7 @@ Bok.niva('standard', {
           '*Massa* är hur mycket materia något innehåller (kg). *Tyngd* är hur hårt jorden drar i det (N).',
           'På månen är massan densamma men tyngden en sjättedel. Friktionen blir mindre, men trögheten är densamma.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

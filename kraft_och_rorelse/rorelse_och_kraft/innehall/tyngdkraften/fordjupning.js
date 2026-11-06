@@ -111,7 +111,7 @@ Bok.niva('fordjupning', {
           'En balansvåg mäter massa och visar rätt överallt, en badrumsvåg mäter kraft.',
           'Tung och trög massa är lika stora, därför faller tunga och lätta föremål lika fort utan luft.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

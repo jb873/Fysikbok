@@ -96,7 +96,7 @@ Bok.niva('enkel', {
           'Byt plats på orden i meningen, så hittar du motkraften.',
           'Vi kan gå, skridskoåkare glider isär och raketer lyfter – tack vare kraft och motkraft.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

@@ -78,7 +78,7 @@ Bok.niva('fordjupning', {
           'Friktionen beror på *normalkraften|normalkraft*, inte på hur stor yta som ligger an. *Rullfriktion* är mycket mindre än glidfriktion.',
           '*Luftmotståndet|luftmotstånd* växer med farten, och därför finns en högsta fart.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

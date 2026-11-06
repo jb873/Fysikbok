@@ -82,7 +82,7 @@ Bok.niva('fordjupning', {
           'Farten räknas ut som v = s/t. 1 m/s = 3,6 km/h.',
           '*Medelfarten* räknas ut med hela sträckan och hela tiden – inte som medelvärdet av farterna.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

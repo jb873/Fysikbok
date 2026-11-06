@@ -95,7 +95,7 @@ Bok.niva('enkel', {
           '*Tröghetslagen*: det som ligger stilla fortsätter att ligga stilla, och det som rör sig fortsätter i samma fart och riktning – om ingen kraft ändrar det.',
           'En kraft behövs för att ändra en rörelse, inte för att den ska fortsätta.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

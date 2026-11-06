@@ -165,7 +165,7 @@ Bok.niva('enkel', {
           '*Massa* är hur mycket materia något innehåller (kg). *Tyngd* är hur hårt jorden drar i det (N).',
           'På månen är massan densamma men tyngden mycket mindre. Friktionen blir mindre, men blocket är lika trögt.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

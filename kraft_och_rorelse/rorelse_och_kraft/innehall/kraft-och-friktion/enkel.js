@@ -112,7 +112,7 @@ Bok.niva('enkel', {
           '*Friktion* är kraften som bromsar när två ytor gnids mot varandra. Den växer med ditt drag, upp till en gräns.',
           'Friktion kan vara i vägen, men utan friktion kan vi varken gå eller bromsa.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

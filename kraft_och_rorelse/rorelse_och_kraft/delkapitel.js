@@ -29,14 +29,15 @@ Bok.delkapitel({
     { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }, { id: 'djupdykning', namn: 'Djupdykning' }
   ],
 
-  // Plattformens hjälpmedel. Föreläsning, Öva och Elevboken är flikarna på delkapitlets sida; Öva, Självskattning och
-  // Begreppslista länkas också inifrån boken. Fysikens finns inte än: utan adress är de synliga, märkta "kommer" och
-  // inte klickbara. {begrepp}, {avsnitt} och {niva} i adressen fylls i där länken står.
+  // Plattformens hjälpmedel. Föreläsning, Öva och Elevboken är flikarna på delkapitlets sida; Öva, Självskattning,
+  // Begreppslista och Elevboken länkas också inifrån boken. Utan adress är de synliga, märkta "kommer" och inte
+  // klickbara. {begrepp}, {avsnitt} och {niva} i adressen fylls i där länken står.
+  // Elevboken (2026-11-05): plattformens elevbok med fysikens frågor (elevbok.html, data/fragor.json).
   hjalpmedel: {
     forelasning:    { href: null },
     ova:            { href: null },
     sjalvskattning: { href: null },
     begreppslista:  { href: null },
-    elevbok:        { href: null }
+    elevbok:        { href: 'elevbok.html' }
   }
 });

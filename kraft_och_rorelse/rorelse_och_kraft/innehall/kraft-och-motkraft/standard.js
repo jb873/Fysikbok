@@ -95,7 +95,7 @@ Bok.niva('standard', {
           'Fråga dig alltid: vilket föremål verkar kraften på? Byt plats på föremålen i meningen, så hittar du motkraften.',
           'Vi går, skridskoåkare glider isär och raketer lyfter tack vare kraft och motkraft.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]

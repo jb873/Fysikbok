@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="sv">
+<!-- Elevboken för Avsnitt III. Rörelse och kraft: plattformens elevbok (plattform/, ordagrant ur Geografibok – se
+     README, "Elevboken") med fysikens frågor i data/fragor.json. Fliken Elevboken på avsnittssidan och länken inifrån
+     boken öppnar sidan inbäddad (?embed=1): då visas bara frågorna. Fysikens svar sparas under prefixet fys-elev-. -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Elevboken – Rörelse och kraft</title>
+<script>
+  // Inbäddad (fliken och länken inifrån boken): bara frågorna – klassen sätts innan sidan ritas
+  if (/[?&]embed=1(&|$)/.test(location.search)) document.documentElement.classList.add('inbaddad');
+</script>
+<link rel="stylesheet" href="../../bokskal/bok.css">
+<link rel="stylesheet" href="../../plattform/css/elevbok.css">
+</head>
+<body>
+<header class="hero-banner">
+  <div class="hero-inner">
+    <nav class="brodsmulor" aria-label="Brödsmulor">
+      <a href="../../index.html">Fysik</a><span class="skiljare" aria-hidden="true">›</span>
+      <a href="../index.html">Kraft och rörelse</a><span class="skiljare" aria-hidden="true">›</span>
+      <a href="index.html"><span class="nr">3</span>. Rörelse och kraft</a><span class="skiljare" aria-hidden="true">›</span>
+      <span class="aktuell" aria-current="page">Elevboken</span>
+    </nav>
+    <span class="avsnitt-label">Avsnitt III</span>
+    <h1>Elevboken</h1>
+    <p class="subtitel">— Rörelse och kraft —</p>
+  </div>
+</header>
+<main class="sida elevbok-sida">
+  <div id="elevdata-verktyg"></div>
+  <div class="elevbok-fragor">
+    <p class="laddar-fragor">Laddar frågor …</p>
+  </div>
+  <p class="footnote">© 2026 Joachim Björkman</p>
+</main>
+<script>
+  // Plattformens parametrar. Fysikens prefix (fys-elev-), så att svaren inte blandas med geografins på samma
+  // ursprung (jb873.github.io). ?prova=prefix är grindens negativa prov: då används plattformens standard.
+  window.ELEVBOK_PREFIX = /[?&]prova=prefix(&|$)/.test(location.search) ? 'geo-elev-' : 'fys-elev-';
+  const AVSNITT_ID = 'a3_rorelse_och_kraft';
+  const DELKAPITEL_ID = 'fysik-rorelse-och-kraft';
+</script>
+<script src="../../plattform/js/elevbok.js"></script>
+<script src="../../plattform/js/avsnitt.js"></script>
+<script src="../../plattform/js/egna-fragor.js" defer></script>
+<script src="../../plattform/js/avsnitt-elevbok.js" defer></script>
+<script src="../../plattform/js/elevdata-overforing.js" defer></script>
+<script>
+  // Spara mitt arbete / Ladda från fil: bara fysikens nycklar för det här avsnittet
+  addEventListener('DOMContentLoaded', () => ElevdataOverforing.montera(document.getElementById('elevdata-verktyg'),
+    { scope: 'kapitel', scopeId: DELKAPITEL_ID, amne: 'fysik' }));
+</script>
+</body>
+</html>

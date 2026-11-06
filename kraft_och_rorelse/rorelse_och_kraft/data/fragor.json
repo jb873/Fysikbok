@@ -1,0 +1,63 @@
+{
+  "delkapitel": "fysik-rorelse-och-kraft",
+  "_kommentar": "Elevboken för Avsnitt III. Rörelse och kraft, ordagrant ur Elevboken-III-Rorelse-och-kraft-v2.md (Joachim, 2026-11-05). En svarsruta per huvudfråga: underfrågorna, \"Använd begreppen\" och \"Läs i\" står i frågetexten, med radbrytning mellan delarna. q-id:na är stabila och byts aldrig.",
+  "avsnitt": [
+    {
+      "id": "a3_rorelse_och_kraft",
+      "nummer": 3,
+      "titel": "Rörelse och kraft",
+      "fragor": [
+        {
+          "id": "q_iii_01",
+          "typ": "grund",
+          "fraga": "Redogör för olika sorters rörelse: likformig, olikformig, accelererande och retarderad rörelse\na. Likformig rörelse\nb. Olikformig rörelse\nc. Accelererande rörelse\nd. Retarderad rörelse\nAnvänd begreppen: prickmodell, lika lång tid, avstånd, fart, likformig, olikformig, accelerera, retardera\nLäs i: A Rörelse – Rörelsen syns i prickarna"
+        },
+        {
+          "id": "q_iii_02",
+          "typ": "grund",
+          "fraga": "Förklara begreppet medelfart och redogör för hur man räknar ut den\nAnvänd begreppen: olikformig rörelse, medelfart, hela sträckan, hela tiden, km/h\nLäs i: A Rörelse – Rörelsen syns i prickarna"
+        },
+        {
+          "id": "q_iii_03",
+          "typ": "grund",
+          "fraga": "Redogör för tröghetslagen (Newtons första lag)\nAnvänd begreppen: tröghet, kraft, fart, riktning, fortsätter\nLäs i: A Rörelse – Tröghetslagen"
+        },
+        {
+          "id": "q_iii_04",
+          "typ": "grund",
+          "fraga": "Redogör för vad en kraft är och hur den ritas\nAnvänd begreppen: kraft, knuff, drag, kraftpil, riktning, storlek, newton\nLäs i: B Kraft och friktion – Kraft och kraftpilar"
+        },
+        {
+          "id": "q_iii_05",
+          "typ": "grund",
+          "fraga": "Redogör för krafterna när du drar ett block över ett bord\nAnvänd dragkraft, bromsande kraft (friktion) och jämvikt. Förklara vilket föremål varje kraft verkar på.\na. Förklara med krafter och acceleration hur du får ett block att börja röra på sig.\nb. Förklara med krafter hur det blir en likformig rörelse.\nc. Förklara med krafter hur en rörelse börjar retardera och sedan upphör.\nAnvänd begreppen: dragkraft, friktion, jämvikt, tar ut varandra, större än, accelerera, likformig, retardera\nLäs i: B Kraft och friktion – Krafterna avgör rörelsen"
+        },
+        {
+          "id": "q_iii_06",
+          "typ": "grund",
+          "fraga": "Redogör för friktion\na. Vad är friktion och varför uppstår den\nb. Förklara vad som händer med friktionen när du drar hårdare och hårdare i blocket, och när blocket börjar glida\nc. Redogör för friktion i vardagen – när vi vill ha mer och när vi vill ha mindre.\nAnvänd begreppen: friktion, ytor, ojämnheter, gräns, glida, kullager, smörjning, grepp\nLäs i: B Kraft och friktion – Friktion"
+        },
+        {
+          "id": "q_iii_07",
+          "typ": "grund",
+          "fraga": "Redogör för kraft och motkraft. Förklara skillnaden mellan motkraft och bromsande kraft\nAnvänd begreppen: kraft, motkraft, kraftpar, olika föremål, lika stora, motsatt riktning, friktion\nLäs i: C Kraft och motkraft – Kraft och motkraft · Motkraft eller jämvikt?"
+        },
+        {
+          "id": "q_iii_08",
+          "typ": "grund",
+          "fraga": "Redogör för jordens dragningskraft och normalkraften\nFörklara varför tyngdkraften och normalkraften inte är kraft och motkraft.\nAnvänd begreppen: tyngdkraft, jordens mitt, normalkraft, jämvikt, samma föremål, motkraft\nLäs i: D Tyngdkraften – Tyngdkraften och normalkraften"
+        },
+        {
+          "id": "q_iii_09",
+          "typ": "grund",
+          "fraga": "Redogör för hur vi mäter krafter\nAnvänd begreppen: newton, dynamometer, fjäder, skala\nLäs i: D Tyngdkraften – Att mäta kraft"
+        },
+        {
+          "id": "q_iii_10",
+          "typ": "grund",
+          "fraga": "Redogör för begreppen massa och tyngd. Använd jorden och månen som exempel\nFörklara varför friktionen blir mindre på månen men trögheten är densamma.\nAnvänd begreppen: massa, kilogram, tyngd, newton, 1 kg ≈ 10 N, månen, en sjättedel, friktion, tröghet\nLäs i: D Tyngdkraften – Massa och tyngd"
+        }
+      ]
+    }
+  ]
+}

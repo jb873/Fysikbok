@@ -120,7 +120,7 @@ Bok.niva('standard', {
           '*Friktion* bromsar när ytor gnids mot varandra. Den växer med draget upp till en gräns, och den beror på ytorna och hur hårt de trycks mot varandra.',
           'Friktion kan vara ett hinder, men utan den kan vi varken gå eller bromsa.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
       ]
     }
   ]
