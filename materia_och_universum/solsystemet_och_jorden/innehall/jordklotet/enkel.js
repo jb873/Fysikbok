@@ -2,6 +2,8 @@
  * Kap1-Avsnitt1-C-Jordklotet-Enkel-Fordjupning.md (📗 ENKEL), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III.
  */
 Bok.niva('enkel', {
   avsnitt: [
@@ -9,7 +11,12 @@ Bok.niva('enkel', {
       id: 'inledning', titel: 'Inledning', numrerad: false,
       block: [
         { typ: 'rubrik', text: 'Jordklotet' },
-        { typ: 'text', text: 'Jorden är vårt hem. Men jorden är också en planet, en av åtta som går runt solen. När du står på marken känns jorden platt och stilla. Från rymden ser man ett runt klot som hela tiden rör sig. I den här texten får du veta mer om jordens form och rörelser, och om varför det finns liv här.' }
+        { typ: 'text', text: 'Jorden är vårt hem. Men jorden är också en planet, en av åtta som går runt solen. När du står på marken känns jorden platt och stilla. Från rymden ser man ett runt klot som hela tiden rör sig. I den här texten får du veta mer om jordens form och rörelser, och om varför det finns liv här.' },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
+        ] }
       ]
     },
     {
@@ -62,6 +69,7 @@ Bok.niva('enkel', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Jorden är den tredje planeten från solen. Den är nästan rund.',
           'Jorden ser platt ut för att den är så stor och vi bara ser en liten bit.',

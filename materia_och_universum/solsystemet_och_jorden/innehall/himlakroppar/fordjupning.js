@@ -2,6 +2,8 @@
  * Kap1-Avsnitt1-B-Himlakroppar-Enkel-Fordjupning.md (📕 FÖRDJUPNING), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III.
  */
 Bok.niva('fordjupning', {
   avsnitt: [
@@ -16,6 +18,11 @@ Bok.niva('fordjupning', {
           'de tre villkoren för att något ska vara en planet',
           'hur exoplaneter upptäcks',
           'var kometerna kommer ifrån, och varför meteorregn kommer samma tid varje år'
+        ] },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
         ] }
       ]
     },
@@ -52,6 +59,7 @@ Bok.niva('fordjupning', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'En stjärnas färg visar yttemperaturen: blåvita är hetast, röda svalast.',
           'En planet går runt solen, är klotformad och har rensat sitt banområde.',

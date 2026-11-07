@@ -2,15 +2,23 @@
  * Kap1-Avsnitt1-Standard-A-D-redigerad.md (# Text C), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III; Inledningens rubrik som i Enkel.
  * Begreppen (*ord*) är markerade som i Enkel och Fördjupning för samma text, första gången de står i den här texten
- * (arbetsorder 9; listan i rapporten, Joachim stryker): jordglob, gravitationen (gravitation), jordaxeln (jordaxel), roterar, atmosfär, växthusgaser.
+ * (arbetsorder 9; listan i rapporten, Joachim stryker): jordglob, gravitationen (gravitation), jordaxeln (jordaxel), atmosfär, växthusgaser.
  */
 Bok.niva('standard', {
   avsnitt: [
     {
       id: 'inledning', titel: 'Inledning', numrerad: false,
       block: [
-        { typ: 'text', text: 'Jorden är vårt hem i universum, men den är också en planet bland många andra. Från marken kan jorden kännas platt och stillastående, men från rymden ser vi ett nästan klotformat föremål som hela tiden rör sig. Genom att studera jordens form, rörelser och förhållanden kan vi förstå varför vår planet fungerar som den gör.' }
+        { typ: 'rubrik', text: 'Jordklotet' },
+        { typ: 'text', text: 'Jorden är vårt hem i universum, men den är också en planet bland många andra. Från marken kan jorden kännas platt och stillastående, men från rymden ser vi ett nästan klotformat föremål som hela tiden rör sig. Genom att studera jordens form, rörelser och förhållanden kan vi förstå varför vår planet fungerar som den gör.' },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
+        ] }
       ]
     },
     {
@@ -52,12 +60,15 @@ Bok.niva('standard', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Jorden är den tredje planeten från solen och är nästan klotformad.',
           'Gravitationen drar föremål mot jordens centrum.',
-          'Jorden *roterar* runt sin axel och färdas samtidigt runt solen.',
+          'Jorden roterar runt sin axel och färdas samtidigt runt solen.',
           'Jordaxeln lutar ungefär 23,5 grader.',
-          'Jordens avstånd till solen, flytande vatten och atmosfären bidrar till att liv kan finnas här.',
+          'Jordens avstånd till solen, flytande vatten och atmosfären bidrar till att liv kan finnas här.'
+        ] },
+        { typ: 'punkter', punkter: [
           'Atmosfären skyddar jorden och påverkar temperaturen.',
           'Astronomer undersöker andra planeter för att söka efter förhållanden där liv kan finnas.'
         ] },

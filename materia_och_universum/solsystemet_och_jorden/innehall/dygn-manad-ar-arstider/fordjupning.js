@@ -2,6 +2,8 @@
  * Kap1-Avsnitt1-D-Dygn-manad-ar-Enkel-Fordjupning.md (📕 FÖRDJUPNING), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III.
  */
 Bok.niva('fordjupning', {
   avsnitt: [
@@ -16,6 +18,11 @@ Bok.niva('fordjupning', {
           'varför månen alltid visar samma sida, och när förmörkelser kan inträffa',
           'vad solstånd och dagjämningar är',
           'hur man räknar ut solens högsta höjd och var polcirkeln ligger'
+        ] },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
         ] }
       ]
     },
@@ -57,6 +64,7 @@ Bok.niva('fordjupning', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Ett stjärndygn, ett helt varv, är 23 timmar och 56 minuter. Ett soldygn är 24 timmar.',
           'Den gregorianska kalendern infördes 1582. Sverige bytte 1753.',

@@ -2,6 +2,8 @@
  * Kap1-Avsnitt1-Standard-A-D-redigerad.md (# Text D), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III; Inledningens rubrik som i Enkel.
  * Begreppen (*ord*) är markerade som i Enkel och Fördjupning för samma text, första gången de står i den här texten
  * (arbetsorder 9; listan i rapporten, Joachim stryker): dygn, år, skottår, månader (månad), månens faser, nymåne, halvmåne, fullmåne, månförmörkelse, polcirkeln, midnattssol, mörkertid.
  */
@@ -10,7 +12,13 @@ Bok.niva('standard', {
     {
       id: 'inledning', titel: 'Inledning', numrerad: false,
       block: [
-        { typ: 'text', text: 'Varför blir det natt, varför har vi olika årstider och varför ser månen inte alltid likadan ut? Förklaringarna finns i hur jorden och månen rör sig i förhållande till solen. Genom att förstå dessa rörelser kan vi också förstå hur människan har börjat mäta tiden i *dygn*, *månader|månad* och *år*.' }
+        { typ: 'rubrik', text: 'Dygn, månad, år och årstider' },
+        { typ: 'text', text: 'Varför blir det natt, varför har vi olika årstider och varför ser månen inte alltid likadan ut? Förklaringarna finns i hur jorden och månen rör sig i förhållande till solen. Genom att förstå dessa rörelser kan vi också förstå hur människan har börjat mäta tiden i *dygn*, *månader|månad* och *år*.' },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
+        ] }
       ]
     },
     {
@@ -55,6 +63,7 @@ Bok.niva('standard', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Ett dygn uppstår genom jordens rotation och är ungefär 24 timmar.',
           'Ett år motsvarar jordens varv runt solen och är ungefär 365,25 dygn.',

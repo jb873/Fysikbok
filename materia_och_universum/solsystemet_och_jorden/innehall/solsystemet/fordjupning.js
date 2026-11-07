@@ -2,6 +2,8 @@
  * Kap1-Avsnitt1-A-Solsystemet-Enkel-Fordjupning.md (📕 FÖRDJUPNING), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III.
  */
 Bok.niva('fordjupning', {
   avsnitt: [
@@ -16,6 +18,11 @@ Bok.niva('fordjupning', {
           'varför planeterna inte faller in i solen',
           'att avstånd i solsystemet mäts i *astronomiska enheter|astronomisk enhet*',
           'hur solen och planeterna bildades ur ett moln av gas och stoft'
+        ] },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
         ] }
       ]
     },
@@ -58,12 +65,15 @@ Bok.niva('fordjupning', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Planeterna faller hela tiden mot solen, men rör sig så snabbt framåt att de faller runt den.',
           'Planeterna närmast solen rör sig snabbast och har kortast år.',
           'Planeternas banor är ellipser med solen en bit från mitten.',
           'En astronomisk enhet (AE) är jordens medelavstånd till solen, ungefär 150 miljoner kilometer.',
-          'Solsystemet bildades ur ett snurrande moln av gas och stoft för ungefär 4,6 miljarder år sedan.',
+          'Solsystemet bildades ur ett snurrande moln av gas och stoft för ungefär 4,6 miljarder år sedan.'
+        ] },
+        { typ: 'punkter', punkter: [
           'Planeterna växte fram i skivan runt solen. Därför går de åt samma håll och nästan i samma plan.',
           'Snögränsen förklarar varför de inre planeterna är av sten och de yttre är jättar.'
         ] },

@@ -1067,4 +1067,12 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     - **Standard A har en enda bildmarkering.** Den beskriver storlekar och avstånd i samma skala på en lång linje,
       och ordern säger S1. Den har fått S1. Det finns ingen S2 i Standard.
   - **Källorna har inte** rutan "Så bläddrar du" (III:s källor angav den uttryckligen), inte rubriken "Det
-    viktigaste" i Sammanfattningen och ingen rubrik i Standards Inledning. Inget av det är tillagt.
+    viktigaste" i Sammanfattningen och ingen rubrik i Standards Inledning. Inget av det lades till i steg 2.
+- **2026-11-07, kapitel I, avsnitt I: Joachims tillägg efter rapporten:**
+  - Rutan "Så bläddrar du" står sist i Inledningen i alla tolv böckerna, med samma text och placering som i III.
+  - Rubriken "Det viktigaste" står först i Sammanfattningen i alla tolv.
+  - Standards Inledning har Enkels rubrik (Solsystemet, Himlakroppar, Jordklotet, Dygn, månad, år och årstider).
+  - Markeringen "roterar" i C Standard är struken.
+  - **Listorna:** med rubriken i Sammanfattningen blev C Fördjupning (7 punkter) 3–12 px för hög. Listor med mer än
+    6 punkter står nu som två listor i följd, med samma text.
+  - **Kontrollskriptet** godkänner just dessa tillägg på sina platser, och inget annat.

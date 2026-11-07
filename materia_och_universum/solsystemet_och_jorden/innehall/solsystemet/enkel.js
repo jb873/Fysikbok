@@ -2,6 +2,8 @@
  * Kap1-Avsnitt1-A-Solsystemet-Enkel-Fordjupning.md (📗 ENKEL), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III.
  */
 Bok.niva('enkel', {
   avsnitt: [
@@ -9,7 +11,12 @@ Bok.niva('enkel', {
       id: 'inledning', titel: 'Inledning', numrerad: false,
       block: [
         { typ: 'rubrik', text: 'Solsystemet' },
-        { typ: 'text', text: 'På dagen ser du solen på himlen. På natten kan du se månen och ibland några planeter, som ser ut som extra starka stjärnor. Allt detta hör till vårt *solsystem*. Solsystemet är solen och allt som rör sig runt den. Det bildades för ungefär 4,6 miljarder år sedan.' }
+        { typ: 'text', text: 'På dagen ser du solen på himlen. På natten kan du se månen och ibland några planeter, som ser ut som extra starka stjärnor. Allt detta hör till vårt *solsystem*. Solsystemet är solen och allt som rör sig runt den. Det bildades för ungefär 4,6 miljarder år sedan.' },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
+        ] }
       ]
     },
     {
@@ -59,6 +66,7 @@ Bok.niva('enkel', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Solen är en stjärna. Den har nästan all massa i solsystemet.',
           'Solens gravitation håller planeterna i sina banor.',

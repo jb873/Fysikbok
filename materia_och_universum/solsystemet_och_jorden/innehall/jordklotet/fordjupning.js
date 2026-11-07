@@ -2,6 +2,8 @@
  * Kap1-Avsnitt1-C-Jordklotet-Enkel-Fordjupning.md (📕 FÖRDJUPNING), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
  * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
+ * Joachims tillägg 2026-11-07: rutan "Så bläddrar du" sist i Inledningen och rubriken "Det viktigaste" först i
+ * Sammanfattningen, som i III.
  */
 Bok.niva('fordjupning', {
   avsnitt: [
@@ -16,6 +18,11 @@ Bok.niva('fordjupning', {
           'att jorden har skikt inuti, och hur man vet det fast ingen har varit där',
           'att jorden har ett magnetfält som skyddar oss och ger norrsken',
           'vad den *beboeliga zonen* är'
+        ] },
+        { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: [
+          'Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
+          'Klicka i innehållet för att gå till en sida.',
+          'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'
         ] }
       ]
     },
@@ -57,12 +64,15 @@ Bok.niva('fordjupning', {
     {
       id: 'sammanfattning', titel: 'Sammanfattning', numrerad: false,
       block: [
+        { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Jordens runda skugga på månen och skepp som försvinner bakom horisonten visar att jorden är rund.',
           'Eratosthenes räknade ut jordens omkrets med skuggor för ungefär 2 200 år sedan.',
           'Jorden har en skorpa, en mantel och en kärna av järn och nickel. Det vet man från jordbävningsvågor.',
           'Jordens magnetfält uppstår i den flytande yttre kärnan och skyddar oss mot solvinden.',
-          'Norrsken uppstår när solvindens partiklar får gaser högt i atmosfären att lysa.',
+          'Norrsken uppstår när solvindens partiklar får gaser högt i atmosfären att lysa.'
+        ] },
+        { typ: 'punkter', punkter: [
           'Utan växthuseffekten skulle jordens medeltemperatur vara ungefär −18 grader i stället för +15 grader.',
           'Den beboeliga zonen är området runt en stjärna där vatten kan vara flytande.'
         ] },
