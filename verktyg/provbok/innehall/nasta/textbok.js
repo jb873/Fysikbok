@@ -1,0 +1,62 @@
+/* PROVDATA för verktyg/bok-grind.js – inte elevinnehåll. Nästa steg (arbetsorder 11): en fristående bok (nastaSteg) med
+ * de nya märkningarna – FORMEL (förklaringen som text, ett långt uttryck och index med understreck), EXEMPEL (ett som
+ * ryms och ett som är högre än en sida i alla lägen, så att det delas mellan raderna), PROVA, rader i följd
+ * (mellanled), en numrerad lista, länkar till en annan bok (bokref, boklank) och en post utan länk. */
+Bok.niva('nasta-steg', {
+  avsnitt: [
+    {
+      id: 'inledning', titel: 'Så här använder du provboken', numrerad: false,
+      block: [
+        { typ: 'rubrik', text: 'Provrubrik: boken har en övningsbok' },
+        { typ: 'text', text: 'Provtext före länken till övningsboken.' },
+        { typ: 'boklank', bok: 'ovning-prov-ovning' }
+      ]
+    },
+    {
+      id: 'formler', titel: 'Provformler',
+      block: [
+        { typ: 'bokref', etikett: 'Matematik du behöver:', lankar: [{ text: 'Provmatte ett', bok: 'stod-prov-matte', ankare: 'matte-ett' },
+          { text: 'Provmatte två', bok: 'stod-prov-matte', ankare: 'matte-tva' }, { text: 'Fysikboken: utan länk' }] },
+        { typ: 'rubrik', text: 'Provrubrik: en formel står med stycket före' },
+        { typ: 'text', text: 'Provtext före formeln, med ett index: F_N är normalkraften och μ_vila friktionskoefficienten.' },
+        { typ: 'formel', uttryck: 'F_vila ≤ μ_vila · F_N', forklaring: 'provförklaring under formeln (N)' },
+        { typ: 'text', text: 'Provtext före ett långt uttryck som ska stå på en rad.' },
+        { typ: 'formel', uttryck: '(a · 10ᵐ) · (b · 10ⁿ) = (a · b) · 10ᵐ⁺ⁿ', forklaring: 'provförklaring till det långa uttrycket' },
+        { typ: 'text', text: 'Provtext före mellanleden.' },
+        { typ: 'rader', rader: ['v = s / t', 'v · t = s / t · t', '2 · s = a · t²        (provkommentar)'] },
+        { typ: 'numrerad', punkter: ['Provsteg ett.', 'Provsteg två.', 'Provsteg tre.'] }
+      ]
+    },
+    {
+      // Ett exempel med åtta korta rader fyller mer än 40 % av sidan i alla lägen (raderna följer textstorleken, som
+      // följer sidhöjden), och stycket och formeln efter ryms ändå på sidan: grindens negativa prov flyttar formeln
+      // från sitt stycke, och då är det ett brott mot regeln (det som står före stycket är inte tunt)
+      id: 'formel-efter-exempel', titel: 'Provformel efter ett exempel',
+      block: [
+        { typ: 'exempel', rubrik: 'Provexempel före formeln', stycken: [['Provrad 1.', 'Provrad 2.', 'Provrad 3.', 'Provrad 4.', 'Provrad 5.', 'Provrad 6.', 'Provrad 7.', 'Svar: Provsvar.']] },
+        { typ: 'text', text: 'Provtext före formeln.' },
+        { typ: 'formel', uttryck: 'p = m · v', forklaring: 'provförklaring' }
+      ]
+    },
+    {
+      id: 'exempel', titel: 'Provexempel',
+      block: [
+        { typ: 'rubrik', text: 'Provrubrik: ett exempel som ryms' },
+        { typ: 'text', text: 'Provtext före exemplet.' },
+        { typ: 'exempel', rubrik: 'Provexempel som ryms', stycken: [
+          ['En provfråga i exemplet. Hur långt kommer provet på 9,0 s?'],
+          ['Givet: v₀ = 0, a = 3,0 m/s². Sökt: s.'],
+          ['Lösning: s = a · t² / 2', 's = 3,0 · 81 / 2 ≈ 120 m', 'Svar: Ungefär 120 m.'] ] },
+        { typ: 'prova', rader: ['1a. Provuppgift ett.', '1b. Provuppgift två.', '1c. Provuppgift tre.'] },
+        { typ: 'rubrik', text: 'Provrubrik: ett exempel som är högre än en sida' },
+        { typ: 'text', text: 'Provtext före det långa exemplet.' },
+        { typ: 'exempel', rubrik: 'Provexempel som delas', stycken: [
+          ['En provfråga i det långa exemplet.'],
+          ['Givet: provvärden. Sökt: provsvaret.'],
+          ['Lösning:'].concat(Array.from({ length: 44 }, (_, i) => `Steg ${i + 1}: provrad i lösningen.`)),
+          ['Svar: Provsvaret.'] ] },
+        { typ: 'text', text: 'Provtext efter det långa exemplet.' }
+      ]
+    }
+  ]
+});

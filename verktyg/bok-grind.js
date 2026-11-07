@@ -25,7 +25,7 @@ const fs = require('fs'), path = require('path'), http = require('http'), os = r
 const ROT = path.resolve(__dirname, '..');
 const MALL = path.join(ROT, 'mall', 'delkapitel', 'index.html');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const NEGATIV = process.argv.includes('--negativ'), BILDER = process.argv.includes('--bilder');
+const NEGATIV = process.argv.some(a => a === '--negativ' || a.startsWith('--negativ=')), BILDER = process.argv.includes('--bilder');
 // --bara=<del av namnet>: bara de delkapitel vars namn innehåller texten (snabbt prov medan man arbetar; inte grönt för boken)
 const BARA = (process.argv.find(a => a.startsWith('--bara=')) || '').slice(7);
 const BILDMAPP = path.join(__dirname, 'bilder', 'grind');
@@ -60,8 +60,16 @@ const FEL = {
   // sidan blockeras 80 ms var 100:e ms medan bladvändningen mäts: tidsprovet ska bli rött i båda körningarna
   'hackig bladvändning': { blad: 'hack' },
   // samma, men bara i den första körningen: omkörningen ska ge grönt, och utskriften visa att den behövdes
-  'hackig bladvändning en gång': { blad: 'forsta' }
+  'hackig bladvändning en gång': { blad: 'forsta' },
+  // Nästa steg (arbetsorder 11): motorns provkrokar flyttar en post först på nästa sida – i provboken, som har alla
+  // rutorna. Brytningsreglerna (?kontroll) eller grindens mätning av rutorna ska ge rött.
+  'formel skild från stycket': { adress: '&prova=formel-skild', dk: 'provbok', regel: /formel/i },
+  'exempel delat fast det ryms': { adress: '&prova=exempel-delat', dk: 'provbok', regel: /exempel/i },
+  'Svar ensam på ny sida': { adress: '&prova=svar-ensam', dk: 'provbok', regel: /Svar/ },
+  'PROVA-ruta delad': { adress: '&prova=prova-delad', dk: 'provbok', regel: /PROVA/ }
 };
+// --negativ=<del av namnet>: bara de negativa proven vars namn innehåller texten
+const NEGATIV_BARA = (process.argv.find(a => a.startsWith('--negativ=')) || '').slice(10);
 
 const FANGA_FEL = `window.__fel = [];
   window.onerror = function (m, s, l) { window.__fel.push(m + ' (' + String(s).split('/').pop() + ':' + l + ')'); };
@@ -440,6 +448,88 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
+/* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------
+ * Klistras in i scenarierna (behöver v, $, $$, synlig, prova, gest, klicka, oppen, stangd, figurKoll, spar, harOmslag).
+ *  - Nästa steg: blocket "Nästa steg – gymnasiets fysik" står sist i Läs (under djupdykningarna), ett kort per bok;
+ *  - fliken Öva har övningsböckernas kort (fliken går att välja);
+ *  - varje kort (Nästa steg, Öva, en stödbok med kort) öppnar sin bok: adressen, ingen nivåväljare, förteckningen
+ *    med titeln, omslaget med överraden (inte för en stödbok); figurerna mäts; Stäng leder tillbaka;
+ *  - en länk till en annan bok (Matematik du behöver, Används i, övningsboken) öppnar den boken vid avsnittet, och
+ *    "↩ Tillbaka till <boken>" leder tillbaka till samma ställe. */
+const FRISTAENDE = String.raw`
+  const fsKort = sel => $$(sel + ' .fordj-kort[data-oppna]');
+  const nastaSek = $('section[data-flik="laes"] > .vill-veta-mer.nasta-steg:not([hidden])');
+  const ovaSek = $('section[data-flik="ova"] > .vill-veta-mer.ovningsbocker:not([hidden])');
+  const stodSek = $('section[data-flik="laes"] > .vill-veta-mer.stodbocker:not([hidden])');
+  if (nastaSek) {
+    const synligaILas = [...nastaSek.parentElement.children].filter(e => !e.hidden && e.offsetParent !== null);
+    prova('nästa steg: blocket "Nästa steg – gymnasiets fysik" står sist i Läs, under djupdykningarna, med ett kort per bok (' + fsKort('.nasta-steg').length + ')',
+      synligaILas[synligaILas.length - 1] === nastaSek && nastaSek.querySelector('h2').textContent === 'Nästa steg – gymnasiets fysik' && fsKort('.nasta-steg').length > 0,
+      synligaILas.map(e => e.className || e.tagName).join(' | '));
+  }
+  if (ovaSek) {
+    const flik = $('.flik[data-flik="ova"]');
+    prova('öva: fliken Öva går att välja och har övningsbokens kort', flik && flik.getAttribute('aria-disabled') !== 'true' && fsKort('.ovningsbocker').length > 0,
+      flik && flik.getAttribute('aria-disabled'));
+  }
+  const fsFel = [], fsBocker = [];
+  for (const [sel, flik] of [['.nasta-steg', 'laes'], ['.ovningsbocker', 'ova'], ['.stodbocker', 'laes']]) {
+    for (let i = 0; i < fsKort(sel).length; i++) {
+      const fl = $('.flik[data-flik="' + flik + '"]'); if (fl && !fl.classList.contains('aktiv')) await klicka(fl, 150);
+      const kort = fsKort(sel)[i], titel = kort.querySelector('.fordj-kort-titel').textContent.trim(), t = kort.dataset.text;
+      await gest(kort, 900);
+      const hash = location.hash, utanNiva = getComputedStyle($('.bokapp .niva')).display === 'none';
+      const stod = sel === '.stodbocker';
+      if (!stod) { Bok.gaTill(0); await v(150); }
+      const omslag = $$('.scen .sida.omslag text').map(x => x.textContent).join(' ');
+      Bok.gaTill(1); await v(150);
+      const toc = (synlig('.scen .boktitel') || {}).textContent || '';
+      if (!oppen() || !hash.startsWith('#' + t + '/')) fsFel.push(titel + ': öppnade ' + hash);
+      if (!utanNiva) fsFel.push(titel + ': nivåväljaren syns');
+      if (harOmslag && !stod && !omslag.includes('NÄSTA STEG')) fsFel.push(titel + ': omslaget ”' + omslag.slice(0, 90) + '”');
+      if (stod && omslag) fsFel.push(titel + ': en stödbok ska inte ha något omslag');
+      if (!toc.includes(titel)) fsFel.push(titel + ': förteckningen ”' + toc + '”');
+      spar.push(await figurKoll());
+      fsBocker.push({ t, titel, sel });
+      await klicka(synlig('.bok-stang'), 450);
+      if (!stangd()) fsFel.push(titel + ': Stäng ledde inte tillbaka (' + location.hash + ')');
+    }
+  }
+  const laes = $('.flik[data-flik="laes"]'); if (laes && !laes.classList.contains('aktiv')) await klicka(laes, 150);
+  if (fsBocker.length) prova('fristående böcker: varje kort (Nästa steg, Öva, stödbok) öppnar sin bok – adressen, ingen nivåväljare, förteckningen med titeln, omslaget med "Nästa steg" (inte för en stödbok) – och Stäng leder tillbaka (' + fsBocker.map(b => b.titel).join(', ') + ')',
+    !fsFel.length, fsFel.join(' | '));
+  // Länkarna mellan böckerna: i varje bok den första länken till en annan bok – den öppnar den boken vid avsnittet, och
+  // "Tillbaka till …" leder tillbaka
+  const lFel = [], lProv = [];
+  for (const b of fsBocker) {
+    const fl = $('.flik[data-flik="' + (b.sel === '.ovningsbocker' ? 'ova' : 'laes') + '"]'); if (fl && !fl.classList.contains('aktiv')) await klicka(fl, 150);
+    const kort = fsKort(b.sel).find(k => k.dataset.text === b.t); if (!kort) continue;
+    await gest(kort, 900);
+    const n = $$('.lr-sida').length;
+    // den första länken av varje slag: i en rad "Matematik du behöver:"/"Används i" (bokref) och en boklänk
+    const forstaPa = {};
+    for (let s = 1; s <= n; s++) { Bok.gaTill(s); await v(40);
+      for (const sl of ['.b-bokref', '.b-boklank']) if (!(sl in forstaPa) && $$('.scen ' + sl + ' a.bok-lank').some(a => a.offsetParent !== null)) forstaPa[sl] = s; }
+    for (const [sl, s] of Object.entries(forstaPa)) {
+      Bok.gaTill(s); await v(80);
+      const lank = $$('.scen ' + sl + ' a.bok-lank').find(a => a.offsetParent !== null);
+      if (!lank) continue;
+      const fore = { plats: Bok.plats, hash: location.hash }, mal = lank.dataset.bok, ankare = lank.dataset.ankare, text = lank.textContent.trim();
+      await klicka(lank, 400);
+      const dit = location.hash, chip = synlig('.tillbaka-chip:not([hidden])'), chipText = chip ? chip.textContent : '';
+      if (!oppen() || !dit.startsWith('#' + mal + '/') || (ankare && dit !== '#' + mal + '/' + ankare)) lFel.push(b.titel + ' → ”' + text + '”: ' + dit + ' (väntat #' + mal + '/' + ankare + ')');
+      if (!chipText.includes('Tillbaka till') || !chipText.includes(b.titel.slice(0, 12))) lFel.push(b.titel + ': chipet ”' + chipText + '”');
+      if (chip) await klicka(chip, 400);
+      if (Bok.plats !== fore.plats || location.hash.split('/')[0] !== fore.hash.split('/')[0]) lFel.push(b.titel + ': tillbaka hamnade ' + location.hash + ' / ' + Bok.plats + ' (väntat ' + fore.hash + ' / ' + fore.plats + ')');
+      lProv.push(b.titel.slice(0, 24) + ' → ' + text);
+    }
+    await klicka(synlig('.bok-stang'), 450);
+  }
+  if (laes && !laes.classList.contains('aktiv')) await klicka(laes, 150);
+  if (lProv.length) prova('länkar: en länk till en annan bok öppnar den vid avsnittet, och "↩ Tillbaka till <boken>" leder tillbaka till samma ställe (' + lProv.join('; ') + ')',
+    !lFel.length && stangd(), lFel.join(' | '));
+`;
+
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
 
 const SCENARIO = String.raw`async (helskarmLage) => {
@@ -743,14 +833,18 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   // ned i Läs ("Vill du veta mer?"). Varje kort öppnar sin bok – omslaget "Djupdykning" med titeln, förteckningen,
   // ingen nivåväljare – och figurerna i den mäts; efteråt är texten och nivån eleven valt desamma.
   const ddAntal = Object.keys(JSON.parse(document.body.dataset.kontroll).nivaer).filter(n => n.startsWith('djupdykning-')).length;
-  const ddKort = () => $$('section[data-flik="laes"] > .vill-veta-mer:not([hidden]) .fordj-kort');
+  // (djupdykningarnas block: inte Nästa steg eller en stödbok, som har samma stil – arbetsorder 11)
+  const DD_SEK = 'section[data-flik="laes"] > .vill-veta-mer:not(.nasta-steg):not(.stodbocker)';
+  const ddKort = () => $$(DD_SEK + ':not([hidden]) .fordj-kort');
   if (ddAntal || ddKort().length) {
-    const sek = $('section[data-flik="laes"] > .vill-veta-mer');
+    const sek = $(DD_SEK);
     const nivarad = $$('section[data-flik="laes"] > .niva-valjare > button.niva-knapp').map(b => b.textContent);
     prova('djupdykningar: nivåraden har bara nivåerna, ingen djupdykning (' + nivarad.join(' · ') + ')',
       !nivarad.some(t => /djupdykning/i.test(t)) && (nivarad.length === 3 || /Provbok/.test(document.title)), nivarad.join(' · '));
-    prova('djupdykningar: "Vill du veta mer?" står längst ned i Läs, ett kort per djupdykning (' + ddAntal + ')',
-      sek && !sek.hidden && sek.parentElement.lastElementChild === sek && sek.querySelector('h2').textContent === 'Vill du veta mer?' && ddKort().length === ddAntal,
+    // (längst ned, eller direkt följt av Nästa steg-blocket, som står allra sist – arbetsorder 11)
+    const efterDd = [...sek.parentElement.children].slice([...sek.parentElement.children].indexOf(sek) + 1).filter(e => !e.hidden);
+    prova('djupdykningar: "Vill du veta mer?" står längst ned i Läs (bara Nästa steg under), ett kort per djupdykning (' + ddAntal + ')',
+      sek && !sek.hidden && efterDd.every(e => e.matches('.vill-veta-mer.nasta-steg')) && sek.querySelector('h2').textContent === 'Vill du veta mer?' && ddKort().length === ddAntal,
       ddKort().map(b => b.textContent).join(' | '));
     const valt = () => ({ text: ($('.underdel-knapp.aktiv') || { dataset: {} }).dataset.text, niva: ($('.niva-valjare .niva-knapp.aktiv') || { dataset: {} }).dataset.niva });
     const f0 = valt(), ddFel = [];
@@ -776,6 +870,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     prova('djupdykningar: varje kort öppnar sin djupdykning som en egen bok (omslaget "Djupdykning" med titeln, förteckningen, ingen nivåväljare) och efteråt är texten och nivån desamma',
       !ddFel.length, ddFel.join(' | ') || ddKort().map(b => b.dataset.text).join(', '));
   }
+  ${FRISTAENDE}
   if (spar.some(x => x.antal)) prova('figur: rörelsespårens avstånd följer rörelsetypen (' + spar.map(x => x.antal).join(' + ') + ' spår)',
     spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   if (spar.some(x => x.par.antal)) prova('figur: kraftparens pilar är lika långa, motriktade och börjar i var sitt föremåls mitt (' + spar.map(x => x.par.antal).join(' + ') + ' par)',
@@ -808,6 +903,64 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   prova('text: g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden står i vanlig stil med rätt skiftläge, inte i kapitäler (' + spar.reduce((a, x) => a + x.sym.antal, 0) + ' ställen)',
     spar.every(x => !x.sym.fel.length), spar.flatMap(x => x.sym.fel).slice(0, 6).join(' | '));
   if (andraTexter.length) prova('figur: figurerna i de andra texterna (' + andraTexter.join(', ') + ') är mätta på varje nivå', stangd(), 'hash=' + location.hash);
+  return k;
+}`;
+
+// En sida med bara fristående böcker (arbetsorder 11: Matematiken i fysiken): ingen text eller nivå. Hubben (bannern,
+// inga texter, nivåer eller läsläge, flikraden borta om delkapitlet säger flikar: false), korten och länkarna
+// (FRISTAENDE), och i den första boken: bläddra, Innehåll och hopp, Home och End, Esc.
+const BOKHUBB = String.raw`async (helskarmLage) => {
+  const v = ms => new Promise(r => setTimeout(r, ms));
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const synlig = s => $$(s).find(e => e.offsetParent !== null);
+  const k = [];
+  const prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
+  const syns = () => $$('.scen .uppslag > .sida[data-nr]').map(e => +e.dataset.nr);
+  const tangent = t => document.dispatchEvent(new KeyboardEvent('keydown', { key: t, bubbles: true }));
+  const oppen = () => !$('.bokapp').hidden;
+  const helsk = () => !!document.fullscreenElement;
+  const klicka = async (e, ms = 120) => { e.click(); await v(ms); };
+  const gest = async (e, ms = 650) => {
+    e.scrollIntoView({ block: 'center' }); await v(60);
+    const r = e.getBoundingClientRect();
+    __gest(JSON.stringify({ x: r.left + r.width / 2, y: r.top + r.height / 2 })); await v(ms);
+  };
+  const stangd = () => !oppen() && location.hash === '' && !helsk();
+  const sidaMed = id => $$('.scen .uppslag > .sida[data-nr]').find(s => s.querySelector('[data-post="' + id + '"]'));
+  const harOmslag = JSON.parse(document.body.dataset.kontroll).omslag;
+  ${FIGURKOLL}
+  if ($('.kontrollpanel')) $('.kontrollpanel').style.display = 'none';
+  const spar = [];
+  const hero = $('body > header.hero-banner > .hero-inner');
+  prova('hubb (bara fristående böcker): hero-banner med brödsmulor och titel', hero && hero.querySelector('nav.brodsmulor > span.aktuell') && hero.querySelector('h1'),
+    hero && [...hero.children].map(e => e.textContent.trim()).join(' | '));
+  prova('hubb (bara fristående böcker): inga texter, nivåer eller läsläge', !synlig('.underdel-knapp') && !synlig('.niva-valjare') && !synlig('section[data-flik="laes"] .intro'));
+  prova('hubb (bara fristående böcker): sidan är inte bredare än skärmen', document.documentElement.scrollWidth <= innerWidth, document.documentElement.scrollWidth + ' > ' + innerWidth);
+  const kort = $$('.fordj-kort[data-oppna]');
+  prova('hubb (bara fristående böcker): minst ett kort öppnar en bok', kort.length > 0, kort.map(b => b.textContent.trim()).join(' | '));
+  // den första boken: bläddra, innehåll, hopp och tillbaka, Home/End, Esc
+  if (kort.length) {
+    await gest(kort[0], 900);
+    prova(helskarmLage ? 'öppna: boken öppnas i helskärm' : 'öppna: boken öppnas (i fönstret, eller i helskärm om inställningen säger så)', oppen() && (!helskarmLage || helsk()), 'helskärm=' + helsk());
+    Bok.gaTill(1); await v(100);
+    const s0 = syns()[0], steg = syns().length;
+    tangent('ArrowRight'); await v(80);
+    prova('bläddra: → visar nästa ' + (steg > 1 ? 'uppslag' : 'sida'), syns()[0] === s0 + steg, syns());
+    tangent('ArrowLeft'); await v(80);
+    await klicka(synlig('.bok-innehall'));
+    const till = $$('.meny .toc-knapp').map(b => +b.dataset.till).find(n => !syns().includes(n));
+    if (till) await klicka($('.meny .toc-knapp[data-till="' + till + '"]')); else { tangent('Escape'); await v(80); }
+    prova('hoppa: en rad i innehållet går till sidan', !till || syns().includes(till), syns() + ' (mål ' + till + ')');
+    tangent('End'); await v(80);
+    prova('bläddra: End går till sista sidan', syns().includes($$('.lr-sida').length), syns());
+    tangent('Home'); await v(80);
+    if (helsk()) await document.exitFullscreen(); else tangent('Escape');
+    await v(450);
+    prova('stäng: Esc går tillbaka till sidan', stangd(), 'hash=' + location.hash);
+  }
+  ${FRISTAENDE}
+  if (spar.length) prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida (' + spar.length + ' böcker)',
+    spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   return k;
 }`;
 
@@ -1165,18 +1318,48 @@ const TOMMA_SVEP = String.raw`async () => {
   // Uppslagsregeln (order 8, 2026-11-07): också varje figur vars stycke (närmast före, bakåt över figurer) står på ett
   // annat uppslag (dator) / en annan sida (mobil) – med om stycket står först på sin sida (efter rubrikerna: undantaget)
   const skilda = [];
-  const slag = b => b.matches('figure.b-figur') ? 'f' : b.matches('p.b-text') ? 't' : b.matches('h2, h3, .b-rubrik, [class*="avsnittsstart"], .sidtitel') ? 'r' : 'a';
-  const hela = async (namn, jamfor) => { const n = $$('.lr-sida').length, ids = {}, bl = {}, uppslag = !!$('.scen .uppslag.ar-uppslag');
+  // (en formel följer samma regel som en figur, arbetsorder 11: slaget 'm')
+  const slag = b => b.matches('figure.b-figur') ? 'f' : b.matches('.b-formel') ? 'm' : b.matches('p.b-text') ? 't' : b.matches('h2, h3, .b-rubrik, [class*="avsnittsstart"], .sidtitel') ? 'r' : 'a';
+  const medStycket = sl => sl === 'f' || sl === 'm';
+  // Rutorna och formlerna (arbetsorder 11), mätta på skärmen: varje rad i ett EXEMPEL eller en PROVA-ruta (sida, höjd,
+  // Svar) och sidans plats för text; varje formels uttryck – på en rad, inom spalten
+  const rutor = { exempel: 0, prova: 0, delade: 0, fel: [] }, formler = { antal: 0, fel: [] };
+  const hela = async (namn, jamfor) => { const n = $$('.lr-sida').length, ids = {}, bl = {}, rr = {}, kap = {}, uppslag = !!$('.scen .uppslag.ar-uppslag');
     for (let s = 1; s <= n; s += 1) { Bok.gaTill(s); await v(25); const t = tomma(); if (t.length) fel.push(namn + ': sida ' + t.join(','));
       $$('.scen .uppslag > .sida[data-nr]').forEach(e => { ids[e.dataset.nr] = [...e.querySelectorAll('[data-post]')].map(p => p.dataset.post).join(',');
-        const inne = e.querySelector('.sidinnehall'); if (inne && !e.classList.contains('innehallssida')) bl[e.dataset.nr] = [...inne.children].map(b => [b.dataset.post, slag(b)]); }); }
+        const inne = e.querySelector('.sidinnehall'); if (inne && !e.classList.contains('innehallssida')) bl[e.dataset.nr] = [...inne.children].map(b => [b.dataset.post, slag(b)]);
+        if (inne && !jamfor && !(e.dataset.nr in rr)) {
+          const cs = getComputedStyle(inne); kap[e.dataset.nr] = inne.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+          rr[e.dataset.nr] = [...inne.querySelectorAll('.b-rutarad')].map(x => ({ ruta: x.dataset.ruta, rad: +x.dataset.rad, svar: x.hasAttribute('data-svar'),
+            prova: x.classList.contains('rr-prova'), h: x.getBoundingClientRect().height }));
+          const ir = inne.getBoundingClientRect();
+          inne.querySelectorAll('.formel-uttryck').forEach(u => { const r = u.getBoundingClientRect(), lh = parseFloat(getComputedStyle(u).fontSize) * 1.6;
+            formler.antal++;
+            if (u.scrollWidth > u.clientWidth + 1 || r.right > ir.right + 1 || r.left < ir.left - 1) formler.fel.push(namn + ' s.' + e.dataset.nr + ': ”' + u.textContent + '” går utanför spalten');
+            // (ett bråk, [[m|V]], står på en rad men är högre: det räknas inte)
+            else if (r.height > lh && !u.querySelector('.brak')) formler.fel.push(namn + ' s.' + e.dataset.nr + ': ”' + u.textContent + '” står på mer än en rad'); });
+        } }); }
     if (jamfor) Object.keys(jamfor).forEach(nr => { if (jamfor[nr] !== ids[nr]) fel.push(namn + ': sida ' + nr + ' har inte samma block som förut (' + (ids[nr] || '').split(',').filter(Boolean).length + ' av ' + jamfor[nr].split(',').filter(Boolean).length + ')'); });
     else {
       const alla = Object.keys(bl).map(Number).sort((a, b) => a - b).flatMap(nr => bl[nr].map(([post, sl], i) => ({ nr, i, post, sl })));
       const plats = nr => uppslag ? (nr % 2 ? nr : nr - 1) : nr;
-      alla.forEach((b, j) => { if (b.sl !== 'f') return; let k = j - 1; while (k >= 0 && alla[k].sl === 'f') k--;
+      alla.forEach((b, j) => { if (!medStycket(b.sl)) return; let k = j - 1; while (k >= 0 && medStycket(alla[k].sl)) k--;
         const st = alla[k]; if (!st || st.sl !== 't' || plats(st.nr) === plats(b.nr)) return;
-        skilda.push({ bok: namn, figur: b.post, stycke: st.nr, sida: b.nr, uppslag, forst: bl[st.nr].slice(0, st.i).every(x => x[1] === 'r') }); });
+        skilda.push({ bok: namn, figur: b.post, formel: b.sl === 'm', stycke: st.nr, sida: b.nr, uppslag, forst: bl[st.nr].slice(0, st.i).every(x => x[1] === 'r') }); });
+      // Rutorna: ett EXEMPEL som ryms på en sida står på ett uppslag (datorn) / en sida (mobilen); raden Svar står
+      // aldrig ensam på ett nytt uppslag / en ny sida; en PROVA-ruta är hel (en sida)
+      const grupper = {};
+      Object.keys(rr).map(Number).sort((a, b) => a - b).forEach(nr => rr[nr].forEach(x => (grupper[x.ruta] = grupper[x.ruta] || []).push(Object.assign({ nr }, x))));
+      Object.entries(grupper).forEach(([id, rad]) => {
+        rad.sort((a, b) => a.rad - b.rad);
+        const sid = [...new Set(rad.map(x => x.nr))], hojd = rad.reduce((s, x) => s + x.h, 0), minKap = Math.min(...sid.map(nr => kap[nr]));
+        if (rad[0].prova) { rutor.prova++; if (sid.length > 1) rutor.fel.push(namn + ': PROVA-rutan ' + id + ' är delad (s.' + sid.join('–') + ')'); return; }
+        rutor.exempel++;
+        if (sid.length > 1) rutor.delade++;
+        if (new Set(sid.map(plats)).size > 1 && hojd <= minKap) rutor.fel.push(namn + ': exemplet ' + id + ' står på flera ' + (uppslag ? 'uppslag' : 'sidor') + ' (s.' + sid.join('–') + ') fast det ryms på en sida (' + Math.round(hojd) + ' av ' + Math.round(minKap) + ' px)');
+        const sv = rad[rad.length - 1], fore = rad[rad.length - 2];
+        if (sv.svar && fore && plats(sv.nr) !== plats(fore.nr)) rutor.fel.push(namn + ': raden Svar i exemplet ' + id + ' står ensam på ' + (uppslag ? 'ett nytt uppslag' : 'en ny sida') + ' (s.' + sv.nr + ')');
+      });
     }
     return { n, ids }; };
   // böckerna: varje text på varje nivå (en nivå som är "kommer" för texten hoppas över), och varje djupdykning
@@ -1202,7 +1385,7 @@ const TOMMA_SVEP = String.raw`async () => {
   for (let kn = 0; kn < antalKort; kn++) { await stang(); const kort = $$('.fordj-kort:not([aria-disabled="true"])')[kn]; if (!kort) continue;
     const namn = kort.textContent.trim().slice(0, 30); kort.click(); await v(700);
     if (Bok.oppen) bocker.push([namn, (await hela(namn)).n]); }
-  const svep = { bocker: bocker.length, sidor: bocker.reduce((s, b) => s + b[1], 0), fel: fel.slice(), skilda };
+  const svep = { bocker: bocker.length, sidor: bocker.reduce((s, b) => s + b[1], 0), fel: fel.slice(), skilda, rutor, formler };
   // bladvändning fram och tillbaka i den första boken, en annan bok öppnas och stängs, och den första gås igenom igen
   // (blocken på varje sida ska vara desamma som i den första genomgången)
   fel.length = 0;
@@ -1254,9 +1437,15 @@ async function provaTommaSidor(c, lage) {
   // står först på sin sida (undantaget, varning); på mobilen bara varningar (inga flyttar för mobilens skull)
   const sk = r.svep.skilda, beskriv = x => `${x.bok} s.${x.stycke}→${x.sida} (${x.figur})`;
   const brott = sk.filter(x => x.uppslag && !x.forst), varn = sk.filter(x => !x.uppslag || x.forst);
-  k.push({ namn: 'uppslagsregeln: ingen figur står på ett annat uppslag än stycket före den (datorn; undantaget: stycket först på sin sida)',
-    ok: !brott.length, detalj: brott.length ? 'SKILDA: ' + brott.map(beskriv).join('; ') : 'inga' });
-  k.varningar = varn.map(x => `figuren på ${x.uppslag ? 'ett annat uppslag' : 'en annan sida'} än stycket: ${beskriv(x)}` + (x.uppslag ? ' – stycket först på sin sida (undantag)' : ' – mobilen'));
+  k.push({ namn: 'uppslagsregeln: ingen figur eller formel står på ett annat uppslag än stycket före den (datorn; undantaget: stycket först på sin sida)',
+    ok: !brott.length, detalj: brott.length ? 'SKILDA: ' + brott.map(x => (x.formel ? 'formel ' : '') + beskriv(x)).join('; ') : 'inga' });
+  k.varningar = varn.map(x => `${x.formel ? 'formeln' : 'figuren'} på ${x.uppslag ? 'ett annat uppslag' : 'en annan sida'} än stycket: ${beskriv(x)}` + (x.uppslag ? ' – stycket först på sin sida (undantag)' : ' – mobilen'));
+  // Nästa steg (arbetsorder 11): rutorna och formlerna, mätta på skärmen i varje bok
+  const ru = r.svep.rutor, fo = r.svep.formler;
+  if (ru.exempel) k.push({ namn: `rutor: varje EXEMPEL som ryms står på ${lage.mobil ? 'en sida' : 'ett uppslag'}, och raden Svar står aldrig ensam på ${lage.mobil ? 'en ny sida' : 'ett nytt uppslag'} (${ru.exempel} exempel, ${ru.delade} delade mellan raderna)`,
+    ok: !ru.fel.some(f => !/PROVA/.test(f)), detalj: ru.fel.filter(f => !/PROVA/.test(f)).join('; ') });
+  if (ru.prova) k.push({ namn: `rutor: varje PROVA-ruta är hel (${ru.prova})`, ok: !ru.fel.some(f => /PROVA/.test(f)), detalj: ru.fel.filter(f => /PROVA/.test(f)).join('; ') });
+  if (fo.antal) k.push({ namn: `formel: varje formel står på en rad och ryms i spalten (${fo.antal})`, ok: !fo.fel.length, detalj: fo.fel.slice(0, 4).join('; ') });
   k.push({ namn: 'tomma sidor: inget blir tomt efter bladvändning fram och tillbaka och efter att en annan bok öppnats och stängts',
     ok: !!r.efter && !r.efter.length, detalj: r.efter ? (r.efter.length ? 'TOMMA: ' + r.efter.join('; ') : 'inga') : 'kunde inte öppna boken' });
   return k;
@@ -1324,7 +1513,9 @@ async function kor(dk, lage, felkod) {
     res.allaKommer = !!res.kontroll && Object.keys(res.kontroll.nivaer).length > 0 && Object.values(res.kontroll.nivaer).every(x => typeof x === 'string');
     if (res.allaKommer) res.kontroller = await c.ev(`(${HUBB_KOMMER})()`);
     else {
-    res.kontroller = await c.ev(`(${SCENARIO})(${lage.helskarm})`);
+    // en sida utan nivåer, med bara fristående böcker (Matematiken i fysiken, arbetsorder 11): ett eget scenario
+    res.bokhubb = !!res.kontroll && !res.kontroll.niva;
+    res.kontroller = await c.ev(res.bokhubb ? `(${BOKHUBB})(${lage.helskarm})` : `(${SCENARIO})(${lage.helskarm})`);
     if (dk.prov && !lage.mobil) res.kontroller.push(...await c.ev(`(${PROVSCENARIO})()`));
     const blad = await provaBlad(c, lage, felkod && felkod.blad);
     res.kontroller.push(...blad); res.bladTid = blad.tid || null;
@@ -1348,9 +1539,11 @@ async function kor(dk, lage, felkod) {
 
     // Läsplatsen är ett block: läs till ett ställe, stäng, byt sidmått (fönster ↔ helskärm ↔ mobil) – samma block syns
     const alt = lage.mobil ? { B: 1366, H: 633, namn: '1366×633' } : lage.H === 633 ? { B: 1366, H: 768, namn: '1366×768' } : { B: 390, H: 664, mobil: true, namn: 'mobil 390×664' };
+    // (en sida med bara fristående böcker: det första kortet)
+    const oppnaren = `(document.querySelector('.underdel-knapp.aktiv') || document.querySelector('.fordj-kort[data-oppna]'))`;
     const minne = await c.ev(`(async () => {
       const v = ms => new Promise(r => setTimeout(r, ms));
-      document.querySelector('.underdel-knapp.aktiv').click(); await v(600);
+      ${oppnaren}.click(); await v(600);
       Bok.gaTill(Math.max(2, Math.round(document.querySelectorAll('.lr-sida').length * 0.6))); await v(200);
       const p = Bok.plats;
       [...document.querySelectorAll('.bok-stang')].find(e => e.offsetParent).click(); await v(450);
@@ -1360,7 +1553,7 @@ async function kor(dk, lage, felkod) {
     await vanta(400);
     const igen = await c.ev(`(async () => {
       const v = ms => new Promise(r => setTimeout(r, ms));
-      document.querySelector('.underdel-knapp.aktiv').click(); await v(700);
+      ${oppnaren}.click(); await v(700);
       const sidor = [...document.querySelectorAll('.scen .uppslag > .sida[data-nr]')];
       const id = ${JSON.stringify(minne)};
       const ok = !!id && sidor.some(s => s.querySelector('[data-post="' + id + '"]'));
@@ -1379,7 +1572,7 @@ async function kor(dk, lage, felkod) {
     const over = res.brytTid ? res.brytTid.bocker.filter(b => !(b.median < 200)) : [{ bok: '(ingen bok)', median: NaN, max: NaN }];
     res.kontroller.push({ namn: 'prestanda: brytningen under 200 ms med CPU:n strypt 6 gånger (medianen av 5 varv efter uppvärmning, varje bok)',
       ok: !over.length, detalj: over.map(b => `${b.bok} median ${b.median} ms (max ${b.max})`).join(', ') });
-    if (BILDER) { await c.ev(`document.querySelector('.underdel-knapp').click()`); await vanta(500); await bild(c, dk, lage, 'bok'); }
+    if (BILDER) { await c.ev(`${oppnaren}.click()`); await vanta(500); await bild(c, dk, lage, 'bok'); }
     }
     res.fel = (await c.ev('window.__fel')).concat(c.undantag.map(u => 'undantag: ' + u));
     res.fel = [...new Set(res.fel)];
@@ -1806,6 +1999,8 @@ async function jamforWebben(lista) {
         omkorningar.push(`${dk.namn}, ${lage.namn}: första ${o.total} ms / glapp ${o.maxGlapp} ms → omkörningen ${r.bladTid.total} ms / glapp ${r.bladTid.maxGlapp} ms (${r.bladTid.gron ? 'grönt' : 'rött'})`);
       }
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
+      // --visa: också proven som gick igenom (för en rapport)
+      if (process.argv.includes('--visa')) r.kontroller.filter(x => x.ok).forEach(x => console.log(`       ✓ ${x.namn}${x.detalj ? ' – ' + x.detalj.slice(0, 160) : ''}`));
       r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
       if (r.kontroll) r.kontroll.problem.forEach(p => console.log(`       problem: ${p}`));
       if (r.kontroll && lage === LAGEN[0]) r.kontroll.varningar.forEach(p => console.log(`       varning: ${p}`));
@@ -1815,8 +2010,9 @@ async function jamforWebben(lista) {
     }
   } else {
     // Negativ verifiering: varje fel, i varje läge, på första riktiga delkapitlet – grinden ska bli röd
-    const dk = lista.find(d => !d.prov) || lista[0];
-    for (const [namn, kod] of Object.entries(FEL)) for (const lage of LAGEN) {
+    const dk0 = lista.find(d => !d.prov) || lista[0];
+    for (const [namn, kod] of Object.entries(FEL).filter(([n]) => !NEGATIV_BARA || n.includes(NEGATIV_BARA))) for (const lage of LAGEN) {
+      const dk = (kod.dk && lista.find(d => d.namn.includes(kod.dk))) || dk0;
       const r = await kor(dk, lage, kod);
       // den långsamma brytningen ska fångas av just tidsprovet, den hackiga bladvändningen av bladvändningens tidsprov
       // i båda körningarna (första körningen röd, omkörningen röd)
@@ -1825,6 +2021,8 @@ async function jamforWebben(lista) {
       const rott = namn === 'långsam brytning' ? r.kontroller.some(x => x.namn.startsWith('prestanda') && !x.ok)
         : namn === 'hackig bladvändning' ? r.kontroller.some(x => x.namn.startsWith('blad: en vändning') && !x.ok) && !!(r.bladTid && r.bladTid.omkord)
         : enGang ? r.gron && !!(r.bladTid && r.bladTid.omkord)
+        // rutornas regler: rött, och just den regeln är bruten (i brytningsreglerna eller i grindens mätning)
+        : kod.regel ? !r.gron && ((r.kontroll && r.kontroll.problem.some(p => kod.regel.test(p))) || r.kontroller.some(x => !x.ok && kod.regel.test(x.namn + ' ' + x.detalj)))
         : !r.gron;
       gront = gront && rott;
       console.log(`${rott ? 'GRÖNT' : 'RÖTT '}  negativ "${namn}", ${lage.namn}: grinden blev ` +
@@ -1833,6 +2031,8 @@ async function jamforWebben(lista) {
         (r.brytTid ? `, brytningen median högst ${r.brytTid.median} ms` : '') +
         (namn.startsWith('hackig bladvändning') && r.bladTid ? `, bladvändningen: ${r.bladTid.omkord ? `första ${r.bladTid.omkord.total} ms / glapp ${r.bladTid.omkord.maxGlapp} ms (rött), omkörningen ` : 'ingen omkörning, '}${r.bladTid.total} ms / glapp ${r.bladTid.maxGlapp} ms (${r.bladTid.gron ? 'grönt' : 'rött'})` : '') + ')');
       // fångas felet inte: vad som hände i stället (JS-fel och prov som inte gick igenom)
+      if (kod.regel && rott) [...(r.kontroll ? r.kontroll.problem.filter(p => kod.regel.test(p)) : []), ...r.kontroller.filter(x => !x.ok && kod.regel.test(x.namn + ' ' + x.detalj)).map(x => x.namn)]
+        .slice(0, 2).forEach(p => console.log(`       fångat: ${p.slice(0, 200)}`));
       if (!rott) { r.fel.forEach(f => console.log(`       JS-fel: ${f.split('\n').slice(0, 3).join(' ')}`));
         r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`)); }
     }

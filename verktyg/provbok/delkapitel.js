@@ -24,6 +24,11 @@ Bok.delkapitel({
     { id: 'extra', namn: 'Extranivå' }
   ],
   standardniva: 'standard',
+  // Nästa steg (arbetsorder 11): en fristående bok av varje slag – Nästa steg (blocket i Läs), en övningsbok (fliken
+  // Öva) och en stödbok utan kort (bara länkmål) – med de nya märkningarna och länkar mellan böckerna
+  nastaSteg: [{ id: 'prov-nasta', titel: 'Provbok · Nästa steg', fil: 'innehall/nasta/textbok.js' }],
+  ovningsbocker: [{ id: 'prov-ovning', titel: 'Provbok · Nästa steg – övningsbok', fil: 'innehall/nasta/ovningsbok.js' }],
+  stodbocker: [{ id: 'prov-matte', titel: 'Provbok · Matematik', fil: 'innehall/nasta/matte.js' }],
   hjalpmedel: {
     forelasning:    { href: null },
     ova:            { href: 'hjalpmedel.html?vad=ova&avsnitt={avsnitt}' },

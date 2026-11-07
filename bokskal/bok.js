@@ -64,7 +64,7 @@
   // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id), 'innehall' eller
   // 'omslag'. nr: sidan som visas – 0 är omslaget.
   // flytt räknas upp när blockens element flyttas mellan sidor (en ny brytning), så att sidorna byggs om.
-  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false;
+  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false, provaRuta = null;
   let tillbaka = null, vandning = 'blad', helskarm = true, reglage = 'alltid', vilaTimer = null;
   let fokusEfter = null, panelFran = null, senasteEsc = 0;
   const ui = {};
@@ -92,7 +92,7 @@
   // tusentalsmellanslaget (1 538) blir hårda (U+00A0) när texten ritas, så att raden aldrig bryts där. Källfilerna
   // skrivs med vanliga mellanslag.
   const ENHETER = ['km/h', 'm/s²', 'm/s', 'g/cm³', 'kg/m³', 'kg/dm³', 'kWh', 'cm³', 'dm³', 'm³', 'mm²', 'cm²', 'm²', '°C',
-    'kPa', 'hPa', 'MPa', 'Pa', 'kHz', 'Hz', 'dB', 'kN', 'N', 'kJ', 'MJ', 'J', 'kW', 'MW', 'W', 'kg', 'mg', 'g', 'ton',
+    'kPa', 'hPa', 'MPa', 'Pa', 'kHz', 'Hz', 'dB', 'kN', 'mN', 'N', 'kJ', 'MJ', 'J', 'kW', 'MW', 'W', 'kg', 'mg', 'g', 'ton',
     'km', 'dm', 'cm', 'mm', 'nm', 'm', 'min', 'ms', 'h', 's', 'dl', 'cl', 'ml', 'l', 'K', 'mA', 'A', 'kV', 'V', 'Ω', '%'];
   const TAL_ENHET = new RegExp(`(\\d) (?=(?:${ENHETER.join('|')})(?![\\p{L}\\p{N}]))`, 'gu');
   // …och ett intervall (80–90) bryts inte efter tankstrecket: ett ordskarvstecken (U+2060, syns inte) efter strecket
@@ -112,9 +112,11 @@
 
   // Textens enda markering: *begrepp* (betonat, djupblått), *böjd form|grundform* när begreppet står böjt,
   // [[täljare|nämnare]] (bråk) och <sub>/<sup>. Har delkapitlet en begreppslista blir varje begrepp en länk dit.
+  // Ett index skrivet med understreck (F_N, μ_vila, ρ_is – Nästa steg, arbetsorder 11) blir nedsänkt: F<sub>N</sub>.
   function inline(s, lankar = true) {
     return esc(bindTal(s))
       .replace(/&lt;(\/?)(sub|sup)&gt;/g, '<$1$2>')
+      .replace(/(\p{L})_([\p{L}\p{N}]+)/gu, '$1<sub>$2</sub>')
       .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g,
         '<span class="brak"><span class="brak-t">$1</span><span class="brak-n">$2</span></span>')
       .replace(/\*([^*|]+)(?:\|([^*]+))?\*/g, (_, text, grund) => {
@@ -123,7 +125,7 @@
           : `<strong class="begrepp">${text}</strong>`;
       });
   }
-  const renText = s => String(s || '').replace(/\*([^*|]+)(?:\|[^*]+)?\*/g, '$1').replace(/<\/?su[bp]>/g, '');
+  const renText = s => String(s || '').replace(/\*([^*|]+)(?:\|[^*]+)?\*/g, '$1').replace(/<\/?su[bp]>/g, '').replace(/(\p{L})_([\p{L}\p{N}]+)/gu, '$1$2');
 
   const lager = {
     hamta(k, standard) {
@@ -138,14 +140,31 @@
   // Djupdykningarna (djupdykningar i delkapitel.js) hör till avsnittssidan, inte till en text: var och en är en egen
   // bok med en enda nivå, öppnad från avsnittssidans fot. Internt är den en "text" med id djupdykning-<id>, så att
   // brytning, läsplats och adress fungerar som för texterna – men den står inte bland texterna och har ingen nivåväljare.
-  const DJUPDYKNING = { id: 'djupdykning', namn: 'Djupdykning' };
+  // Fristående böcker (arbetsorder 11, 2026-11-07) fungerar likadant, i fyra slag – listorna i delkapitel.js:
+  //   djupdykningar   "Vill du veta mer?" längst ned i Läs
+  //   nastaSteg       Nästa steg (gymnasiets fysik): ett eget block under djupdykningarna
+  //   ovningsbocker   i fliken Öva
+  //   stodbocker      en stödbok (Matematiken i fysiken): ingen plats på avsnittssidan, bara länkmål – utan omslag
+  // Varje post: {id, titel, fil, kort?}. kort: false = inget kort (boken finns bara som mål för länkar från en annan bok,
+  // se bokref). Stödböckerna har inget kort om inte kort: true.
+  const SLAG = [
+    { lista: 'djupdykningar', prefix: 'djupdykning-', niva: { id: 'djupdykning', namn: 'Djupdykning' }, overrad: 'Djupdykning', omslag: true, kort: true },
+    { lista: 'nastaSteg', prefix: 'nasta-', niva: { id: 'nasta-steg', namn: 'Nästa steg' }, overrad: 'Nästa steg', omslag: true, kort: true },
+    { lista: 'ovningsbocker', prefix: 'ovning-', niva: { id: 'ovningsbok', namn: 'Övningsbok' }, overrad: 'Nästa steg', omslag: true, kort: true },
+    { lista: 'stodbocker', prefix: 'stod-', niva: { id: 'stodbok', namn: 'Stödbok' }, overrad: null, omslag: false, kort: false }
+  ];
+  const DJUPDYKNING = SLAG[0].niva;
+  let fristaendeLista = null;
+  const fristaende = () => fristaendeLista || (fristaendeLista = SLAG.flatMap(s => (info[s.lista] || []).map(d =>
+    Object.assign({}, d, { slag: s, t: s.prefix + d.id, kort: d.kort === undefined ? s.kort : !!d.kort }))));
   const djupdykningar = () => info.djupdykningar || [];
   const ddText = d => 'djupdykning-' + d.id;
-  const ddFor = t => !!t && djupdykningar().find(d => ddText(d) === t) || null;
-  const nivaerFor = t => ddFor(t) ? [DJUPDYKNING] : info.nivaer;
-  // Alla böcker: varje text på varje nivå, och varje djupdykning
-  const allaBocker = () => texter().flatMap(t => info.nivaer.map(n => ({ t: t.id, n, titel: t.titel })))
-    .concat(djupdykningar().map(d => ({ t: ddText(d), n: DJUPDYKNING, titel: d.titel, fil: d.fil })));
+  const extraFor = t => !!t && fristaende().find(d => d.t === t) || null;
+  const ddFor = extraFor;                                   // (en fristående bok, av vilket slag som helst)
+  const nivaerFor = t => extraFor(t) ? [extraFor(t).slag.niva] : info.nivaer;
+  // Alla böcker: varje text på varje nivå, och varje fristående bok
+  const allaBocker = () => (info.nivaer.length ? texter() : []).flatMap(t => info.nivaer.map(n => ({ t: t.id, n, titel: t.titel })))
+    .concat(fristaende().map(d => ({ t: d.t, n: d.slag.niva, titel: d.titel, fil: d.fil })));
   const textInfo = t => ddFor(t) ? { id: t, titel: ddFor(t).titel }
     : (t && info.texter && info.texter.find(x => x.id === t)) || { id: '', titel: info.titel, undertitel: info.undertitel };
   const bokNyckel = (t, n) => t ? `${t}/${n}` : n;
@@ -181,6 +200,28 @@
 
   /* ---------- Blocktyper ---------- */
 
+  // Ett formeluttrycks ungefärliga bredd i em (EB Garamond) – lite i överkant, så att det alltid ryms på en rad
+  // (bok.css: .b-formel-rad). Index (_N, ₀) och exponenter (², ᵐ) är smala; grinden mäter att inget går utanför.
+  function formelBredd(s) {
+    let b = 0, index = false;
+    for (const c of String(s).replace(/<\/?su[bp]>/g, '')) {
+      if (c === '_') { index = true; continue; }
+      if (index && !/[\p{L}\p{N}]/u.test(c)) index = false;
+      const w = c === ' ' ? 0.26 : /[·.,:;'’]/.test(c) ? 0.26 : /[=+−\-≤≥≈<>×/]/.test(c) ? 0.58 : /[()[\]|]/.test(c) ? 0.33
+        : /[₀-₉⁰-⁹ᵃ-ᶻ⁺⁻ⁿ¹²³]/u.test(c) ? 0.34 : /[√ΔΣ]/.test(c) ? 0.66 : /\d/.test(c) ? 0.5 : /\p{Lu}/u.test(c) ? 0.68 : 0.48;
+      b += index ? w * 0.72 : w;
+    }
+    return (Math.ceil(b * 1.08 * 100) / 100 + 0.4).toFixed(2);
+  }
+  // En länk till en annan bok på samma avsnittssida (en fristående bok, se fristaende): öppnar den vid avsnittet.
+  // Finns boken inte här står titeln som text (och kontrolläget säger till).
+  function bokLank(t, ankare, text, pil = false) {
+    const ex = t && extraFor(t), titel = text || (ex && ex.titel) || t || '';
+    if (!ex) return h('span', { class: 'bok-lank-text', html: inline(titel, false) });
+    return h('a', { class: 'bok-lank', href: '#' + t + '/' + (ankare || 'innehall'), 'data-bok': t, 'data-ankare': ankare || '' },
+      h('span', { html: inline(titel, false) }), pil && h('span', { class: 'lank-pil', 'aria-hidden': 'true' }, ' →'));
+  }
+
   const lista = p => h('ul', { class: 'b-punkter' }, p.map(x => h('li', { html: inline(x) })));
 
   blocktyper.text = d => h('p', { class: 'b-text', html: inline(d.text) });
@@ -195,11 +236,36 @@
     d.punkter && lista(d.punkter));
   blocktyper.jamforelse = d => h('div', { class: 'b-jamforelse' },
     d.kolumner.map(k => h('section', null, h('h4', { html: symboler(inline(k.rubrik)) }), lista(k.punkter))));
-  blocktyper.formel = d => h('div', { class: 'b-formel' },
-    h('div', { class: 'formel-uttryck', html: inline(d.uttryck) }),
-    d.forklaring && h('dl', null, d.forklaring.map(([t, f]) => [h('dt', { html: inline(t) }), h('dd', { html: inline(f) })])));
+  // formel: uttrycket stort och centrerat. forklaring som lista [[tecken, betydelse], …] står bredvid; som text
+  // (Nästa steg: "[FORMEL: uttryck – förklaring]", arbetsorder 11) under, i mindre stil. Uttrycket bryts aldrig: det
+  // står på en rad och krymper i stället när spalten är smal (--b: uttryckets ungefärliga bredd i em, se formelBredd).
+  blocktyper.formel = d => typeof d.forklaring === 'string' || !d.forklaring
+    ? h('div', { class: 'b-formel b-formel-rad' },
+      h('div', { class: 'formel-uttryck', style: `--b: ${formelBredd(d.uttryck)}`, html: inline(d.uttryck) }),
+      d.forklaring && h('p', { class: 'formel-forklaring', html: inline(d.forklaring) }))
+    : h('div', { class: 'b-formel' },
+      h('div', { class: 'formel-uttryck', html: inline(d.uttryck) }),
+      h('dl', null, d.forklaring.map(([t, f]) => [h('dt', { html: inline(t) }), h('dd', { html: inline(f) })])));
   blocktyper.exempel = d => h('div', { class: 'b-exempel' },
     h('h4', null, symText(d.rubrik || 'Exempel')), d.rader.map(r => h('p', { html: inline(r) })));
+  // Rutorna EXEMPEL och PROVA (Nästa steg, arbetsorder 11) i rader: varje rad i källan är en egen post (normalisera),
+  // så att ett exempel som är högre än sidan kan brytas mellan raderna. Den första raden bär rubriken. ny: en tom rad
+  // före i källan (ett nytt stycke i rutan); utan den står raden tätt under den förra (ett mellanled).
+  // I exemplen står orden Givet, Sökt, Lösning och Svar i fetstil.
+  const EX_ORD = /(^|\. )(Givet|Sökt|Lösning|Svar):/g;
+  blocktyper.rutarad = d => h('div', { class: `b-rutarad rr-${d.slag}` + (d.forsta ? ' rr-forsta' : '') + (d.sista ? ' rr-sista' : '') + (d.ny ? ' rr-ny' : ''),
+    'data-ruta': d.ruta, 'data-rad': d.rad, 'data-svar': d.svar ? '' : null },
+    d.forsta && h('h4', null, symText(d.slag === 'exempel' ? `Exempel: ${d.rubrik}` : 'Prova själv')),
+    h('p', { html: d.slag === 'exempel' ? inline(d.text).replace(EX_ORD, '$1<strong class="ex-ord">$2:</strong>') : inline(d.text) }));
+  // rader: rader i följd i källan utan tom rad emellan (mellanled), var och en på sin rad – mellanrummen står kvar
+  blocktyper.rader = d => h('div', { class: 'b-rader' }, d.rader.map(r => h('div', { class: 'b-rad', html: inline(r) })));
+  blocktyper.numrerad = d => h('ol', { class: 'b-numrerad' }, d.punkter.map(x => h('li', { html: inline(x) })));
+  // Länkar till en annan bok på samma avsnittssida (Nästa steg: "Matematik du behöver:" och "Används i Nästa steg:",
+  // arbetsorder 11): {typ: 'bokref', etikett, lankar: [{text, bok, ankare}]}. En post utan bok är text utan länk.
+  blocktyper.bokref = d => h('p', { class: 'b-bokref' }, h('span', { class: 'bokref-etikett' }, d.etikett), ' ',
+    d.lankar.map((l, i) => [i ? ' · ' : '', bokLank(l.bok, l.ankare, l.text)]));
+  // {typ: 'boklank', bok}: en länk till en annan bok med dess titel (textboken → övningsboken)
+  blocktyper.boklank = d => h('p', { class: 'b-boklank' }, bokLank(d.bok, null, null, true));
   blocktyper.tabell = d => h('div', { class: 'b-tabell' },
     h('table', null,
       d.rubriker && h('thead', null, h('tr', null, d.rubriker.map(r => h('th', { scope: 'col', html: symboler(inline(r)) })))),
@@ -264,6 +330,7 @@
   const nivaFil = (t, id) => ddFor(t) ? ddFor(t).fil : `innehall/${t ? t + '/' : ''}${id}.js`;
   const RUBRIKER = ['avsnittsstart', 'rubrik', 'underrubrik'];      // står aldrig sist på en sida
   const MED_STYCKET = ['figur', 'formel', 'exempel'];               // står på samma sida som stycket före
+  const MED_UPPSLAG = ['figur', 'formel'];                          // uppslagsregeln: på samma uppslag som stycket (order 8, 11)
   const INNEHALL = { id: 'innehall', titel: 'Innehåll', nummer: null };
 
   function normalisera(id, data, fil) {
@@ -276,7 +343,18 @@
       const poster = a.nummer ? [{ typ: 'avsnittsstart', id: a.id + '-start', avsnitt: a }] : [];
       // Blockens id i strömformatet: avsnitt-id-b<n>. Rubrikernas adresser är avsnitt-id-<n> (byggBok), och en
       // läsplats slås upp bland adresserna först – utan b skulle block 7 vara samma namn som rubrik 7.
-      if (Array.isArray(a.block)) a.block.forEach((b, j) => poster.push(post(b, `${a.id}-b${j + 1}`)));
+      if (Array.isArray(a.block)) a.block.forEach((b, j) => {
+        // EXEMPEL ({typ: 'exempel', rubrik, stycken: [[rad, …], …]}) och PROVA ({typ: 'prova', rader}): en post per rad
+        // (blocktyper.rutarad). Raderna hålls ihop i brytningen (enheter, paginera).
+        const pid = b.id || `${a.id}-b${j + 1}`;
+        if ((b.typ === 'exempel' && Array.isArray(b.stycken)) || b.typ === 'prova') {
+          const rader = b.typ === 'prova' ? b.rader.map(text => ({ text, ny: false }))
+            : b.stycken.flatMap((st, si) => st.map((text, ri) => ({ text, ny: si > 0 && ri === 0 })));
+          const ruta = { id: pid, slag: b.typ, antal: rader.length };
+          rader.forEach((r, k) => poster.push(Object.assign(post({ typ: 'rutarad', slag: b.typ, ruta: pid, rad: k + 1, rubrik: b.rubrik,
+            text: r.text, ny: r.ny, forsta: k === 0, sista: k === rader.length - 1, svar: b.typ === 'exempel' && /^Svar:/.test(r.text) }, `${pid}-r${k + 1}`), { ruta })));
+        } else poster.push(post(b, pid));
+      });
       else (a.sidor || []).forEach((s, si) => {
         if (s.titel && (!si || s.titel !== a.sidor[si - 1].titel)) poster.push(post({ typ: 'rubrik', text: s.titel }, `${a.id}-${si + 1}-0`));
         (s.block || []).forEach((b, bi) => poster.push(post(b.typ === 'rubrik' ? Object.assign({}, b, { typ: 'underrubrik' }) : b, `${a.id}-${si + 1}-${bi + 1}`)));
@@ -287,7 +365,7 @@
     return data;
   }
   const harInnehall = (id, t = textId) => { const d = nivadata[bokNyckel(t, id)]; return !!(d && d.avsnitt.length); };
-  const nivaNamn = id => (info.nivaer.concat(DJUPDYKNING).find(n => n.id === id) || { namn: id }).namn;
+  const nivaNamn = id => (info.nivaer.concat(SLAG.map(s => s.niva)).find(n => n.id === id) || { namn: id }).namn;
   // Nivån som en text öppnas på: den valda om texten har den, annars standardnivån eller den första med innehåll.
   const nivaFor = t => [nivaId, info.standardniva, ...nivaerFor(t).map(n => n.id)].find(x => x && harInnehall(x, t)) || null;
 
@@ -321,7 +399,12 @@
       const u = { poster: [], brytFore: bryt, rubrik: poster[i].typ === 'rubrik', delVid: null };
       bryt = false;
       while (i < poster.length && RUBRIKER.includes(poster[i].typ)) u.poster.push(poster[i++]);
-      if (i < poster.length && iFlodet(poster[i]) && poster[i].typ !== 'upphov') {
+      if (i < poster.length && poster[i].ruta) {
+        // en EXEMPEL- eller PROVA-ruta: alla dess rader i en grupp (en grupp som är högre än sidan delas i paginera)
+        const r = poster[i].ruta;
+        u.ruta = r;
+        while (i < poster.length && poster[i].ruta === r) u.poster.push(poster[i++]);
+      } else if (i < poster.length && iFlodet(poster[i]) && poster[i].typ !== 'upphov') {
         const forsta = poster[i++];
         u.poster.push(forsta);
         if (forsta.typ === 'text' && i < poster.length && MED_STYCKET.includes(poster[i].typ)) {
@@ -408,13 +491,14 @@
   const OMSLAG = { band: '#162040', koppar: '#ce8250', kopparLjus: '#f4be8e', kopparMork: '#040816', ljusbla: '#96c4ec', text: '#e8ecf2' };
   const OMSLAGET = { typ: 'omslag', nr: 0, ankare: 'omslag', poster: [] };
   let omslagNr = 0, matDuk = null;
-  const harOmslag = () => !!kapitel;
+  // (en stödbok har inget omslag: den hör inte till kapitlet)
+  const harOmslag = (t = textId) => !!kapitel && !(extraFor(t) && !extraFor(t).slag.omslag);
   const forstaSida = () => harOmslag() ? 0 : 1;
   const sida = n => n === 0 ? OMSLAGET : sidor[n - 1];
-  // En djupdykning: överraden "Djupdykning" och djupdykningens titel som undertitel
+  // En fristående bok: överraden efter slaget ("Djupdykning", "Nästa steg") och bokens titel som undertitel
   function omslagsdata(t = textId) {
     const mall = (info.omslag && info.omslag.undertitel) || '{text}', dd = ddFor(t);
-    return { overrad: dd ? 'Djupdykning' : kapitel.overrad, titel: kapitel.titel,
+    return { overrad: dd ? dd.slag.overrad : kapitel.overrad, titel: kapitel.titel,
       undertitel: dd ? dd.titel : mall.replace('{text}', textInfo(t).titel),
       illustration: kapitel.illustration, upphov: kapitel.upphov || info.upphov };
   }
@@ -649,6 +733,17 @@
       for (;;) {
         if (i < E.length) {
           let u = E[i];
+          // Ett EXEMPEL som inte ryms på en sida (arbetsorder 11) får brytas – bara mellan raderna: en grupp per rad, och
+          // den sista raden (Svar) i samma grupp som raden före, så att den aldrig står ensam på en ny sida. Rubrikerna
+          // före exemplet följer den första raden. Ett exempel som ryms står helt på en sida; en PROVA-ruta delas aldrig.
+          if (u.ruta && u.ruta.slag === 'exempel' && !u.radvis && hojd(u.poster) > kap(u.poster)) {
+            const f = u.poster.findIndex(p => p.ruta), l = u.poster.map(p => !!p.ruta).lastIndexOf(true), rader = u.poster.slice(f, l + 1), delar = [];
+            rader.forEach((p, k) => { if (k === rader.length - 1 && delar.length) delar[delar.length - 1].push(p); else delar.push([p]); });
+            delar[0].unshift(...u.poster.slice(0, f));
+            delar[delar.length - 1].push(...u.poster.slice(l + 1));          // länken i foten, upphovet
+            E.splice(i, 1, ...delar.map((ps, k) => Object.assign({}, u, { poster: ps, radvis: true, brytFore: k ? false : u.brytFore, rubrik: k ? false : u.rubrik, delVid: null })));
+            u = E[i];
+          }
           // Regelkonflikten: ryms inte stycket och figuren på en tom sida delas gruppen – figuren börjar nästa sida.
           // Står flera figurer efter stycket stannar så många som ryms med det; gruppen delas före den första som
           // inte ryms (två foton efter ett stycke: stycket och det första fotot ihop, det andra på nästa sida).
@@ -751,8 +846,9 @@
     const undantag = [];
     const uppslagNr = nr => nr % 2 ? nr : nr - 1;
     // de delade figurerna i avsnittet som står på ett annat uppslag än stycket: [index för figurens sida, stycket, figuren]
+    // (en FORMEL följer samma regel som en figur, arbetsorder 11)
     const skilda = fran => sidor.slice(fran + 1).map((T, n) => [fran + 1 + n, T]).filter(([j, T]) => T.enheter[0] && T.enheter[0].skild &&
-      T.enheter[0].poster[0].typ === 'figur' && sidor[j - 1].avsnitt === T.avsnitt && uppslagNr(j) !== uppslagNr(j + 1))
+      MED_UPPSLAG.includes(T.enheter[0].poster[0].typ) && sidor[j - 1].avsnitt === T.avsnitt && uppslagNr(j) !== uppslagNr(j + 1))
       .map(([j, T]) => [j, sidor[j - 1].enheter[sidor[j - 1].enheter.length - 1], T.enheter[0]]);
     for (const d of bok.delar) {
       const fran = sidor.length, villkor = new Set();      // grupper (första posten) där stycket följer figuren
@@ -775,6 +871,29 @@
       const s = sidor.find((x, j) => j > 1 && x.poster[0] && x.poster[0].typ === 'rubrik' && sidor[j - 1].avsnitt === x.avsnitt && x.poster.length > 1);
       if (s) { const fore = sidor[sidor.indexOf(s) - 1]; fore.poster.push(s.poster.shift()); }
     }
+    // Provkrokar för de nya rutornas regler (arbetsorder 11; bara med ?kontroll&prova=…): en post och det som står efter
+    // den på sidan flyttas först på nästa sida i samma avsnitt – en formel från sitt stycke, halva exemplet, raden Svar
+    // ensam, den sista raden i en PROVA-ruta. Brytningsreglerna (regelkoll) och grinden ska ge rött.
+    if (provaRuta) {
+      const flytta = (s, p) => { const j = sidor.indexOf(s), t = sidor[j + 1], k = s.poster.indexOf(p);
+        if (!t || t.avsnitt !== s.avsnitt || k < 1) return false; t.poster.unshift(...s.poster.splice(k)); return true; };
+      const rader = s => { const m = new Map(); s.poster.forEach(p => { if (p.ruta) { if (!m.has(p.ruta)) m.set(p.ruta, []); m.get(p.ruta).push(p); } }); return [...m]; };
+      const hela = (R, ps) => ps.length === R.antal && ps.length > 1;
+      for (const s of sidor.slice(1)) {
+        let gjort = false;
+        // (en formel vars stycke har minst 40 % av sidan före sig: då är det inte tillåtet att skilja dem, se regelkoll)
+        if (provaRuta === 'formel-skild') { const k = s.poster.findIndex((p, i) => { if (p.typ !== 'formel' || i < 2 || s.poster[i - 1].typ !== 'text') return false;
+          let st = i - 1; while (st > 0 && RUBRIKER.includes(s.poster[st - 1].typ)) st--;
+          return hojd(s.poster.slice(0, st)) >= TUNN * kap(s.poster) + NARA; }); gjort = k > 0 && flytta(s, s.poster[k]); }
+        for (const [R, ps] of rader(s)) {
+          if (gjort || !hela(R, ps)) continue;
+          if (provaRuta === 'exempel-delat' && R.slag === 'exempel') gjort = flytta(s, ps[Math.ceil(ps.length / 2)]);
+          if (provaRuta === 'svar-ensam' && R.slag === 'exempel' && ps[ps.length - 1].b.svar) gjort = flytta(s, ps[ps.length - 1]);
+          if (provaRuta === 'prova-delad' && R.slag === 'prova') gjort = flytta(s, ps[ps.length - 1]);
+        }
+        if (gjort) break;
+      }
+    }
     const postSida = new Map();
     sidor.forEach((x, j) => {
       x.nr = j + 1;
@@ -785,7 +904,7 @@
       const rubrik = d.poster.slice(0, forsta + 1).reverse().find(p => p.ankare);
       x.ankare = rubrik ? rubrik.ankare : x.avsnitt.id;
     });
-    const r = { sidor, postSida, matt, kap: kap0, g, undantag };
+    const r = { sidor, postSida, matt, kap: kap0, kapFot, g, undantag };
     sidor[0].brytning = r;
     // Innehållsförteckningen (sida 1) ska rymmas; den krymper själv sin text (passaInnehall)
     const toc = sidElement(sidor[0]); vard.append(toc); passaInnehall(toc);
@@ -822,13 +941,13 @@
           if (ihop <= r.kap && innan >= TUNN * r.kap && !(P.fyllFore < TUNN)) brott.push(`sida ${s.nr}: ${forsta.typ} står skild från stycket före, fast de ryms tillsammans`);
         }
       }
-      // Uppslagsregeln: figuren och stycket före den på samma uppslag (datorn) / sida (mobilen)
-      if (forsta && forsta.typ === 'figur') {
+      // Uppslagsregeln: figuren (och formeln, arbetsorder 11) och stycket före den på samma uppslag (datorn) / sida (mobilen)
+      if (forsta && MED_UPPSLAG.includes(forsta.typ)) {
         // stycket närmast före: bakåt över figurerna, formlerna och exemplen som står mellan
         let k = d.poster.indexOf(forsta) - 1; while (k > 0 && MED_STYCKET.includes(d.poster[k].typ)) k--;
         const fore = d.poster[k], P = fore && fore.typ === 'text' && r.postSida.get(fore);
         if (P && P !== s && (r.g.uppslag ? uppslagNr(P.nr) !== uppslagNr(s.nr) : true)) {
-          const text = `sida ${s.nr}: figuren står på ${r.g.uppslag ? 'ett annat uppslag' : 'en annan sida'} än stycket före den (sida ${P.nr})`;
+          const text = `sida ${s.nr}: ${forsta.typ === 'formel' ? 'formeln' : 'figuren'} står på ${r.g.uppslag ? 'ett annat uppslag' : 'en annan sida'} än stycket före den (sida ${P.nr})`;
           if (!r.g.uppslag) varningar.push(text + ' – mobilen');
           else if ((r.undantag || []).includes(s.nr)) varningar.push(text + ' – stycket står först på sin sida (undantag)');
           else brott.push(text);
@@ -845,6 +964,20 @@
       const efter = bok.poster.slice(j + 1).find(iFlodet), s = efter && r.postSida.get(efter);
       if (s && forstaPa(s) !== efter && efter.avsnitt === p.avsnitt) brott.push(`sida ${s.nr}: blocket efter en sidbrytning börjar inte sidan`);
     });
+    // Rutorna (arbetsorder 11): en PROVA-ruta är hel; ett EXEMPEL som ryms på en sida står helt på en sida, och ett som
+    // delas (högre än sidan) delas mellan raderna så att raden Svar aldrig står ensam på en ny sida.
+    const rutor = new Map();
+    bok.poster.forEach(p => { if (p.ruta) { if (!rutor.has(p.ruta)) rutor.set(p.ruta, []); rutor.get(p.ruta).push(p); } });
+    for (const [R, ps] of rutor) {
+      const sid = [...new Set(ps.map(p => r.postSida.get(p)))].filter(Boolean);
+      if (sid.length < 2) continue;
+      const nrs = sid.map(x => x.nr).join('–'), rubrik = R.slag === 'exempel' ? ` ”${renText(ps[0].b.rubrik)}”` : '';
+      if (R.slag === 'prova') { brott.push(`sida ${nrs}: PROVA-rutan är delad`); continue; }
+      const ihop = r.matt.get(ps[ps.length - 1]).bottom - r.matt.get(ps[0]).top;
+      if (ihop <= Math.min(r.kap, r.kapFot)) brott.push(`sida ${nrs}: exemplet${rubrik} är delat, fast det ryms på en sida`);
+      const sv = ps[ps.length - 1], fore = ps[ps.length - 2];
+      if (sv.b.svar && fore && r.postSida.get(sv) !== r.postSida.get(fore)) brott.push(`sida ${r.postSida.get(sv).nr}: raden Svar i exemplet${rubrik} står ensam på en ny sida`);
+    }
     return { brott, tunna, varningar };
   }
 
@@ -975,8 +1108,10 @@
     ui.bak.disabled = ui.pilBak.disabled = forsta.nr === forstaSida();
     ui.fram.disabled = ui.pilFram.disabled = sista.nr === sidor.length;
     if (tillbaka && vis.includes(tillbaka)) tillbaka = null;
-    ui.chipar.forEach(c => { c.hidden = !tillbaka; if (tillbaka) c.textContent = `↩ Tillbaka till sida ${tillbaka}`; });
-    ui.position.hidden = !!tillbaka;
+    // efter en länk till en annan bok: "↩ Tillbaka till <boken>" (ett hopp i den nya boken går före)
+    const chip = tillbaka ? `↩ Tillbaka till sida ${tillbaka}` : bokTillbaka ? `↩ Tillbaka till ${renText(bokTillbaka.titel)}` : null;
+    ui.chipar.forEach(c => { c.hidden = !chip; if (chip) c.textContent = chip; });
+    ui.position.hidden = !!chip;
     lager.spara(platsNyckel(textId, nivaId), plats);
     if (nyttLage) {
       ui.meddela.textContent = omslag ? `Omslag. ${[omslagsdata().titel, omslagsdata().undertitel].filter(Boolean).join(' – ')}.`
@@ -1019,11 +1154,15 @@
   }
   const bladdra = steg => { const v = synliga(nr); gaTill(steg > 0 ? v[v.length - 1] + 1 : v[0] - 1); };
   // Adressen: #<rubrik>, och med texter #<text>/<rubrik> (#atomen/periodiska-systemet-2), så att en länk öppnar rätt bok
-  // (en djupdykning: #djupdykning-<id>/<rubrik>)
+  // (en fristående bok: #djupdykning-<id>/<rubrik>, #nasta-<id>/<rubrik> …). Bara bokens namn (#nasta-<id>, från
+  // startsidan): boken öppnas där eleven var, annars på omslaget.
   const adress = ankare => '#' + (info.texter || ddFor(textId) ? textId + '/' : '') + ankare;
   const platsIAdressen = () => { const x = decodeURIComponent(location.hash.slice(1)); return x || null; };
-  // Öppnar boken på en adress: byter först text (eller djupdykning) om adressen säger det
+  const sparadPlats = t => { const ex = extraFor(t), n = ex && ex.slag.niva.id, sp = n && harInnehall(n, t) ? lager.hamta(platsNyckel(t, n), null) : null;
+    return sp && postFor(byggBok(n, t), sp) ? sp : harOmslag(t) && sp !== 'innehall' ? 'omslag' : 'innehall'; };
+  // Öppnar boken på en adress: byter först text (eller fristående bok) om adressen säger det
   function oppnaAdress(x, valfritt) {
+    if (extraFor(x)) x = x + '/' + sparadPlats(x);
     const i = x.indexOf('/'), t = i > 0 ? x.slice(0, i) : null;
     if (t && ddFor(t)) { valjDjupdykning(t); x = x.slice(i + 1); }
     else if (t && info.texter) { valjText(t); x = x.slice(i + 1); }
@@ -1043,8 +1182,10 @@
   function byggHubb() {
     const smulor = (info.smulor || []).map(x => typeof x === 'string' ? { text: x } : x);
     // Flikarna: Läs är boken, de andra är plattformens hjälpmedel. Utan adress är fliken tonad och "kommer".
+    // (Öva visar också övningsböckerna: med en övningsbok är fliken inte "kommer")
+    const ovKort = fristaende().some(d => d.slag.lista === 'ovningsbocker' && d.kort);
     ui.flikar = FLIKAR.map(([id, namn, hm]) => {
-      const kommer = !!hm && !hjalpmedelUrl(hm);
+      const kommer = !!hm && !hjalpmedelUrl(hm) && !(id === 'ova' && ovKort);
       return h('button', { type: 'button', class: 'flik' + (id === 'laes' ? ' aktiv' : ''), 'data-flik': id, role: 'tab',
         'aria-selected': String(id === 'laes'), 'aria-disabled': kommer ? 'true' : null, title: kommer ? `${namn} – kommer` : null,
         onclick: () => { if (!kommer) visaFlik(id); } }, namn);
@@ -1056,8 +1197,21 @@
     ui.ddGrid = h('div', { class: 'fordj-kort-grid' });
     ui.djupdykningar = h('section', { class: 'vill-veta-mer', hidden: !djupdykningar().length },
       h('h2', null, 'Vill du veta mer?'), ui.ddGrid);
+    // Nästa steg (arbetsorder 11): ett eget block under djupdykningarna, i samma stil. Övningsböckerna står i fliken
+    // Öva, och en stödbok med kort (på sin egen sida, t.ex. Matematiken i fysiken) i Läs utan rubrik.
+    const kortFor = lista => fristaende().filter(d => d.slag.lista === lista && d.kort);
+    ui.kortGrid = {};
+    const kortSektion = (lista, klass, rubrik) => {
+      ui.kortGrid[lista] = h('div', { class: 'fordj-kort-grid' });
+      return h('section', { class: 'vill-veta-mer ' + klass, hidden: !kortFor(lista).length }, rubrik && h('h2', null, rubrik), ui.kortGrid[lista]);
+    };
+    ui.nastaSteg = kortSektion('nastaSteg', 'nasta-steg', 'Nästa steg – gymnasiets fysik');
+    ui.stodbocker = kortSektion('stodbocker', 'stodbocker', null);
+    ui.ovningsbocker = kortSektion('ovningsbocker', 'ovningsbocker', null);
     ui.flikInnehall = FLIKAR.map(([id, namn]) => h('section', { class: 'flik-innehall' + (id === 'laes' ? '' : ' dold'),
-      'data-flik': id, role: 'tabpanel', 'aria-label': namn }, id === 'laes' && [ui.texter, ui.nivaval, ui.lasLage, ui.djupdykningar]));
+      'data-flik': id, role: 'tabpanel', 'aria-label': namn },
+      id === 'laes' && [ui.texter, ui.nivaval, ui.lasLage, ui.stodbocker, ui.djupdykningar, ui.nastaSteg],
+      id === 'ova' && ui.ovningsbocker));
     const hero = h('header', { class: 'hero-banner' },
       h('div', { class: 'hero-inner' },
         h('nav', { class: 'brodsmulor', 'aria-label': 'Brödsmulor' },
@@ -1068,8 +1222,9 @@
         info.nummer && h('span', { class: 'avsnitt-label' }, 'Avsnitt ' + romersk(info.nummer)),
         h('h1', null, info.titel),
         info.undertitel && h('p', { class: 'subtitel' }, `— ${info.undertitel} —`)));
+    // flikar: false i delkapitel.js (en sida för en enda bok, t.ex. Matematiken i fysiken): ingen flikrad, bara Läs
     const sida = h('main', { class: 'sida' },
-      h('div', { class: 'flikar-rad', role: 'tablist' }, ui.flikar),
+      h('div', { class: 'flikar-rad', role: 'tablist', hidden: info.flikar === false }, ui.flikar),
       ui.flikInnehall,
       info.upphov && h('p', { class: 'footnote' }, `© ${info.upphov.ar} ${info.upphov.namn}`));
     ui.hubb = [hero, sida];
@@ -1081,7 +1236,7 @@
     ui.flikar.forEach(f => { const pa = f.dataset.flik === id; f.classList.toggle('aktiv', pa); f.setAttribute('aria-selected', String(pa)); });
     ui.flikInnehall.forEach(s => s.classList.toggle('dold', s.dataset.flik !== id));
     const [, namn, hm] = FLIKAR.find(f => f[0] === id), sek = ui.flikInnehall.find(s => s.dataset.flik === id);
-    if (hm && !sek.querySelector('iframe')) sek.append(h('iframe', { class: 'flik-ram', title: namn, src: medEmbed(hjalpmedelUrl(hm)) }));
+    if (hm && hjalpmedelUrl(hm) && !sek.querySelector('iframe')) sek.append(h('iframe', { class: 'flik-ram', title: namn, src: medEmbed(hjalpmedelUrl(hm)) }));
   }
 
   // Med texter i delkapitel.js är varje text (A, B …) en egen bok: den öppnas där eleven var i den, annars från
@@ -1090,6 +1245,10 @@
   // eleven är markeras och öppnar boken på sidan eleven var på; de andra öppnar boken där texten börjar.
   function ritaHubb() {
     ritaDjupdykningar();
+    // En sida utan nivåer (bara fristående böcker, t.ex. Matematiken i fysiken): inga texter, nivåer eller läsläge
+    const utanNivaer = !info.nivaer.length;
+    ui.nivaval.hidden = ui.lasLage.hidden = utanNivaer;
+    if (utanNivaer) { ui.texter.hidden = true; return; }
     ui.nivaval.replaceChildren(...info.nivaer.map(n => {
       const har = harInnehall(n.id);
       return h('button', { type: 'button', class: 'niva-knapp' + (n.id === nivaId ? ' aktiv' : ''), 'data-niva': n.id,
@@ -1136,23 +1295,26 @@
 
   // Djupdykningarna: ett kort var, i delkapitel.js ordning. Ett tryck öppnar djupdykningen där eleven var i den
   // (annars omslaget), oavsett vilken text och nivå som är vald. Utan innehåll är kortet tonat ("kommer").
+  // (Samma kort för Nästa steg i sitt block, övningsböckerna i fliken Öva och en stödbok med kort.)
   function ritaDjupdykningar() {
-    ui.ddGrid.replaceChildren(...djupdykningar().map(d => {
-      const t = ddText(d), n = DJUPDYKNING.id, har = harInnehall(n, t);
-      const sparad = har ? lager.hamta(platsNyckel(t, n), null) : null, p = har && postFor(byggBok(n, t), sparad);
-      const oppna = !har ? null : p ? p.id : harOmslag() && sparad !== 'innehall' ? 'omslag' : 'innehall';
-      return h('button', { type: 'button', class: 'fordj-kort', 'data-text': t, 'data-oppna': oppna, 'data-fokus': 'dd-' + d.id,
+    const kort = d => {
+      const t = d.t, n = d.slag.niva.id, har = harInnehall(n, t);
+      return h('button', { type: 'button', class: 'fordj-kort', 'data-text': t, 'data-oppna': har ? sparadPlats(t) : null,
+        'data-fokus': d.slag.lista === 'djupdykningar' ? 'dd-' + d.id : t,
         'aria-disabled': har ? null : 'true', title: har ? null : `${d.titel} – kommer` },
         h('span', { class: 'fordj-kort-text' }, h('span', { class: 'fordj-kort-titel', html: inline(d.titel, false) })));
-    }));
+    };
+    ui.ddGrid.replaceChildren(...fristaende().filter(d => d.slag.lista === 'djupdykningar').map(kort));
+    Object.entries(ui.kortGrid).forEach(([lista, grid]) => grid.replaceChildren(...fristaende().filter(d => d.slag.lista === lista && d.kort).map(kort)));
   }
-  // En djupdykning väljs: dess bok. Texten och nivån eleven har valt sparas inte om, och de gäller igen när boken stängs.
+  // En fristående bok väljs: dess bok. Texten och nivån eleven har valt sparas inte om, och de gäller igen när boken stängs.
   let ddFore = null;
   function valjDjupdykning(t) {
-    if (!ddFor(t) || !harInnehall(DJUPDYKNING.id, t)) return;
+    const ex = extraFor(t);
+    if (!ex || !harInnehall(ex.slag.niva.id, t)) return;
     if (!ddFore) ddFore = { text: textId, niva: nivaId };
     textId = t;
-    satsNiva(DJUPDYKNING.id);
+    satsNiva(ex.slag.niva.id);
   }
 
   // En text väljs (ett tryck på den i hubben): dess bok, på den valda nivån om texten har den.
@@ -1161,6 +1323,41 @@
     textId = t;
     lager.spara(nyckel('text'), t);
     satsNiva(nivaFor(t));
+  }
+
+  // En länk till en annan bok (bokref, boklank) i den öppna boken: den boken visas vid avsnittet, och "↩ Tillbaka till
+  // <boken>" leder tillbaka till sidan där eleven var. Texten och nivån eleven valt i hubben gäller igen när boken stängs.
+  let bokTillbaka = null;
+  function bytBok(t, ankare, { tillbaka: minns = true } = {}) {
+    const ex = extraFor(t);
+    if (!oppen || !ex || !harInnehall(ex.slag.niva.id, t)) return;
+    const fran = { text: textId, niva: nivaId, plats, titel: bokTitlar(textId)[0] };
+    if (!ddFore) ddFore = { text: textId, niva: nivaId };
+    textId = t;
+    satsNiva(ex.slag.niva.id);
+    visaBokVid(ankare || sparadPlats(t));
+    bokTillbaka = minns ? fran : null;
+    uppdateraLage(synliga(nr), false);
+  }
+  function tillbakaTillBok() {
+    const b = bokTillbaka;
+    if (!b) return;
+    bokTillbaka = null;
+    textId = b.text;
+    satsNiva(b.niva);
+    visaBokVid(b.plats);
+  }
+  function visaBokVid(mal) {
+    ritaNivaval();
+    ui.app.setAttribute('aria-label', bokTitlar(textId).filter(Boolean).join(' – '));
+    tillbaka = null;
+    layout();
+    nr = sidaFor(mal);
+    const p = postFor(byggBok(nivaId), mal);
+    plats = p && iFlodet(p) ? p.id : platsFor(sida(nr));
+    history.replaceState({ bok: true }, '', adress(sida(nr).ankare));
+    rita(0);
+    ui.meddela.textContent = `${bokTitlar(textId)[0]}.`;
   }
 
   /* ---------- Boken: öppna och stäng ---------- */
@@ -1180,7 +1377,7 @@
     if (!historik) history.pushState({ bok: true }, '', adress('innehall'));
     const rot = document.documentElement, gest = !navigator.userActivation || navigator.userActivation.isActive;
     if (helskarm && gest && rot.requestFullscreen && !document.fullscreenElement) rot.requestFullscreen().catch(() => {});
-    tillbaka = null;
+    tillbaka = null; bokTillbaka = null;
     vakna();
     layout();                                      // bryter boken efter sidmåttet
     nr = sidaFor(mal);
@@ -1209,7 +1406,8 @@
     ui.app.classList.remove('vila');
     ui.hubb.forEach(d => { d.inert = false; });
     document.body.classList.remove('bok-oppen');
-    // efter en djupdykning: texten och nivån eleven hade valt
+    // efter en fristående bok: texten och nivån eleven hade valt
+    bokTillbaka = null;
     if (ddFore) { textId = ddFore.text; nivaId = ddFore.niva; aktuell = null; sidor = []; ddFore = null; }
     ritaHubb();                                                  // texten där eleven är, och sidan
     const f = fokusEfter && ui.hubb[1].querySelector(`[data-fokus="${fokusEfter}"]`);
@@ -1237,7 +1435,8 @@
     ui.pilFram = h('button', { type: 'button', class: 'sidpil sidpil-fram', 'aria-label': 'Nästa sida', onclick: () => bladdra(1) }, '›');
     // "Tillbaka till sida x" efter ett hopp: i vänstermarginalen på dator, i stället för sidpositionen på mobil.
     const tillbakaKnapp = () => h('button', { type: 'button', class: 'tillbaka-chip', hidden: true,
-      onclick: () => { const t = tillbaka; tillbaka = null; gaTill(t, { hopp: true, minnas: false }); } });
+      onclick: () => { if (!tillbaka && bokTillbaka) { tillbakaTillBok(); return; }
+        const t = tillbaka; tillbaka = null; gaTill(t, { hopp: true, minnas: false }); } });
     ui.chipar = [tillbakaKnapp(), tillbakaKnapp()];
     ui.meddela = h('div', { class: 'sr-only', 'aria-live': 'polite' });
 
@@ -1311,6 +1510,8 @@
       if (!ui.niva.contains(t)) visaNivaLista(false);
       const hm = t.closest('a[data-hjalpmedel]');
       if (hm) { e.preventDefault(); oppnaPanel(hm.dataset.hjalpmedel, hm.getAttribute('href'), hm); return; }
+      const bl = t.closest('a[data-bok]');
+      if (bl) { e.preventDefault(); bytBok(bl.dataset.bok, bl.dataset.ankare || null); return; }
       const till = t.closest('[data-till]');
       if (!till) return;
       if (ui.meny.contains(till)) stangMeny(false);
@@ -1375,7 +1576,7 @@
   }
 
   function ritaNivaval() {
-    ui.niva.style.display = ddFor(textId) ? 'none' : '';       // en djupdykning har bara en nivå: ingen nivåväljare
+    ui.niva.style.display = ddFor(textId) ? 'none' : '';       // en fristående bok har bara en nivå: ingen nivåväljare
     ui.nivaKnapp.replaceChildren(h('span', null, nivaNamn(nivaId)), h('span', { class: 'niva-pil', 'aria-hidden': 'true' }, '▾'));
     ui.nivaKnapp.setAttribute('aria-label', `Nivå: ${nivaNamn(nivaId)}. Byt nivå`);
     ui.nivaLista.replaceChildren(...info.nivaer.map(n => {
@@ -1497,6 +1698,13 @@
       if (b.typ === 'figur' && !figurer[b.namn]) ut.problem.push(`${kalla}: figuren ”${b.namn}” finns inte`);
       if (b.typ === 'lank') [].concat(b.till || []).filter(id => !ids.includes(id))
         .forEach(id => ut.problem.push(`${kalla}: länk till okänt hjälpmedel ”${id}”`));
+      // en länk till en annan bok: boken finns på den här avsnittssidan, och avsnittet finns i den
+      [].concat(b.typ === 'bokref' ? b.lankar.filter(l => l.bok) : b.typ === 'boklank' ? [{ bok: b.bok, text: b.bok }] : []).forEach(l => {
+        const ex = extraFor(l.bok);
+        if (!ex) ut.problem.push(`${kalla}: länken ”${l.text}” går till boken ”${l.bok}”, som inte finns på avsnittssidan`);
+        else if (l.ankare && harInnehall(ex.slag.niva.id, l.bok) && !byggBok(ex.slag.niva.id, l.bok).ankare.has(l.ankare))
+          ut.problem.push(`${kalla}: länken ”${l.text}” går till ”${l.ankare}”, som inte finns i ${ex.titel}`);
+      });
       // En läsplats (ett block-id) slås upp bland adresserna först: samma namn som en annan rubriks adress ger fel plats
       const a = bok.ankare.get(p.id);
       if (a && a !== p) ut.problem.push(`${kalla}: blockets id ”${p.id}” är också adressen till rubriken ”${renText(a.b ? a.b.text : a.avsnitt.titel)}” – byt id`);
@@ -1513,8 +1721,8 @@
   // före en sidbrytning).
   function kontrollera() {
     const ut = { problem: problem.slice(), varningar: [], nivaer: {} };
-    if (harOmslag() && kapitel.illustration && !illustrationer[kapitel.illustration]) ut.problem.push(`kapitel.js: illustrationen ”${kapitel.illustration}” finns inte (Bok.illustration i figurer.js)`);
-    ut.omslag = harOmslag();
+    if (kapitel && kapitel.illustration && !illustrationer[kapitel.illustration]) ut.problem.push(`kapitel.js: illustrationen ”${kapitel.illustration}” finns inte (Bok.illustration i figurer.js)`);
+    ut.omslag = !!kapitel;
     const mobil = matchMedia(MOBIL).matches;
     const storlekar = MALSKARMAR.map(([n, B, H]) => [n, B, H, false]);
     // Mobilen: boken har en list överst (44 px) och en längst ner (52 px), se bok.css
@@ -1524,7 +1732,7 @@
     // Varje bok: en per nivå, och per text om delkapitlet har texter (nyckeln då "text/nivå"); varje djupdykning
     for (const x of allaBocker()) {
       const t = { id: x.t, titel: x.titel }, n = x.n;
-      const nyck = bokNyckel(t.id, n.id), namn = ddFor(t.id) ? `Djupdykning ”${t.titel}”` : (t.id ? t.titel + ', ' : '') + nivaNamn(n.id);
+      const nyck = bokNyckel(t.id, n.id), namn = ddFor(t.id) ? `${ddFor(t.id).slag.niva.namn} ”${t.titel}”` : (t.id ? t.titel + ', ' : '') + nivaNamn(n.id);
       if (!(nyck in nivadata)) { ut.nivaer[nyck] = 'saknas'; rader.push(`${namn}: saknas`); continue; }
       if (!harInnehall(n.id, t.id)) { ut.nivaer[nyck] = 'tom – kommer'; rader.push(`${namn}: tom – kommer`); continue; }
       const bok = byggBok(n.id, t.id), matt = {};
@@ -1548,6 +1756,11 @@
     // Grindens prov: rubrikernas adresser i boken som visas (adress → block)
     // (rubrikernas adresser räknas per nivå: avsnitt-id-n är den n:te rubriken i avsnittet på just den nivån)
     if (nivaId) { ut.ankare = [...byggBok(nivaId).ankare].map(([a, p]) => [adress(a).slice(1), p.id]); ut.niva = nivaId; }
+    else {
+      // en sida utan nivåer (bara fristående böcker): adresserna i den första boken med innehåll
+      const ex = fristaende().find(d => harInnehall(d.slag.niva.id, d.t));
+      if (ex) ut.ankare = [...byggBok(ex.slag.niva.id, ex.t).ankare].map(([a, p]) => [ex.t + '/' + a, p.id]);
+    }
     ut.gron = !ut.problem.length && !antalFel;
     document.body.dataset.kontroll = JSON.stringify(ut);
     let p = document.querySelector('.kontrollpanel');
@@ -1575,10 +1788,10 @@
         if (!t.id || !/^[a-z0-9-]+$/.test(t.id) || info.texter.findIndex(x => x.id === t.id) !== i) anmal(`delkapitel.js: text ${i + 1} behöver ett eget id (a–z, 0–9, -), det blir mappen innehall/<id>/`);
         if (!t.titel) anmal(`delkapitel.js: texten ”${t.id}” saknar titel`);
       });
-      djupdykningar().forEach((d, i, l) => {
-        if (!d.id || !/^[a-z0-9-]+$/.test(d.id) || l.findIndex(x => x.id === d.id) !== i) anmal(`delkapitel.js: djupdykning ${i + 1} behöver ett eget id (a–z, 0–9, -)`);
-        if (!d.titel || !d.fil) anmal(`delkapitel.js: djupdykningen ”${d.id}” behöver titel och fil`);
-      });
+      SLAG.forEach(s => (info[s.lista] || []).forEach((d, i, l) => {
+        if (!d.id || !/^[a-z0-9-]+$/.test(d.id) || l.findIndex(x => x.id === d.id) !== i) anmal(`delkapitel.js: ${s.lista}: bok ${i + 1} behöver ett eget id (a–z, 0–9, -)`);
+        if (!d.titel || !d.fil) anmal(`delkapitel.js: ${s.lista}: boken ”${d.id}” behöver titel och fil`);
+      }));
       // som i plattformens andra böcker: "Fysik – Kraft och rörelse – 1. Repetition"
       const smulor = (info.smulor || [info.amne]).map(x => typeof x === 'string' ? x : x.text);
       document.title = smulor.concat(delkapitelNamn()).filter(Boolean).join(' – ');
@@ -1586,6 +1799,7 @@
       kontroll = adress.has('kontroll');
       provaRubrikSist = kontroll && adress.get('prova') === 'rubrik-sist';   // grindens negativa prov, se paginera
       provaLangsam = kontroll && adress.get('prova') === 'langsam';
+      provaRuta = kontroll && ['formel-skild', 'exempel-delat', 'svar-ensam', 'prova-delad'].includes(adress.get('prova')) ? adress.get('prova') : null;
       // Bladvändning På (blad) eller Av (direkt); den som valt "Snabb" (före 2026-11-04) får På
       vandning = lager.hamta(nyckel('vandning'), 'blad') === 'direkt' ? 'direkt' : 'blad';
       helskarm = lager.hamta(nyckel('lashelskarm'), true);
@@ -1602,11 +1816,11 @@
         // En adress som pekar på en rubrik (#atomer-2) öppnar boken där. Hubben läggs under i historiken, så att
         // Stäng och bakåt leder dit och inte bort från delkapitlet.
         const mal = platsIAdressen();
-        if (mal && nivaId) { history.replaceState(null, '', utanHash()); oppnaAdress(mal); }
+        if (mal && (nivaId || extraFor(mal.split('/')[0]))) { history.replaceState(null, '', utanHash()); oppnaAdress(mal); }
         // Brytningen mäter texten: när typsnitten har laddats görs den om (och sparas), och först då kontrolleras boken.
         // Omslagets typsnitt laddas med (Marcellus används bara där), så att titeln mäts i rätt typsnitt.
         const typsnitt = !document.fonts ? [] : [document.fonts.ready,
-          ...(harOmslag() ? ['30px "Marcellus SC"', '50px "Marcellus"'].map(f => document.fonts.load(f).catch(() => {})) : [])];
+          ...(kapitel ? ['30px "Marcellus SC"', '50px "Marcellus"'].map(f => document.fonts.load(f).catch(() => {})) : [])];
         Promise.all(typsnitt).then(() => {
           typsnittKlara = true;
           Object.values(bocker).forEach(b => { b.brytningar = {}; });

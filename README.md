@@ -286,6 +286,33 @@ djupdykningar: [
   Ett avsnitt som bara finns på en nivå får ett eget id.
 - **Varje nivå i `nivaer` har en fil,** också en tom (med texter: en per text). Saknas filen säger kontrolläget till.
 
+## Fristående böcker: Nästa steg, övningsböcker och stödböcker
+
+Djupdykningarna är ett av fyra slag fristående böcker (arbetsorder 11, 2026-11-07). Alla fungerar som djupdykningarna
+ovan: en bok utan nivåer, med egen läsplats och adress, och elevens text och nivå ändras inte.
+
+| Lista i `delkapitel.js` | Var kortet står | Nivå i filen | Adress | Omslagets överrad |
+|---|---|---|---|---|
+| `djupdykningar` | *Vill du veta mer?* längst ned i Läs | `djupdykning` | `#djupdykning-<id>/…` | Djupdykning |
+| `nastaSteg` | blocket *Nästa steg – gymnasiets fysik* under djupdykningarna | `nasta-steg` | `#nasta-<id>/…` | Nästa steg |
+| `ovningsbocker` | fliken Öva, som då går att välja också utan hjälpmedlets adress | `ovningsbok` | `#ovning-<id>/…` | Nästa steg |
+| `stodbocker` | inget kort, om inte `kort: true` (då i Läs, utan rubrik) | `stodbok` | `#stod-<id>/…` | inget omslag |
+
+- **Posten:** `{ id, titel, fil, kort? }`. `fil` får ligga i ett annat delkapitel (`../../…`). Då finns boken på båda
+  sidorna, med var sin läsplats.
+- **`kort: false`:** boken har inget kort, och den finns bara som mål för länkar från en annan bok.
+- **Länkar mellan böckerna** på samma avsnittssida:
+  - `{typ: 'bokref', etikett, lankar: [{text, bok, ankare}]}` är en liten rad, till exempel "Matematik du behöver:"
+    följd av länkar. En post utan `bok` blir text utan länk.
+  - `{typ: 'boklank', bok}` är en länk med bokens titel.
+  - `bok` är bokens adressnamn (`stod-matematiken`) och `ankare` ett avsnitts id.
+  - Länken öppnar den andra boken vid avsnittet. "↩ Tillbaka till <boken>" leder tillbaka dit eleven var.
+  - `?kontroll` säger till om boken eller avsnittet inte finns.
+- **Bara bokens namn i adressen** (`index.html#nasta-<id>`, från startsidan): boken öppnas där eleven var, annars
+  på omslaget.
+- **En sida för bara fristående böcker:** `nivaer: []` och `flikar: false` (Matematiken i fysiken). Den har inga
+  texter, nivåer eller flikrad, bara bannern och korten. Grinden prövar den med ett eget scenario.
+
 ## Skriva en nivås bok
 
 Strömformatet (sedan 2026-11-02): ett avsnitt är en ström av block, utan sidor. Källfilens `###` blir en `rubrik`.
@@ -356,6 +383,15 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
 
   Mobilen (en sida i taget) har inga flyttar för den här regelns skull. Där varnar `?kontroll` och grinden för en
   figur på en annan sida än stycket. Avsnittet packas om tills inget fall återstår.
+- **Formeln följer samma regel som figuren** (arbetsorder 11). Den står med stycket före och på samma uppslag som
+  det.
+- **EXEMPEL-rutan** (arbetsorder 11):
+  - Ett exempel som ryms på en sida står helt på en sida. Det ryms då alltid på ett uppslag.
+  - Ett exempel som är högre än sidan bryts, men bara mellan raderna. Raden Svar står i samma grupp som raden före
+    och står därför aldrig ensam på en ny sida.
+  - Exemplet följer inte med stycket före.
+- **PROVA-rutan** delas aldrig.
+- **Kontrollen:** `?kontroll` (brytningsreglerna) och grindens mätning på skärmen säger till om en regel bryts.
 
 Brytningen väntar på typsnitten (annars mäts fel), sparas per sidmått och görs om bara när sidmåttet ändras. Den
 tar ungefär 10–90 ms med CPU:n strypt 6 gånger, som på en Chromebook (grinden: medianen under 200 ms). Innehållsförteckningen räknar ut sidnumren för
@@ -369,6 +405,8 @@ rubrikerna och krymper fortfarande sin egen text (ned till 70 %) om den behöver
     `18 km/h`) och tusentalsmellanslaget (`1 538`) blir hårda (U+00A0) när texten ritas, så att raden aldrig bryts
     där. Skriv vanliga mellanslag i källfilerna. Enheterna står i `ENHETER` i `bok.js`.
   - `*ord*` är alltid ett begrepp. Vill man bara betona ett ord blir det vanlig text.
+  - `F_N`, `μ_vila` och `ρ_is` är index: det som står efter understrecket blir nedsänkt (arbetsorder 11). Bara
+    bokstäver och siffror räknas till indexet.
 
 | Block | Fält |
 |---|---|
@@ -379,8 +417,13 @@ rubrikerna och krymper fortfarande sin egen text (ned till 70 %) om den behöver
 | `lank` | `till: ['ova', 'sjalvskattning', …]`: länk till plattformens hjälpmedel (se *Hjälpmedel*) |
 | `ruta` | `rubrik?`, `text` eller `punkter`, `stil: 'definition'` för en större definitionsruta |
 | `jamforelse` | `kolumner: [{rubrik, punkter}]`: två spalter sida vid sida |
-| `formel` | `uttryck`, `forklaring: [[tecken, betydelse], …]` |
+| `formel` | `uttryck`, `forklaring: [[tecken, betydelse], …]` bredvid, eller `forklaring: 'text'` under, i mindre stil. Med text står uttrycket alltid på en rad och krymper om spalten är smal. |
 | `exempel` | `rubrik?` (standard "Exempel"), `rader: [...]` |
+| `exempel` (Nästa steg) | `rubrik`, `stycken: [[rad, …], …]`. Rutan heter "Exempel: rubrik" och har en post per rad, så den kan brytas mellan raderna. Givet, Sökt, Lösning och Svar står i fetstil, och raderna i ett stycke står tätt. |
+| `prova` | `rader: [...]`: rutan "Prova själv". Den delas aldrig. |
+| `rader` | `rader: [...]`: rader i följd (mellanled), var och en på sin rad. Mellanrummen står kvar. |
+| `numrerad` | `punkter: [...]`: en numrerad lista (en stegplan) |
+| `bokref`, `boklank` | länkar till en annan bok, se *Fristående böcker* |
 | `tabell` | `rubriker?`, `rader: [[...]]`, `fotnot?`. Första kolumnen är radrubrik. |
 
 Ett block får ett eget `id` om det som eleven gör i det ska överleva att block flyttas (för interaktiva block senare).
@@ -640,6 +683,23 @@ beslut 2026-11-05.
   Visar den inte det, är något inte pushat eller så har Pages inte byggt klart. Kör den efter varje push.
 - **`--bara=<namn>`** prövar bara de delkapitel vars namn innehåller texten, till exempel `--bara=rorelse_och_kraft`.
   Det är ett snabbt prov medan man arbetar. Grinden är grön först när hela har körts.
+- **`--negativ=<namn>`** kör bara de negativa prov vars namn innehåller texten. **`--visa`** skriver också ut de prov
+  som gick igenom.
+- **Fristående böcker och rutorna (arbetsorder 11):**
+  - Nästa steg-blocket står sist i Läs, och fliken Öva har övningsböckernas kort.
+  - Varje kort öppnar sin bok: adressen stämmer, ingen nivåväljare, förteckningen har titeln och omslaget har "Nästa
+    steg" (en stödbok har inget). Stäng leder tillbaka.
+  - En länk av varje slag i varje bok (bokref, boklank) öppnar den andra boken vid avsnittet, och "Tillbaka till"
+    leder till samma ställe.
+  - I varje bok mäts på skärmen:
+    - ett EXEMPEL som ryms står på ett uppslag (en sida på mobilen);
+    - raden Svar står aldrig ensam på ett nytt uppslag;
+    - en PROVA-ruta är hel;
+    - varje formel står på en rad inom spalten;
+    - formeln står på samma uppslag som stycket före (uppslagsregeln).
+  - En sida med bara fristående böcker prövas med ett eget scenario: hubben, bläddra, innehållet, End och Esc.
+  - **Negativa prov:** fyra provkrokar (`?kontroll&prova=formel-skild`, `exempel-delat`, `svar-ensam`, `prova-delad`)
+    flyttar en post i provboken först på nästa sida. Grinden ska bli röd av just den regeln.
 
 **Källorna och omvandlaren** (sedan 2026-11-07, arbetsorder 10). Joachims källor ligger oförändrade i `kallor/`, en
 mapp per kapitel. Kapitel 1-texterna är omvandlade med ett skript och prövas med ett annat:
@@ -1105,3 +1165,17 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     3 120, Ganymedes 5 270, Kallisto 4 820). Storleken är figurtypens standard.
     - Med `storst: 150` blev månarna större, men då krympte figuren på datorn och namnen blev cirka 12 px.
     - Provboken (Tryck) har samma fall. Grinden mäter skalan i båda.
+- **2026-11-07, motorn för Nästa steg (arbetsorder 11, steg 1):**
+  - **Fristående böcker:** djupdykningarna blev ett av fyra slag (Nästa steg, övningsböcker, stödböcker), med
+    länkar mellan böckerna och "↩ Tillbaka till <boken>". Se *Fristående böcker*.
+  - **Blocken:**
+    - `formel` med förklaringen som text: på en rad, och uttrycket krymper i en smal spalt;
+    - `exempel` i rader;
+    - `prova`, `rader`, `numrerad`, `bokref` och `boklank`;
+    - index med understreck (`F_N`);
+    - enheten `mN`.
+  - **Brytningen:** formeln följer uppslagsregeln, ett EXEMPEL bryts bara mellan raderna och bara när det är högre
+    än sidan, Svar står aldrig ensam, och en PROVA-ruta delas aldrig.
+  - **Provboken** har en bok av varje slag med alla de nya blocken: ett exempel som ryms och ett som är högre än en
+    sida i alla lägen, ett långt formeluttryck och länkar åt båda hållen.
+  - **Grinden:** nya prov (se *Kontrollera*), fyra negativa prov, `--negativ=<namn>` och `--visa`.
