@@ -831,4 +831,42 @@
       `<circle cx="${f(q[0])}" cy="${f(q[1])}" r="${rq}" fill="none" stroke="${L}" stroke-width="2"/>` + kolatom(Z[0], Z[1], RZ - 22, 9, 7.5, 1.6);
     return s;
   });
+
+  /* Materia och universum (arbetsorder 9, 2026-11-07; filmerna har inget omslag för kapitlet): solen nere till
+   * vänster, planeternas banor runt den och planeterna på dem, och – som på Kraft och rörelse – en lins på jorden och
+   * en förstoring med kolatomen (materia). Samma färger och samma sken som Kraft och rörelse. */
+  Bok.illustration('materia-och-universum', ({ hojd, id }) => {
+    const L = OM.ljusbla, x0 = 0, x1 = 792, topp = 0, yb = hojd;
+    const S = [x0 + 70, yb - 30], RS = 120;                                    // solen
+    const sx0 = x0 + 90, sy0 = topp + 60, sx1 = x1 - 60, sy1 = yb + 40;
+    let s = `<defs><radialGradient id="${id}-sken"><stop offset="0" stop-color="${OM.sken}" stop-opacity=".18"/>` +
+      `<stop offset=".62" stop-color="${OM.sken}" stop-opacity=".15"/><stop offset="1" stop-color="${OM.sken}" stop-opacity="0"/></radialGradient>` +
+      `<radialGradient id="${id}-sol" cx=".42" cy=".4"><stop offset="0" stop-color="#f3c98e"/><stop offset=".55" stop-color="${OM.koppar}"/>` +
+      `<stop offset="1" stop-color="#a8613a"/></radialGradient></defs>` +
+      `<ellipse class="omslag-sken" cx="${f((sx0 + sx1) / 2)}" cy="${f((sy0 + sy1) / 2)}" rx="${f((sx1 - sx0) / 2 + 70)}" ry="${f((sy1 - sy0) / 2 + 70)}" fill="url(#${id}-sken)"/>`;
+    // stjärnorna: små prickar på fasta platser
+    const STJ = [[150, 40], [260, 22], [330, 70], [420, 30], [500, 58], [600, 20], [700, 48], [740, 140], [560, 120], [460, 150],
+      [380, 200], [640, 230], [720, 300], [300, 260], [210, 150], [120, 110], [520, 300], [430, 260]];
+    s += `<g fill="${L}">${STJ.filter(([, y]) => y < yb - 40).map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k % 3 ? 1.6 : 2.4}" opacity="${k % 2 ? .55 : .8}"/>`).join('')}</g>`;
+    // banorna: ellipser runt solen, tillplattade (sedda snett)
+    const BANOR = [210, 300, 400, 520, 650, 780], K = 0.34;
+    s += `<g fill="none" stroke="${L}" stroke-width="1.6" opacity=".5">${BANOR.map(r => `<ellipse cx="${S[0]}" cy="${S[1]}" rx="${r}" ry="${f(r * K)}"/>`).join('')}</g>`;
+    // planeterna på banorna (vinkeln uppåt höger), jorden på den tredje
+    const pa = (r, v) => [S[0] + r * Math.cos(v * Math.PI / 180), S[1] - r * K * Math.sin(v * Math.PI / 180)];
+    const PLANETER = [[0, 62, 7, '#b9a58e'], [1, 48, 10, '#e2c48a'], [3, 32, 9, '#c8714a'], [4, 24, 24, '#d6b083'], [5, 17, 20, '#e0cf9f']];
+    PLANETER.forEach(([b, v, r, farg]) => { const [x, y] = pa(BANOR[b], v); s += `<circle cx="${f(x)}" cy="${f(y)}" r="${r}" fill="${farg}" stroke="${L}" stroke-width="1.2" opacity=".95"/>`; });
+    const J = pa(BANOR[2], 40), rj = 12;
+    s += `<circle cx="${f(J[0])}" cy="${f(J[1])}" r="${rj}" fill="#4a86c4" stroke="${L}" stroke-width="1.6"/>` +
+      `<path d="M${f(J[0] - 7)} ${f(J[1] - 3)} q4 -6 9 -2 q2 4 -3 6 z" fill="#7fb07a" opacity=".85"/>`;
+    // solen
+    s += `<circle cx="${S[0]}" cy="${S[1]}" r="${RS}" fill="url(#${id}-sol)" stroke="${OM.koppar}" stroke-width="3"/>`;
+    // förstoringen: en lins på jorden och kolatomen i en cirkel uppe till höger
+    const rq = 21, Z = [x1 - 170, topp + 130], RZ = 104;
+    const dx = Z[0] - J[0], dy = Z[1] - J[1], d = Math.hypot(dx, dy), vx = -dy / d, vy = dx / d;
+    s += `<g stroke="${L}" stroke-width="1.4" opacity=".55">` + [1, -1].map(t =>
+      `<line x1="${f(J[0] + vx * rq * t)}" y1="${f(J[1] + vy * rq * t)}" x2="${f(Z[0] + vx * RZ * t)}" y2="${f(Z[1] + vy * RZ * t)}"/>`).join('') + '</g>';
+    s += `<circle cx="${Z[0]}" cy="${Z[1]}" r="${RZ}" fill="${OM.lins}" stroke="${L}" stroke-width="2.2"/>` +
+      `<circle cx="${f(J[0])}" cy="${f(J[1])}" r="${rq}" fill="none" stroke="${L}" stroke-width="2"/>` + kolatom(Z[0], Z[1], RZ - 22, 9, 7.5, 1.6);
+    return s;
+  });
 })();

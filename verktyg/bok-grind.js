@@ -1215,6 +1215,27 @@ async function provaTommaSidor(c, lage) {
   return k;
 }
 
+/* ---------- Hubben när allt "kommer" (2026-11-07) ----------
+ * Ingen text har innehåll än: Läs säger "Texterna kommer.", textknapparna syns inte, varje nivå och varje djupdykning
+ * är tonad ("kommer") och går inte att öppna, flikarna finns, och inget JS-fel. */
+const HUBB_KOMMER = String.raw`async () => {
+  const v = ms => new Promise(r => setTimeout(r, ms)), $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)], k = [];
+  const prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
+  const lage = ($('section[data-flik="laes"] .intro') || {}).textContent || '';
+  prova('hubb (allt kommer): Läs säger "Texterna kommer."', lage.trim() === 'Texterna kommer.', lage);
+  const texter = $('section[data-flik="laes"] .underdel-valjare');
+  prova('hubb (allt kommer): textknapparna syns inte', !texter || texter.hidden || !texter.offsetParent);
+  const nivaer = $$('.niva-valjare .niva-knapp');
+  prova('hubb (allt kommer): varje nivå är tonad ("kommer")', nivaer.length > 0 && nivaer.every(b => b.getAttribute('aria-disabled') === 'true'), nivaer.map(b => b.textContent + ' ' + b.getAttribute('aria-disabled')).join(', '));
+  const kort = $$('.fordj-kort');
+  if (kort.length) {
+    kort.forEach(b => b.click()); await v(500);
+    prova('hubb (allt kommer): djupdykningarna är tonade och öppnar ingen bok', kort.every(b => b.getAttribute('aria-disabled') === 'true') && !Bok.oppen, kort.length + ' kort');
+  }
+  prova('hubb (allt kommer): flikarna finns', $$('.flik').length >= 3, $$('.flik').map(f => f.textContent.trim()).join(' · '));
+  return k;
+}`;
+
 /* ---------- Omkörning när Chrome stängs (2026-11-07, Joachims beslut) ----------
  * Headless Chrome har stängts mitt i en körning, bara när datorn gick på batteri (5–6/11). Stängs Chrome körs läget om
  * en gång; omkörningen syns i utskriften (OMKÖRD) och i sammanställningen sist. Stängs det igen är läget rött. */
@@ -1251,6 +1272,11 @@ async function kor(dk, lage, felkod) {
     await ladda(url);
     res.kontroll = JSON.parse(await c.ev('document.body.dataset.kontroll || "null"'));
     if (BILDER) await bild(c, dk, lage, 'hubb');
+    // Ett delkapitel där allt "kommer" (ingen text har innehåll än, t.ex. en ny avsnittssida före texterna,
+    // 2026-11-07): bara hubben prövas – det finns ingen bok att öppna
+    res.allaKommer = !!res.kontroll && Object.keys(res.kontroll.nivaer).length > 0 && Object.values(res.kontroll.nivaer).every(x => typeof x === 'string');
+    if (res.allaKommer) res.kontroller = await c.ev(`(${HUBB_KOMMER})()`);
+    else {
     res.kontroller = await c.ev(`(${SCENARIO})(${lage.helskarm})`);
     if (dk.prov && !lage.mobil) res.kontroller.push(...await c.ev(`(${PROVSCENARIO})()`));
     const blad = await provaBlad(c, lage, felkod && felkod.blad);
@@ -1307,6 +1333,7 @@ async function kor(dk, lage, felkod) {
     res.kontroller.push({ namn: 'prestanda: brytningen under 200 ms med CPU:n strypt 6 gånger (medianen av 5 varv efter uppvärmning, varje bok)',
       ok: !over.length, detalj: over.map(b => `${b.bok} median ${b.median} ms (max ${b.max})`).join(', ') });
     if (BILDER) { await c.ev(`document.querySelector('.underdel-knapp').click()`); await vanta(500); await bild(c, dk, lage, 'bok'); }
+    }
     res.fel = (await c.ev('window.__fel')).concat(c.undantag.map(u => 'undantag: ' + u));
     res.fel = [...new Set(res.fel)];
   } catch (e) {
@@ -1327,18 +1354,24 @@ async function bild(c, dk, lage, vad) {
   console.log('   bild:', fil);
 }
 
-/* ---------- Startsidan och kapitelindexet: vägen mellan sidorna ----------
- * Startsidan (index.html) → kapitelindexet (kraft_och_rorelse/index.html) → avsnittssidorna → brödsmulorna tillbaka.
- * Ett tonat kort (kapitel, avsnitt eller resurs som inte finns än) är inte en länk och leder ingenstans. */
+/* ---------- Startsidan och kapitelindexen: vägen mellan sidorna ----------
+ * Startsidan (index.html) → varje byggt kapitels kapitelindex → avsnittssidorna → brödsmulorna tillbaka. Ett tonat
+ * kort (kapitel, avsnitt eller resurs som inte finns än) är inte en länk och leder ingenstans. KAPITEL: de byggda
+ * kapitlen i startsidans ordning (2026-11-07: kapitel I Materia och universum, arbetsorder 9). */
+const KAPITEL = [
+  { mapp: 'materia_och_universum', nr: 'I', titel: 'Materia och universum', avsnitt: ['solsystemet_och_jorden'],
+    alla: 'I II III IV V' },
+  { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft'],
+    alla: 'I II III IV V VI' }
+];
+const STARTSIDANS_KAPITEL = 'I Materia och universum · II Ljud och ljus · III Kraft och rörelse';
+const ROMERSKA = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 async function provaSidorna(lage) {
   const c = await chrome();
   const k = [], fel = [];
   const prova = (namn, ok, detalj) => k.push({ namn, ok: !!ok, detalj: detalj == null ? '' : String(detalj) });
   const start = adressTill(path.join(ROT, 'index.html'));
-  const kapitel = new URL('kraft_och_rorelse/index.html', start).href;
-  const MAPPAR = ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft'], ROMERSKA = ['I', 'II', 'III'];
-  const avsnitt = MAPPAR.map(d => new URL(`kraft_och_rorelse/${d}/index.html`, start).href);
   try {
     await c.send('Page.enable'); await c.send('Runtime.enable');
     await c.send('Emulation.setDeviceMetricsOverride', { width: lage.B, height: lage.H, deviceScaleFactor: 1, mobile: !!lage.mobil });
@@ -1358,50 +1391,60 @@ async function provaSidorna(lage) {
       prova(`${namn}: de ${n} tonade korten går inte att klicka sig vidare från`, n > 0 && await har() === fore);
     };
 
-    // Startsidan
+    // Startsidan: de byggda kapitlen är länkar till sina kapitelindex, de andra tonade
     await ga(start);
     const kap = await kort('ul.innehallsforteckning > li > .kapitel-kort');
-    prova('startsida: kapitlen I Materia och universum · II Ljud och ljus · III Kraft och rörelse',
-      kap.map(x => x.nr + ' ' + x.titel).join(' · ') === 'I Materia och universum · II Ljud och ljus · III Kraft och rörelse', kap.map(x => x.nr + ' ' + x.titel).join(' · '));
-    prova('startsida: I och II är tonade, aria-disabled, "Kommer" och inga länkar', kap.slice(0, 2).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
-    prova('startsida: III länkar till kapitelindexet', kap[2] && kap[2].tag === 'A' && kap[2].href === kapitel, kap[2] && kap[2].href);
+    prova('startsida: kapitlen ' + STARTSIDANS_KAPITEL, kap.map(x => x.nr + ' ' + x.titel).join(' · ') === STARTSIDANS_KAPITEL, kap.map(x => x.nr + ' ' + x.titel).join(' · '));
+    const byggda = KAPITEL.map(K => K.nr), tonade = kap.filter(x => !byggda.includes(x.nr));
+    prova(`startsida: ${tonade.map(x => x.nr).join(' och ')} tonade, aria-disabled, "Kommer" och inga länkar`,
+      tonade.length > 0 && tonade.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
+    for (const K of KAPITEL) {
+      const x = kap.find(y => y.nr === K.nr), mal = new URL(K.mapp + '/index.html', start).href;
+      prova(`startsida: ${K.nr} länkar till kapitelindexet`, x && x.tag === 'A' && x.href === mal && !x.kommer, x && x.href);
+    }
     const ov = await kort('.sektion-avgransare .kapitel-kort');
     prova('startsida: Översikt – Huvudelevbok och Självskattning, tonade "Kommer"',
       ov.map(x => x.titel).join(', ') === 'Huvudelevbok, Självskattning' && ov.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
     await bred('startsida');
     await tonadeLederIngenstans('startsida', '.kapitel-kort.dimmad');
 
-    // Kapitelindexet
-    await klicka('a.kapitel-kort[href$="kraft_och_rorelse/index.html"]');
-    prova('startsida → kapitelindexet', await har() === kapitel, await har());
-    const smula = await c.ev(`[...document.querySelectorAll('.brodsmulor > *')].map(e => e.tagName + ':' + e.textContent.trim() + (e.href ? '→' + e.href : '')).join(' | ')`);
-    prova('kapitelindex: brödsmulan Fysik (länk) › Kraft och rörelse, etiketten Kapitel III',
-      smula === `A:Fysik→${start} | SPAN:› | SPAN:Kraft och rörelse` && await c.ev(`document.querySelector('.hero-banner .avsnitt-label').textContent === 'Kapitel III'`), smula);
-    const av = await kort('ul.innehallsforteckning > li > .kapitel-kort');
-    prova('kapitelindex: avsnittssidorna I–VI', av.map(x => x.nr).join(' ') === 'I II III IV V VI', av.map(x => x.nr + ' ' + x.titel).join(' · '));
-    prova('kapitelindex: I–III länkar till avsnittssidorna', avsnitt.every((u, i) => av[i] && av[i].tag === 'A' && av[i].href === u && !av[i].kommer),
-      av.slice(0, 3).map(x => x.href).join(' | '));
-    prova('kapitelindex: IV–VI är tonade, aria-disabled, "Kommer" och inga länkar', av.slice(3).length === 3 && av.slice(3).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
-    const res = await kort('.resurser-rad .resurs-kort');
-    prova('kapitelindex: resurserna Begreppsbank och Självskattning, tonade "Kommer"',
-      res.map(x => x.titel).join(', ') === 'Begreppsbank, Självskattning' && res.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
-    await bred('kapitelindex');
-    await tonadeLederIngenstans('kapitelindex', '.kapitel-kort.dimmad, .resurs-kort.dimmad');
+    for (const K of KAPITEL) {
+      const kapitel = new URL(K.mapp + '/index.html', start).href, alla = K.alla.split(' '), n = K.avsnitt.length;
+      const avsnitt = K.avsnitt.map(d => new URL(`${K.mapp}/${d}/index.html`, start).href);
+      // Kapitelindexet
+      await ga(start);
+      await klicka(`a.kapitel-kort[href$="${K.mapp}/index.html"]`);
+      prova(`startsida → kapitelindexet ${K.titel}`, await har() === kapitel, await har());
+      const smula = await c.ev(`[...document.querySelectorAll('.brodsmulor > *')].map(e => e.tagName + ':' + e.textContent.trim() + (e.href ? '→' + e.href : '')).join(' | ')`);
+      prova(`kapitelindex ${K.nr}: brödsmulan Fysik (länk) › ${K.titel}, etiketten Kapitel ${K.nr}`,
+        smula === `A:Fysik→${start} | SPAN:› | SPAN:${K.titel}` && await c.ev(`document.querySelector('.hero-banner .avsnitt-label').textContent === 'Kapitel ${K.nr}'`), smula);
+      const av = await kort('ul.innehallsforteckning > li > .kapitel-kort');
+      prova(`kapitelindex ${K.nr}: avsnittssidorna ${alla[0]}–${alla[alla.length - 1]}`, av.map(x => x.nr).join(' ') === K.alla, av.map(x => x.nr + ' ' + x.titel).join(' · '));
+      prova(`kapitelindex ${K.nr}: ${ROMERSKA[0]}–${ROMERSKA[n - 1]} länkar till avsnittssidorna`,
+        avsnitt.every((u, i) => av[i] && av[i].tag === 'A' && av[i].href === u && !av[i].kommer), av.slice(0, n).map(x => x.href).join(' | '));
+      prova(`kapitelindex ${K.nr}: ${alla[n]}–${alla[alla.length - 1]} tonade, aria-disabled, "Kommer" och inga länkar`,
+        av.slice(n).length === alla.length - n && av.slice(n).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
+      const res = await kort('.resurser-rad .resurs-kort');
+      prova(`kapitelindex ${K.nr}: resurserna Begreppsbank och Självskattning, tonade "Kommer"`,
+        res.map(x => x.titel).join(', ') === 'Begreppsbank, Självskattning' && res.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
+      await bred(`kapitelindex ${K.nr}`);
+      await tonadeLederIngenstans(`kapitelindex ${K.nr}`, '.kapitel-kort.dimmad, .resurs-kort.dimmad');
 
-    // Avsnittssidorna och brödsmulorna tillbaka
-    for (const [i, mal] of avsnitt.entries()) {
-      await klicka(`a.kapitel-kort[href$="${MAPPAR[i]}/index.html"]`, 1200);
-      prova(`kapitelindex → avsnittssida ${ROMERSKA[i]}`, await har() === mal, await har());
-      const s = await c.ev(`[...document.querySelectorAll('.hero-banner .brodsmulor a')].map(a => a.textContent + '→' + a.href).join(' | ')`);
-      prova(`avsnittssida ${ROMERSKA[i]}: brödsmulorna Fysik och Kraft och rörelse är länkar dit`, s === `Fysik→${start} | Kraft och rörelse→${kapitel}`, s);
-      await klicka('.hero-banner .brodsmulor a:last-of-type');
-      prova(`avsnittssida ${ROMERSKA[i]} → brödsmulan Kraft och rörelse → kapitelindexet`, await har() === kapitel, await har());
+      // Avsnittssidorna och brödsmulorna tillbaka
+      for (const [i, mal] of avsnitt.entries()) {
+        await klicka(`a.kapitel-kort[href$="${K.avsnitt[i]}/index.html"]`, 1200);
+        prova(`kapitelindex ${K.nr} → avsnittssida ${ROMERSKA[i]}`, await har() === mal, await har());
+        const s = await c.ev(`[...document.querySelectorAll('.hero-banner .brodsmulor a')].map(a => a.textContent + '→' + a.href).join(' | ')`);
+        prova(`avsnittssida ${K.nr}.${ROMERSKA[i]}: brödsmulorna Fysik och ${K.titel} är länkar dit`, s === `Fysik→${start} | ${K.titel}→${kapitel}`, s);
+        await klicka('.hero-banner .brodsmulor a:last-of-type');
+        prova(`avsnittssida ${K.nr}.${ROMERSKA[i]} → brödsmulan ${K.titel} → kapitelindexet`, await har() === kapitel, await har());
+      }
+      await klicka('.hero-banner .brodsmulor a');
+      prova(`kapitelindex ${K.nr} → brödsmulan Fysik → startsidan`, await har() === start, await har());
+      await ga(avsnitt[0]); await vanta(500);
+      await klicka('.hero-banner .brodsmulor a');
+      prova(`avsnittssida ${K.nr}.I → brödsmulan Fysik → startsidan`, await har() === start, await har());
     }
-    await klicka('.hero-banner .brodsmulor a');
-    prova('kapitelindex → brödsmulan Fysik → startsidan', await har() === start, await har());
-    await ga(avsnitt[0]); await vanta(500);
-    await klicka('.hero-banner .brodsmulor a');
-    prova('avsnittssida I → brödsmulan Fysik → startsidan', await har() === start, await har());
     await samlaFel();
   } catch (e) {
     fel.push('grinden: ' + e.message);
@@ -1626,7 +1669,7 @@ async function provaGeografinsElevbok(lage) {
  * Annars prövar --webb en annan version än den på disken (Pages har inte byggt klart, eller något är inte pushat). */
 
 async function jamforWebben(lista) {
-  const filer = [path.join(ROT, 'index.html'), path.join(ROT, 'kraft_och_rorelse', 'index.html')];
+  const filer = [path.join(ROT, 'index.html'), ...KAPITEL.map(K => path.join(ROT, K.mapp, 'index.html'))];
   const samla = mapp => fs.readdirSync(mapp, { withFileTypes: true }).forEach(f =>
     f.isDirectory() ? samla(path.join(mapp, f.name)) : filer.push(path.join(mapp, f.name)));
   [path.join(ROT, 'bokskal'), path.join(ROT, 'plattform'), ...lista.map(d => d.mapp)].filter(m => fs.existsSync(m)).forEach(samla);
@@ -1705,7 +1748,7 @@ async function jamforWebben(lista) {
       gront = gront && r.gron;
       const matt = r.kontroll && Object.values(r.kontroll.nivaer).filter(x => typeof x === 'object')
         .map(x => Object.entries(x.matt).map(([n, m]) => `${n} ${m.text}${m.for_stora.length ? ' FÅR INTE PLATS: ' + m.for_stora.map(f => 's.' + f.sida).join(',') : ''}`).join('; ')).join(' | ');
-      console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  ${dk.namn}, ${lage.namn}: navigering ${r.navigering}, ` +
+      console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  ${dk.namn}, ${lage.namn}: ${r.allaKommer ? '(allt kommer – bara hubben) ' : ''}navigering ${r.navigering}, ` +
         `${r.plats ? 'alla sidor får plats' : 'PLATS/STRUKTUR RÖTT'}, JS-fel ${r.fel.length}`);
       if (matt && lage === LAGEN[0]) console.log(`       text: ${matt}`);
       if (r.brytTid) console.log(`       brytningen (CPU×6, median/max av 5 varv): ` + r.brytTid.bocker.map(b => `${b.bok || 'boken'} ${b.median}/${b.max}`).join(' · ') + ' ms');

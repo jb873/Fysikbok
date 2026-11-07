@@ -104,7 +104,12 @@ Fysik/
     figurer.js                  de funktionella figurerna (SVG), specificerade i data, och omslagsmotiven
     typsnitt/                   EB Garamond, Marcellus SC och Marcellus (OFL; Marcellus bara på omslaget)
   mall/delkapitel/              mallen för ett nytt delkapitel (kopieras hel)
-  index.html                    startsidan: kapitlen I–III (I och II tonade "Kommer"), Översikt
+  index.html                    startsidan: kapitlen I–III (II tonat "Kommer"), Översikt
+  materia_och_universum/        kapitel I (arbetsorder 9, 2026-11-07)
+    index.html                  kapitelindexet: avsnittssidorna I–V (II–V tonade) och resurskorten
+    kapitel.js                  omslaget: överraden "Kapitel 1", titeln, motivet materia-och-universum
+    solsystemet_och_jorden/     avsnittssida I. Solsystemet och jorden, texterna solsystemet/, himlakroppar/,
+                                jordklotet/, dygn-manad-ar-arstider/ (A–D) och fyra djupdykningar ("kommer")
   kraft_och_rorelse/            ett arbetsområde (kapitel III)
     index.html                  kapitelindexet: avsnittssidorna I–VI och resurskorten (tonade tills de finns)
     kapitel.js                  kapitlets gemensamma data: omslaget (överrad, titel, illustration, upphov)
@@ -1011,3 +1016,13 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Mobilen:** 6 fall står kvar, med varning.
   - **Grinden:** uppslagsregeln och undantaget i svepet; varningar för mobilen; varning på batteri; omkörning av
     ett läge när Chrome stängs.
+- **2026-11-07, kapitel I Materia och universum, avsnittssida I Solsystemet och jorden (order 9, steg 1):**
+  - **Kapitlet:** `materia_och_universum/` med `kapitel.js`. Omslaget har överraden "Kapitel 1" och titeln "Materia
+    och universum". Motivet `materia-och-universum` (figurer.js) är nytt: solen, planetbanorna och en förstoring av
+    jorden med kolatomen, i samma stil som Kraft och rörelse. Filmerna har inget omslag för kapitlet.
+  - **Kapitelindexet:** I Solsystemet och jorden, och II Universum och världsbilder · III Materia · IV Stjärnorna ·
+    V Människan och rymden ("kommer"). Startsidan länkar kapitel I.
+  - **Avsnittssidan:** texterna A Solsystemet · B Himlakroppar · C Jordklotet · D Dygn, månad, år och årstider på
+    tre nivåer, och fyra djupdykningar ("kommer"). Ingen Elevbok ännu.
+  - **Grinden:** startsidan och kapitelindexen för båda kapitlen (tabellen `KAPITEL`). Ett delkapitel där allt
+    "kommer" prövas bara på hubben.
