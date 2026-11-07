@@ -28,8 +28,9 @@ Bok.delkapitel({
     { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }
   ],
 
-  // Djupdykningarna hör till avsnittssidan ("Vill du veta mer?" längst ned) och öppnas som egna böcker. De har inget
-  // innehåll än och står som "kommer" (tomma filer). id är nyckeln för det eleven sparat – byt det aldrig.
+  // Djupdykningarna hör till avsnittssidan ("Vill du veta mer?" längst ned) och öppnas som egna böcker (arbetsorder
+  // 10, 2026-11-07; källorna i kallor/kap1/). Titeln är bokens titel ordagrant. id är nyckeln för det eleven sparat –
+  // byt det aldrig.
   djupdykningar: [
     { id: 'solstormar', titel: 'Solstormar – när solen når jorden', fil: 'innehall/djupdykningar/solstormar.js' },
     { id: 'venus', titel: 'Venus – jordens heta tvilling', fil: 'innehall/djupdykningar/venus.js' },

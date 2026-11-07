@@ -109,6 +109,11 @@ function skriv(avs, niva, text, kalla, extra) {
   ut.push(` * Sammanfattningen, som i III${niva === 'standard' ? '; Inledningens rubrik som i Enkel' : ''}.`);
   if (extra) extra.forEach(r => ut.push(' * ' + r));
   ut.push(' */');
+  return ut.join('\n') + '\n' + kropp(avs, niva);
+}
+// Bok.niva(...) med avsnitten och blocken (texterna och djupdykningarna)
+function kropp(avs, niva) {
+  const ut = [];
   ut.push(`Bok.niva('${niva}', {`, '  avsnitt: [');
   avs.forEach((a, ai) => {
     ut.push('    {', `      id: '${a.id}', titel: ${q(a.titel)}${a.numrerad ? '' : ', numrerad: false'},`, '      block: [');
@@ -183,6 +188,57 @@ for (const T of TEXTER) {
     fs.writeFileSync(path.join(UT, T.id, 'enkel.js'), skriv(enk, 'enkel', T, kallaEF + ' (📗 ENKEL)'));
     fs.writeFileSync(path.join(UT, T.id, 'fordjupning.js'), skriv(ford, 'fordjupning', T, kallaEF + ' (📕 FÖRDJUPNING)'));
   }
+}
+// Arbetsorder 10 (2026-11-07): de fyra djupdykningarna, en bok var (innehall/djupdykningar/<id>.js), som III:s.
+//  # = bokens titel (= kortets titel i delkapitel.js) · styckena före första ## = Inledningen (onumrerad; källan har
+//  ingen rubrik där, och ingen läggs till) · ## = avsnitt (numrerat) · ### = rubrik · [BILD …] = kommentar på sin
+//  plats · övriga rader = stycken. Ingen Sammanfattning och inget länkblock (README: Djupdykningar).
+//  Avsnittens id är valda här en gång för alla: de är nycklar för läsplatsen – byt dem aldrig.
+const DD = [
+  { id: 'solstormar', fil: 'Kap1-DD-A-Solstormar-redigerad.md',
+    avsnitt: ['orolig-stjarna', 'solvinden', 'solstormen-1859', 'dagens-teknik', 'norrsken', 'varna'] },
+  { id: 'venus', fil: 'Kap1-DD-B-Venus-redigerad.md',
+    avsnitt: ['tvilling', 'morgon-och-kvall', 'faser', 'vaxthuseffekt', 'dygn-och-ar', 'rymdsonder', 'klimatet'] },
+  { id: 'jupiters-manar', fil: 'Kap1-DD-C-Jupiters-manar-och-Saturnus-ringar-redigerad.md',
+    avsnitt: ['galileos-upptackt', 'fyra-manar', 'europas-hav', 'saturnus-ringar', 'jatteplaneter', 'rymdsonder'] },
+  { id: 'nedslag', fil: 'Kap1-DD-D-Nedslag-fran-rymden-redigerad.md',
+    avsnitt: ['sma-foremal', '66-miljoner-ar', 'siljansringen', 'manen', 'asteroider'] }
+];
+function ddAvsnitt(D) {
+  let titel = null; const avs = [{ id: 'inledning', titel: 'Inledning', numrerad: false, block: [] }];
+  for (const l0 of rader(D.fil)) { const l = l0.trim(); if (!l) continue;
+    if (/^# /.test(l)) { if (titel) throw new Error(D.fil + ': två titlar'); titel = l.slice(2); continue; }
+    if (!titel) throw new Error(D.fil + ': text före titeln: ' + l);
+    if (l.startsWith('## ')) { avs.push({ titel: l.slice(3), numrerad: true, block: [] }); continue; }
+    const a = avs[avs.length - 1];
+    if (l.startsWith('### ')) a.block.push({ typ: 'rubrik', text: l.slice(4) });
+    else if (/^\[BILD/.test(l)) a.block.push({ kommentar: l });
+    else if (/^(#|- |\d+\. |[>|*])/.test(l)) throw new Error(D.fil + ': okänt format: ' + l);
+    else a.block.push({ typ: 'text', text: l });
+  }
+  if (!avs[0].block.length) throw new Error(D.fil + ': ingen inledning');
+  if (avs.length - 1 !== D.avsnitt.length) throw new Error(D.fil + ': ' + (avs.length - 1) + ' avsnitt i källan, ' + D.avsnitt.length + ' id');
+  avs.slice(1).forEach((a, i) => { a.id = D.avsnitt[i]; });
+  // figurerna (om några) efter de första bildmarkeringarna, i ordning
+  let fi = 0;
+  if (D.figurer) avs.forEach(a => { a.block = a.block.flatMap(b => b.kommentar && fi < D.figurer.length ? [b, D.figurer[fi++]] : [b]); });
+  if (D.figurer && fi !== D.figurer.length) throw new Error(D.fil + ': för få bildmarkeringar för figurerna');
+  return { titel, avs };
+}
+const ddUt = {};
+for (const D of DD) {
+  const { titel, avs } = ddAvsnitt(D);
+  ddUt[D.id] = { titel, avs };
+  const huvud = [`/* Avsnittssida I. Solsystemet och jorden – djupdykningen "${titel}".`,
+    ` * Arbetsorder 10 (2026-11-07): kallor/kap1/${D.fil},`,
+    ' * infört ordagrant i strömformatet: styckena före första ## = Inledningen (utan rubrik, som källan), ## = avsnitt,',
+    ' * ### = rubrik, ett stycke = ett textblock. Ingen Sammanfattning och inget länkblock. [BILD …] står som kommentar',
+    ' * på sin plats; eleven ser dem inte. Skriven av verktyg/kap1-omvandlare.js.']
+    .concat(D.figurer ? [' * Den första markeringen ritas av motorn efter kommentaren (himlakroppar_i_skala, order 10 steg 2).'] : [], [' */']);
+  fs.mkdirSync(path.join(UT, 'djupdykningar'), { recursive: true });
+  fs.writeFileSync(path.join(UT, 'djupdykningar', D.id + '.js'), huvud.join('\n') + '\n' + kropp(avs, 'djupdykning'));
+  console.log(`djupdykning ${D.id}: "${titel}", ${avs.length - 1} avsnitt + Inledningen, ` +
+    `${avs.reduce((n, a) => n + a.block.filter(b => b.kommentar).length, 0)} bildmarkeringar`);
 }
 if (process.argv.includes('--json')) console.log(JSON.stringify(alla, null, 1));
 for (const [t, r] of Object.entries(begreppsRapport)) {

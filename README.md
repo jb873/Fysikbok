@@ -109,7 +109,7 @@ Fysik/
     index.html                  kapitelindexet: avsnittssidorna I–V (II–V tonade) och resurskorten
     kapitel.js                  omslaget: överraden "Kapitel 1", titeln, motivet materia-och-universum
     solsystemet_och_jorden/     avsnittssida I. Solsystemet och jorden, texterna solsystemet/, himlakroppar/,
-                                jordklotet/, dygn-manad-ar-arstider/ (A–D) och fyra djupdykningar ("kommer")
+                                jordklotet/, dygn-manad-ar-arstider/ (A–D) och fyra djupdykningar
   kraft_och_rorelse/            ett arbetsområde (kapitel III)
     index.html                  kapitelindexet: avsnittssidorna I–VI och resurskorten (tonade tills de finns)
     kapitel.js                  kapitlets gemensamma data: omslaget (överrad, titel, illustration, upphov)
@@ -1088,3 +1088,15 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Listorna:** med rubriken i Sammanfattningen blev C Fördjupning (7 punkter) 3–12 px för hög. Listor med mer än
     6 punkter står nu som två listor i följd, med samma text.
   - **Kontrollskriptet** godkänner just dessa tillägg på sina platser, och inget annat.
+- **2026-11-07, kapitel I, avsnitt I: de fyra djupdykningarna (arbetsorder 10):**
+  - **Källorna** ligger i `kallor/kap1/` (Kap1-DD-A–D). De är införda ordagrant i
+    `innehall/djupdykningar/{solstormar, venus, jupiters-manar, nedslag}.js` av `verktyg/kap1-omvandlare.js`.
+  - **Modellen är III:s:** en egen bok utan nivåer, kortet längst ned i *Vill du veta mer?*, ingen Sammanfattning och
+    inget länkblock.
+    - Styckena före första `##` är Inledningen (onumrerad). Källan har ingen rubrik där, och ingen är tillagd.
+  - **Avsnittens id** är valda i omvandlaren, en gång för alla.
+  - **Korten** blev länkar när böckerna fick innehåll, som i motorn. Titlarna var redan böckernas titlar, och korten
+    har ingen beskrivning (III:s modell: bara titeln).
+  - **Bildmarkeringarna** står som kommentarer på sina platser.
+  - **Kontrollen:** `verktyg/kap1-ordagrant.js` prövar böckerna mot källorna och att kortens titlar och ordning
+    stämmer. Negativt prövat med ett ändrat ord, en struken bildmarkering och en kortad korttitel: alla tre röda.

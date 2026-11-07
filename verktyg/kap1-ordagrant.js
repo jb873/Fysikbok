@@ -69,5 +69,30 @@ for (const [B, id, fil] of TEXTER) {
     if (!bok) { fel++; console.log('   bildmarkeringarna skiljer: ' + JSON.stringify(k.bilder) + ' / ' + JSON.stringify(f.bilder)); }
   }
 }
-console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.');
+// Djupdykningarna (arbetsorder 10): titeln (# ) = kortets titel i delkapitel.js, i källornas ordning A–D;
+// styckena före första ## = avsnittet Inledning (onumrerat); sedan avsnitt, rubriker och stycken tecken för tecken.
+// Inga tillägg är godkända. Bildmarkeringarna ska stå som kommentarer i samma ordning.
+const DD = [['A', 'Kap1-DD-A-Solstormar-redigerad.md'], ['B', 'Kap1-DD-B-Venus-redigerad.md'],
+  ['C', 'Kap1-DD-C-Jupiters-manar-och-Saturnus-ringar-redigerad.md'], ['D', 'Kap1-DD-D-Nedslag-fran-rymden-redigerad.md']];
+let delkap; global.Bok = { delkapitel: d => { delkap = d; } };
+eval(fs.readFileSync(path.join(MAPP, '..', 'delkapitel.js'), 'utf8'));
+const kort = delkap.djupdykningar || [];
+if (kort.length !== DD.length) { fel++; console.log(`FEL        djupdykningarna: ${kort.length} kort, ${DD.length} källor`); }
+DD.forEach(([B, fil], i) => {
+  const r = las(DL + fil), it = r.findIndex(l => /^# /.test(l)), titel = r[it].slice(2);
+  const k = kallsekvens(['## Inledning (onumrerad)'].concat(r.slice(it + 1).map(l => /^## /.test(l) ? l + ' (numrerad)' : l)));
+  const d = kort[i];
+  if (!d || d.titel !== titel) { fel++; console.log(`FEL        ${B}: kortet ${i + 1} heter ”${d && d.titel}”, källan ”${titel}”`); return; }
+  const f = filsekvens(path.join(MAPP, '..', d.fil));
+  const ok = k.ut.length === f.ut.length && k.ut.every((x, j) => x === f.ut[j]);
+  const bok = JSON.stringify(k.bilder) === JSON.stringify(f.bilder);
+  const inl = f.data.avsnitt[0] && f.data.avsnitt[0].titel === 'Inledning' && f.data.avsnitt[0].numrerad === false;
+  console.log(`${ok && bok && inl ? 'ORDAGRANT' : 'FEL      '}  ${B} djupdykningar/${d.id}: ”${titel}”, ${k.ut.filter(x => x.startsWith('AVSNITT')).length - 1} avsnitt + ` +
+    `Inledningen, ${k.ut.length} rader ur källan, ${k.bilder.length} bildmarkeringar`);
+  if (!ok) { fel++; const j = k.ut.findIndex((x, n) => x !== f.ut[n]); console.log('   första skillnaden:\n   källan: ' + k.ut[j] + '\n   filen:  ' + f.ut[j]); }
+  if (!bok) { fel++; console.log('   bildmarkeringarna skiljer: ' + JSON.stringify(k.bilder) + ' / ' + JSON.stringify(f.bilder)); }
+  if (!inl) { fel++; console.log('   det första avsnittet är inte Inledningen (onumrerad)'); }
+});
+console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.' +
+  '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.');
 process.exitCode = fel ? 1 : 0;
