@@ -603,6 +603,18 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-jm-krater { fill: #c4c4bf; stroke: #a3a39d; stroke-width: 1; }
 .fig-jm-display { fill: #f7f5ef; stroke: #8f846f; stroke-width: 1; }
 .fig-jm-vag { font-size: 15.5px; font-weight: 600; }
+/* Rymdfigurerna (kapitel I Materia och universum, order 9, 2026-11-07): solen, planeterna, jordens inre, månen och
+   natthalvan. Jordklotet, månfaserna och årstiderna är runda figurer och får upp till 45 % av sidhöjden, som kanonen. */
+.fig-sol { fill: #f2c27b; stroke: #c98a3a; stroke-width: 1.5; }
+.fig-kropp, .fig-ae-prick { stroke: #56606a; stroke-width: .8; }
+.fig-jord-mantel { fill: #e8d3b0; }
+.fig-jord-karna { fill: #e3a86f; stroke: #c48458; stroke-width: 1.2; }
+.fig-jorden-natt { fill: rgba(27, 42, 54, .5); }
+.fig-mane-mork { fill: #4a4f5a; stroke: #2f333b; stroke-width: 1; }
+.fig-mane-ljus { fill: #f3f1e8; }
+.fig-axel { stroke: var(--black); stroke-width: 1.8; }
+.figur-bild svg[data-rymd="jordklot_tyngd"], .figur-bild svg[data-rymd="manfaser"],
+.figur-bild svg[data-rymd="arstider"] { max-height: calc(var(--sh) * .45); }
 @container (max-width: 397px) {
   .fig-paneler[data-paneler="jord_och_mane"] { flex-direction: column; align-items: center; gap: .45em; max-width: none; }
   .figur-bild .fig-paneler[data-paneler="jord_och_mane"] svg { flex: none; width: min(100%, 199px); }

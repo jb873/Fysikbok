@@ -1043,5 +1043,28 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Långa punktlistor** (mer än 7 punkter: Sammanfattningen i D, Standard och Fördjupning) står som två listor i
     följd, 60/40, med samma text. En lista delas aldrig, och som en enda lista blev sidan 34–55 px för hög. Med en
     delning på mitten blev sidan före brytningen 40 % fylld på mobilen.
+  - **Steg 3, figurerna (2026-11-07):** fem nya figurtyper i `figurer.js`. Motorn ritar dem ur data, utan foton.
+    Varje figur har `data-rymd`, och grinden mäter det figuren påstår:
+    - **`himlakroppar_i_skala`:** cirklar i samma skala med namn, och en bit av solens kant om `kant` är angiven.
+      Används till BILD S1 (A, Enkel och Standard: planeterna bredvid solens kant) och BILD M (B, Enkel och
+      Standard: jorden och månen, Jupiter och dess fyra stora månar, och Merkurius som jämförelse). Grinden mäter
+      att radierna står i diametrarnas förhållande.
+    - **`avstandslinje`:** avstånden från solen som prickar på en linje, i AE eller miljoner km. Används till BILD S2
+      (A Enkel), i miljoner km, eftersom AE först kommer i Fördjupning. Grinden mäter att lägena står i proportion
+      till avstånden.
+    - **`jordklot_tyngd`:** ett genomskuret jordklot med fyra personer (Sverige och Australien namngivna) och en
+      kraftpil från var och en mot jordens mitt (BILD K, C). Grinden mäter att varje pil pekar mot mitten.
+    - **`manfaser`:** jorden i mitten, solljuset från vänster. Inre ringen visar månen i åtta lägen, belyst mot
+      solen. Ytterringen visar hur månen ser ut från jorden (BILD F, D). Grinden mäter den belysta halvan och
+      faserna.
+    - **`arstider`:** solen och jorden i fyra lägen, med axeln lutad 23,5° åt samma håll och natthalvan bort från
+      solen. Sommar och vinter på norra halvklotet är markerade (BILD Å, D). Grinden mäter lutningen och att
+      sommaren står där norra halvklotet lutar mot solen.
+
+    Jordklotet, månfaserna och årstiderna är runda figurer och får upp till 45 % av sidhöjden, som kanonen.
+    Provboken (Tryck) har ett fall av varje figurtyp med andra data. Bildtexterna är skrivna efter ordern och
+    källornas bildbeskrivningar.
+    - **Standard A har en enda bildmarkering.** Den beskriver storlekar och avstånd i samma skala på en lång linje,
+      och ordern säger S1. Den har fått S1. Det finns ingen S2 i Standard.
   - **Källorna har inte** rutan "Så bläddrar du" (III:s källor angav den uttryckligen), inte rubriken "Det
     viktigaste" i Sammanfattningen och ingen rubrik i Standards Inledning. Inget av det är tillagt.

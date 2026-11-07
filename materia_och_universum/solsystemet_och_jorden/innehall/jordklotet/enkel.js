@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text C Jordklotet – nivån enkel. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-C-Jordklotet-Enkel-Fordjupning.md (📗 ENKEL), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  */
 Bok.niva('enkel', {
   avsnitt: [
@@ -31,6 +31,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Många tror att människor på andra sidan jorden, till exempel i Australien, står upp och ner. Kan de inte falla av? Nej. Ner betyder alltid mot jordens mitt. För dig i Sverige är ner mot jordens mitt, och för en person i Australien är ner också mot jordens mitt.' },
         { typ: 'text', text: 'Det finns alltså inget upp och ner i rymden. Båda står på marken med fötterna mot jordens mitt och huvudet ut mot rymden. På en bild av jordklotet ser det ut som att den i Australien hänger upp och ner, men det är bara hur bilden är ritad.' },
         // [BILD K: jordklotet med fyra människor på olika ställen och en pil från var och en mot jordens mitt]
+        { id: 'bild-k', typ: 'figur', namn: 'jordklot_tyngd', bildtext: 'Nedåt är alltid mot jordens mitt, var man än står på jorden.' },
         { typ: 'rubrik', text: 'En modell med figurer på en jordglob' },
         { typ: 'text', text: 'Tänk dig en jordglob med små figurer som står på olika ställen. Rita en pil från varje figur in mot jordens mitt. Pilarna pekar åt olika håll på bilden, men alla pekar in mot mitten. Det är så gravitationen fungerar.' },
         { typ: 'text', text: 'Modellen har en gräns. På jordgloben sitter figurerna fast med lim. På den riktiga jorden behövs inget lim. Det är gravitationen själv som håller kvar oss.' },

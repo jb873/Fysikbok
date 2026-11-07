@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text C Jordklotet – nivån standard. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-Standard-A-D-redigerad.md (# Text C), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  * Begreppen (*ord*) är markerade som i Enkel och Fördjupning för samma text, första gången de står i den här texten
  * (arbetsorder 9; listan i rapporten, Joachim stryker): jordglob, gravitationen (gravitation), jordaxeln (jordaxel), roterar, atmosfär, växthusgaser.
  */
@@ -25,6 +25,7 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Många tror att människor på jordens undersida skulle kunna falla av eftersom de verkar stå upp och ner jämfört med oss. Men det finns ingen särskild riktning som är uppåt eller nedåt i hela universum. För människor i Sverige och människor i Australien betyder nedåt i båda fallen riktningen mot jordens centrum.' },
         { typ: 'text', text: 'Tänk dig en jordglob med små figurer som står på olika platser på ytan. Om vi ritar en pil från varje figur mot jordens mitt ser vi att pilarna pekar åt olika håll på bilden. Modellen visar hur gravitationens riktning beror på var man befinner sig. Den har en gräns: på en jordglob sitter figurerna fast med lim, men på den riktiga jorden är det gravitationen själv som håller kvar oss.' },
         // [BILD: Ett genomskuret jordklot med fyra människor placerade på olika delar av jordytan. Från varje människa går en kraftpil mot jordens centrum. Bilden ska tydligt visa att nedåt alltid är mot jordens mitt.]
+        { id: 'bild-k', typ: 'figur', namn: 'jordklot_tyngd', bildtext: 'Nedåt är alltid mot jordens mitt, var man än står på jorden.' },
         { typ: 'rubrik', text: 'Jorden rör sig på två sätt samtidigt' },
         { typ: 'text', text: 'Jorden snurrar runt en tänkt linje genom nordpolen och sydpolen, *jordaxeln|jordaxel*. Den rörelsen kallas rotation, och ett varv tar ungefär ett dygn. Samtidigt färdas jorden i en nästan cirkelformad bana runt solen, och ett varv tar ungefär ett år. Det är solens gravitation som håller kvar jorden i banan.' },
         { typ: 'text', text: 'Jordaxeln står inte rakt upp i förhållande till banan, utan lutar ungefär 23,5 grader. Lutningen pekar nästan åt samma håll i rymden under hela året. Vad rotationen och lutningen betyder för dag och natt, år och årstider läser du om i texten om dygn, månad, år och årstider.' }

@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text B Himlakroppar – nivån standard. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-Standard-A-D-redigerad.md (# Text B), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  * Begreppen (*ord*) är markerade som i Enkel och Fördjupning för samma text, första gången de står i den här texten
  * (arbetsorder 9; listan i rapporten, Joachim stryker): himlakroppar, stjärna, planet, exoplaneter, dvärgplanet, måne, asteroid, komet, meteor, meteoriter (meteorit).
  */
@@ -27,8 +27,9 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Pluto är den mest kända dvärgplaneten. Den räknades tidigare som en planet, men klassificerades år 2006 som dvärgplanet när astronomerna bestämde en tydligare definition av vad en planet är. Det finns också andra dvärgplaneter, exempelvis Ceres i asteroidbältet och Eris långt utanför Neptunus. Pluto är mindre än jordens *måne* och består av både sten och is. Trots att Pluto inte längre räknas som en planet är den fortfarande en viktig himlakropp att undersöka.' },
         { typ: 'rubrik', text: 'Månar kretsar kring planeter och andra himlakroppar' },
         { typ: 'text', text: 'En måne är en naturlig himlakropp som kretsar kring exempelvis en planet eller en dvärgplanet. Jordens måne är ungefär en fjärdedel så bred som jorden och befinner sig i genomsnitt omkring 384 000 kilometer bort. Precis som planeterna producerar månen inte eget synligt ljus, utan reflekterar solljus.' },
-        { typ: 'text', text: 'Många tror att jorden är den enda planeten som har en måne eftersom vår måne är så tydlig på natthimlen. I verkligheten har bland annat Mars, Jupiter, Saturnus, Uranus och Neptunus månar. Jupiter och Saturnus har mycket stora familjer av månar. Två av dem, Jupiters måne Ganymedes och Saturnus måne Titan, är till och med större än planeten Merkurius.' }
+        { typ: 'text', text: 'Många tror att jorden är den enda planeten som har en måne eftersom vår måne är så tydlig på natthimlen. I verkligheten har bland annat Mars, Jupiter, Saturnus, Uranus och Neptunus månar. Jupiter och Saturnus har mycket stora familjer av månar. Två av dem, Jupiters måne Ganymedes och Saturnus måne Titan, är till och med större än planeten Merkurius.' },
         // [BILD: En storleksjämförelse mellan jorden och månen samt Jupiter och fyra av dess största månar. Samtliga himlakroppars diameter ska visas i samma skala. Bilden ska tydliggöra att månar kan vara mycket olika stora.]
+        { id: 'bild-m', typ: 'figur', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Jorden', diameter: 12756, grupp: 0 }, { namn: 'Månen', diameter: 3475, grupp: 0 }, { namn: 'Jupiter', diameter: 142984, grupp: 1 }, { namn: 'Io', diameter: 3643, grupp: 1 }, { namn: 'Europa', diameter: 3122, grupp: 1 }, { namn: 'Ganymedes', diameter: 5268, grupp: 1 }, { namn: 'Kallisto', diameter: 4821, grupp: 1 }, { namn: 'Merkurius', diameter: 4879, grupp: 2 }], bildtext: 'Jorden och månen, Jupiter med sina fyra största månar och Merkurius som jämförelse – alla i samma skala.' }
       ]
     },
     {

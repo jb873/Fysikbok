@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text A Solsystemet – nivån standard. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-Standard-A-D-redigerad.md (# Text A), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  * Begreppen (*ord*) är markerade som i Enkel och Fördjupning för samma text, första gången de står i den här texten
  * (arbetsorder 9; listan i rapporten, Joachim stryker): solsystem, kärnfusion, gravitation, stenplaneter, gasjättar, isjättar, skalmodell.
  */
@@ -40,6 +40,7 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Avståndet från solen till jorden är ungefär 150 miljoner kilometer. Trots att ljuset färdas omkring 300 000 kilometer varje sekund tar det drygt åtta minuter för solljuset att nå oss. När vi ser solen ser vi den alltså som den såg ut för ungefär åtta minuter sedan.' },
         { typ: 'text', text: 'För att förstå avstånden kan vi använda en *skalmodell*, där allt förminskas lika mycket. I modellen Sweden Solar System föreställer Avicii Arena i Stockholm solen. Jorden skulle då vara ett klot med ungefär 64 centimeters diameter, placerat cirka 7,5 kilometer från arenan. Neptunus skulle ligga ungefär 225 kilometer bort.' },
         // [BILD: En vetenskapligt korrekt skalmodell av solsystemet där både planeternas storlekar och avstånden till solen återges i samma skala. Modellen visas som en mycket lång avståndslinje. Planeternas placering och storlek ska kunna jämföras utan att proportionerna förvrängs.]
+        { id: 'bild-s1', typ: 'figur', namn: 'himlakroppar_i_skala', kant: { namn: 'Solen', diameter: 1392700 }, kroppar: [{ namn: 'Merkurius', diameter: 4879 }, { namn: 'Venus', diameter: 12104 }, { namn: 'Jorden', diameter: 12756 }, { namn: 'Mars', diameter: 6792 }, { namn: 'Jupiter', diameter: 142984 }, { namn: 'Saturnus', diameter: 120536 }, { namn: 'Uranus', diameter: 51118 }, { namn: 'Neptunus', diameter: 49528 }], bildtext: 'Planeterna i samma skala, bredvid en bit av solens kant.' },
         { typ: 'rubrik', text: 'Bilder av solsystemet visar sällan de verkliga avstånden' },
         { typ: 'text', text: 'Många tror att planeterna ligger ganska tätt intill varandra eftersom de ofta visas så i läroböcker och på affischer. I verkligheten är avstånden mellan planeterna enorma jämfört med deras storlekar. Om vi ritade både planeterna och avstånden i rätt proportioner på ett vanligt papper skulle de flesta planeterna bli så små att vi knappt kunde se dem.' },
         { typ: 'text', text: 'En vanlig bild av solsystemet är därför en förenklad modell. Den kan visa planeternas ordning och utseende, men den visar vanligtvis inte deras verkliga storlekar och avstånd samtidigt. För att förstå solsystemet behöver vi känna till både vad en modell visar och vad den utelämnar.' },

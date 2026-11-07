@@ -26,6 +26,11 @@
  *   bildpilar           bild, bredd, hojd (fotots pixlar), utsnitt?: [x, y, b, h], maxhojd?: 0.2–0.45 (standard 0.45),
  *                       prickar?: [[x, y], …] (lägesmarkeringar), stråle?: {fran, till} (riktningen under prickarna),
  *                       pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}], lika?: [[0, 1]], beskrivning (krävs)
+ *   himlakroppar_i_skala kroppar: [{namn, diameter (km), grupp?}], kant?: {namn, diameter}, storst? – i samma skala
+ *   avstandslinje       kroppar: [{namn, ae}], enhet?: 'AE'|'miljoner km' – avstånden från solen på en linje
+ *   jordklot_tyngd      personer?: [{vinkel, namn?}] – tyngdkraften mot jordens mitt
+ *   manfaser            (inga data) – månen i åtta lägen och så ser den ut från jorden
+ *   arstider            lutning?: 23.5 – jorden i fyra lägen runt solen
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -874,5 +879,194 @@
     s += `<circle cx="${Z[0]}" cy="${Z[1]}" r="${RZ}" fill="${OM.lins}" stroke="${L}" stroke-width="2.2"/>` +
       `<circle cx="${f(J[0])}" cy="${f(J[1])}" r="${rq}" fill="none" stroke="${L}" stroke-width="2"/>` + kolatom(Z[0], Z[1], RZ - 22, 9, 7.5, 1.6);
     return s;
+  });
+
+  /* ---------- Rymden (kapitel I Materia och universum, arbetsorder 9, 2026-11-07) ----------
+   * Fem figurer där storlek, läge eller riktning bär betydelsen. Varje svg har data-rymd="<figur>", och grinden mäter
+   * det som figuren påstår (storlekarna i samma skala, avstånden på linjen, pilarna mot jordens mitt, månens belysta
+   * halva och faserna, jordaxelns lutning).
+   *   himlakroppar_i_skala  kroppar: [{namn, diameter (km), grupp?}], kant?: {namn, diameter} (en bit av kanten till
+   *                         vänster), storst?: diametern för den största kroppen i figuren (enheter)
+   *   avstandslinje         kroppar: [{namn, ae}], enhet?: 'AE'|'miljoner km' – prickarna på en linje från solen
+   *   jordklot_tyngd        personer?: [{vinkel (grader, 90 = överst), namn?}] (standard: fyra, Sverige och Australien)
+   *   manfaser              (inga data) – månen i åtta lägen runt jorden, solljuset från vänster, och ytterringen: så
+   *                         ser månen ut från jorden
+   *   arstider              lutning?: 23.5 – jorden i fyra lägen runt solen, axeln åt samma håll */
+  const RYMD_FARG = { Solen: '#f2c27b', Merkurius: '#b7b0a6', Venus: '#e6cf98', Jorden: '#8fb4d8', Mars: '#d38b62', Jupiter: '#d8b388',
+    Saturnus: '#e4d2a2', Uranus: '#a8d4d6', Neptunus: '#7f9fd8' };
+  const rymdFarg = n => RYMD_FARG[n] || '#d9d7d0';                     // månar och andra: grå
+  const f3 = v => Math.round(v * 1000) / 1000;                         // en radie i skala: tre decimaler (grinden mäter 1 %)
+  const textBredd = (s, px = 14.5) => String(s).length * px * 0.47;    // EB Garamond, ungefär
+  // en etikett som stannar innanför figuren (0–B)
+  const etikett = (x, y, s, B, klass = 'fig-text fig-liten') => {
+    const w = textBredd(s) / 2;
+    if (x - w < 2) return `<text x="2" y="${f(y)}" class="${klass} fig-vanster">${esc(s)}</text>`;
+    if (x + w > B - 2) return `<text x="${B - 2}" y="${f(y)}" class="${klass} fig-hoger">${esc(s)}</text>`;
+    return `<text x="${f(x)}" y="${f(y)}" class="${klass} fig-mitt">${esc(s)}</text>`;
+  };
+  const rymdSvg = (namn, b, h, inne) => svg(b, h, inne).replace('<svg ', `<svg data-rymd="${namn}" `);
+
+  // Himlakropparna i samma skala: cirklarnas diametrar står i samma förhållande som kropparnas. Namnen under, i två rader
+  // (varannan), med en tunn linje upp till kroppen; en bit av solens kant till vänster om kant är angiven.
+  Bok.figur('himlakroppar_i_skala', d => {
+    const K = (d.kroppar || []).filter(x => x && x.namn && x.diameter > 0);
+    if (!K.length) fel('himlakroppar_i_skala: kroppar [{namn, diameter}] saknas');
+    const B = 440, kant = d.kant, storst = Math.max(...K.map(x => x.diameter));
+    const dmax = d.storst || (kant ? 40 : 90), k = dmax / storst;                         // enheter per km
+    const radH = 22, y0 = 10 + dmax / 2, yText = y0 + dmax / 2 + 20, H = Math.round(yText + radH + 8);
+    let s = '', xStart = 12;
+    if (kant) {
+      const R = kant.diameter * k / 2, syns = 30;
+      s += `<circle class="fig-sol fig-kant" cx="${f(syns - R)}" cy="${f(H / 2)}" r="${f3(R)}" data-d="${kant.diameter}"/>`;
+      s += `<text x="4" y="16" class="fig-text fig-liten fig-halo">${esc(kant.namn)}</text>`;
+      xStart = syns + 14;
+    }
+    const behov = K.map(x => Math.max(x.diameter * k, 8)), extra = 14;
+    const skiften = K.filter((x, i) => i && (x.grupp || 0) !== (K[i - 1].grupp || 0)).length;
+    const luft = Math.max(6, (B - 8 - xStart - behov.reduce((a, b) => a + b, 0) - skiften * extra) / K.length);
+    let x = xStart;
+    K.forEach((kr, i) => {
+      if (i && (kr.grupp || 0) !== (K[i - 1].grupp || 0)) x += extra;
+      const cx = x + luft / 2 + behov[i] / 2, r = kr.diameter * k / 2, ty = yText + (i % 2) * radH;
+      x += luft + behov[i];
+      s += `<line class="fig-skal" x1="${f(cx)}" y1="${f(y0 + Math.max(r, 1) + 3)}" x2="${f(cx)}" y2="${f(ty - 12)}"/>`;
+      s += `<circle class="fig-kropp" cx="${f(cx)}" cy="${f(y0)}" r="${f3(Math.max(r, 0.8))}" fill="${rymdFarg(kr.namn)}" data-d="${kr.diameter}"/>`;
+      s += etikett(cx, ty, kr.namn, B);
+    });
+    const beskr = d.beskrivning || `I samma skala: ${K.map(x => x.namn).join(', ')}${kant ? `, bredvid en bit av kanten på ${kant.namn.toLowerCase()}` : ''}. ` +
+      'Storlekarna kan jämföras direkt.';
+    return { svg: rymdSvg('himlakroppar_i_skala', B, H, s), beskrivning: beskr };
+  });
+
+  // Avstånden från solen på en linje: prickarnas lägen står i proportion till avstånden. Namnen ovanför, åt höger så att
+  // de inte krockar (de inre planeterna står tätt), med en tunn linje ned till pricken. Skalan under linjen.
+  Bok.figur('avstandslinje', d => {
+    const K = (d.kroppar || []).filter(x => x && x.namn && x.ae >= 0);
+    if (!K.length) fel('avstandslinje: kroppar [{namn, ae}] saknas');
+    const enhet = d.enhet || 'AE', faktor = enhet === 'AE' ? 1 : enhet === 'miljoner km' ? 149.6 : fel('avstandslinje: enhet AE eller miljoner km');
+    const B = 440, x0 = 30, x1 = 420, maxAe = Math.max(...K.map(x => x.ae)), k = (x1 - x0) / maxAe;
+    const yText = 18, yLinje = 50, H = 106;
+    let s = `<line class="fig-bord" x1="${x0}" y1="${yLinje}" x2="${x1 + 8}" y2="${yLinje}"/>`;
+    s += `<circle class="fig-sol fig-ae-sol" cx="${x0}" cy="${yLinje}" r="9" data-x0="${x0}" data-k="${k}"/>`;
+    s += `<text x="${x0}" y="${yLinje + 27}" class="fig-text fig-liten fig-mitt">Solen</text>`;
+    // namnen: från vänster, var och en så långt till höger som behövs för att inte krocka med föregående
+    let hogerKant = -Infinity;
+    K.forEach(kr => {
+      const px = x0 + kr.ae * k, w = textBredd(kr.namn);
+      let lx = Math.max(px, hogerKant + 6 + w / 2);
+      if (lx + w / 2 > B - 2) lx = B - 2 - w / 2;
+      hogerKant = lx + w / 2;
+      s += `<line class="fig-skal" x1="${f(px)}" y1="${yLinje - 5}" x2="${f(lx)}" y2="${yText + 5}"/>`;
+      s += `<circle class="fig-ae-prick" cx="${f(px)}" cy="${yLinje}" r="4" fill="${rymdFarg(kr.namn)}" data-ae="${kr.ae}"/>`;
+      s += `<text x="${f(lx)}" y="${yText}" class="fig-text fig-liten fig-mitt">${esc(kr.namn)}</text>`;
+    });
+    // skalan: jämna steg i enheten
+    const max = maxAe * faktor, rå = max / 5, p = Math.pow(10, Math.floor(Math.log10(rå))), steg = [1, 2, 5, 10].map(m => m * p).find(m => m >= rå);
+    for (let v = steg; v <= max + 1e-9; v += steg) {
+      const tx = x0 + v / faktor * k;
+      s += `<line class="fig-bord" x1="${f(tx)}" y1="${yLinje}" x2="${f(tx)}" y2="${yLinje + 6}"/>`;
+      s += `<text x="${f(tx)}" y="${yLinje + 22}" class="fig-text fig-liten fig-mitt fig-dampad">${tal(v)}</text>`;
+    }
+    s += `<text x="${B - 2}" y="${H - 7}" class="fig-text fig-liten fig-hoger fig-dampad">${esc(enhet)}</text>`;
+    const beskr = d.beskrivning || `Avstånden från solen på en linje: ${K.map(x => `${x.namn} ${tal(Math.round(x.ae * faktor * 10) / 10)} ${enhet}`).join(', ')}.`;
+    return { svg: rymdSvg('avstandslinje', B, H, s), beskrivning: beskr };
+  });
+
+  // Tyngdkraften mot jordens mitt: ett genomskuret jordklot med personer på olika ställen, var och en med fötterna mot
+  // jordens mitt och en kraftpil från fötterna in mot mitten.
+  Bok.figur('jordklot_tyngd', d => {
+    const P = (d.personer || [{ vinkel: 65, namn: 'Sverige' }, { vinkel: 180 }, { vinkel: -115, namn: 'Australien' }, { vinkel: 0 }]);
+    const B = 440, cx = 220, cy = 150, R = 92, H = 300, slut = 30;
+    let s = `<circle class="fig-jorden" cx="${cx}" cy="${cy}" r="${R}"/>` +
+      `<circle class="fig-jord-mantel" cx="${cx}" cy="${cy}" r="${f(R * 0.82)}"/>` +
+      `<circle class="fig-jord-karna" cx="${cx}" cy="${cy}" r="${f(R * 0.42)}"/>`;
+    P.forEach(p => {
+      const a = p.vinkel * Math.PI / 180, ut = [Math.cos(a), -Math.sin(a)], fx = cx + R * ut[0], fy = cy + R * ut[1];
+      // personen: fötterna på ytan, huvudet utåt
+      s += `<g class="fig-gubbe" transform="translate(${f(fx)} ${f(fy)}) rotate(${f(90 - p.vinkel)}) scale(1.3)">` +
+        '<line x1="0" y1="-10" x2="-4.5" y2="0"/><line x1="0" y1="-10" x2="4.5" y2="0"/><line x1="0" y1="-10" x2="0" y2="-22"/>' +
+        '<line x1="-6.5" y1="-18" x2="6.5" y2="-18"/><circle cx="0" cy="-26.5" r="4.5"/></g>';
+      s += `<g class="fig-tyngd" data-cx="${cx}" data-cy="${cy}">` + pil(fx - ut[0] * 2, fy - ut[1] * 2, cx + ut[0] * slut, cy + ut[1] * slut, 7) + '</g>';
+      if (p.namn) {
+        // namnet utanför huvudet; rakt uppe eller nere bredvid huvudet (annars går det utanför figuren), och inom figuren
+        const rakt = Math.abs(ut[0]) < 0.3, rn = rakt ? R + 36 : R + 52;
+        const lx = cx + rn * ut[0] + (rakt ? 16 : 0), ly = Math.min(H - 6, Math.max(16, cy + rn * ut[1] + 5));
+        const ank = rakt || ut[0] > 0.3 ? 'fig-vanster' : 'fig-hoger';
+        s += `<text x="${f(lx)}" y="${f(ly)}" class="fig-text ${ank}">${esc(p.namn)}</text>`;
+      }
+    });
+    s += `<circle class="fig-prick" cx="${cx}" cy="${cy}" r="3"/>`;
+    s += `<text x="${cx + 8}" y="${cy + 26}" class="fig-text fig-liten fig-vanster fig-halo">Jordens mitt</text>`;
+    const namn = P.filter(p => p.namn).map(p => p.namn);
+    const beskr = d.beskrivning || `Ett genomskuret jordklot med ${P.length} personer på olika ställen${namn.length ? ` (bland annat ${namn.join(' och ')})` : ''}, ` +
+      'alla med fötterna mot jorden. Från var och en går en kraftpil in mot jordens mitt: nedåt är alltid mot jordens mitt, var man än står.';
+    return { svg: rymdSvg('jordklot_tyngd', B, H, s), beskrivning: beskr };
+  });
+
+  // Månens faser: jorden i mitten, solljuset från vänster. Inre ringen: månen i åtta lägen, alltid belyst på den halva
+  // som är vänd mot solen. Ytterringen: så ser månen ut från jorden i samma läge (växande: ljuset till höger).
+  function fasIkon(X, Y, r, v) {
+    const fi = ((v - 180) % 360 + 360) % 360, andel = Math.round((1 - Math.cos(fi * Math.PI / 180)) / 2 * 100) / 100;
+    let s = `<g class="fig-mane-sedd" data-vinkel="${v}" data-andel="${andel}"><circle class="fig-mane-mork" cx="${f(X)}" cy="${f(Y)}" r="${r}"/>`;
+    if (andel >= 0.995) s += `<circle class="fig-mane-ljus" cx="${f(X)}" cy="${f(Y)}" r="${r}"/>`;
+    else if (andel > 0.005) {
+      const vaxer = fi < 180, rx = f(r * Math.abs(Math.cos(fi * Math.PI / 180)));
+      const top = `${f(X)} ${f(Y - r)}`, bot = `${f(X)} ${f(Y + r)}`;
+      // den belysta halvan (höger när den växer), tillbaka längs skuggränsen (en ellips): tunn skära eller mer än halv
+      const halv = vaxer ? `M${top} A${r} ${r} 0 0 1 ${bot}` : `M${top} A${r} ${r} 0 0 0 ${bot}`;
+      const skara = andel < 0.5, svep = vaxer ? (skara ? 0 : 1) : (skara ? 1 : 0);
+      s += `<path class="fig-mane-ljus" d="${halv} A${rx} ${r} 0 0 ${svep} ${top} Z"/>`;
+    }
+    return s + '</g>';
+  }
+  Bok.figur('manfaser', d => {
+    const B = 440, cx = 250, cy = 134, rB = 64, rY = 108, rm = 10, rs = 11, H = 266;
+    let s = [cy - 64, cy, cy + 64].map(y => pil(8, y, 66, y, 7)).join('') + `<text x="8" y="${cy - 78}" class="fig-text fig-liten">Solljus</text>`;
+    s += `<circle class="fig-lupp" cx="${cx}" cy="${cy}" r="${rB}"/><circle class="fig-jorden" cx="${cx}" cy="${cy}" r="16"/>`;
+    s += `<text x="${cx}" y="${cy + 34}" class="fig-text fig-liten fig-mitt">Jorden</text>`;
+    const NAMN = { 180: 'Nymåne', 0: 'Fullmåne', 270: 'Halvmåne', 90: 'Halvmåne' };
+    [0, 45, 90, 135, 180, 225, 270, 315].forEach(v => {
+      const a = v * Math.PI / 180, x = cx + rB * Math.cos(a), y = cy - rB * Math.sin(a), X = cx + rY * Math.cos(a), Y = cy - rY * Math.sin(a);
+      s += `<g class="fig-mane" data-vinkel="${v}"><circle class="fig-mane-mork" cx="${f(x)}" cy="${f(y)}" r="${rm}"/>` +
+        `<path class="fig-mane-ljus" d="M${f(x)} ${f(y - rm)} A${rm} ${rm} 0 0 0 ${f(x)} ${f(y + rm)} Z"/></g>`;
+      s += fasIkon(X, Y, rs, v);
+      if (NAMN[v]) s += v === 180 ? `<text x="${f(X - rs - 6)}" y="${f(Y + 5)}" class="fig-text fig-liten fig-hoger">${NAMN[v]}</text>`
+        : `<text x="${f(X + rs + 6)}" y="${f(Y + 5)}" class="fig-text fig-liten fig-vanster">${NAMN[v]}</text>`;
+    });
+    const beskr = d.beskrivning || 'Månen i åtta lägen runt jorden, med solljuset från vänster. Månen är alltid belyst på den halva som är vänd ' +
+      'mot solen. Ytterringen visar hur månen ser ut från jorden i varje läge: nymåne när den står mellan jorden och solen, ' +
+      'fullmåne när jorden står mellan solen och månen, och halvmåne däremellan.';
+    return { svg: rymdSvg('manfaser', B, H, s), beskrivning: beskr };
+  });
+
+  // Årstiderna: solen i mitten, jorden i fyra lägen på banan (sedd snett), axeln lutad lika mycket åt samma håll i alla
+  // lägen, natthalvan bort från solen. Där norra halvklotet lutar mot solen är det sommar där, där det lutar bort vinter.
+  Bok.figur('arstider', d => {
+    const lut = d.lutning != null ? d.lutning : 23.5, t = lut * Math.PI / 180;
+    const B = 440, cx = 220, cy = 112, rx = 158, ry = 66, rj = 17, H = 226, n = [Math.sin(t), -Math.cos(t)];   // norr, på skärmen
+    let s = `<ellipse class="fig-lupp" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`;
+    const jord = v => {
+      const a = v * Math.PI / 180, x = cx + rx * Math.cos(a), y = cy - ry * Math.sin(a);
+      const ux = (cx - x), uy = (cy - y), ul = Math.hypot(ux, uy) || 1, u = [ux / ul, uy / ul];          // mot solen
+      const mork = Array.from({ length: 19 }, (_, i) => { const b = Math.atan2(-u[1], -u[0]) - Math.PI / 2 + i * Math.PI / 18; return f(x + rj * Math.cos(b)) + ',' + f(y + rj * Math.sin(b)); });
+      const mot = n[0] * u[0] + n[1] * u[1];       // > 0: norra halvklotet lutar mot solen
+      return `<g class="fig-arstid" data-vinkel="${v}" data-lutning="${lut}" data-mot="${f(mot)}"><circle class="fig-jorden" cx="${f(x)}" cy="${f(y)}" r="${rj}"/>` +
+        `<polygon class="fig-jorden-natt" points="${mork.join(' ')}"/>` +
+        `<line class="fig-axel" x1="${f(x - n[0] * 27)}" y1="${f(y - n[1] * 27)}" x2="${f(x + n[0] * 27)}" y2="${f(y + n[1] * 27)}"/>` +
+        `<text x="${f(x + n[0] * 35)}" y="${f(y + n[1] * 35 + 5)}" class="fig-text fig-liten fig-mitt">N</text></g>`;
+    };
+    s += jord(90);                                                          // bakom solen
+    s += `<circle class="fig-sol" cx="${cx}" cy="${cy}" r="24"/><text x="${cx - 28}" y="${cy - 20}" class="fig-text fig-liten fig-hoger fig-halo">Solen</text>`;
+    s += [180, 0, 270].map(jord).join('');
+    // solljuset mot de två lägena med sommar och vinter
+    s += pil(cx - 28, cy, cx - rx + rj + 6, cy, 7) + pil(cx + 28, cy, cx + rx - rj - 6, cy, 7);
+    // etiketterna under lägena till vänster och höger, i två rader
+    [[180, 'Sommar'], [0, 'Vinter']].forEach(([v, ord]) => {
+      const x = cx + rx * Math.cos(v * Math.PI / 180), y = cy + 46;
+      s += `<g class="fig-arstid-text" data-vinkel="${v}">` + etikett(x, y, ord, B, 'fig-text fig-hiss-rubrik') + etikett(x, y + 21, 'på norra halvklotet', B) + '</g>';
+    });
+    const beskr = d.beskrivning || `Jorden i fyra lägen runt solen. Jordaxeln lutar ${tal(lut)} grader åt samma håll i alla lägen. Där norra halvklotet ` +
+      'lutar mot solen är det sommar där, och där det lutar bort från solen är det vinter. Avstånden är inte skalenliga.';
+    return { svg: rymdSvg('arstider', B, H, s), beskrivning: beskr };
   });
 })();

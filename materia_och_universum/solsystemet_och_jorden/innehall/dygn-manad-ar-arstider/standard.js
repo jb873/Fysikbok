@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text D Dygn, månad, år och årstider – nivån standard. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-Standard-A-D-redigerad.md (# Text D), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  * Begreppen (*ord*) är markerade som i Enkel och Fördjupning för samma text, första gången de står i den här texten
  * (arbetsorder 9; listan i rapporten, Joachim stryker): dygn, år, skottår, månader (månad), månens faser, nymåne, halvmåne, fullmåne, månförmörkelse, polcirkeln, midnattssol, mörkertid.
  */
@@ -27,8 +27,9 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Månen är jordens naturliga satellit och rör sig i en bana runt vår planet. Ett varv i förhållande till stjärnorna tar ungefär 27,3 dygn. Men tiden mellan två fullmånar är ungefär 29,5 dygn eftersom jorden samtidigt hinner förflytta sig i sin bana runt solen.' },
         { typ: 'text', text: 'Månen producerar inte eget ljus, utan reflekterar solljus. Den halva av månens yta som är vänd mot solen är belyst, medan den andra halvan är mörk. När månen rör sig runt jorden ser vi olika stor del av den belysta halvan, vilket skapar *månens faser*.' },
         { typ: 'text', text: 'Vid *nymåne* är den belysta delen nästan helt vänd bort från oss. Vid *halvmåne* ser vi ungefär halva månskivan belyst, och vid *fullmåne* ser vi nästan hela den sida som är vänd mot jorden belyst. Därefter minskar den synliga belysta delen igen, och cykeln upprepas.' },
-        { typ: 'text', text: 'Många tror att månens faser beror på att jordens skugga faller över månen. Det stämmer inte, eftersom faserna uppstår när vi ser månens belysta halva från olika vinklar. Jordens skugga faller på månen vid en *månförmörkelse*, vilket är ett annat och betydligt ovanligare fenomen.' }
+        { typ: 'text', text: 'Många tror att månens faser beror på att jordens skugga faller över månen. Det stämmer inte, eftersom faserna uppstår när vi ser månens belysta halva från olika vinklar. Jordens skugga faller på månen vid en *månförmörkelse*, vilket är ett annat och betydligt ovanligare fenomen.' },
         // [BILD: Månens åtta faser. En central jord med månen i åtta positioner runt omkring. Solljuset kommer från en tydligt markerad riktning. För varje position visas både vilken halva av månen som belyses och hur månen ser ut från jorden. Bilden ska skilja på månens verkliga belysning och hur vi uppfattar den.]
+        { id: 'bild-f', typ: 'figur', namn: 'manfaser', bildtext: 'Inre ringen: solen lyser alltid på den halva av månen som är vänd mot solen. Yttre ringen: så ser månen ut från jorden.' }
       ]
     },
     {
@@ -44,6 +45,7 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Många tror att det är sommar när jorden befinner sig nära solen och vinter när den är längre bort. Det stämmer inte, eftersom jorden faktiskt befinner sig närmast solen i början av januari, när vi har vinter i Sverige. Avståndet varierar dessutom ganska lite under året.' },
         { typ: 'text', text: 'Det avgörande är i stället jordaxelns lutning och hur den påverkar solstrålarnas vinkel och dagens längd. När vi har sommar på norra halvklotet är det vinter på södra halvklotet. Om årstiderna främst berodde på avståndet till solen skulle båda halvkloten ha sommar och vinter samtidigt.' },
         // [BILD: Jorden i fyra positioner runt solen med jordaxeln lutad 23,5 grader och pekande åt samma håll i alla positioner. Visa tydligt norra halvklotets sommar och vinter samt hur solljuset träffar jordytan. Avstånden behöver inte vara skalenliga, vilket ska framgå av bildens förklaring.]
+        { id: 'bild-a', typ: 'figur', namn: 'arstider', bildtext: 'Jordaxeln lutar åt samma håll hela året. Avstånden och storlekarna är inte skalenliga.' },
         { typ: 'rubrik', text: 'Midnattssol och mörkertid beror på jordaxelns lutning' },
         { typ: 'text', text: 'I norra Sverige varierar dagens längd mycket mellan sommar och vinter. Norr om norra *polcirkeln* finns perioder då solen inte går ner under horisonten, vilket kallas *midnattssol*. Det beror på att norra delen av jorden lutar mot solen så mycket att dessa områden fortsätter att vara belysta under ett helt dygn.' },
         { typ: 'text', text: 'På vintern uppstår det motsatta fenomenet, som kallas polarnatt eller *mörkertid*. Då kan solen under en period vara under horisonten hela dygnet, eftersom norra delen av jorden lutar bort från solen. Det betyder inte att det alltid är fullständigt mörkt, eftersom skymningsljus, månsken och andra ljuskällor kan lysa upp omgivningen.' },

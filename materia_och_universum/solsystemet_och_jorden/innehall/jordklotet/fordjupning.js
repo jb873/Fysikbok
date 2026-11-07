@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text C Jordklotet – nivån fordjupning. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-C-Jordklotet-Enkel-Fordjupning.md (📕 FÖRDJUPNING), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  */
 Bok.niva('fordjupning', {
   avsnitt: [

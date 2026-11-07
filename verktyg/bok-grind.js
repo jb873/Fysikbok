@@ -156,7 +156,7 @@ async function chrome() {
  *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -287,6 +287,49 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         fp.set(id, { paneler: s.querySelectorAll('g.fig-friktion-panel').length, fel: f_ });
       });
+      // rymdfigurerna (kapitel I, order 9, 2026-11-07): det figuren påstår, mätt i dess egna element – storlekarna i samma
+      // skala, prickarna i proportion till avstånden, pilarna mot jordens mitt, månens belysta halva mot solen och
+      // faserna, jordaxlarna lika lutade åt samma håll och sommaren där norra halvklotet lutar mot solen; inga texter
+      // som överlappar eller står utanför figuren
+      $$('.scen svg[data-rymd]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (ry.has(id)) return;
+        const typ = s.dataset.rymd, f_ = [];
+        if (typ === 'himlakroppar_i_skala') {
+          const k = [...s.querySelectorAll('circle.fig-kropp, circle.fig-kant')].map(c => ({ r: c.r.baseVal.value, d: +c.dataset.d })).filter(x => x.r >= 1);
+          const kv = k.map(x => x.r * 2 / x.d), hi = Math.max(...kv), lo = Math.min(...kv);
+          if (k.length < 2 || (hi - lo) / hi > 0.01) f_.push('storlekarna står inte i samma skala (' + k.length + ' kroppar)');
+        } else if (typ === 'avstandslinje') {
+          const sol = s.querySelector('.fig-ae-sol'), x0 = +sol.dataset.x0, k = +sol.dataset.k, p = [...s.querySelectorAll('circle.fig-ae-prick')];
+          p.forEach(c => { if (Math.abs(c.cx.baseVal.value - (x0 + +c.dataset.ae * k)) > 0.2) f_.push('pricken för ' + c.dataset.ae + ' AE står fel'); });
+          if (p.length < 2) f_.push(p.length + ' prickar');
+        } else if (typ === 'jordklot_tyngd') {
+          const g = [...s.querySelectorAll('g.fig-tyngd')];
+          if (g.length < 3) f_.push(g.length + ' pilar');
+          g.forEach((e, i) => { const l = e.querySelector('line'), t = e.querySelector('polygon').points[0], cx = +e.dataset.cx, cy = +e.dataset.cy;
+            const v1 = Math.atan2(t.y - l.y1.baseVal.value, t.x - l.x1.baseVal.value), v2 = Math.atan2(cy - l.y1.baseVal.value, cx - l.x1.baseVal.value);
+            if (Math.abs(Math.atan2(Math.sin(v1 - v2), Math.cos(v1 - v2))) > 0.02) f_.push('pil ' + (i + 1) + ' pekar inte mot jordens mitt'); });
+        } else if (typ === 'manfaser') {
+          const m = [...s.querySelectorAll('g.fig-mane')], o = [...s.querySelectorAll('g.fig-mane-sedd')];
+          if (m.length !== 8 || o.length !== 8) f_.push(m.length + ' månar, ' + o.length + ' i ytterringen');
+          m.forEach(g => { const c = g.querySelector('circle').getBBox(), l = g.querySelector('.fig-mane-ljus').getBBox();
+            if (!(l.x + l.width / 2 < c.x + c.width / 2 - 1)) f_.push('månen i läget ' + g.dataset.vinkel + '° är inte belyst mot solen'); });
+          o.forEach(g => { const v = +g.dataset.vinkel, bor = Math.round((1 + Math.cos(v * Math.PI / 180)) / 2 * 100) / 100;
+            if (Math.abs(+g.dataset.andel - bor) > 0.011) f_.push('fasen i läget ' + v + '° (' + g.dataset.andel + ', ska vara ' + bor + ')'); });
+        } else if (typ === 'arstider') {
+          const g = [...s.querySelectorAll('g.fig-arstid')];
+          const lut = g.map(e => { const l = e.querySelector('line.fig-axel'); return Math.atan2(l.x2.baseVal.value - l.x1.baseVal.value, l.y1.baseVal.value - l.y2.baseVal.value) * 180 / Math.PI; });
+          if (g.length !== 4 || lut.some(x => Math.abs(x - +g[0].dataset.lutning) > 0.3)) f_.push('axlarna: ' + lut.map(x => x.toFixed(1)).join('/') + ' (ska vara ' + (g[0] && g[0].dataset.lutning) + ')');
+          s.querySelectorAll('g.fig-arstid-text').forEach(t => { const e = s.querySelector('g.fig-arstid[data-vinkel="' + t.dataset.vinkel + '"]'), mot = e ? +e.dataset.mot : 0, ord = t.textContent;
+            if (/Sommar/.test(ord) ? !(mot > 0) : /Vinter/.test(ord) ? !(mot < 0) : false) f_.push('”' + ord + '” står vid fel läge'); });
+        }
+        const vb = s.viewBox.baseVal, tx = [...s.querySelectorAll('text')].map(t => [t.textContent, t.getBBox()]);
+        tx.forEach(([a, p], j) => {
+          if (p.x < -0.5 || p.y < -0.5 || p.x + p.width > vb.width + 0.5 || p.y + p.height > vb.height + 0.5) f_.push('”' + a + '” står utanför figuren');
+          tx.slice(j + 1).forEach(([b, q]) => { if (p.x < q.x + q.width - 0.5 && q.x < p.x + p.width - 0.5 && p.y < q.y + q.height - 0.5 && q.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
+        });
+        ry.set(id, { typ, fel: f_ });
+      });
       $$('.scen svg[data-bildpilar]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (bp.has(id)) return;
@@ -393,6 +436,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       pn: { antal: pn.size, staplade: [...pn.values()].filter(x => x.staplad).length, minPx: pn.size ? Math.min(...[...pn.values()].map(x => x.minPx)) : null,
         fel: [...pn].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       jm: { antal: jm.size, fel: [...jm].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
+      ry: { antal: ry.size, typer: [...new Set([...ry.values()].map(x => x.typ))], fel: [...ry].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
@@ -757,6 +801,8 @@ const SCENARIO = String.raw`async (helskarmLage) => {
       spar.reduce((a, x) => a + x.pn.staplade, 0) + ' staplade, minsta texten ' + Math.min(...spar.filter(x => x.pn.antal).map(x => x.pn.minPx)).toFixed(1) + ' px');
   if (spar.some(x => x.jm.antal)) prova('figur: jorden och månen – pilen på månen = pilen på jorden × tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda, tyngden ur data (' + spar.map(x => x.jm.antal).join(' + ') + ' figurer)',
     spar.every(x => !x.jm.fel.length), spar.flatMap(x => x.jm.fel).join(' | '));
+  if (spar.some(x => x.ry.antal)) prova('figur: rymdfigurerna – storlekarna i samma skala, prickarna i proportion till avstånden, pilarna mot jordens mitt, månens belysta halva mot solen och faserna rätt, jordaxlarna lika lutade och sommaren där norra halvklotet lutar mot solen, inga texter som överlappar eller står utanför (' + spar.map(x => x.ry.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.ry.typer))].join(', ') + ')',
+    spar.every(x => !x.ry.fel.length), spar.flatMap(x => x.ry.fel).join(' | '));
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   prova('text: g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden står i vanlig stil med rätt skiftläge, inte i kapitäler (' + spar.reduce((a, x) => a + x.sym.antal, 0) + ' ställen)',

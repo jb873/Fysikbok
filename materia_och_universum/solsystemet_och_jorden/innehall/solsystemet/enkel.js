@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text A Solsystemet – nivån enkel. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-A-Solsystemet-Enkel-Fordjupning.md (📗 ENKEL), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  */
 Bok.niva('enkel', {
   avsnitt: [
@@ -47,7 +47,9 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'I en *skalmodell* görs allt lika mycket mindre. Då kan man jämföra storlekar och avstånd. I Sverige finns en sådan modell, Sweden Solar System. Där är solen den stora arenan Avicii Arena i Stockholm.' },
         { typ: 'text', text: 'I den modellen är jorden ett klot som är ungefär 64 centimeter stort, ungefär som en stor badboll. Klotet står 7,5 kilometer från arenan. Det är en lång promenad. Neptunus står ännu längre bort, ungefär 225 kilometer från Stockholm. Så stort är solsystemet, även när det är förminskat.' },
         // [BILD S1: storlekarna – planeterna i samma skala, bredvid en bit av solens kant]
+        { id: 'bild-s1', typ: 'figur', namn: 'himlakroppar_i_skala', kant: { namn: 'Solen', diameter: 1392700 }, kroppar: [{ namn: 'Merkurius', diameter: 4879 }, { namn: 'Venus', diameter: 12104 }, { namn: 'Jorden', diameter: 12756 }, { namn: 'Mars', diameter: 6792 }, { namn: 'Jupiter', diameter: 142984 }, { namn: 'Saturnus', diameter: 120536 }, { namn: 'Uranus', diameter: 51118 }, { namn: 'Neptunus', diameter: 49528 }], bildtext: 'Planeterna i samma skala, bredvid en bit av solens kant.' },
         // [BILD S2: avstånden – planeterna som prickar på en linje, i en annan skala]
+        { id: 'bild-s2', typ: 'figur', namn: 'avstandslinje', enhet: 'miljoner km', kroppar: [{ namn: 'Merkurius', ae: 0.39 }, { namn: 'Venus', ae: 0.72 }, { namn: 'Jorden', ae: 1 }, { namn: 'Mars', ae: 1.52 }, { namn: 'Jupiter', ae: 5.2 }, { namn: 'Saturnus', ae: 9.58 }, { namn: 'Uranus', ae: 19.2 }, { namn: 'Neptunus', ae: 30.05 }], bildtext: 'Planeternas avstånd till solen. Avstånden har en annan skala än storlekarna i bilden ovan.' },
         { typ: 'rubrik', text: 'Bilderna i böcker visar inte de rätta avstånden' },
         { typ: 'text', text: 'Många tror att planeterna ligger nära varandra. Det är för att de ofta ritas så, på en rad bredvid varandra. Men i verkligheten är det enormt långt mellan dem, jämfört med hur stora de är.' },
         { typ: 'text', text: 'Varför ritar man då fel? Om man ritade både storlekarna och avstånden rätt på ett papper skulle planeterna bli så små att man inte kunde se dem. Därför visar en vanlig bild bara ordningen och hur planeterna ser ut. Den är en modell som visar vissa saker men inte allt. Det är bra att veta vad en bild inte visar.' },

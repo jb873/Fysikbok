@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text D Dygn, månad, år och årstider – nivån enkel. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-D-Dygn-manad-ar-Enkel-Fordjupning.md (📗 ENKEL), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  */
 Bok.niva('enkel', {
   avsnitt: [
@@ -39,6 +39,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Vid *nymåne* ligger månen mellan jorden och solen. Den belysta halvan är vänd bort från oss, och vi ser nästan ingenting. Sedan växer den belysta delen, kväll efter kväll. Vid *halvmåne* ser vi halva månskivan lysa.' },
         { typ: 'text', text: 'Vid *fullmåne* ligger jorden mellan solen och månen. Då ser vi hela den belysta halvan, och månen är helt rund. Sedan minskar den belysta delen igen, tills det blir nymåne och allt börjar om.' },
         // [BILD F: månens faser – månen i åtta lägen runt jorden, solljuset från ett håll, och hur månen ser ut från jorden i varje läge]
+        { id: 'bild-f', typ: 'figur', namn: 'manfaser', bildtext: 'Inre ringen: solen lyser alltid på den halva av månen som är vänd mot solen. Yttre ringen: så ser månen ut från jorden.' },
         { typ: 'rubrik', text: 'Jordens skugga ger inte månens faser' },
         { typ: 'text', text: 'Många tror att månens faser beror på att jordens skugga faller på månen. Men så är det inte. Faserna beror bara på från vilket håll vi ser den belysta halvan.' },
         { typ: 'text', text: 'Ibland faller jordens skugga faktiskt på månen. Det kallas en *månförmörkelse*. Men det är ovanligt och händer bara några gånger på ett par år, och bara vid fullmåne. Faserna ser vi varje månad.' }
@@ -60,6 +61,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Många tror att det är sommar när jorden är nära solen och vinter när den är långt bort. Det låter logiskt, men det stämmer inte. Jorden är faktiskt närmast solen i början av januari, mitt i vår vinter. Avståndet ändras dessutom bara lite under året.' },
         { typ: 'text', text: 'Det finns ett enkelt sätt att se att avståndet inte kan vara orsaken. När vi har sommar i Sverige har de vinter i Australien. Om avståndet var orsaken skulle hela jorden ha sommar samtidigt. Det är alltså lutningen som avgör.' },
         // [BILD Å: jorden i fyra lägen runt solen med jordaxeln lutad åt samma håll – sommar och vinter på norra halvklotet]
+        { id: 'bild-a', typ: 'figur', namn: 'arstider', bildtext: 'Jordaxeln lutar åt samma håll hela året. Avstånden och storlekarna är inte skalenliga.' },
         { typ: 'rubrik', text: 'Midnattssol och mörkertid finns i norra Sverige' },
         { typ: 'text', text: 'Långt norrut i Sverige ändras dagens längd mycket under året. Norr om *polcirkeln* går solen inte ner alls under några veckor på sommaren. Den är uppe hela natten. Det kallas *midnattssol*. Det beror på att norra delen av jorden då lutar så mycket mot solen att den är i ljuset hela dygnet, fast jorden snurrar.' },
         { typ: 'text', text: 'På vintern blir det tvärtom. Då går solen inte upp alls under en tid. Det kallas *mörkertid*. Men det är inte kolsvart hela dygnet. Mitt på dagen blir det ändå lite ljust, en skymning, och månen och snön kan lysa upp.' },

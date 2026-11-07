@@ -1,7 +1,7 @@
 /* Avsnittssida I. Solsystemet och jorden, text B Himlakroppar – nivån enkel. Arbetsorder 9 (2026-11-07):
  * Kap1-Avsnitt1-B-Himlakroppar-Enkel-Fordjupning.md (📗 ENKEL), infört ordagrant i strömformatet: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Länkblocket (motorns konvention) sist i det sista numrerade
- * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats tills figuren ritas (steg 3).
+ * avsnittet och i Sammanfattningen. [BILD …] står som kommentar på sin plats, med figuren efter (steg 3).
  */
 Bok.niva('enkel', {
   avsnitt: [
@@ -30,8 +30,9 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'Månar går runt planeter' },
         { typ: 'text', text: 'En *måne* är en himlakropp som går runt en planet eller en dvärgplanet. Vår måne är ungefär en fjärdedel så stor som jorden. Den ligger ungefär 384 000 kilometer bort. Månen lyser inte heller själv. Den reflekterar solljus, precis som planeterna.' },
         { typ: 'rubrik', text: 'Jorden är inte den enda planeten med måne' },
-        { typ: 'text', text: 'Många tror att det bara är jorden som har en måne. Vår måne syns ju så tydligt. Men nästan alla planeter har månar. Mars har två små månar, och Jupiter och Saturnus har många. En del månar är jättestora. Jupiters måne Ganymedes och Saturnus måne Titan är till och med större än planeten Merkurius.' }
+        { typ: 'text', text: 'Många tror att det bara är jorden som har en måne. Vår måne syns ju så tydligt. Men nästan alla planeter har månar. Mars har två små månar, och Jupiter och Saturnus har många. En del månar är jättestora. Jupiters måne Ganymedes och Saturnus måne Titan är till och med större än planeten Merkurius.' },
         // [BILD M: jorden och månen, och Jupiter med sina fyra största månar, alla i samma skala]
+        { id: 'bild-m', typ: 'figur', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Jorden', diameter: 12756, grupp: 0 }, { namn: 'Månen', diameter: 3475, grupp: 0 }, { namn: 'Jupiter', diameter: 142984, grupp: 1 }, { namn: 'Io', diameter: 3643, grupp: 1 }, { namn: 'Europa', diameter: 3122, grupp: 1 }, { namn: 'Ganymedes', diameter: 5268, grupp: 1 }, { namn: 'Kallisto', diameter: 4821, grupp: 1 }, { namn: 'Merkurius', diameter: 4879, grupp: 2 }], bildtext: 'Jorden och månen, Jupiter med sina fyra största månar och Merkurius som jämförelse – alla i samma skala.' }
       ]
     },
     {

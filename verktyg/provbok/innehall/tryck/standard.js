@@ -80,6 +80,17 @@ Bok.niva('standard', {
           pilar: [{ namn: 'provpil 1', fran: [690, 503], till: [950, 503], etikett: [820, 460] },
                   { namn: 'provpil 2', fran: [1255, 525], till: [995, 525] }],
           lika: [[0, 1]], beskrivning: 'Provbeskrivning av fotot.', bildtext: 'Provbildtext under fotot.' },
+        // Rymdfigurerna (kapitel I, order 9): andra data än i innehållet – grinden mäter skalan, lägena, pilarna, faserna och axlarna
+        { typ: 'text', text: 'Provtext: himlakroppar i skala, tre provkroppar i två grupper.' },
+        { typ: 'figur', id: 'himlakroppar-prov', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Prov A', diameter: 3000 }, { namn: 'Prov B', diameter: 1000, grupp: 1 }, { namn: 'Prov C', diameter: 2000, grupp: 1 }], storst: 60 },
+        { typ: 'text', text: 'Provtext: en avståndslinje i AE.' },
+        { typ: 'figur', id: 'avstand-prov', namn: 'avstandslinje', kroppar: [{ namn: 'Prov 1', ae: 0.5 }, { namn: 'Prov 2', ae: 0.8 }, { namn: 'Prov 3', ae: 4 }], enhet: 'AE' },
+        { typ: 'text', text: 'Provtext: tre personer på ett jordklot.' },
+        { typ: 'figur', id: 'jordklot-prov', namn: 'jordklot_tyngd', personer: [{ vinkel: 90, namn: 'Prov N' }, { vinkel: 210 }, { vinkel: -30, namn: 'Prov S' }] },
+        { typ: 'text', text: 'Provtext: månens faser.' },
+        { typ: 'figur', id: 'manfaser-prov', namn: 'manfaser', bildtext: 'Provbildtext under månens faser.' },
+        { typ: 'text', text: 'Provtext: årstiderna med axeln lutad 30 grader.' },
+        { typ: 'figur', id: 'arstider-prov', namn: 'arstider', lutning: 30 },
         { typ: 'lank', till: ['ova'] }
       ]
     }
