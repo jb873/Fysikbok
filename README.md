@@ -122,8 +122,11 @@ Fysik/
     rorelse_och_kraft/          avsnittssida III. Rörelse och kraft, texterna rorelse/, kraft-och-friktion/,
                                 kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
+  kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (djupdykningarna)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
+    kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlaren)
+    kap1-ordagrant.js           kapitel 1: innehållet ordagrant mot källorna
     bilder/                     skärmbilder: grind/ (--bilder) och en mapp per arbete
     provbok/                    provdata för grinden, med texter (en bok per text) – inte elevinnehåll
     provkapitel.js              provbokens kapitel: ett omslag med en titel på två rader
@@ -637,6 +640,15 @@ beslut 2026-11-05.
   Visar den inte det, är något inte pushat eller så har Pages inte byggt klart. Kör den efter varje push.
 - **`--bara=<namn>`** prövar bara de delkapitel vars namn innehåller texten, till exempel `--bara=rorelse_och_kraft`.
   Det är ett snabbt prov medan man arbetar. Grinden är grön först när hela har körts.
+
+**Källorna och omvandlaren** (sedan 2026-11-07, arbetsorder 10). Joachims källor ligger oförändrade i `kallor/`, en
+mapp per kapitel. Kapitel 1-texterna är omvandlade med ett skript och prövas med ett annat:
+
+- **`node verktyg/kap1-ordagrant.js`** jämför kapitel 1, avsnitt I, block för block med `kallor/kap1/`. Det
+  godkänner bara Joachims beslutade tillägg på sina platser. Slutkoden är 1 om något inte är ordagrant. Kör det efter
+  varje ändring i texterna.
+- **`node verktyg/kap1-omvandlare.js [utmapp]`** skriver de tolv filerna i `innehall/` igen ur källorna, och
+  befintliga filer skrivs över. Med en tom `utmapp` hamnar de där, så att de kan jämföras med repot först.
 
 ## Interaktiva inslag (senare)
 
