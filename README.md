@@ -1026,3 +1026,22 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     tre nivåer, och fyra djupdykningar ("kommer"). Ingen Elevbok ännu.
   - **Grinden:** startsidan och kapitelindexen för båda kapitlen (tabellen `KAPITEL`). Ett delkapitel där allt
     "kommer" prövas bara på hubben.
+- **2026-11-07, Solsystemet och jorden: texterna (order 9, steg 2):** alla tolv böckerna (A–D × tre nivåer) är
+  införda ordagrant ur `Kap1-Avsnitt1-Standard-A-D-redigerad.md` och `Kap1-Avsnitt1-{A,B,C,D}-…-Enkel-Fordjupning.md`.
+  - **Struktur:** `##` blir avsnitt, och id:t kommer från källan (Fördjupning). Där källan saknar id blir det
+    `inledning` och `sammanfattning`, annars titelns form, till exempel `solen-ar-centrum-i-vart-solsystem`. Enkel och
+    Standard har samma avsnitt.
+  - **Övrig konvertering:** `###` blir rubrik. "Det här lär du dig:" blir en liten rubrik utan kolon. Länkblocket
+    följer motorns konvention.
+  - **Bildmarkeringarna** står som kommentarer på sin plats i filerna. Eleven ser dem inte, och figurerna kommer i
+    steg 3.
+  - **Begreppen i Standard:** de som Enkel och Fördjupning markerar för samma text är markerade första gången de står
+    i Standard-texten, i stycken och punkter men inte i rubriker. En böjd form blir `*form|grundform*`. Listan finns i
+    filhuvudet.
+  - **Kontroll:** ett skript jämför block för block med källorna, och alla tolv är ordagranna. `?kontroll` är grön
+    för alla tolv: inga brott och inga tunna sidor, och förteckningen ryms på en sida. Varje bok har 10–13 sidor.
+  - **Långa punktlistor** (mer än 7 punkter: Sammanfattningen i D, Standard och Fördjupning) står som två listor i
+    följd, 60/40, med samma text. En lista delas aldrig, och som en enda lista blev sidan 34–55 px för hög. Med en
+    delning på mitten blev sidan före brytningen 40 % fylld på mobilen.
+  - **Källorna har inte** rutan "Så bläddrar du" (III:s källor angav den uttryckligen), inte rubriken "Det
+    viktigaste" i Sammanfattningen och ingen rubrik i Standards Inledning. Inget av det är tillagt.

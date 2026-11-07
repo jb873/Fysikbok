@@ -837,7 +837,7 @@
    * en förstoring med kolatomen (materia). Samma färger och samma sken som Kraft och rörelse. */
   Bok.illustration('materia-och-universum', ({ hojd, id }) => {
     const L = OM.ljusbla, x0 = 0, x1 = 792, topp = 0, yb = hojd;
-    const S = [x0 + 70, yb - 30], RS = 120;                                    // solen
+    const S = [x0 + 130, yb - 92], RS = 88;                                    // solen (innanför ramen, ovanför upphovet)
     const sx0 = x0 + 90, sy0 = topp + 60, sx1 = x1 - 60, sy1 = yb + 40;
     let s = `<defs><radialGradient id="${id}-sken"><stop offset="0" stop-color="${OM.sken}" stop-opacity=".18"/>` +
       `<stop offset=".62" stop-color="${OM.sken}" stop-opacity=".15"/><stop offset="1" stop-color="${OM.sken}" stop-opacity="0"/></radialGradient>` +
@@ -848,12 +848,18 @@
     const STJ = [[150, 40], [260, 22], [330, 70], [420, 30], [500, 58], [600, 20], [700, 48], [740, 140], [560, 120], [460, 150],
       [380, 200], [640, 230], [720, 300], [300, 260], [210, 150], [120, 110], [520, 300], [430, 260]];
     s += `<g fill="${L}">${STJ.filter(([, y]) => y < yb - 40).map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k % 3 ? 1.6 : 2.4}" opacity="${k % 2 ? .55 : .8}"/>`).join('')}</g>`;
-    // banorna: ellipser runt solen, tillplattade (sedda snett)
-    const BANOR = [210, 300, 400, 520, 650, 780], K = 0.34;
-    s += `<g fill="none" stroke="${L}" stroke-width="1.6" opacity=".5">${BANOR.map(r => `<ellipse cx="${S[0]}" cy="${S[1]}" rx="${r}" ry="${f(r * K)}"/>`).join('')}</g>`;
+    // banorna: ellipser runt solen, tillplattade (sedda snett), bara den del som står inom motivets ruta (de större
+    // banorna når utanför den: utan att klippas skulle de gå ut över ramen och ned i upphovet)
+    const BANOR = [200, 290, 390, 510, 640, 770], K = 0.34, ruta = [x0 + 40, x1 - 40, topp + 4, yb];
+    const bage = r => { let d = '', pa = false;
+      for (let g = 0; g <= 360; g += 1.5) { const v = g * Math.PI / 180, x = S[0] + r * Math.cos(v), y = S[1] - r * K * Math.sin(v);
+        if (x >= ruta[0] && x <= ruta[1] && y >= ruta[2] && y <= ruta[3]) { d += (pa ? 'L' : 'M') + f(x) + ' ' + f(y); pa = true; } else pa = false; }
+      return d; };
+    s += `<path d="${BANOR.map(bage).join('')}" fill="none" stroke="${L}" stroke-width="1.6" opacity=".5"/>`;
     // planeterna på banorna (vinkeln uppåt höger), jorden på den tredje
     const pa = (r, v) => [S[0] + r * Math.cos(v * Math.PI / 180), S[1] - r * K * Math.sin(v * Math.PI / 180)];
-    const PLANETER = [[0, 62, 7, '#b9a58e'], [1, 48, 10, '#e2c48a'], [3, 32, 9, '#c8714a'], [4, 24, 24, '#d6b083'], [5, 17, 20, '#e0cf9f']];
+    // Merkurius, Venus, Mars och Jupiter (jorden ritas för sig nedan); Jupiter högt på sin bana, fritt från förstoringen
+    const PLANETER = [[0, 62, 7, '#b9a58e'], [1, 48, 10, '#e2c48a'], [3, -8, 9, '#c8714a'], [4, 72, 22, '#d6b083']];
     PLANETER.forEach(([b, v, r, farg]) => { const [x, y] = pa(BANOR[b], v); s += `<circle cx="${f(x)}" cy="${f(y)}" r="${r}" fill="${farg}" stroke="${L}" stroke-width="1.2" opacity=".95"/>`; });
     const J = pa(BANOR[2], 40), rj = 12;
     s += `<circle cx="${f(J[0])}" cy="${f(J[1])}" r="${rj}" fill="#4a86c4" stroke="${L}" stroke-width="1.6"/>` +

@@ -712,7 +712,8 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     const f0 = valt(), ddFel = [];
     for (let i = 0; i < ddKort().length; i++) {
       const kort = ddKort()[i], titel = kort.querySelector('.fordj-kort-titel').textContent.trim(), t = kort.dataset.text;
-      if (!kort.dataset.oppna) { ddFel.push(titel + ': "kommer"'); continue; }
+      // en djupdykning utan innehåll står som "kommer": tonad, och den öppnar ingen bok (2026-11-07, kapitel I)
+      if (!kort.dataset.oppna) { if (kort.getAttribute('aria-disabled') !== 'true') ddFel.push(titel + ': varken en bok eller tonad "kommer"'); continue; }
       await gest(kort, 900);
       const hash = location.hash, utanNiva = getComputedStyle($('.bokapp .niva')).display === 'none';
       Bok.gaTill(0); await v(150);
