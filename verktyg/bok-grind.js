@@ -1115,10 +1115,22 @@ const TOMMA_SVEP = String.raw`async () => {
   const start = { text: ($('.underdel-knapp.aktiv') || { dataset: {} }).dataset.text, niva: ($('.niva-valjare .niva-knapp.aktiv') || { dataset: {} }).dataset.niva };
   // varje sida i den öppna boken: inga tomma, och blocken (data-post) per sida – jämför (en tidigare genomgång) säger
   // till om en sida har tappat block
-  const hela = async (namn, jamfor) => { const n = $$('.lr-sida').length, ids = {};
+  // Uppslagsregeln (order 8, 2026-11-07): också varje figur vars stycke (närmast före, bakåt över figurer) står på ett
+  // annat uppslag (dator) / en annan sida (mobil) – med om stycket står först på sin sida (efter rubrikerna: undantaget)
+  const skilda = [];
+  const slag = b => b.matches('figure.b-figur') ? 'f' : b.matches('p.b-text') ? 't' : b.matches('h2, h3, .b-rubrik, [class*="avsnittsstart"], .sidtitel') ? 'r' : 'a';
+  const hela = async (namn, jamfor) => { const n = $$('.lr-sida').length, ids = {}, bl = {}, uppslag = !!$('.scen .uppslag.ar-uppslag');
     for (let s = 1; s <= n; s += 1) { Bok.gaTill(s); await v(25); const t = tomma(); if (t.length) fel.push(namn + ': sida ' + t.join(','));
-      $$('.scen .uppslag > .sida[data-nr]').forEach(e => { ids[e.dataset.nr] = [...e.querySelectorAll('[data-post]')].map(p => p.dataset.post).join(','); }); }
+      $$('.scen .uppslag > .sida[data-nr]').forEach(e => { ids[e.dataset.nr] = [...e.querySelectorAll('[data-post]')].map(p => p.dataset.post).join(',');
+        const inne = e.querySelector('.sidinnehall'); if (inne && !e.classList.contains('innehallssida')) bl[e.dataset.nr] = [...inne.children].map(b => [b.dataset.post, slag(b)]); }); }
     if (jamfor) Object.keys(jamfor).forEach(nr => { if (jamfor[nr] !== ids[nr]) fel.push(namn + ': sida ' + nr + ' har inte samma block som förut (' + (ids[nr] || '').split(',').filter(Boolean).length + ' av ' + jamfor[nr].split(',').filter(Boolean).length + ')'); });
+    else {
+      const alla = Object.keys(bl).map(Number).sort((a, b) => a - b).flatMap(nr => bl[nr].map(([post, sl], i) => ({ nr, i, post, sl })));
+      const plats = nr => uppslag ? (nr % 2 ? nr : nr - 1) : nr;
+      alla.forEach((b, j) => { if (b.sl !== 'f') return; let k = j - 1; while (k >= 0 && alla[k].sl === 'f') k--;
+        const st = alla[k]; if (!st || st.sl !== 't' || plats(st.nr) === plats(b.nr)) return;
+        skilda.push({ bok: namn, figur: b.post, stycke: st.nr, sida: b.nr, uppslag, forst: bl[st.nr].slice(0, st.i).every(x => x[1] === 'r') }); });
+    }
     return { n, ids }; };
   // böckerna: varje text på varje nivå (en nivå som är "kommer" för texten hoppas över), och varje djupdykning
   const texter = $$('.underdel-knapp[data-oppna]').map(b => b.dataset.text), nivaer = $$('.niva-valjare .niva-knapp').map(b => b.dataset.niva);
@@ -1138,9 +1150,12 @@ const TOMMA_SVEP = String.raw`async () => {
   };
   const oppnade = [];
   for (const x of lista) if (await oppnaBok(x)) { const namn = (x.text || 'boken') + '/' + (x.niva || ''), r = await hela(namn); bocker.push([namn, r.n]); oppnade.push(Object.assign({ ids: r.ids }, x)); }
-  for (const kort of $$('.fordj-kort:not([aria-disabled="true"])')) { await stang(); kort.click(); await v(700);
-    if (Bok.oppen) { const namn = kort.textContent.trim().slice(0, 30); bocker.push([namn, (await hela(namn)).n]); } }
-  const svep = { bocker: bocker.length, sidor: bocker.reduce((s, b) => s + b[1], 0), fel: fel.slice() };
+  // (korten hämtas på nytt för varje bok: hubben ritas om när en bok stängs, och då byts korten ut)
+  const antalKort = $$('.fordj-kort:not([aria-disabled="true"])').length;
+  for (let kn = 0; kn < antalKort; kn++) { await stang(); const kort = $$('.fordj-kort:not([aria-disabled="true"])')[kn]; if (!kort) continue;
+    const namn = kort.textContent.trim().slice(0, 30); kort.click(); await v(700);
+    if (Bok.oppen) bocker.push([namn, (await hela(namn)).n]); }
+  const svep = { bocker: bocker.length, sidor: bocker.reduce((s, b) => s + b[1], 0), fel: fel.slice(), skilda };
   // bladvändning fram och tillbaka i den första boken, en annan bok öppnas och stängs, och den första gås igenom igen
   // (blocken på varje sida ska vara desamma som i den första genomgången)
   fel.length = 0;
@@ -1188,9 +1203,31 @@ async function provaTommaSidor(c, lage) {
   const r = await c.ev(`(${TOMMA_SVEP})()`);
   k.push({ namn: 'tomma sidor: varje sida i varje bok (texterna på varje nivå, djupdykningarna) har block',
     ok: r.svep.bocker > 0 && !r.svep.fel.length, detalj: `${r.svep.bocker} böcker, ${r.svep.sidor} sidor` + (r.svep.fel.length ? ' – TOMMA: ' + r.svep.fel.join('; ') : '') });
+  // Uppslagsregeln (order 8): på datorn står ingen figur på ett annat uppslag än stycket före den, utom när stycket
+  // står först på sin sida (undantaget, varning); på mobilen bara varningar (inga flyttar för mobilens skull)
+  const sk = r.svep.skilda, beskriv = x => `${x.bok} s.${x.stycke}→${x.sida} (${x.figur})`;
+  const brott = sk.filter(x => x.uppslag && !x.forst), varn = sk.filter(x => !x.uppslag || x.forst);
+  k.push({ namn: 'uppslagsregeln: ingen figur står på ett annat uppslag än stycket före den (datorn; undantaget: stycket först på sin sida)',
+    ok: !brott.length, detalj: brott.length ? 'SKILDA: ' + brott.map(beskriv).join('; ') : 'inga' });
+  k.varningar = varn.map(x => `figuren på ${x.uppslag ? 'ett annat uppslag' : 'en annan sida'} än stycket: ${beskriv(x)}` + (x.uppslag ? ' – stycket först på sin sida (undantag)' : ' – mobilen'));
   k.push({ namn: 'tomma sidor: inget blir tomt efter bladvändning fram och tillbaka och efter att en annan bok öppnats och stängts',
     ok: !!r.efter && !r.efter.length, detalj: r.efter ? (r.efter.length ? 'TOMMA: ' + r.efter.join('; ') : 'inga') : 'kunde inte öppna boken' });
   return k;
+}
+
+/* ---------- Omkörning när Chrome stängs (2026-11-07, Joachims beslut) ----------
+ * Headless Chrome har stängts mitt i en körning, bara när datorn gick på batteri (5–6/11). Stängs Chrome körs läget om
+ * en gång; omkörningen syns i utskriften (OMKÖRD) och i sammanställningen sist. Stängs det igen är läget rött. */
+const chromeOmkorningar = [];
+const stangdes = r => (r.fel || []).some(f => /Chrome stängdes/.test(f));
+async function medOmkorning(fn, namn) {
+  let r = await fn();
+  if (stangdes(r)) {
+    console.log(`       OMKÖRD: Chrome stängdes (${namn}) – läget körs om en gång`);
+    chromeOmkorningar.push(namn);
+    r = await fn();
+  }
+  return r;
 }
 
 /* ---------- En körning: ett delkapitel i ett läge ---------- */
@@ -1218,7 +1255,8 @@ async function kor(dk, lage, felkod) {
     if (dk.prov && !lage.mobil) res.kontroller.push(...await c.ev(`(${PROVSCENARIO})()`));
     const blad = await provaBlad(c, lage, felkod && felkod.blad);
     res.kontroller.push(...blad); res.bladTid = blad.tid || null;
-    res.kontroller.push(...await provaTommaSidor(c, lage));
+    const tom = await provaTommaSidor(c, lage);
+    res.kontroller.push(...tom); res.figurVarningar = tom.varningar || [];
     // En adress som pekar på en rubrik (#atomer-2) öppnar boken där rubriken står; Stäng leder till hubben i samma
     // delkapitel. Rubrikernas adresser kommer ur kontrolläget (adress → block).
     const ankare = ((res.kontroll && res.kontroll.ankare) || []).filter(([a, p]) => p !== a && /-\d+$/.test(a));
@@ -1614,6 +1652,8 @@ async function jamforWebben(lista) {
   const omkorningar = [];          // bladvändningens tidsprov som kördes om (rött i första körningen)
   console.log(`Bokmotorn: ${lista.length} delkapitel (${lista.map(d => d.namn).join(', ')})`);
   console.log(`Prövar: ${WEBB ? 'den publicerade boken, ' + BAS : 'filerna på disken'}\n`);
+  // På batteri (2026-11-07, Joachims beslut): varna – tiderna är opålitliga och headless Chrome kan stängas
+  if (batteri()) console.log('VARNING: datorn går på batteri – bladvändningens tidsprov mäts inte, brytningens tider är opålitliga, och Chrome kan stängas (då körs läget om en gång). Sätt i laddaren för en grind som räknas.\n');
 
   if (WEBB) {
     const j = await jamforWebben(lista);
@@ -1634,7 +1674,7 @@ async function jamforWebben(lista) {
   if (!NEGATIV) {
     // 2. Startsidan och kapitelindexet: vägen mellan sidorna, på dator och mobil
     for (const lage of [LAGEN[0], LAGEN[3]]) {
-      const r = await provaSidorna(lage);
+      const r = await medOmkorning(() => provaSidorna(lage), 'startsida och kapitelindex, ' + lage.namn);
       gront = gront && r.gron;
       console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  startsida och kapitelindex, ${lage.namn}: ${r.navigering}, JS-fel ${r.fel.length}`);
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
@@ -1644,7 +1684,7 @@ async function jamforWebben(lista) {
     // 2 b. Elevboken (plattformens), på dator och mobil, för delkapitel som har den
     const medElevbok = lista.filter(d => !d.prov && elevbokSida(d));
     for (const dk of medElevbok) for (const lage of [LAGEN[0], LAGEN[3]]) {
-      const r = await provaElevboken(dk, lage);
+      const r = await medOmkorning(() => provaElevboken(dk, lage), 'elevboken ' + dk.namn + ', ' + lage.namn);
       gront = gront && r.gron;
       console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  elevboken ${dk.namn}, ${lage.namn}: ${r.navigering}, JS-fel ${r.fel.length}`);
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
@@ -1652,7 +1692,7 @@ async function jamforWebben(lista) {
     }
     // geografins data ritas som förut med plattformens ritning
     if (medElevbok.length && fs.existsSync(GEO_ELEVBOK)) for (const lage of [LAGEN[0], LAGEN[3]]) {
-      const r = await provaGeografinsElevbok(lage);
+      const r = await medOmkorning(() => provaGeografinsElevbok(lage), 'elevboken med geografins data, ' + lage.namn);
       gront = gront && r.gron;
       console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  elevboken med geografins data (verktyg/elevbok-geografi), ${lage.namn}: ${r.navigering}, JS-fel ${r.fel.length}`);
       r.kontroller.filter(x => !x.ok).forEach(x => console.log(`       ✗ ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
@@ -1661,7 +1701,7 @@ async function jamforWebben(lista) {
     if (medElevbok.length) console.log('');
     // 3. Varje delkapitel i varje läge
     for (const dk of lista) for (const lage of LAGEN) {
-      const r = await kor(dk, lage);
+      const r = await medOmkorning(() => kor(dk, lage), dk.namn + ', ' + lage.namn);
       gront = gront && r.gron;
       const matt = r.kontroll && Object.values(r.kontroll.nivaer).filter(x => typeof x === 'object')
         .map(x => Object.entries(x.matt).map(([n, m]) => `${n} ${m.text}${m.for_stora.length ? ' FÅR INTE PLATS: ' + m.for_stora.map(f => 's.' + f.sida).join(',') : ''}`).join('; ')).join(' | ');
@@ -1679,6 +1719,9 @@ async function jamforWebben(lista) {
       r.fel.forEach(f => console.log(`       JS-fel: ${f}`));
       if (r.kontroll) r.kontroll.problem.forEach(p => console.log(`       problem: ${p}`));
       if (r.kontroll && lage === LAGEN[0]) r.kontroll.varningar.forEach(p => console.log(`       varning: ${p}`));
+      // mobilen: varningarna som bara gäller mobilen (figuren på en annan sida än stycket – inga flyttar för mobilens skull)
+      (r.figurVarningar || []).forEach(p => console.log(`       varning: ${p}`));
+      if (r.kontroll && lage.mobil) r.kontroll.varningar.filter(p => /mobilen/.test(p)).forEach(p => console.log(`       varning: ${p}`));
     }
   } else {
     // Negativ verifiering: varje fel, i varje läge, på första riktiga delkapitlet – grinden ska bli röd
@@ -1714,6 +1757,8 @@ async function jamforWebben(lista) {
   }
   if (!NEGATIV) console.log(`\nOmkörningar av bladvändningens tidsprov: ${omkorningar.length ? omkorningar.length : 'inga'}` +
     omkorningar.map(o => `\n       ${o}`).join(''));
+  if (!NEGATIV) console.log(`Omkörningar för att Chrome stängdes: ${chromeOmkorningar.length ? chromeOmkorningar.length : 'inga'}` +
+    chromeOmkorningar.map(o => `\n       ${o}`).join(''));
   console.log(`\n${gront ? 'GRÖNT' : 'RÖTT'}: ${NEGATIV ? 'den negativa verifieringen' : 'bokmotorn och delkapitlen'}` +
     (BARA ? ` – bara ”${BARA}” (--bara); hela grinden är inte körd` : ''));
   process.exit(gront ? 0 : 1);

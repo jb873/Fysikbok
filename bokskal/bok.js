@@ -641,8 +641,8 @@
     };
 
     const sidor = [{ typ: 'innehall', bok, avsnitt: INNEHALL, poster: [] }];
-    for (const d of bok.delar) {
-      const E = d.enheter.map(u => Object.assign({}, u));
+    const packa = (d, villkor) => {
+      const E = d.enheter.map(u => Object.assign({}, u, { folj: villkor.has(u.poster[0]) }));
       const ny = forsta => { const s = { bok, avsnitt: d.avsnitt, poster: [], enheter: [], forsta }; sidor.push(s); return s; };
       const fran = sidor.length;
       let s = ny(true), i = 0;
@@ -652,14 +652,15 @@
           // Regelkonflikten: ryms inte stycket och figuren på en tom sida delas gruppen – figuren börjar nästa sida.
           // Står flera figurer efter stycket stannar så många som ryms med det; gruppen delas före den första som
           // inte ryms (två foton efter ett stycke: stycket och det första fotot ihop, det andra på nästa sida).
-          if (u.delVid !== null && hojd(u.poster) > kap(u.poster)) {
+          const hoger = g.uppslag && sidor.length % 2 === 0;        // sidan s är en högersida (nr = sidor.length)
+          if (u.delVid !== null && hojd(u.poster) > kap(u.poster) && !(u.folj && hoger && s.enheter.length)) {
             let vid = u.delVid;
             while (vid + 1 < u.poster.length && MED_STYCKET.includes(u.poster[vid + 1].typ) &&
               hojd(u.poster.slice(0, vid + 1)) <= kap(u.poster.slice(0, vid + 1))) vid++;
             // (står det kvar figurer med stycket får den delen fortfarande delas enligt 40 %-regeln nedan; resten
             // behöver då ingen egen sida – den ryms ändå inte med stycket, men får följa en figur som flyttats fram)
             E.splice(i, 1, Object.assign({}, u, { poster: u.poster.slice(0, vid), delVid: vid > u.delVid ? u.delVid : null }),
-              { poster: u.poster.slice(vid), brytFore: vid === u.delVid, delad: vid === u.delVid, rubrik: false, delVid: null });
+              { poster: u.poster.slice(vid), brytFore: vid === u.delVid, delad: vid === u.delVid, skild: true, rubrik: false, delVid: null });
             u = E[i];
           }
           // …och om sidan annars skulle bli under 40 % fylld: då stannar stycket här och figuren börjar nästa sida.
@@ -672,16 +673,17 @@
             if (hh >= TUNN * k + NARA) return false;
             prova(s); s.fyllFore = s.fyll; return s.fyll < TUNN;
           };
-          if (forDel && s.enheter.length && !u.brytFore && hojd(s.poster.concat(u.poster)) > kap(s.poster.concat(u.poster)) &&
+          if (forDel && !u.folj && s.enheter.length && !u.brytFore && hojd(s.poster.concat(u.poster)) > kap(s.poster.concat(u.poster)) &&
             hojd(s.poster.concat(forDel)) <= kap(s.poster.concat(forDel)) && tunnUtan()) {
             E.splice(i, 1, Object.assign({}, u, { poster: forDel, delVid: null }),
-              { poster: u.poster.slice(u.delVid), brytFore: true, delad: true, rubrik: false, delVid: null });
+              { poster: u.poster.slice(u.delVid), brytFore: true, delad: true, skild: true, fyrtio: true, rubrik: false, delVid: null });
             u = E[i];
           }
           const med = s.poster.concat(u.poster);
           const nySida = s.enheter.length && (u.brytFore || hojd(med) > kap(med) ||
             (u.rubrik && kap(s.poster) - hojd(s.poster) < kap(s.poster) / 3));
           if (!nySida) { s.enheter.push(u); s.poster.push(...u.poster); i++; continue; }
+          if (u.folj) s.forFigur = true;              // sidan blir kvar när stycket följer figuren: får vara tunn
         }
         // Sidan stängs. Räkningen är exakt (samma bredd, sista blockets marginal är borttagen), så bara en nästan full
         // sida provas i en riktig sida; ryms den inte där går de sista grupperna vidare (minst en blir kvar).
@@ -718,8 +720,55 @@
         if (mat(t) || mat(P)) {                       // ryms inte i en riktig sida: tillbaka
           t.enheter.shift(); t.poster = t.poster.slice(u.poster.length); P.enheter.push(u); P.poster = P.poster.concat(u.poster);
           mat(t); mat(P);
+          continue;
         }
+        aterforena(t, sidor[j + 1]);
       }
+      // (också där ingen balans behövdes: en 40 %-delning vars sida före stycket inte är tunn)
+      for (let j = fran; j < sidor.length - 1; j++) aterforena(sidor[j], sidor[j + 1]);
+    };
+    // Stycket sist på sidan t och dess figur först på sidan n (delad av 40 %-regeln): är t utan stycket inte tunn, och
+    // ryms stycket med det som står på n, flyttas stycket till n. Ryms det inte i en riktig sida: tillbaka.
+    const aterforena = (t, n) => {
+      if (!n || n.avsnitt !== t.avsnitt || !n.enheter[0] || !n.enheter[0].fyrtio || t.enheter.length < 2) return;
+      const st = t.enheter[t.enheter.length - 1], kvar = t.poster.slice(0, t.poster.length - st.poster.length), ihop = st.poster.concat(n.poster);
+      const tunnK = ps => { const hh = hojd(ps), k = kap(ps); if (hh < TUNN * k) return true; if (hh >= TUNN * k + NARA) return false;
+        const prov = { bok, avsnitt: t.avsnitt, poster: ps }; prova(prov); return prov.fyll < TUNN; };
+      if (hojd(ihop) > kap(ihop) || tunnK(kvar)) return;
+      t.enheter.pop(); t.poster = kvar; n.enheter.unshift(st); n.poster = ihop; n.enheter[1] = Object.assign({}, n.enheter[1], { brytFore: false, fyrtio: false });
+      if (mat(n) || mat(t)) {
+        n.enheter.shift(); n.enheter[0] = Object.assign({}, n.enheter[0], { brytFore: true, fyrtio: true }); n.poster = n.poster.slice(st.poster.length);
+        t.enheter.push(st); t.poster = t.poster.concat(st.poster); mat(n); mat(t);
+      }
+    };
+    // Uppslagsregeln (Joachims order 8, 2026-11-07; bara när två sidor syns samtidigt, dvs. på datorn): en figur står
+    // på samma uppslag som stycket före den – stycket på vänstersidan och figuren på högersidan går bra. Hamnar stycket
+    // på en högersida och figuren först på nästa uppslag följer stycket (och rubrikerna före det) med figuren till nästa
+    // sida: figuren vid stycket går före 40 %-regeln, och balansen får sedan försöka fylla sidan som blev kvar. Står
+    // stycket först på sin sida (det kan inte flyttas utan att sidan blir tom) står det kvar som förut: ett undantag,
+    // som kontrolläget varnar för. Avsnittet packas om tills inget sådant fall återstår. (Ett steg som först krympte
+    // figuren högst 15 % togs bort samma dag: det löste 0 av 15 fall och kunde ge text under 14 px – Joachims beslut.)
+    const undantag = [];
+    const uppslagNr = nr => nr % 2 ? nr : nr - 1;
+    // de delade figurerna i avsnittet som står på ett annat uppslag än stycket: [index för figurens sida, stycket, figuren]
+    const skilda = fran => sidor.slice(fran + 1).map((T, n) => [fran + 1 + n, T]).filter(([j, T]) => T.enheter[0] && T.enheter[0].skild &&
+      T.enheter[0].poster[0].typ === 'figur' && sidor[j - 1].avsnitt === T.avsnitt && uppslagNr(j) !== uppslagNr(j + 1))
+      .map(([j, T]) => [j, sidor[j - 1].enheter[sidor[j - 1].enheter.length - 1], T.enheter[0]]);
+    for (const d of bok.delar) {
+      const fran = sidor.length, villkor = new Set();      // grupper (första posten) där stycket följer figuren
+      for (let varv = 0; ; varv++) {
+        sidor.length = fran;
+        packa(d, villkor);
+        if (!g.uppslag) break;
+        let nytt = false;
+        for (const [j, U, F] of skilda(fran)) {
+          const P = sidor[j - 1], fore = P.poster.slice(0, P.poster.length - U.poster.length);
+          if (varv < 6 && fore.some(iFlodet) && !villkor.has(U.poster[0])) { villkor.add(U.poster[0]); nytt = true; }
+        }
+        if (!nytt) break;
+      }
+      // det som står kvar med stycket först på sin sida: undantag (allt annat är ett brott i kontrollen)
+      if (g.uppslag) skilda(fran).forEach(([j, U]) => { const P = sidor[j - 1]; if (!P.poster.slice(0, P.poster.length - U.poster.length).some(iFlodet)) undantag.push(j + 1); });
     }
     // Provkrok för grindens negativa prov (bara med ?kontroll&prova=rubrik-sist): en rubrik flyttas sist på sidan före
     if (provaRubrikSist) {
@@ -736,7 +785,7 @@
       const rubrik = d.poster.slice(0, forsta + 1).reverse().find(p => p.ankare);
       x.ankare = rubrik ? rubrik.ankare : x.avsnitt.id;
     });
-    const r = { sidor, postSida, matt, kap: kap0, g };
+    const r = { sidor, postSida, matt, kap: kap0, g, undantag };
     sidor[0].brytning = r;
     // Innehållsförteckningen (sida 1) ska rymmas; den krymper själv sin text (passaInnehall)
     const toc = sidElement(sidor[0]); vard.append(toc); passaInnehall(toc);
@@ -751,7 +800,8 @@
 
   // Reglerna prövade på en färdig brytning (kontrolläget och grinden): det som bryter mot dem, och sidor som är tunna.
   function regelkoll(r, bok) {
-    const brott = [], tunna = [];
+    const brott = [], tunna = [], varningar = [];
+    const uppslagNr = nr => nr % 2 ? nr : nr - 1;
     const forstaPa = s => s.poster.find(iFlodet);
     r.sidor.forEach((s, j) => {
       if (s.typ === 'innehall') return;
@@ -772,18 +822,30 @@
           if (ihop <= r.kap && innan >= TUNN * r.kap && !(P.fyllFore < TUNN)) brott.push(`sida ${s.nr}: ${forsta.typ} står skild från stycket före, fast de ryms tillsammans`);
         }
       }
+      // Uppslagsregeln: figuren och stycket före den på samma uppslag (datorn) / sida (mobilen)
+      if (forsta && forsta.typ === 'figur') {
+        // stycket närmast före: bakåt över figurerna, formlerna och exemplen som står mellan
+        let k = d.poster.indexOf(forsta) - 1; while (k > 0 && MED_STYCKET.includes(d.poster[k].typ)) k--;
+        const fore = d.poster[k], P = fore && fore.typ === 'text' && r.postSida.get(fore);
+        if (P && P !== s && (r.g.uppslag ? uppslagNr(P.nr) !== uppslagNr(s.nr) : true)) {
+          const text = `sida ${s.nr}: figuren står på ${r.g.uppslag ? 'ett annat uppslag' : 'en annan sida'} än stycket före den (sida ${P.nr})`;
+          if (!r.g.uppslag) varningar.push(text + ' – mobilen');
+          else if ((r.undantag || []).includes(s.nr)) varningar.push(text + ' – stycket står först på sin sida (undantag)');
+          else brott.push(text);
+        }
+      }
       if (s.forsta && forsta !== d.poster.find(iFlodet)) brott.push(`sida ${s.nr}: avsnittet ”${s.avsnitt.titel}” börjar inte på ny sida`);
       if (j > 1 && r.sidor[j - 1].avsnitt === s.avsnitt && s.forsta) brott.push(`sida ${s.nr}: avsnittet börjar två gånger`);
       const nasta = r.sidor[j + 1], brytEfter = nasta && nasta.avsnitt === s.avsnitt &&
         d.poster[d.poster.indexOf(forstaPa(nasta)) - 1] && d.poster[d.poster.indexOf(forstaPa(nasta)) - 1].typ === 'sidbrytning';
-      if (!s.sist && !brytEfter && s.fyll < TUNN) tunna.push(`sida ${s.nr} är bara ${Math.round(100 * s.fyll)} % fylld`);
+      if (!s.sist && !brytEfter && !s.forFigur && s.fyll < TUNN) tunna.push(`sida ${s.nr} är bara ${Math.round(100 * s.fyll)} % fylld`);
     });
     bok.poster.forEach((p, j) => {
       if (p.typ !== 'sidbrytning') return;
       const efter = bok.poster.slice(j + 1).find(iFlodet), s = efter && r.postSida.get(efter);
       if (s && forstaPa(s) !== efter && efter.avsnitt === p.avsnitt) brott.push(`sida ${s.nr}: blocket efter en sidbrytning börjar inte sidan`);
     });
-    return { brott, tunna };
+    return { brott, tunna, varningar };
   }
 
   /* ---------- Visa och bläddra ---------- */
@@ -1468,7 +1530,8 @@
       const bok = byggBok(n.id, t.id), matt = {};
       strukturkoll(bok, ut);
       for (const [mnamn, B, H, m] of storlekar) {
-        const g = geometri(B, H, m), r = bryt(bok, g), { brott, tunna } = regelkoll(r, bok);
+        const g = geometri(B, H, m), r = bryt(bok, g), { brott, tunna, varningar } = regelkoll(r, bok);
+        varningar.forEach(x => ut.varningar.push(`${namn}, ${mnamn}: ${x}`));
         const for_stora = r.sidor.filter(s => s.over).map(s => ({ sida: s.nr, px: s.over }));
         // Elevens brytning litar på räkningen (provar bara nästan fulla sidor); den ska bli densamma som den provade
         const spar = x => x.sidor.map(s => s.poster.map(p => p.id).join(',')).join('|');

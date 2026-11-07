@@ -325,12 +325,29 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
 - **Inledning, huvudtext och Sammanfattning** (varje avsnitt) börjar på ny sida, inte nödvändigtvis nytt uppslag.
 - **Mjuk idéregel:** en rubrik börjar ny sida om mindre än en tredjedel av sidan är kvar.
 - **`{typ: 'sidbrytning'}`** tvingar ny sida.
-- **Ingen sida under 40 %** fylld, utom sista sidan i ett avsnitt och sidan före en sidbrytning (`?kontroll`).
+- **Ingen sida under 40 %** fylld, utom sista sidan i ett avsnitt, sidan före en sidbrytning och sidan som ett stycke
+  lämnade för att följa sin figur (uppslagsregeln nedan) (`?kontroll`).
 - **Balansen:** sidorna packas en i taget, så en sida blir tunn när nästa grupp inte får plats. Då tar den tunna sidan
   den sista gruppen (rubriken och dess stycke) från sidan före, om gruppen ryms och sidan före inte själv blir tunn.
   En grupp efter en sidbrytning eller en delad figur flyttas inte. (2026-11-03: Rörelse, Fördjupning, där sida 4
   annars blev 40 % fylld.) Sidan före en sidbrytning lämnas. Sidan före en figur som skilts från sitt stycke
   balanseras som andra sidor (2026-11-05: de staplade hissarna på mobilen).
+- **Balansen ångrar en 40 %-delning som inte längre behövs (kantfallet, 2026-11-07).** 40 %-regeln delar när sidan
+  före stycket är tunn just då. Fyller balansen sedan den sidan, flyttas stycket till figuren igen om det ryms där.
+  Förut stod de kvar isär, och kontrollen sa "figur står skild från stycket före, fast de ryms tillsammans".
+- **Uppslagsregeln (datorn, Joachims beslut 2026-11-07, order 8):** en figur står på samma uppslag som stycket
+  före den. Stycket på vänstersidan och figuren på högersidan går bra. Hamnar stycket på en högersida och figuren
+  först på nästa uppslag gäller detta:
+  - **Stycket följer** och rubrikerna före det med figuren till nästa sida. Figuren vid stycket går före
+    40 %-regeln: sidan som blir kvar får vara tunn, och balansen försöker sedan fylla den.
+  - **Står stycket först på sin sida** (efter rubrikerna) kan det inte flyttas utan att sidan blir tom. Då står det
+    som förut: ett undantag, som `?kontroll` och grinden varnar för.
+
+  Ett första steg som krympte figuren högst 15 % togs bort samma dag. Det löste 0 av 15 fall och kunde ge text
+  under 14 px (Joachims beslut).
+
+  Mobilen (en sida i taget) har inga flyttar för den här regelns skull. Där varnar `?kontroll` och grinden för en
+  figur på en annan sida än stycket. Avsnittet packas om tills inget fall återstår.
 
 Brytningen väntar på typsnitten (annars mäts fel), sparas per sidmått och görs om bara när sidmåttet ändras. Den
 tar ungefär 10–90 ms med CPU:n strypt 6 gånger, som på en Chromebook (grinden: medianen under 200 ms). Innehållsförteckningen räknar ut sidnumren för
@@ -571,6 +588,13 @@ beslut 2026-11-05.
        och i en sammanställning sist. En belastad dator gav ibland ett glapp på 67–150 ms i ett oförändrat
        delkapitel, och omkörningen blev grön (Joachims order 2026-11-06).
      - **Att inga JS-fel uppstår.** De fångas med `window.onerror`, `unhandledrejection` och Chromes egna undantag.
+     - **Tomma sidor och uppslagsregeln** (`provaTommaSidor`):
+       - sidmåttet A → B → A → B med boken öppen;
+       - ett svep där varje sida i varje bok har block, också efter bladvändning och efter en annan bok;
+       - på datorn ingen figur på ett annat uppslag än stycket före den, utom undantaget (stycket först på sin sida),
+         som skrivs ut som varning. Mobilens fall är bara varningar.
+     - **På batteri** skriver grinden en varning först. Stängs Chrome körs läget om en gång (`OMKÖRD: Chrome stängdes`,
+       och i sammanställningen sist). Det har hänt bara på batteri (2026-11-05/06).
 
   Startsidan och kapitelindexet prövas på dator och mobil: startsida → kapitelindex → avsnittssidorna → brödsmulorna
   tillbaka, och att tonade kort (kapitel, avsnitt, resurser som kommer) inte är länkar och inte leder någonstans.
@@ -585,7 +609,8 @@ beslut 2026-11-05.
   - bildpilar (Tryck): ett utsnitt av fotot på avsnittssida III, två lika långa pilar, en etikett utan läge,
     beskrivningen och bildtexten ur data
   - tal och enhet (Tryck): "16 − 6 = 10 N", "1 538 °C", "5 m/s" och "18 km/h" står på en rad också i en spalt som
-    är 1 px bred, medan "16 − 6" (vanliga mellanslag) bryts där
+    är 1 px bred, medan "16 − 6" (vanliga mellanslag) bryts där. Stycket säger "ca 18 km/h": så långt återskapade det
+    kantfallet i mobilläget (order 8), och nu ska kontrollen vara grön.
   - hjälpmedel med adress, också som inbäddad flik (Öva)
   - begreppslänkar
   - inbäddningen
@@ -969,3 +994,20 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     efter bladvändning fram och tillbaka och efter att en annan bok öppnats och stängts.
   - **Samtidigt:** ett intervall ("80–90") bryts inte efter tankstrecket. `bindTal` lägger ett ordskarvstecken
     (U+2060) efter strecket. Det provas med "80–90 procent" i provbokens Tryck, i en 1 px bred spalt.
+- **2026-11-07, figuren vid stycket (order 8, Joachims beslut):**
+  - **Inventeringen:** 15 figurer stod på ett annat uppslag (dator) eller en annan sida (mobil) än stycket före dem
+    (`verktyg/bilder/figur-skild/`).
+    - 5 rymdes inte på en sida tillsammans med stycket.
+    - 10 skildes av 40 %-regeln. Tre av dem låg nära gränsen och avgjordes i en riktig sida.
+    - Kantfall i innehållet: 0.
+    - Joachims fall: III B Enkel i 1366 × 633, sidan 12 → 13, figuren "I förstoring".
+  - **Uppslagsregeln och kantfallet:** se *Brytningen*.
+  - **Utfallet på datorn** (9 av de 15 fallen):
+    - Krympning (högst 15 %) löste 0 fall. Steget togs bort (Joachims beslut: kunde ge text under 14 px).
+    - Flytt löste 7 fall. Sidorna som stycket lämnade blev 34, 37 och 40 % fyllda; i satellitfallet står stycket nu
+      på vänstersidan och figuren på högersidan.
+    - 2 fall är undantaget: III C Fördjupning i 1366 × 768, fönster och helskärm. Stycket står först på sin sida, och
+      dess andra figur står på nästa uppslag.
+  - **Mobilen:** 6 fall står kvar, med varning.
+  - **Grinden:** uppslagsregeln och undantaget i svepet; varningar för mobilen; varning på batteri; omkörning av
+    ett läge när Chrome stängs.

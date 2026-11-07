@@ -29,8 +29,10 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'spar-retarderad', namn: 'rorelsespar', rorelse: 'retarderad', tider: true },
         { typ: 'text', text: 'Provtext: olikformig rörelse, fyra prickar.' },
         { typ: 'figur', id: 'spar-olikformig', namn: 'rorelsespar', rorelse: 'olikformig', prickar: 4, bildtext: 'Provbildtext under ett rörelsespår.' },
-        // Tal och enhet: skrivet med vanliga mellanslag – motorn gör dem hårda, så att raden aldrig bryts där
-        { typ: 'text', id: 'tal-och-enhet', text: 'Provtext: resultanten blir 16 − 6 = 10 N, och järn smälter vid 1 538 °C. Farten är 5 m/s, eller 18 km/h.' },
+        // Tal och enhet: skrivet med vanliga mellanslag – motorn gör dem hårda, så att raden aldrig bryts där.
+        // ("ca" gör stycket så långt att kantfallet uppstod i mobilläget: 40 %-regeln skilde stycket från hissen på sida
+        // 8 och balansen fyllde sedan sida 7 – grinden prövar att de nu står tillsammans, order 8, 2026-11-07)
+        { typ: 'text', id: 'tal-och-enhet', text: 'Provtext: resultanten blir 16 − 6 = 10 N, och järn smälter vid 1 538 °C. Farten är 5 m/s, eller ca 18 km/h.' },
         // Symboler och enheter i rubriker och tabellhuvuden: grinden prövar att g och N/kg står i vanlig stil med rätt
         // skiftläge (inte kapitäler, där g blir G)
         { typ: 'rubrik', text: 'Provrubrik: tyngdfaktorn g i N/kg' },
