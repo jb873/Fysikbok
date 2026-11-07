@@ -123,15 +123,18 @@ Fysik/
     rorelse_och_kraft/          avsnittssida III. Rörelse och kraft, texterna rorelse/, kraft-och-friktion/,
                                 kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/;
                                 Nästa steg i innehall/nasta-steg/ (textboken och övningsboken)
+    fall_kast_och_balans/       avsnittssida IV. Fall, kast och balans (arbetsorder 12): text A resulterande-kraft/
+                                (tre nivåer); B fritt-fall/, C kastrorelse/, D tyngdpunkt-och-balans/ "kommer"
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   nasta_steg/                   Nästa steg (arbetsorder 11)
     matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
   kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (djupdykningarna),
-                                nasta-steg/ (textboken, övningsboken, Matematiken i fysiken)
+                                nasta-steg/ (textboken, övningsboken, Matematiken i fysiken); kap3/ också IV A (order 12)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
     kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlarna)
     nasta-steg-omvandlare.js    Nästa steg och Matematiken i fysiken: källorna → böckernas filer
+    kap3-omvandlare.js          Kraft och rörelse IV A: källan (tre nivåer) → innehall/ (figurerna i kap3-figurer.js)
     ordagrant.js                innehållet ordagrant mot källorna (kapitel 1 och Nästa steg)
     bilder/                     skärmbilder: grind/ (--bilder) och en mapp per arbete
     provbok/                    provdata för grinden, med texter (en bok per text) – inte elevinnehåll
@@ -722,6 +725,9 @@ beslut 2026-11-05.
   befintliga filer skrivs över. Med en tom `utmapp` hamnar de där, så att de kan jämföras med repot först.
 - **`node verktyg/nasta-steg-omvandlare.js [utmapp]`** gör samma sak för Nästa steg och Matematiken i fysiken. Den
   skriver ut de länkar som inte kunde matchas. Formatet står överst i skriptet.
+- **`node verktyg/kap3-omvandlare.js [utmapp]`** gör samma sak för Kraft och rörelse IV, text A (en källa med tre
+  nivåer). Den skriver också ut begreppen som är markerade på varje nivå. Figurerna står i
+  `verktyg/kap3-figurer.js`.
 
 ## Interaktiva inslag (senare)
 
@@ -1228,3 +1234,20 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     resultant som slutar fel. Alla fyra röda.
   - **Värdena och namnen i figurerna** står i rapporten: diagrammens rubriker och axlarnas storheter, och pilarnas
     namn.
+- **2026-11-07, Kraft och rörelse, avsnitt IV Fall, kast och balans, text A Resulterande kraft (arbetsorder 12,
+  steg 1):**
+  - **Avsnittssidan** `kraft_och_rorelse/fall_kast_och_balans/` är byggd som III (omslag, fyra textkort, nivåval),
+    utan djupdykningsblock. A Resulterande kraft har tre nivåer, och B Fritt fall, C Kaströrelse och D Tyngdpunkt
+    och balans är "kommer" (tomma filer).
+  - IV är en länk i kapitelindexet. Titeln och beskrivningen är kortets.
+  - Bannerns rad är kapitelindexets beskrivning av IV.
+  - **Källan** (v3) ligger oförändrad i `kallor/kap3/`. Den är omvandlad av `verktyg/kap3-omvandlare.js` och prövas
+    av `verktyg/ordagrant.js`.
+  - **Tilläggen enligt III:s norm:** rutan "Så bläddrar du" sist i Inledningen och länkblocken. Källan har redan
+    rubrikerna och begreppsmarkeringarna på alla nivåer.
+  - **Fördjupning** har egna avsnitt (`komposanter`, `kraftuppdelning`). Nivåbytet går till närmaste föregående
+    avsnitt.
+  - **[BILD R1–R4]** står som kommentarer (figurerna: steg 2).
+  - **Motorn:** webbläsarens framåt öppnar nu boken på läsplatsen, som sparas i historiken. Förut öppnades den vid
+    adressen, och den pekar på sidans senaste rubrik. Börjar sidan mitt i ett avsnitt hamnade boken då ett uppslag
+    för tidigt. Det syntes först på IV, där bara en text har innehåll.

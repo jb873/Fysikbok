@@ -1152,7 +1152,7 @@
     if (minnas && efter !== fore && !(fore === 1 && tillbaka)) tillbaka = nr || null;
     nr = n;
     plats = platsFor(sida(n));
-    history.replaceState({ bok: true }, '', adress(sida(n).ankare));
+    history.replaceState({ bok: true, plats }, '', adress(sida(n).ankare));
     rita(Math.sign(efter - fore), !hopp);           // bläddring vänder ett blad, ett hopp gör det inte
   }
   const bladdra = steg => { const v = synliga(nr); gaTill(steg > 0 ? v[v.length - 1] + 1 : v[0] - 1); };
@@ -1358,7 +1358,7 @@
     nr = sidaFor(mal);
     const p = postFor(byggBok(nivaId), mal);
     plats = p && iFlodet(p) ? p.id : platsFor(sida(nr));
-    history.replaceState({ bok: true }, '', adress(sida(nr).ankare));
+    history.replaceState({ bok: true, plats }, '', adress(sida(nr).ankare));
     rita(0);
     ui.meddela.textContent = `${bokTitlar(textId)[0]}.`;
   }
@@ -1368,8 +1368,10 @@
   // Öppnas av ett tryck i hubben (på läsplatsen: ett block) eller när adressen pekar på en rubrik (#atomer-2).
   // Helskärm om inställningen säger så och trycket tillåter det. Boken läggs som en egen post i historiken, så att
   // bakåt stänger den.
-  function oppnaBok(mal, { historik = false } = {}) {
+  function oppnaBok(mal, { historik = false, plats: sparad = null } = {}) {
     if (oppen || !nivaId) return;
+    // en läsplats ur historiken (framåt) går före adressens rubrik, om blocket finns i boken som öppnas
+    if (sparad && postFor(byggBok(nivaId), sparad)) mal = sparad;
     oppen = true;
     satsNiva(nivaId);
     ritaNivaval();
@@ -1386,7 +1388,7 @@
     nr = sidaFor(mal);
     const p = postFor(byggBok(nivaId), mal);
     plats = p && iFlodet(p) ? p.id : platsFor(sida(nr));            // läsplatsen följer med när sidmåttet ändras
-    history.replaceState({ bok: true }, '', adress(sida(nr).ankare));
+    history.replaceState({ bok: true, plats }, '', adress(sida(nr).ankare));
     rita(0);
     ui.scen.focus({ preventScroll: true });
     ui.meddela.textContent = `${bokTitlar(textId)[0]}, ${nivaNamn(nivaId)}. Esc stänger boken.`;
@@ -1552,7 +1554,8 @@
     });
     window.addEventListener('popstate', () => {
       const mal = platsIAdressen();
-      if (mal && !oppen) oppnaAdress(mal, { historik: true });
+      // (framåt: läsplatsen ur historiken, så att boken kommer tillbaka på samma sida – adressen pekar bara på rubriken)
+      if (mal && !oppen) oppnaAdress(mal, { historik: true, plats: history.state && history.state.plats });
       else if (!mal && oppen) stangBokNu();
     });
     document.addEventListener('fullscreenchange', () => {
@@ -1659,7 +1662,7 @@
     const delar = byggBok(id).delar, d = bakat.map(x => delar.find(dd => dd.avsnitt.id === x)).find(Boolean);
     nr = pa === 0 ? 0 : d ? sidaFor(d.poster[0].id) : 1;
     plats = platsFor(sida(nr));
-    history.replaceState({ bok: true }, '', adress(sida(nr).ankare));
+    history.replaceState({ bok: true, plats }, '', adress(sida(nr).ankare));
     rita(0);
     ui.meddela.textContent = `Nivå: ${nivaNamn(id)}.`;
   }
