@@ -31,6 +31,10 @@
  *   jordklot_tyngd      personer?: [{vinkel, namn?}] – tyngdkraften mot jordens mitt
  *   manfaser            (inga data) – månen i åtta lägen och så ser den ut från jorden
  *   arstider            lutning?: 23.5 – jorden i fyra lägen runt solen
+ *   diagram_graf        diagram: [{rubrik?, x: {storhet, enhet, max, steg?, tal?}, y, grafer, ytor?, delta?}] (1–3) –
+ *                       diagram med rutnät, grafer, skuggade ytor och Δ-linjer (Nästa steg, se nedan)
+ *   vektor_rutnat       pilar: [{dx, dy, namn?}], resultant?: {namn?}, ratVinkel?, skala? – pilar efter varandra på
+ *                       rutat papper (Nästa steg, se nedan)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -1068,5 +1072,132 @@
     const beskr = d.beskrivning || `Jorden i fyra lägen runt solen. Jordaxeln lutar ${tal(lut)} grader åt samma håll i alla lägen. Där norra halvklotet ` +
       'lutar mot solen är det sommar där, och där det lutar bort från solen är det vinter. Avstånden är inte skalenliga.';
     return { svg: rymdSvg('arstider', B, H, s), beskrivning: beskr };
+  });
+  /* ---------- Diagram och vektorer (Nästa steg, arbetsorder 11, 2026-11-07) ----------
+   *   diagram_graf   diagram: [{ rubrik?, x: {storhet, enhet, max, steg?, tal?}, y: {…},
+   *                    grafer: [{ punkter: [[x, y], …], kurva?: true }], ytor?: [{ punkter, ton?: 1|2 }],
+   *                    delta?: [{ fran: [x, y], till: [x, y], dx?: 'Δt', dy?: 'Δv' }] }] (1–3, bredvid varandra)
+   *                  Axlar med rutnät (steg: en ruta), storhet och enhet på varje axel, talen var tal:e enhet (utan tal:
+   *                  inga tal). Graferna: räta linjer mellan punkterna, eller en mjuk kurva genom dem (kurva: true).
+   *                  Punkterna markeras. Ytorna (trianglar, rektanglar) skuggas i två ljusa toner, och Δ-linjerna är
+   *                  streckade. Grinden mäter att varje punkt ligger på sin koordinat och att ytorna följer grafen.
+   *   vektor_rutnat  pilar: [{ dx, dy, namn? }] (rutor; dy uppåt), resultant?: { namn? }, ratVinkel?: true, skala?: text
+   *                  Rutat papper; pilarna efter varandra (varje pil börjar där den förra slutar), resultanten från den
+   *                  första pilens början till den sista pilens spets. Grinden mäter det. */
+  const DIA_TEXT = 19;                       // texten i diagrammen: 19 enheter = minst 14 px i mobilens spalt (328 px)
+  Bok.figur('diagram_graf', d => {
+    const D = d.diagram || fel('diagram_graf behöver diagram: [{x, y, grafer}]');
+    if (!D.length || D.length > 3) fel('diagram_graf: 1–3 diagram');
+    const B = 440, n = D.length, mellan = n > 1 ? 18 : 0, pw = (B - mellan * (n - 1)) / n;
+    // Varje diagram: plats för rubriken överst, axelns namn ovanför den lodräta axeln, talen till vänster och under
+    // (en rubrik kan ha flera rader: ['Konstant', 'hastighet'] – en smal del av figuren)
+    const harTal = D.some(x => x.x.tal || x.y.tal), rubriker = D.map(x => [].concat(x.rubrik || [])), nRub = Math.max(...rubriker.map(r => r.length));
+    const topp = (nRub ? nRub * (DIA_TEXT + 6) + 12 : 0) + DIA_TEXT + 16, vTal = harTal ? 30 : 6, nedre = (harTal ? DIA_TEXT + 6 : 0) + DIA_TEXT + 10;
+    const hojdRutor = Math.max(...D.map(x => x.y.max / (x.y.steg || 1))), breddRutor = Math.max(...D.map(x => x.x.max / (x.x.steg || 1)));
+    // Rutorna kvadratiska: samma storlek i alla diagram i figuren
+    const ruta = Math.min((pw - vTal - 14) / breddRutor, (n > 1 ? 150 : 200) / hojdRutor);
+    const H = Math.ceil(topp + hojdRutor * ruta + nedre);
+    let s = '';
+    const beskr = [];
+    D.forEach((dg, i) => {
+      // origo: diagrammet (talen, rutnätet och axelpilen) i mitten av sin del av figuren
+      const anvand = vTal + dg.x.max / (dg.x.steg || 1) * ruta + 14;
+      const x0 = i * (pw + mellan) + (pw - anvand) / 2 + vTal, y0 = topp + hojdRutor * ruta;
+      const sx = ruta / (dg.x.steg || 1), sy = ruta / (dg.y.steg || 1);
+      const X = v => x0 + v * sx, Y = v => y0 - v * sy;
+      const xs = dg.x.max, ys = dg.y.max;
+      // (axlarnas största värden ur data: grinden räknar punkternas lägen ur rutnätet och dem)
+      s += `<g class="fig-diagram" data-diagram="${i + 1}" data-xmax="${xs}" data-ymax="${ys}">`;
+      // ytorna under graferna
+      (dg.ytor || []).forEach(y => { s += `<polygon class="fig-yta fig-yta-${y.ton || 1}" points="${y.punkter.map(([a, b]) => f(X(a)) + ',' + f(Y(b))).join(' ')}"/>`; });
+      // rutnätet
+      for (let v = 0; v <= xs + 1e-9; v += dg.x.steg || 1) s += `<line class="fig-rutnat" x1="${f(X(v))}" y1="${f(Y(0))}" x2="${f(X(v))}" y2="${f(Y(ys))}"/>`;
+      for (let v = 0; v <= ys + 1e-9; v += dg.y.steg || 1) s += `<line class="fig-rutnat" x1="${f(X(0))}" y1="${f(Y(v))}" x2="${f(X(xs))}" y2="${f(Y(v))}"/>`;
+      // axlarna med pilspets, namnen (storhet och enhet) och talen
+      s += pil(X(0), Y(0), X(xs) + 12, Y(0), 7, 'fig-axel-pil') + pil(X(0), Y(0), X(0), Y(ys) - 12, 7, 'fig-axel-pil');
+      s += `<text x="${f(X(0) + 8)}" y="${f(Y(ys) - 10)}" class="fig-text fig-diagram-axel fig-vanster">${esc(dg.y.storhet)} (${esc(dg.y.enhet)})</text>`;
+      s += `<text x="${f(X(xs) + 12)}" y="${f(y0 + (dg.x.tal ? DIA_TEXT + 6 : 0) + DIA_TEXT + 4)}" class="fig-text fig-diagram-axel fig-hoger">${esc(dg.x.storhet)} (${esc(dg.x.enhet)})</text>`;
+      if (dg.x.tal) for (let v = 0; v <= xs + 1e-9; v += dg.x.tal) s += `<text x="${f(X(v))}" y="${f(y0 + DIA_TEXT + 2)}" class="fig-text fig-diagram-tal fig-mitt" data-x="${v}">${tal(v)}</text>`;
+      if (dg.y.tal) for (let v = dg.y.tal; v <= ys + 1e-9; v += dg.y.tal) s += `<text x="${f(X(0) - 6)}" y="${f(Y(v) + 6)}" class="fig-text fig-diagram-tal fig-hoger" data-y="${v}">${tal(v)}</text>`;
+      rubriker[i].forEach((r, k) => { s += `<text x="${f(i * (pw + mellan) + pw / 2)}" y="${DIA_TEXT + 4 + k * (DIA_TEXT + 6)}" class="fig-text fig-diagram-rubrik fig-mitt">${esc(r)}</text>`; });
+      // Δ-linjerna (streckade), namnen bredvid
+      (dg.delta || []).forEach(dl => {
+        const [a, b] = dl.fran, [c, e] = dl.till;
+        s += `<line class="fig-delta" x1="${f(X(a))}" y1="${f(Y(b))}" x2="${f(X(c))}" y2="${f(Y(b))}" data-delta="x"/>` +
+          `<line class="fig-delta" x1="${f(X(c))}" y1="${f(Y(b))}" x2="${f(X(c))}" y2="${f(Y(e))}" data-delta="y"/>`;
+        if (dl.dx) s += `<text x="${f((X(a) + X(c)) / 2)}" y="${f(Y(b) - 7)}" class="fig-text fig-delta-text fig-mitt">${esc(dl.dx)}</text>`;
+        if (dl.dy) s += `<text x="${f(X(c) + 7)}" y="${f((Y(b) + Y(e)) / 2 + 6)}" class="fig-text fig-delta-text fig-vanster">${esc(dl.dy)}</text>`;
+      });
+      // graferna och punkterna
+      (dg.grafer || []).forEach(g => {
+        const P = g.punkter.map(([a, b]) => [X(a), Y(b)]);
+        let dd = `M${f(P[0][0])} ${f(P[0][1])}`;
+        if (g.kurva && P.length > 2) {
+          // en mjuk kurva genom punkterna (Catmull–Rom som Bézierkurvor)
+          for (let k = 0; k < P.length - 1; k++) {
+            const p0 = P[k - 1] || P[k], p1 = P[k], p2 = P[k + 1], p3 = P[k + 2] || p2;
+            dd += ` C${f(p1[0] + (p2[0] - p0[0]) / 6)} ${f(p1[1] + (p2[1] - p0[1]) / 6)} ${f(p2[0] - (p3[0] - p1[0]) / 6)} ${f(p2[1] - (p3[1] - p1[1]) / 6)} ${f(p2[0])} ${f(p2[1])}`;
+          }
+        } else P.slice(1).forEach(p => { dd += ` L${f(p[0])} ${f(p[1])}`; });
+        s += `<path class="fig-graf" d="${dd}" data-punkter="${g.punkter.map(p => p.join(',')).join(' ')}"${g.kurva ? ' data-kurva=""' : ''}/>`;
+        g.punkter.forEach(([a, b]) => { s += `<circle class="fig-graf-punkt" cx="${f(X(a))}" cy="${f(Y(b))}" r="3.6" data-x="${a}" data-y="${b}"/>`; });
+      });
+      s += '</g>';
+      beskr.push(`${rubriker[i].length ? rubriker[i].join(' ') + ': ' : ''}ett diagram med ${dg.x.storhet} (${dg.x.enhet}) på den vågräta axeln och ${dg.y.storhet} (${dg.y.enhet}) på den lodräta; ` +
+        (dg.grafer || []).map(g => `${g.kurva ? 'en kurva' : 'en graf'} genom ${g.punkter.map(([a, b]) => `(${tal(a)}; ${tal(b)})`).join(', ')}`).join(', ') +
+        ((dg.ytor || []).length ? `, med ${dg.ytor.length} skuggade ytor under grafen` : '') + ((dg.delta || []).length ? ' och streckade Δ-linjer' : ''));
+    });
+    return { svg: svg(B, H, s).replace('<svg ', '<svg data-diagram-graf="' + n + '" '), beskrivning: beskr.join('. ') + '.' };
+  });
+
+  Bok.figur('vektor_rutnat', d => {
+    const P = d.pilar || fel('vektor_rutnat behöver pilar: [{dx, dy}]');
+    if (!P.length) fel('vektor_rutnat: minst en pil');
+    // pilarnas lägen i rutor (dy uppåt), och rutnätets utsträckning med en ruta runt om
+    const pts = [[0, 0]];
+    P.forEach(p => { const [x, y] = pts[pts.length - 1]; pts.push([x + p.dx, y + p.dy]); });
+    const minX = Math.min(...pts.map(p => p[0])) - 1, maxX = Math.max(...pts.map(p => p[0])) + 1;
+    const minY = Math.min(...pts.map(p => p[1])) - 1, maxY = Math.max(...pts.map(p => p[1])) + 1;
+    const nedre = d.skala ? DIA_TEXT + 12 : 4;
+    const ruta = Math.min(52, 400 / (maxX - minX), 230 / (maxY - minY));
+    const B = 440, bredd = (maxX - minX) * ruta, x0 = (B - bredd) / 2, H = Math.ceil((maxY - minY) * ruta + 8 + nedre);
+    const X = v => x0 + (v - minX) * ruta, Y = v => 4 + (maxY - v) * ruta;
+    let s = '';
+    for (let v = minX; v <= maxX; v++) s += `<line class="fig-rutnat" x1="${f(X(v))}" y1="${f(Y(minY))}" x2="${f(X(v))}" y2="${f(Y(maxY))}"/>`;
+    for (let v = minY; v <= maxY; v++) s += `<line class="fig-rutnat" x1="${f(X(minX))}" y1="${f(Y(v))}" x2="${f(X(maxX))}" y2="${f(Y(v))}"/>`;
+    // tyngdpunkten: namnen står på den sida av pilen som är bort från den
+    const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length, cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    const namn = (a, b, t, klass) => {
+      if (!t) return '';
+      const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      let nx = -(b[1] - a[1]) / l, ny = (b[0] - a[0]) / l;                 // normalen (i rutor, y uppåt)
+      if (nx * (mx - cx) + ny * (my - cy) < 0) { nx = -nx; ny = -ny; }
+      const tx = X(mx) + nx * 16, ty = Y(my) - ny * 16 + 6;
+      const ank = Math.abs(nx) < 0.3 ? 'fig-mitt' : nx > 0 ? 'fig-vanster' : 'fig-hoger';
+      return `<text x="${f(tx)}" y="${f(ty)}" class="fig-text fig-vektor-text ${ank} ${klass}">${esc(t)}</text>`;
+    };
+    // rät vinkel: en liten kvadrat i hörnet mellan två vinkelräta pilar, inåt mot resultanten
+    if (d.ratVinkel && P.length >= 2) {
+      const [a, b, c] = [pts[0], pts[1], pts[2]];
+      const u = [(a[0] - b[0]) / Math.hypot(a[0] - b[0], a[1] - b[1]), (a[1] - b[1]) / Math.hypot(a[0] - b[0], a[1] - b[1])];
+      const w = [(c[0] - b[0]) / Math.hypot(c[0] - b[0], c[1] - b[1]), (c[1] - b[1]) / Math.hypot(c[0] - b[0], c[1] - b[1])];
+      if (Math.abs(u[0] * w[0] + u[1] * w[1]) < 1e-9) {
+        const k = 0.32;
+        const q = [[b[0] + u[0] * k, b[1] + u[1] * k], [b[0] + (u[0] + w[0]) * k, b[1] + (u[1] + w[1]) * k], [b[0] + w[0] * k, b[1] + w[1] * k]];
+        s += `<polyline class="fig-ratvinkel" points="${q.map(p => f(X(p[0])) + ',' + f(Y(p[1]))).join(' ')}"/>`;
+      }
+    }
+    P.forEach((p, i) => {
+      const a = pts[i], b = pts[i + 1];
+      s += `<g class="fig-vektor" data-vektor="${i + 1}">${pil(X(a[0]), Y(a[1]), X(b[0]), Y(b[1]), 9)}</g>` + namn(a, b, p.namn, '');
+    });
+    if (d.resultant) {
+      const a = pts[0], b = pts[pts.length - 1];
+      s += `<g class="fig-vektor" data-vektor="resultant">${pil(X(a[0]), Y(a[1]), X(b[0]), Y(b[1]), 9, 'fig-resultant')}</g>` + namn(a, b, d.resultant.namn, 'fig-resultant');
+    }
+    if (d.skala) s += `<text x="${f(X(minX))}" y="${f(Y(minY) + DIA_TEXT + 6)}" class="fig-text fig-vektor-skala fig-vanster">${esc(d.skala)}</text>`;
+    const beskr = `Rutat papper${d.skala ? ` (skalan ${d.skala})` : ''}: ` + P.map(p => `en pil ${Math.abs(p.dx) ? Math.abs(p.dx) + ' rutor ' + (p.dx > 0 ? 'åt höger' : 'åt vänster') : ''}${p.dx && p.dy ? ' och ' : ''}${Math.abs(p.dy) ? Math.abs(p.dy) + ' rutor ' + (p.dy > 0 ? 'uppåt' : 'nedåt') : ''}${p.namn ? ' (' + p.namn + ')' : ''}`).join(', ') +
+      ', satta efter varandra' + (d.resultant ? `, och resultanten från den första pilens början till den sista pilens spets${d.resultant.namn ? ' (' + d.resultant.namn + ')' : ''}` : '') + (d.ratVinkel ? '; den räta vinkeln är markerad' : '') + '.';
+    return { svg: svg(B, H, s).replace('<svg ', '<svg data-vektor-rutnat="' + P.length + '" '), beskrivning: beskr };
   });
 })();

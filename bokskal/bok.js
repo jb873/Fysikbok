@@ -1013,7 +1013,10 @@
     vis.forEach(n => passaEtiketter(sida(n).el));
     if (vand) vandBlad(gamla, u, riktning);
     if (riktning !== null) vis.forEach(n => { const inne = sida(n).el.querySelector('.sidinnehall'); if (inne) inne.scrollTop = 0; });
-    requestAnimationFrame(() => vis.forEach(n => markeraMer(sida(n))));
+    // (sidorna som ritades, inte numren: hinner boken bytas före nästa bildruta – en länk till en annan bok – finns
+    // numren kanske inte längre)
+    const ritade = vis.map(sida);
+    requestAnimationFrame(() => ritade.forEach(s => markeraMer(s)));
     uppdateraLage(vis, riktning !== null);
   }
 
@@ -1134,7 +1137,7 @@
 
   // Sidan får inte plats: den kan rullas, och en svag toning och en rad längst ner säger att det finns mer.
   function markeraMer(s) {
-    const inne = s.el && s.el.querySelector('.sidinnehall');
+    const inne = s && s.el && s.el.querySelector('.sidinnehall');
     if (!inne) return;
     s.el.classList.toggle('har-mer', inne.scrollTop + inne.clientHeight < inne.scrollHeight - 4);
   }

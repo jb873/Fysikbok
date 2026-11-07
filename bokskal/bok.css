@@ -661,6 +661,24 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-axel { stroke: var(--black); stroke-width: 1.8; }
 .figur-bild svg[data-rymd="jordklot_tyngd"], .figur-bild svg[data-rymd="manfaser"],
 .figur-bild svg[data-rymd="arstider"] { max-height: calc(var(--sh) * .45); }
+/* Diagram och vektorer på rutat papper (Nästa steg, arbetsorder 11): rutnätet tunt, axlarna och graferna i bläck och
+   indigo, ytorna i två ljusa toner, Δ-linjerna streckade i guld. Texten 19 enheter: minst 14 px också i mobilens spalt.
+   Ett diagram får som de runda figurerna upp till 45 % av sidhöjden, så att texten inte krymper under 14 px. */
+.fig-rutnat { stroke: rgba(27, 42, 54, .16); stroke-width: 1; }
+.fig-pil.fig-axel-pil { stroke: var(--black); stroke-width: 1.6; }
+.fig-pilspets.fig-axel-pil { fill: var(--black); }
+.fig-graf { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+.fig-graf-punkt { fill: var(--accent); }
+.fig-yta-1 { fill: rgba(160, 125, 47, .26); }
+.fig-yta-2 { fill: rgba(74, 45, 102, .14); }
+.fig-delta { stroke: var(--accent-2-mork); stroke-width: 1.8; stroke-dasharray: 5 4; }
+.fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala { font-size: 19px; }
+.fig-diagram-rubrik { font-weight: 600; }
+.fig-delta-text { fill: var(--accent-2-mork); font-weight: 600; }
+.fig-vektor-text { font-weight: 600; fill: var(--accent-2-mork); }
+.fig-vektor-text.fig-resultant { fill: var(--accent); }
+.fig-ratvinkel { fill: none; stroke: var(--black); stroke-width: 1.4; }
+.figur-bild svg[data-diagram-graf], .figur-bild svg[data-vektor-rutnat] { max-height: calc(var(--sh) * .45); }
 @container (max-width: 397px) {
   .fig-paneler[data-paneler="jord_och_mane"] { flex-direction: column; align-items: center; gap: .45em; max-width: none; }
   .figur-bild .fig-paneler[data-paneler="jord_och_mane"] svg { flex: none; width: min(100%, 199px); }

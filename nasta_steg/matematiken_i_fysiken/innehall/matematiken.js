@@ -271,6 +271,7 @@ Bok.niva('stodbok', {
         ] },
         { typ: 'text', text: 'En vagn som rör sig med 4 m/s i 5 s ger en rektangel. Arean är 5 s · 4 m/s = 20 m, och den sträckan har vagnen kört. Ligger grafen under axeln räknas arean som negativ, och det betyder att föremålet har rört sig bakåt.' },
         // [BILD: Hastighet–tid-diagram på rutat papper. En graf som går rakt från (0 s, 0 m/s) till (4 s, 8 m/s) och sedan vågrätt till (10 s, 8 m/s). Arean under grafen är indelad i en triangel (0–4 s) och en rektangel (4–10 s) i två olika ljusa toner. Mellan 0 och 4 s är Δt och Δv markerade med streckade linjer som visar lutningen.]
+        { id: 'bild-diagram', typ: 'figur', namn: 'diagram_graf', diagram: [{ x: { storhet: 'tid', enhet: 's', max: 10, steg: 1, tal: 2 }, y: { storhet: 'hastighet', enhet: 'm/s', max: 10, steg: 1, tal: 2 }, grafer: [{ punkter: [[0, 0], [4, 8], [10, 8]] }], ytor: [{ punkter: [[0, 0], [4, 8], [4, 0]], ton: 1 }, { punkter: [[4, 0], [4, 8], [10, 8], [10, 0]], ton: 2 }], delta: [{ fran: [0, 0], till: [4, 8], dx: 'Δt', dy: 'Δv' }] }] },
         { typ: 'exempel', rubrik: 'Lutning och area i samma diagram', stycken: [
           ['Använd diagrammet ovan. Hur stor är accelerationen de första 4 sekunderna, och hur långt har vagnen kört efter 10 s?'],
           ['Lösning: Lutningen mellan 0 och 4 s är Δv / Δt = (8 − 0) / (4 − 0) = 2 m/s². Arean består av en triangel och en rektangel. Triangeln: 4 · 8 / 2 = 16 m. Rektangeln: (10 − 4) · 8 = 48 m. Tillsammans 16 + 48 = 64 m.',
@@ -301,6 +302,7 @@ Bok.niva('stodbok', {
         { typ: 'text', text: 'Kom ihåg några vinklar som du ofta behöver. En rät vinkel är 90°, ett halvt varv 180° och ett helt varv 360°. Vinkelsumman i en triangel är alltid 180°. Är de två kateterna lika långa är vinkeln mellan hypotenusan och kateterna 45°.' },
         { typ: 'text', text: 'På gymnasiet räknar man ut vinkeln i stället för att mäta den. Det görs med *sinus*, *cosinus* och *tangens*, som beskriver förhållandet mellan sidorna i en rätvinklig triangel. Det kommer i gymnasiets matematik. Grunden är densamma som här: en rätvinklig triangel där pilen är hypotenusan.' },
         // [BILD: Rutat papper med en pil 3 rutor åt höger och en pil 4 rutor uppåt, satta efter varandra. En tredje pil går från början av den första till spetsen av den andra och är märkt som hypotenusa. Den räta vinkeln är markerad med en liten kvadrat.]
+        { id: 'bild-pythagoras', typ: 'figur', namn: 'vektor_rutnat', pilar: [{ dx: 3, dy: 0, namn: '3' }, { dx: 0, dy: 4, namn: '4' }], resultant: { namn: 'hypotenusa' }, ratVinkel: true },
         { typ: 'exempel', rubrik: 'Simmaren i floden', stycken: [
           ['En simmare simmar rakt över en flod med 1,2 m/s. Strömmen för honom med sig nedströms med 0,5 m/s. Hur stor är simmarens fart i förhållande till stranden?'],
           ['Givet: 1,2 m/s rakt över och 0,5 m/s längs floden, vinkelräta mot varandra. Sökt: farten.',
@@ -333,6 +335,7 @@ Bok.niva('stodbok', {
         { typ: 'text', text: 'Det fungerar också baklänges. En kraft som drar snett kan delas upp i en del som drar framåt och en del som drar uppåt. Det kallas *kraftuppdelning*. När du drar en kälke i ett snöre som pekar snett uppåt, är det bara den framåtriktade delen som drar kälken framåt. Den uppåtriktade delen lyfter lite och minskar normalkraften.' },
         { typ: 'text', text: 'På rutat papper gör du uppdelningen genom att rita en rätvinklig triangel med kraften som hypotenusa. Kateterna är de två komposanterna. Det är så man räknar på gymnasiet också, men där räknas komposanterna ut med sinus och cosinus i stället för att räknas i rutor.' },
         // [BILD: Rutat papper med skalan 1 ruta = 10 N. Två kraftpilar: 40 N åt höger (4 rutor) och 30 N rakt uppåt (3 rutor). Pilarna satta efter varandra och den resulterande pilen från första pilens början till andra pilens spets. Resultanten är 5 rutor = 50 N.]
+        { id: 'bild-vektorer', typ: 'figur', namn: 'vektor_rutnat', pilar: [{ dx: 4, dy: 0, namn: '40 N' }, { dx: 0, dy: 3, namn: '30 N' }], resultant: { namn: '50 N' }, skala: '1 ruta = 10 N' },
         { typ: 'exempel', rubrik: 'Två hundar drar en släde', stycken: [
           ['En hund drar en släde med 60 N rakt framåt. En annan hund drar med 80 N rakt åt sidan. Bestäm den resulterande kraften med rutat papper och med räkning. Skala: 1 ruta = 20 N.'],
           ['Givet: F₁ = 60 N framåt, F₂ = 80 N åt sidan. Sökt: resulterande kraft.',

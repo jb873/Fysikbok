@@ -113,7 +113,8 @@ async function chrome() {
   ws.onmessage = m => {
     const d = JSON.parse(m.data);
     if (d.id && vant[d.id]) { vant[d.id](d); delete vant[d.id]; }
-    if (d.method === 'Runtime.exceptionThrown') undantag.push(d.params.exceptionDetails.exception ? d.params.exceptionDetails.exception.description.split('\n')[0] : d.params.exceptionDetails.text);
+    if (d.method === 'Runtime.exceptionThrown') { const x = d.params.exceptionDetails, st = x.stackTrace && x.stackTrace.callFrames ? x.stackTrace.callFrames.slice(0, 4).map(c => (c.functionName || '(anonym)') + ' ' + String(c.url).split('/').pop() + ':' + (c.lineNumber + 1)).join(' < ') : String(x.url || '').split('/').pop() + ':' + (x.lineNumber + 1);
+      undantag.push((x.exception ? x.exception.description.split('\n')[0] : x.text) + ' [' + st + ']'); }
     // __gest({x, y}) i sidan: ett riktigt musklick där, som en elevs – det ger webbläsaren en äkta användargest
     // (helskärm kräver en sådan, och en programmerad gest gäller bara några sekunder).
     if (d.method === 'Runtime.bindingCalled' && d.params.name === '__gest') {
@@ -164,7 +165,7 @@ async function chrome() {
  *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -338,6 +339,61 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         ry.set(id, { typ, fel: f_ });
       });
+      // Diagram och vektorer (Nästa steg, arbetsorder 11), mätta i figurens egna element:
+      //  - diagram_graf: varje markerad punkt ligger på sin koordinat, räknad ur rutnätet (linjerna vid 0 och vid max
+      //    på varje axel) och, om de finns, axelns tal; grafen går genom punkterna; varje skuggad ytas hörn ligger på
+      //    tidsaxeln eller på grafen, och dess övre kant följer grafen (mitten av kanten på grafen);
+      //  - vektor_rutnat: varje pil börjar där den förra slutar, och resultanten går från den första pilens början till
+      //    den sista pilens spets;
+      //  - båda: ingen text under 14 px på skärmen, utanför figuren eller över en annan text.
+      $$('.scen svg[data-diagram-graf], .scen svg[data-vektor-rutnat]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (ng.has(id)) return;
+        const f_ = [], typ = s.dataset.diagramGraf ? 'diagram_graf' : 'vektor_rutnat', N = 0.6;
+        const nara = (a, b) => Math.abs(a - b) <= N;
+        if (typ === 'diagram_graf') {
+          s.querySelectorAll('g.fig-diagram').forEach(g => {
+            const vl = [...g.querySelectorAll('line.fig-rutnat')].filter(l => nara(l.x1.baseVal.value, l.x2.baseVal.value)).map(l => l.x1.baseVal.value).sort((a, b) => a - b);
+            const hl = [...g.querySelectorAll('line.fig-rutnat')].filter(l => nara(l.y1.baseVal.value, l.y2.baseVal.value)).map(l => l.y1.baseVal.value).sort((a, b) => b - a);
+            const grafer = [...g.querySelectorAll('path.fig-graf')], graf = { isPointInStroke: p => grafer.some(x => x.isPointInStroke(p)) };
+            // axlarna: rutnätets första och sista linje är 0 och axelns största värde (data-xmax/-ymax, ur data); talen
+            // på axlarna och punkterna ska stå där värdena hamnar på den skalan
+            const x0 = vl[0], y0 = hl[0], kx = (vl[vl.length - 1] - x0) / +g.dataset.xmax, ky = (y0 - hl[hl.length - 1]) / +g.dataset.ymax;
+            g.querySelectorAll('text[data-x]').forEach(t => { if (!nara(+t.getAttribute('x'), x0 + +t.dataset.x * kx)) f_.push('talet ' + t.dataset.x + ' på den vågräta axeln står fel'); });
+            g.querySelectorAll('text[data-y]').forEach(t => { if (!nara(+t.getAttribute('y') - 6, y0 - +t.dataset.y * ky)) f_.push('talet ' + t.dataset.y + ' på den lodräta axeln står fel'); });
+            g.querySelectorAll('circle.fig-graf-punkt').forEach(c => {
+              const X = +c.dataset.x, Y = +c.dataset.y, cx = c.cx.baseVal.value, cy = c.cy.baseVal.value;
+              if (!nara(cx, x0 + X * kx) || !nara(cy, y0 - Y * ky)) f_.push('punkten (' + X + '; ' + Y + ') står inte på sin koordinat');
+              if (!graf.isPointInStroke(new DOMPoint(cx, cy))) f_.push('grafen går inte genom punkten (' + X + '; ' + Y + ')');
+            });
+            // ytorna: hörnen på tidsaxeln eller på grafen, och mitten av varje kant som inte ligger på axeln eller är lodrät på grafen
+            const paGraf = (x, y) => graf.isPointInStroke(new DOMPoint(x, y));
+            g.querySelectorAll('polygon.fig-yta').forEach((p, j) => {
+              const h = [...p.points].map(q => [q.x, q.y]);
+              h.forEach(([x, y]) => { if (!nara(y, y0) && !paGraf(x, y)) f_.push('yta ' + (j + 1) + ': hörnet (' + x.toFixed(1) + ', ' + y.toFixed(1) + ') ligger varken på tidsaxeln eller på grafen'); });
+              h.forEach(([x, y], k) => { const [x2, y2] = h[(k + 1) % h.length];
+                if (nara(y, y0) && nara(y2, y0)) return;                 // på tidsaxeln
+                if (nara(x, x2)) return;                                 // en lodrät kant
+                if (!paGraf((x + x2) / 2, (y + y2) / 2)) f_.push('yta ' + (j + 1) + ': den övre kanten följer inte grafen'); });
+            });
+          });
+        } else {
+          const pil = e => { const l = e.querySelector('line'), t = e.querySelector('polygon').points[0]; return { a: [l.x1.baseVal.value, l.y1.baseVal.value], b: [t.x, t.y] }; };
+          const P = [...s.querySelectorAll('g.fig-vektor:not([data-vektor="resultant"])')].map(pil), R = s.querySelector('g.fig-vektor[data-vektor="resultant"]');
+          P.slice(1).forEach((p, k) => { if (!nara(p.a[0], P[k].b[0]) || !nara(p.a[1], P[k].b[1])) f_.push('pil ' + (k + 2) + ' börjar inte där pil ' + (k + 1) + ' slutar'); });
+          if (R) { const r = pil(R);
+            if (!nara(r.a[0], P[0].a[0]) || !nara(r.a[1], P[0].a[1])) f_.push('resultanten börjar inte där den första pilen börjar');
+            if (!nara(r.b[0], P[P.length - 1].b[0]) || !nara(r.b[1], P[P.length - 1].b[1])) f_.push('resultanten slutar inte vid den sista pilens spets'); }
+          if (!P.length) f_.push('inga pilar');
+        }
+        const vb = s.viewBox.baseVal, skala = s.getBoundingClientRect().width / vb.width, tx = [...s.querySelectorAll('text')].map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * skala]);
+        tx.forEach(([a, p, px], j) => {
+          if (px < 13.95) f_.push('”' + a + '” är ' + px.toFixed(1) + ' px');
+          if (p.x < -0.5 || p.y < -0.5 || p.x + p.width > vb.width + 0.5 || p.y + p.height > vb.height + 0.5) f_.push('”' + a + '” står utanför figuren');
+          tx.slice(j + 1).forEach(([b, q]) => { if (p.x < q.x + q.width - 0.5 && q.x < p.x + p.width - 0.5 && p.y < q.y + q.height - 0.5 && q.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
+        });
+        ng.set(id, { typ, minPx: Math.min(...tx.map(x => x[2])), fel: f_ });
+      });
       $$('.scen svg[data-bildpilar]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (bp.has(id)) return;
@@ -445,8 +501,13 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         fel: [...pn].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       jm: { antal: jm.size, fel: [...jm].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       ry: { antal: ry.size, typer: [...new Set([...ry.values()].map(x => x.typ))], fel: [...ry].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
+      ng: { antal: ng.size, typer: [...new Set([...ng.values()].map(x => x.typ))], minPx: Math.min(...[...ng.values()].map(x => x.minPx)), fel: [...ng].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
+
+// Diagrammen och vektorerna (figurKoll: ng), i scenarierna
+const NG_PROV = String.raw`if (spar.some(x => x.ng && x.ng.antal)) prova('figur: diagram och vektorer – punkterna på sina koordinater och grafen genom dem, de skuggade ytorna under grafen, pilarna efter varandra och resultanten från början till spets, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.ng.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.ng.typer))].join(', ') + ')',
+    spar.every(x => !x.ng.fel.length), spar.flatMap(x => x.ng.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.ng.antal).map(x => x.ng.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------
  * Klistras in i scenarierna (behöver v, $, $$, synlig, prova, gest, klicka, oppen, stangd, figurKoll, spar, harOmslag).
@@ -898,6 +959,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     spar.every(x => !x.jm.fel.length), spar.flatMap(x => x.jm.fel).join(' | '));
   if (spar.some(x => x.ry.antal)) prova('figur: rymdfigurerna – storlekarna i samma skala, prickarna i proportion till avstånden, pilarna mot jordens mitt, månens belysta halva mot solen och faserna rätt, jordaxlarna lika lutade och sommaren där norra halvklotet lutar mot solen, inga texter som överlappar eller står utanför (' + spar.map(x => x.ry.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.ry.typer))].join(', ') + ')',
     spar.every(x => !x.ry.fel.length), spar.flatMap(x => x.ry.fel).join(' | '));
+  ${NG_PROV}
   prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida, i varje text och nivå (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   prova('text: g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden står i vanlig stil med rätt skiftläge, inte i kapitäler (' + spar.reduce((a, x) => a + x.sym.antal, 0) + ' ställen)',
@@ -959,6 +1021,7 @@ const BOKHUBB = String.raw`async (helskarmLage) => {
     prova('stäng: Esc går tillbaka till sidan', stangd(), 'hash=' + location.hash);
   }
   ${FRISTAENDE}
+  ${NG_PROV}
   if (spar.length) prova('text: tal och enhet (och tusental) står med hårt mellanslag på varje sida (' + spar.length + ' böcker)',
     spar.every(x => !x.tal.length), spar.flatMap(x => x.tal).slice(0, 6).join(' | '));
   return k;

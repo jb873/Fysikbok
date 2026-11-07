@@ -124,6 +124,37 @@ for (const B of BOCKER) for (const a of lasta[B.bok].avs) a.block = a.block.map(
 // Tillägget: länken till övningsboken sist i textbokens instruktionssida (det första avsnittet)
 text[0].block.push({ typ: 'boklank', bok: OVNINGSBOK });
 
+// Steg 3 (arbetsorder 11): figurerna efter sina bildmarkeringar (kommentaren står kvar). Värdena är bildmarkeringarnas.
+// Textbokens klossen i vatten står bara som kommentar: kraftpilar ritar krafterna från föremålets mitt och kan inte rita
+// vattnet, tryckpilarna mot sidorna eller lyftkraften med sitt namn (rapporten).
+const tid = (max, tal) => ({ storhet: 'tid', enhet: 's', max, steg: 1, tal });
+const FIGURER = [
+  { bok: TEXTBOK, borjar: '[BILD: tre läge–tid-diagram bredvid varandra', figur: { id: 'bild-lage-tid', typ: 'figur', namn: 'diagram_graf', diagram: [
+    { rubrik: 'Stilla', x: tid(4), y: { storhet: 'läge', enhet: 'm', max: 8, steg: 2 }, grafer: [{ punkter: [[0, 4], [4, 4]] }] },
+    { rubrik: ['Konstant', 'hastighet'], x: tid(4), y: { storhet: 'läge', enhet: 'm', max: 8, steg: 2 }, grafer: [{ punkter: [[0, 0], [4, 8]] }] },
+    { rubrik: ['Ökande', 'fart'], x: tid(4), y: { storhet: 'läge', enhet: 'm', max: 8, steg: 2 }, grafer: [{ punkter: [[0, 0], [1, 0.5], [2, 2], [3, 4.5], [4, 8]], kurva: true }] }
+  ] } },
+  { bok: TEXTBOK, borjar: '[BILD: hastighet–tid-diagram för en cyklist', figur: { id: 'bild-cyklist', typ: 'figur', namn: 'diagram_graf', diagram: [
+    { x: tid(10, 2), y: { storhet: 'hastighet', enhet: 'm/s', max: 8, steg: 1, tal: 2 }, grafer: [{ punkter: [[0, 0], [4, 6], [10, 6]] }],
+      ytor: [{ punkter: [[0, 0], [4, 6], [4, 0]], ton: 1 }, { punkter: [[4, 0], [4, 6], [10, 6], [10, 0]], ton: 2 }] }
+  ] } },
+  { bok: MATEMATIK, borjar: '[BILD: Hastighet–tid-diagram på rutat papper', figur: { id: 'bild-diagram', typ: 'figur', namn: 'diagram_graf', diagram: [
+    { x: tid(10, 2), y: { storhet: 'hastighet', enhet: 'm/s', max: 10, steg: 1, tal: 2 }, grafer: [{ punkter: [[0, 0], [4, 8], [10, 8]] }],
+      ytor: [{ punkter: [[0, 0], [4, 8], [4, 0]], ton: 1 }, { punkter: [[4, 0], [4, 8], [10, 8], [10, 0]], ton: 2 }],
+      delta: [{ fran: [0, 0], till: [4, 8], dx: 'Δt', dy: 'Δv' }] }
+  ] } },
+  { bok: MATEMATIK, borjar: '[BILD: Rutat papper med en pil 3 rutor', figur: { id: 'bild-pythagoras', typ: 'figur', namn: 'vektor_rutnat',
+    pilar: [{ dx: 3, dy: 0, namn: '3' }, { dx: 0, dy: 4, namn: '4' }], resultant: { namn: 'hypotenusa' }, ratVinkel: true } },
+  { bok: MATEMATIK, borjar: '[BILD: Rutat papper med skalan 1 ruta = 10 N', figur: { id: 'bild-vektorer', typ: 'figur', namn: 'vektor_rutnat',
+    pilar: [{ dx: 4, dy: 0, namn: '40 N' }, { dx: 0, dy: 3, namn: '30 N' }], resultant: { namn: '50 N' }, skala: '1 ruta = 10 N' } }
+];
+const FIGURER_PA = !process.argv.includes('--utan-figurer');
+if (FIGURER_PA) for (const F of FIGURER) {
+  let gjort = 0;
+  for (const a of lasta[F.bok].avs) a.block = a.block.flatMap(b => b.kommentar && b.kommentar.startsWith(F.borjar) ? (gjort++, [b, F.figur]) : [b]);
+  if (gjort !== 1) fel.push(`figuren ${F.figur.id}: ${gjort} bildmarkeringar börjar med ”${F.borjar}”`);
+}
+
 if (fel.length) { console.error('FEL:\n  ' + fel.join('\n  ')); process.exit(1); }
 
 // Skrivaren: block i samma stil som de andra böckerna

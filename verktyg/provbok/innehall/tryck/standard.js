@@ -84,6 +84,19 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Provtext: himlakroppar i skala, tre provkroppar i två grupper.' },
         { typ: 'figur', id: 'himlakroppar-prov', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Prov A', diameter: 3000 }, { namn: 'Prov B', diameter: 1000, grupp: 1 }, { namn: 'Prov C', diameter: 2000, grupp: 1 }], storst: 60 },
         // Jupiterfiguren (order 10, djupdykningen Jupiters månar och Saturnus ringar): en stor kropp och fyra små, en grupp
+        // Nästa steg (order 11): två diagram bredvid varandra (en kurva, och en graf med tal, ytor och Δ-linjer) och
+        // tre pilar på rutat papper (en åt vänster, inte alla vinkelräta) med resultant och skala – andra data än i böckerna
+        { typ: 'text', text: 'Provtext: två provdiagram bredvid varandra.' },
+        { typ: 'figur', id: 'diagram-prov', namn: 'diagram_graf', diagram: [
+          { rubrik: 'Prov A', x: { storhet: 'tid', enhet: 's', max: 3, steg: 1 }, y: { storhet: 'läge', enhet: 'm', max: 9, steg: 3 },
+            grafer: [{ punkter: [[0, 9], [1, 4], [2, 1], [3, 0]], kurva: true }] },
+          { rubrik: 'Prov B', x: { storhet: 'tid', enhet: 's', max: 6, steg: 1, tal: 2 }, y: { storhet: 'v', enhet: 'm/s', max: 6, steg: 1, tal: 2 },
+            grafer: [{ punkter: [[0, 2], [2, 6], [6, 6]] }], ytor: [{ punkter: [[0, 0], [0, 2], [2, 6], [2, 0]], ton: 1 }, { punkter: [[2, 0], [2, 6], [6, 6], [6, 0]], ton: 2 }],
+            delta: [{ fran: [0, 2], till: [2, 6], dx: 'Δt', dy: 'Δv' }] }
+        ], bildtext: 'Provbildtext under diagrammen.' },
+        { typ: 'text', text: 'Provtext: tre provpilar på rutat papper.' },
+        { typ: 'figur', id: 'vektor-prov', namn: 'vektor_rutnat', pilar: [{ dx: 3, dy: 0, namn: 'Prov 1' }, { dx: 0, dy: 2, namn: 'Prov 2' }, { dx: -1, dy: 1, namn: 'Prov 3' }],
+          resultant: { namn: 'Provresultant' }, skala: '1 ruta = 5 N', bildtext: 'Provbildtext under pilarna.' },
         { typ: 'text', text: 'Provtext: Jupiter och de fyra stora månarna i samma skala.' },
         { typ: 'figur', id: 'jupiter-prov', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Jupiter', diameter: 139800 }, { namn: 'Io', diameter: 3640 }, { namn: 'Europa', diameter: 3120 }, { namn: 'Ganymedes', diameter: 5270 }, { namn: 'Kallisto', diameter: 4820 }], bildtext: 'Provbildtext under Jupiter och månarna.' },
         { typ: 'text', text: 'Provtext: en avståndslinje i AE.' },
