@@ -208,6 +208,14 @@ a.kapitel-kort:hover { background-color: #faf4e4; transform: translateY(-1px); }
 .huvudelevbok-kort h3 { font-family: var(--rubrik); font-weight: 400; color: var(--black); font-size: 1.2rem; letter-spacing: .03em;
   line-height: 1.15; margin: 0 0 .25rem; }
 .huvudelevbok-kort + .huvudelevbok-kort { margin-top: 1rem; }
+/* Nästa steg på startsidan (arbetsorder 11): listan över kapitlen med Nästa steg och, bredvid den, Matematiken i
+   fysiken. Bredvid varandra på en bred skärm, under varandra på mobilen. */
+.nasta-steg-delar { display: grid; grid-template-columns: 3fr 2fr; gap: 1rem; align-items: start; }
+.nasta-steg-lista { display: flex; flex-direction: column; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+.matematik-kort { border-left-color: var(--accent-2-mork); }
+.matematik-kort .ikon { flex: 0 0 auto; width: 32px; height: 32px; color: var(--black); }
+.matematik-kort .ikon svg { display: block; width: 100%; height: 100%; }
+@media (max-width: 699px) { .nasta-steg-delar { grid-template-columns: 1fr; } }
 
 .resurser-rad { display: flex; flex-wrap: wrap; gap: .85rem; justify-content: center; }
 .resurs-kort {

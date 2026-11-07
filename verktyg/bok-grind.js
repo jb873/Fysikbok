@@ -1605,6 +1605,11 @@ const KAPITEL = [
     alla: 'I II III IV V VI' }
 ];
 const STARTSIDANS_KAPITEL = 'I Materia och universum · II Ljud och ljus · III Kraft och rörelse';
+// Nästa steg på startsidan (arbetsorder 11): listan (ett kapitel per post) och Matematiken i fysiken, i den ordningen
+const NASTA_STEG = [
+  { nr: 'III', titel: 'Kraft och rörelse', href: 'rorelse_och_kraft/index.html#nasta-kraft-och-rorelse', sida: 'kraft_och_rorelse/rorelse_och_kraft/index.html', bok: 'nasta-kraft-och-rorelse' },
+  { nr: null, titel: 'Matematiken i fysiken', href: 'matematiken_i_fysiken/index.html#stod-matematiken', sida: 'nasta_steg/matematiken_i_fysiken/index.html', bok: 'stod-matematiken' }
+];
 const ROMERSKA = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 async function provaSidorna(lage) {
@@ -1642,11 +1647,32 @@ async function provaSidorna(lage) {
       const x = kap.find(y => y.nr === K.nr), mal = new URL(K.mapp + '/index.html', start).href;
       prova(`startsida: ${K.nr} länkar till kapitelindexet`, x && x.tag === 'A' && x.href === mal && !x.kommer, x && x.href);
     }
-    const ov = await kort('.sektion-avgransare .kapitel-kort');
+    const ov = await kort('.sektion-avgransare:not(.nasta-steg-omrade) .kapitel-kort');
     prova('startsida: Översikt – Huvudelevbok och Självskattning, tonade "Kommer"',
       ov.map(x => x.titel).join(', ') === 'Huvudelevbok, Självskattning' && ov.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
     await bred('startsida');
     await tonadeLederIngenstans('startsida', '.kapitel-kort.dimmad');
+
+    // Nästa steg (arbetsorder 11): listan över kapitlen med Nästa steg och, bredvid den, Matematiken i fysiken. Varje
+    // länk öppnar sin bok direkt (adressen #<bok>); Stäng leder till sidan med boken och brödsmulan Fysik till startsidan.
+    const ns = await kort('.nasta-steg-omrade .kapitel-kort');
+    prova('startsida: Nästa steg – listan (' + NASTA_STEG.filter(x => x.nr).map(x => x.nr + ' ' + x.titel).join(', ') + ') och Matematiken i fysiken bredvid, länkar',
+      ns.map(x => (x.nr ? x.nr + ' ' : '') + x.titel).join(' · ') === NASTA_STEG.map(x => (x.nr ? x.nr + ' ' : '') + x.titel).join(' · ') && ns.every(x => x.tag === 'A' && !x.kommer),
+      ns.map(x => (x.nr ? x.nr + ' ' : '') + x.titel + ' → ' + x.href).join(' | '));
+    if (!lage.mobil) prova('startsida: Matematiken i fysiken står bredvid listan Nästa steg (dator)', await c.ev(`(() => {
+      const l = document.querySelector('.nasta-steg-lista').getBoundingClientRect(), m = document.querySelector('.matematik-kort').getBoundingClientRect();
+      return m.left >= l.right - 1 && Math.abs(m.top - l.top) < 2; })()`));
+    for (const N of NASTA_STEG) {
+      await ga(start);
+      await klicka(`.nasta-steg-omrade a.kapitel-kort[href$="${N.href}"]`, 2500);
+      const r = await c.ev(`({ sida: location.href.split('#')[0], oppen: !!(window.Bok && Bok.oppen), hash: location.hash,
+        titel: (document.querySelector('.scen .boktitel') || document.querySelector('.scen .omslag-under') || {}).textContent || '' })`);
+      prova(`startsida → ${N.titel}: boken öppnas direkt`, decodeURI(r.sida) === new URL(N.sida, start).href && r.oppen && r.hash.startsWith('#' + N.bok + '/'), JSON.stringify(r));
+      await c.ev(`[...document.querySelectorAll('.bok-stang')].find(e => e.offsetParent).click()`); await vanta(600);
+      const efter = await c.ev(`({ oppen: Bok.oppen, sida: location.href.split('#')[0] })`);
+      await klicka('.hero-banner .brodsmulor a');
+      prova(`${N.titel}: Stäng leder till sidan med boken, och brödsmulan Fysik till startsidan`, !efter.oppen && decodeURI(efter.sida) === new URL(N.sida, start).href && await har() === start, JSON.stringify(efter));
+    }
 
     for (const K of KAPITEL) {
       const kapitel = new URL(K.mapp + '/index.html', start).href, alla = K.alla.split(' '), n = K.avsnitt.length;

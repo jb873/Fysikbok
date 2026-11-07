@@ -1,6 +1,9 @@
-// node verktyg/kap1-ordagrant.js [innehall-mapp]: kapitel 1, avsnitt I, mot källorna i kallor/kap1/. Utan mapp
-// prövas materia_och_universum/solsystemet_och_jorden/innehall/. Slutkoden är 1 om något inte är ordagrant.
-// Varje nivåfil mot källan, i ordning – avsnitt (titel, numrerad), rubriker,
+// node verktyg/ordagrant.js [innehall-mapp]: innehållet mot Joachims källor i kallor/, ordagrant. Slutkoden är 1 om
+// något inte är ordagrant. (Före arbetsorder 11 hette skriptet kap1-ordagrant.js.)
+//  - kapitel 1, avsnitt I (kallor/kap1/): de tolv böckerna och de fyra djupdykningarna. Utan mapp prövas
+//    materia_och_universum/solsystemet_och_jorden/innehall/.
+//  - Nästa steg (kallor/nasta-steg/, arbetsorder 11): textboken, övningsboken och Matematiken i fysiken (se nedan).
+// Kapitel 1: varje nivåfil mot källan, i ordning – avsnitt (titel, numrerad), rubriker,
 // stycken, punkter. Enkel/Fördjupning: tecken för tecken (med markeringarna). Standard: utan markeringarna, och
 // markeringarna ska vara det enda som skiljer. Bildmarkeringarna ska finnas som kommentarer i samma ordning.
 const fs = require('fs'), path = require('path');
@@ -93,6 +96,90 @@ DD.forEach(([B, fil], i) => {
   if (!bok) { fel++; console.log('   bildmarkeringarna skiljer: ' + JSON.stringify(k.bilder) + ' / ' + JSON.stringify(f.bilder)); }
   if (!inl) { fel++; console.log('   det första avsnittet är inte Inledningen (onumrerad)'); }
 });
+// ---------- Nästa steg (arbetsorder 11): textboken, övningsboken och Matematiken i fysiken mot kallor/nasta-steg/ ----------
+// Källan och filen läses var för sig till samma följd: avsnitt (titel, numrerad), rubriker, stycken (rader i följd som
+// ett stycke med radbrytningar), punkter, numrerade punkter (med numret), formler (uttryck – förklaring), exempel
+// (rubrik, raderna och de tomma raderna mellan styckena), PROVA-raderna, MATTE och ANVÄNDS I (posterna). Bildmarkeringarna
+// ska stå som kommentarer i samma ordning. Det enda godkända tillägget: länken till övningsboken sist i textbokens första
+// avsnitt (ordern). Dessutom: varje länk pekar på ett avsnitt med just det namnet (MATTE: rubriken, ANVÄNDS I: numret).
+const NS_KALLOR = path.join(__dirname, '..', 'kallor', 'nasta-steg') + path.sep, NS_ROT = path.join(__dirname, '..');
+const NS = [
+  { kalla: 'Nasta-steg-Kraft-och-rorelse-textbok-v3.md', fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/textbok.js', bok: 'nasta-kraft-och-rorelse', namn: 'textboken' },
+  { kalla: 'Nasta-steg-Kraft-och-rorelse-ovningsbok-v2.md', fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/ovningsbok.js', bok: 'ovning-kraft-och-rorelse', namn: 'övningsboken' },
+  { kalla: 'Matematiken-i-fysiken-v2.md', fil: 'nasta_steg/matematiken_i_fysiken/innehall/matematiken.js', bok: 'stod-matematiken', namn: 'Matematiken i fysiken' }
+];
+function nsKalla(f) {
+  const r = las(NS_KALLOR + f), ut = [], bilder = [];
+  let i = r.findIndex(l => /^## /.test(l)), st = [];
+  const slut = () => { if (st.length) ut.push('STYCKE ' + st.join(' ⏎ ')); st = []; };
+  for (; i < r.length; i++) {
+    const l = r[i]; let m;
+    if (!l.trim()) { slut(); continue; }
+    if ((m = /^## (?:\d+\. )?(.+?) \((numrerad|onumrerad)/.exec(l))) { slut(); ut.push(`AVSNITT ${m[1]} ${m[2]}`); continue; }
+    if (l.startsWith('### ')) { slut(); ut.push('RUBRIK ' + l.slice(4)); continue; }
+    if ((m = /^\[FORMEL: (.+)\]$/.exec(l))) { slut(); ut.push('FORMEL ' + m[1]); continue; }
+    if ((m = /^\[MATTE: (.+)\]$/.exec(l))) { slut(); ut.push('MATTE ' + m[1]); continue; }
+    if ((m = /^\[ANVÄNDS I: (.+)\]$/.exec(l))) { slut(); ut.push('ANVÄNDS ' + m[1]); continue; }
+    if (l.startsWith('[BILD')) { slut(); bilder.push(l); continue; }
+    if ((m = /^\[EXEMPEL: (.+)\]$/.exec(l))) { slut(); ut.push('EXEMPEL ' + m[1]);
+      let tom = false;
+      for (i++; r[i] !== '[/EXEMPEL]'; i++) { if (!r[i].trim()) { tom = true; continue; } ut.push((tom && ut[ut.length - 1] !== 'EXEMPEL ' + m[1] ? 'EXRAD+ ' : 'EXRAD ') + r[i]); tom = false; }
+      continue; }
+    if (l === '[PROVA]') { slut(); ut.push('PROVA'); for (i++; r[i] !== '[/PROVA]'; i++) if (r[i].trim()) ut.push('PROVARAD ' + r[i]); continue; }
+    if (l.startsWith('- ')) { slut(); ut.push('PUNKT ' + l.slice(2)); continue; }
+    if (/^\d+\. /.test(l)) { slut(); ut.push('NUMMER ' + l); continue; }
+    st.push(l);
+  }
+  slut();
+  return { ut, bilder };
+}
+function nsFil(f) {
+  let data; global.Bok = { niva: (n, d) => { data = d; } };
+  const kod = fs.readFileSync(path.join(NS_ROT, f), 'utf8'); eval(kod);
+  const ut = [], lankar = [];
+  for (const a of data.avsnitt) { ut.push(`AVSNITT ${a.titel} ${a.numrerad === false ? 'onumrerad' : 'numrerad'}`);
+    for (const b of a.block) {
+      if (b.typ === 'rubrik') ut.push('RUBRIK ' + b.text);
+      else if (b.typ === 'text') ut.push('STYCKE ' + b.text);
+      else if (b.typ === 'rader') ut.push('STYCKE ' + b.rader.join(' ⏎ '));
+      else if (b.typ === 'punkter') b.punkter.forEach(p => ut.push('PUNKT ' + p));
+      else if (b.typ === 'numrerad') b.punkter.forEach((p, k) => ut.push(`NUMMER ${k + 1}. ${p}`));
+      else if (b.typ === 'formel') ut.push(`FORMEL ${b.uttryck} – ${b.forklaring}`);
+      else if (b.typ === 'exempel') { ut.push('EXEMPEL ' + b.rubrik); b.stycken.forEach((s, si) => s.forEach((x, ri) => ut.push((si && !ri ? 'EXRAD+ ' : 'EXRAD ') + x))); }
+      else if (b.typ === 'prova') { ut.push('PROVA'); b.rader.forEach(x => ut.push('PROVARAD ' + x)); }
+      else if (b.typ === 'bokref') { ut.push((b.etikett === 'Matematik du behöver:' ? 'MATTE ' : b.etikett === 'Används i Nästa steg:' ? 'ANVÄNDS ' : 'BOKREF? ') + b.lankar.map(l => l.text).join(' · '));
+        b.lankar.filter(l => l.bok).forEach(l => lankar.push(l)); }
+      else if (b.typ === 'boklank') ut.push('BOKLANK ' + b.bok);
+      else if (b.typ !== 'figur') ut.push('OKÄNT ' + b.typ);
+    } }
+  const bilder = [...kod.matchAll(/^\s*\/\/ (\[BILD.*)$/gm)].map(m => m[1]);
+  return { ut, bilder, data, lankar };
+}
+const nsFiler = Object.fromEntries(NS.map(B => [B.bok, nsFil(B.fil)]));
+for (const B of NS) {
+  const k = nsKalla(B.kalla), f = nsFiler[B.bok], seq = f.ut.slice(), tFel = [];
+  if (B.bok === 'nasta-kraft-och-rorelse') {
+    // tillägget: länken till övningsboken sist i det första avsnittet (före nästa AVSNITT)
+    const j = seq.findIndex((x, i) => i > 0 && x.startsWith('AVSNITT'));
+    if (seq[j - 1] === 'BOKLANK ovning-kraft-och-rorelse') seq.splice(j - 1, 1); else tFel.push('länken till övningsboken står inte sist i ”Så här använder du boken”');
+  }
+  const ok = k.ut.length === seq.length && k.ut.every((x, i) => x === seq[i]);
+  const bok = JSON.stringify(k.bilder) === JSON.stringify(f.bilder);
+  // länkarna: målet finns och heter som posten
+  for (const l of f.lankar) {
+    const mal = Object.entries(nsFiler).find(([b]) => b === l.bok), a = mal && mal[1].data.avsnitt.find(x => x.id === l.ankare);
+    const nr = a && mal[1].data.avsnitt.filter(x => x.numrerad !== false).indexOf(a) + 1;
+    if (!a || !(l.text === a.titel || l.text === `${nr}. ${a.titel}`)) tFel.push(`länken ”${l.text}” går till ${l.bok}/${l.ankare}` + (a ? ` (”${nr}. ${a.titel}”)` : ' (finns inte)'));
+  }
+  const n = t => k.ut.filter(x => x.startsWith(t)).length;
+  console.log(`${ok && bok && !tFel.length ? 'ORDAGRANT' : 'FEL      '}  Nästa steg: ${B.namn}: ${n('AVSNITT')} avsnitt, ${k.ut.length} rader ur källan ` +
+    `(${n('FORMEL')} formler, ${n('EXEMPEL ')} exempel, ${k.ut.filter(x => x === 'PROVA').length} prova), ${k.bilder.length} bildmarkeringar, ${f.lankar.length} länkar`);
+  if (!ok) { fel++; const i = k.ut.findIndex((x, j) => x !== seq[j]); console.log('   första skillnaden:\n   källan: ' + k.ut[i] + '\n   filen:  ' + seq[i]); }
+  if (!bok) { fel++; console.log('   bildmarkeringarna skiljer: ' + JSON.stringify(k.bilder) + ' / ' + JSON.stringify(f.bilder)); }
+  if (tFel.length) { fel++; console.log('   ' + tFel.join('\n   ')); }
+}
+
 console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.' +
-  '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.');
+  '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.' +
+  '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.');
 process.exitCode = fel ? 1 : 0;

@@ -104,7 +104,8 @@ Fysik/
     figurer.js                  de funktionella figurerna (SVG), specificerade i data, och omslagsmotiven
     typsnitt/                   EB Garamond, Marcellus SC och Marcellus (OFL; Marcellus bara på omslaget)
   mall/delkapitel/              mallen för ett nytt delkapitel (kopieras hel)
-  index.html                    startsidan: kapitlen I–III (II tonat "Kommer"), Översikt
+  index.html                    startsidan: kapitlen I–III (II tonat "Kommer"), Nästa steg med Matematiken i fysiken,
+                                Översikt
   materia_och_universum/        kapitel I (arbetsorder 9, 2026-11-07)
     index.html                  kapitelindexet: avsnittssidorna I–V (II–V tonade) och resurskorten
     kapitel.js                  omslaget: överraden "Kapitel 1", titeln, motivet materia-och-universum
@@ -120,13 +121,18 @@ Fysik/
       innehall/joner-isotoper-bindningar/   text B
     materia_repetition/         avsnittssida II. Repetition, texterna materia/, densitet-och-varme/, varmespridning/
     rorelse_och_kraft/          avsnittssida III. Rörelse och kraft, texterna rorelse/, kraft-och-friktion/,
-                                kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/
+                                kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/;
+                                Nästa steg i innehall/nasta-steg/ (textboken och övningsboken)
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
-  kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (djupdykningarna)
+  nasta_steg/                   Nästa steg (arbetsorder 11)
+    matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
+  kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (djupdykningarna),
+                                nasta-steg/ (textboken, övningsboken, Matematiken i fysiken)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
-    kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlaren)
-    kap1-ordagrant.js           kapitel 1: innehållet ordagrant mot källorna
+    kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlarna)
+    nasta-steg-omvandlare.js    Nästa steg och Matematiken i fysiken: källorna → böckernas filer
+    ordagrant.js                innehållet ordagrant mot källorna (kapitel 1 och Nästa steg)
     bilder/                     skärmbilder: grind/ (--bilder) och en mapp per arbete
     provbok/                    provdata för grinden, med texter (en bok per text) – inte elevinnehåll
     provkapitel.js              provbokens kapitel: ett omslag med en titel på två rader
@@ -701,14 +707,19 @@ beslut 2026-11-05.
   - **Negativa prov:** fyra provkrokar (`?kontroll&prova=formel-skild`, `exempel-delat`, `svar-ensam`, `prova-delad`)
     flyttar en post i provboken först på nästa sida. Grinden ska bli röd av just den regeln.
 
-**Källorna och omvandlaren** (sedan 2026-11-07, arbetsorder 10). Joachims källor ligger oförändrade i `kallor/`, en
-mapp per kapitel. Kapitel 1-texterna är omvandlade med ett skript och prövas med ett annat:
+**Källorna och omvandlarna** (sedan 2026-11-07, arbetsorder 10 och 11). Joachims källor ligger oförändrade i
+`kallor/`, en mapp per kapitel (och `nasta-steg/`). Texterna är omvandlade med skript och prövas med ett annat:
 
-- **`node verktyg/kap1-ordagrant.js`** jämför kapitel 1, avsnitt I, block för block med `kallor/kap1/`. Det
-  godkänner bara Joachims beslutade tillägg på sina platser. Slutkoden är 1 om något inte är ordagrant. Kör det efter
-  varje ändring i texterna.
-- **`node verktyg/kap1-omvandlare.js [utmapp]`** skriver de tolv filerna i `innehall/` igen ur källorna, och
+- **`node verktyg/ordagrant.js`** jämför innehållet block för block med källorna och godkänner bara de beslutade
+  tilläggen på sina platser. Slutkoden är 1 om något inte är ordagrant. Kör det efter varje ändring i texterna.
+  (Före order 11 hette det `kap1-ordagrant.js`.) Det prövar:
+  - kapitel 1, avsnitt I, och dess fyra djupdykningar (`kallor/kap1/`);
+  - Nästa steg: textboken, övningsboken och Matematiken i fysiken (`kallor/nasta-steg/`). Varje länk ska gå till
+    avsnittet med just det namnet.
+- **`node verktyg/kap1-omvandlare.js [utmapp]`** skriver kapitel 1:s filer i `innehall/` igen ur källorna, och
   befintliga filer skrivs över. Med en tom `utmapp` hamnar de där, så att de kan jämföras med repot först.
+- **`node verktyg/nasta-steg-omvandlare.js [utmapp]`** gör samma sak för Nästa steg och Matematiken i fysiken. Den
+  skriver ut de länkar som inte kunde matchas. Formatet står överst i skriptet.
 
 ## Interaktiva inslag (senare)
 
@@ -1179,3 +1190,23 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Provboken** har en bok av varje slag med alla de nya blocken: ett exempel som ryms och ett som är högre än en
     sida i alla lägen, ett långt formeluttryck och länkar åt båda hållen.
   - **Grinden:** nya prov (se *Kontrollera*), fyra negativa prov, `--negativ=<namn>` och `--visa`.
+- **2026-11-07, Nästa steg · Kraft och rörelse och Matematiken i fysiken (arbetsorder 11, steg 2):**
+  - **Källorna** (de versioner ordern anger: textboken v3, övningsboken v2, Matematiken v2) ligger oförändrade i
+    `kallor/nasta-steg/`. De är omvandlade av `verktyg/nasta-steg-omvandlare.js` och prövas av `verktyg/ordagrant.js`.
+  - **Platserna:**
+    - textboken: blocket *Nästa steg – gymnasiets fysik* under djupdykningarna på avsnittssida III;
+    - övningsboken: fliken Öva där;
+    - Matematiken i fysiken: en egen sida, `nasta_steg/matematiken_i_fysiken/` (bara boken). Den finns också utan
+      kort på avsnittssida III. Textboken och övningsboken finns utan kort på Matematikens sida.
+    - startsidan: blocket *Nästa steg* med listan (III Kraft och rörelse) och Matematiken i fysiken bredvid. Länkarna
+      öppnar böckerna direkt.
+  - **Länkarna:**
+    - [MATTE] matchas på avsnittsrubriken och [ANVÄNDS I] på avsnittsnumret (titeln prövas också).
+    - Fyra poster står som text utan länk, som ordern säger: "alla avsnitt i Nästa steg", "nästan alla avsnitt i
+      Nästa steg", "Fysikboken: Resulterande kraft, Fördjupning" och "Fysikboken: Resulterande kraft".
+    - Länken till övningsboken står sist i textbokens "Så här använder du boken" (det enda tillägget).
+  - **Listor med fler än 6 punkter** är delade i listor med högst 4 punkter. Textbokens Sammanfattning (11 punkter)
+    var annars 300–480 px för hög; Matematikens lista över prefixen (9) delades enligt samma regel.
+  - **[BILD]** står som kommentarer på sina platser (figurerna: steg 3).
+  - **Grinden:** startsidans Nästa steg (länkarna öppnar böckerna, Stäng och brödsmulan leder tillbaka) och
+    Matematikens sida (scenariot för en sida med bara fristående böcker).

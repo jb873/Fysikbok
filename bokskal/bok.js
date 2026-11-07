@@ -1860,7 +1860,8 @@
     // ett uppvärmningsvarv som inte räknas, sedan `varv` mätvarv (minst 5): medianen och det längsta per bok.
     // Sidans väntande layout (till exempel efter ett nytt fönstermått) görs före varje brytning, så att den inte räknas in.
     brytTid(varv = 5) {
-      if (!nivaId) return null;
+      // (en sida med bara fristående böcker har ingen vald nivå, men böcker att mäta)
+      if (!allaBocker().some(x => harInnehall(x.n.id, x.t))) return null;
       varv = Math.max(5, varv);
       const median = a => { const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
       const rund = x => Math.round(10 * x) / 10;

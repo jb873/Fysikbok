@@ -38,6 +38,20 @@ Bok.delkapitel({
     { id: 'tyngdloshet', titel: 'Är astronauterna tyngdlösa?', fil: 'innehall/djupdykningar/tyngdloshet.js' }
   ],
 
+  // Nästa steg (arbetsorder 11, 2026-11-07): gymnasiets fysik som fristående böcker – textboken i ett eget block under
+  // djupdykningarna och övningsboken i fliken Öva. Matematiken i fysiken ligger på sin egen sida (startsidan) och finns
+  // här utan kort, som mål för textbokens länkar "Matematik du behöver:". Källorna: kallor/nasta-steg/, omvandlade av
+  // verktyg/nasta-steg-omvandlare.js. id är nyckeln för det eleven sparat – byt det aldrig.
+  nastaSteg: [
+    { id: 'kraft-och-rorelse', titel: 'Nästa steg · Kraft och rörelse – textbok', fil: 'innehall/nasta-steg/textbok.js' }
+  ],
+  ovningsbocker: [
+    { id: 'kraft-och-rorelse', titel: 'Nästa steg · Kraft och rörelse – övningsbok', fil: 'innehall/nasta-steg/ovningsbok.js' }
+  ],
+  stodbocker: [
+    { id: 'matematiken', titel: 'Matematiken i fysiken', fil: '../../nasta_steg/matematiken_i_fysiken/innehall/matematiken.js' }
+  ],
+
   // Plattformens hjälpmedel. Föreläsning, Öva och Elevboken är flikarna på delkapitlets sida; Öva, Självskattning,
   // Begreppslista och Elevboken länkas också inifrån boken. Utan adress är de synliga, märkta "kommer" och inte
   // klickbara. {begrepp}, {avsnitt} och {niva} i adressen fylls i där länken står.
