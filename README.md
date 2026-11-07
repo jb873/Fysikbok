@@ -1100,3 +1100,8 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Bildmarkeringarna** står som kommentarer på sina platser.
   - **Kontrollen:** `verktyg/kap1-ordagrant.js` prövar böckerna mot källorna och att kortens titlar och ordning
     stämmer. Negativt prövat med ett ändrat ord, en struken bildmarkering och en kortad korttitel: alla tre röda.
+  - **Jupiterfiguren (steg 2):** den första markeringen i "Jupiters månar och Saturnus ringar" ritas av
+    `himlakroppar_i_skala` efter kommentaren, med orderns data och bildtext (Jupiter 139 800 km, Io 3 640, Europa
+    3 120, Ganymedes 5 270, Kallisto 4 820). Storleken är figurtypens standard.
+    - Med `storst: 150` blev månarna större, men då krympte figuren på datorn och namnen blev cirka 12 px.
+    - Provboken (Tryck) har samma fall. Grinden mäter skalan i båda.

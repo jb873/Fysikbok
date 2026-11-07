@@ -83,6 +83,9 @@ Bok.niva('standard', {
         // Rymdfigurerna (kapitel I, order 9): andra data än i innehållet – grinden mäter skalan, lägena, pilarna, faserna och axlarna
         { typ: 'text', text: 'Provtext: himlakroppar i skala, tre provkroppar i två grupper.' },
         { typ: 'figur', id: 'himlakroppar-prov', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Prov A', diameter: 3000 }, { namn: 'Prov B', diameter: 1000, grupp: 1 }, { namn: 'Prov C', diameter: 2000, grupp: 1 }], storst: 60 },
+        // Jupiterfiguren (order 10, djupdykningen Jupiters månar och Saturnus ringar): en stor kropp och fyra små, en grupp
+        { typ: 'text', text: 'Provtext: Jupiter och de fyra stora månarna i samma skala.' },
+        { typ: 'figur', id: 'jupiter-prov', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Jupiter', diameter: 139800 }, { namn: 'Io', diameter: 3640 }, { namn: 'Europa', diameter: 3120 }, { namn: 'Ganymedes', diameter: 5270 }, { namn: 'Kallisto', diameter: 4820 }], bildtext: 'Provbildtext under Jupiter och månarna.' },
         { typ: 'text', text: 'Provtext: en avståndslinje i AE.' },
         { typ: 'figur', id: 'avstand-prov', namn: 'avstandslinje', kroppar: [{ namn: 'Prov 1', ae: 0.5 }, { namn: 'Prov 2', ae: 0.8 }, { namn: 'Prov 3', ae: 4 }], enhet: 'AE' },
         { typ: 'text', text: 'Provtext: tre personer på ett jordklot.' },

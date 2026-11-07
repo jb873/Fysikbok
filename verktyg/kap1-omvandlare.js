@@ -200,7 +200,11 @@ const DD = [
   { id: 'venus', fil: 'Kap1-DD-B-Venus-redigerad.md',
     avsnitt: ['tvilling', 'morgon-och-kvall', 'faser', 'vaxthuseffekt', 'dygn-och-ar', 'rymdsonder', 'klimatet'] },
   { id: 'jupiters-manar', fil: 'Kap1-DD-C-Jupiters-manar-och-Saturnus-ringar-redigerad.md',
-    avsnitt: ['galileos-upptackt', 'fyra-manar', 'europas-hav', 'saturnus-ringar', 'jatteplaneter', 'rymdsonder'] },
+    avsnitt: ['galileos-upptackt', 'fyra-manar', 'europas-hav', 'saturnus-ringar', 'jatteplaneter', 'rymdsonder'],
+    // Order 10 steg 2: den första markeringen (Jupiter och de fyra stora månarna i rätt storlek) ritas av motorn,
+    // med orderns data och bildtext. De andra markeringarna är kvar som kommentarer.
+    figurer: [{ id: 'bild-jupiter', typ: 'figur', namn: 'himlakroppar_i_skala',
+      kroppar: [['Jupiter', 139800], ['Io', 3640], ['Europa', 3120], ['Ganymedes', 5270], ['Kallisto', 4820]].map(([namn, diameter]) => ({ namn, diameter })),      bildtext: 'Jupiter och dess fyra stora månar i samma skala. Ganymedes är större än planeten Merkurius.' }] },
   { id: 'nedslag', fil: 'Kap1-DD-D-Nedslag-fran-rymden-redigerad.md',
     avsnitt: ['sma-foremal', '66-miljoner-ar', 'siljansringen', 'manen', 'asteroider'] }
 ];

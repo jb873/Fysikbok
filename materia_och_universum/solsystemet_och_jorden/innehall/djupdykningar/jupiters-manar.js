@@ -3,6 +3,7 @@
  * infört ordagrant i strömformatet: styckena före första ## = Inledningen (utan rubrik, som källan), ## = avsnitt,
  * ### = rubrik, ett stycke = ett textblock. Ingen Sammanfattning och inget länkblock. [BILD …] står som kommentar
  * på sin plats; eleven ser dem inte. Skriven av verktyg/kap1-omvandlare.js.
+ * Den första markeringen ritas av motorn efter kommentaren (himlakroppar_i_skala, order 10 steg 2).
  */
 Bok.niva('djupdykning', {
   avsnitt: [
@@ -23,8 +24,9 @@ Bok.niva('djupdykning', {
         { typ: 'text', text: 'Månarna fick namnen Io, Europa, Ganymedes och Kallisto, och kallas de galileiska månarna. Du kan se dem själv. Med en vanlig handkikare som du håller stadigt, gärna mot ett staket, syns de som små prickar bredvid Jupiter. Titta flera kvällar i rad och rita av vad du ser, så gör du samma observation som Galileo.' },
         { typ: 'rubrik', text: 'Jupiter är som ett litet solsystem' },
         { typ: 'text', text: 'Jupiter är så stor att mer än 1 300 jordklot skulle få plats inuti den. Dess gravitation håller nästan hundra månar i omloppsbana, på samma sätt som solens gravitation håller planeterna i sina banor. Av de fyra stora månarna ligger Io närmast och går runt Jupiter på mindre än två dygn. Kallisto ligger längst ut och behöver drygt två veckor.' },
-        { typ: 'text', text: 'Många tror att en måne alltid är en död, grå stenklump som vår egen måne, men så är det inte. Jupiters fyra stora månar skiljer sig lika mycket från varandra som planeterna gör. En är täckt av vulkaner, en annan av is, och flera kan ha hela hav under ytan.' }
+        { typ: 'text', text: 'Många tror att en måne alltid är en död, grå stenklump som vår egen måne, men så är det inte. Jupiters fyra stora månar skiljer sig lika mycket från varandra som planeterna gör. En är täckt av vulkaner, en annan av is, och flera kan ha hela hav under ytan.' },
         // [BILD: Jupiter med sina fyra största månar i rätt storlek jämfört med varandra. Io gulorange med vulkanfläckar, Europa ljus med mörka sprickor, Ganymedes brungrå med ljusare fält och Kallisto mörk och full av kratrar. Ingen text i bilden.]
+        { id: 'bild-jupiter', typ: 'figur', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Jupiter', diameter: 139800 }, { namn: 'Io', diameter: 3640 }, { namn: 'Europa', diameter: 3120 }, { namn: 'Ganymedes', diameter: 5270 }, { namn: 'Kallisto', diameter: 4820 }], bildtext: 'Jupiter och dess fyra stora månar i samma skala. Ganymedes är större än planeten Merkurius.' }
       ]
     },
     {
