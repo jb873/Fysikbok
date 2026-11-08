@@ -90,7 +90,11 @@ Bok.niva('fordjupning', {
           'Friktionen beror på *normalkraften|normalkraft*, inte på hur stor yta som ligger an. *Rullfriktion* är mycket mindre än glidfriktion.',
           '*Luftmotståndet|luftmotstånd* växer med farten, och därför finns en högsta fart.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] },
+        { typ: 'vidare', lankar: [
+          { text: '7. Friktionskoefficienten', bok: 'nasta-kraft-och-rorelse', ankare: 'friktionskoefficienten' },
+          { text: '6. Tyngden och fritt fall', bok: 'nasta-kraft-och-rorelse', ankare: 'tyngden-och-fritt-fall' }
+        ] }
       ]
     }
   ]

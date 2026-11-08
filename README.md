@@ -464,6 +464,7 @@ räkningen tror (fyllnaden skiljer cirka 1 %). Det ändrar inget här, men räkn
 | `rader` | `rader: [...]`: rader i följd (mellanled), var och en på sin rad. Mellanrummen står kvar. |
 | `numrerad` | `punkter: [...]`: en numrerad lista (en stegplan) |
 | `bokref`, `boklank` | länkar till en annan bok, se *Fristående böcker* |
+| `vidare` | `lankar: [{text, bok, ankare}]`: rutan "Vill du gå vidare?" sist i en Fördjupningsbok (arbetsorder 13). Rubriken och inledningen ("Läs mer i Nästa steg – gymnasiets kraft och rörelse:") är motorns. Länkarna skrivs av `verktyg/vidare-rutor.js`, och kontrolläget prövar att varje länk går till ett avsnitts början med det numret och den titeln. |
 | `tabell` | `rubriker?`, `rader: [[...]]`, `fotnot?`. Första kolumnen är radrubrik. |
 
 Ett block får ett eget `id` om det som eleven gör i det ska överleva att block flyttas (för interaktiva block senare).
@@ -1345,3 +1346,22 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Textboken v4** har 93 sidor i 1366×633, 93 i 1366×768 och 89 på mobilen. Brytningstiden (median, CPU×6) är
     cirka 140 ms efter den snabbare brytningen. Kontrolläget är grönt; den tunna sidan 9 i helskärm försvann med
     exempelregeln (se *Brytningen*).
+- **2026-11-08, länkar från Fördjupning till Nästa steg (arbetsorder 13, del 2):**
+  - **Rutan "Vill du gå vidare?"** står sist i varje Fördjupningsbok i Kraft och rörelse, efter Sammanfattningens
+    länkblock: "Läs mer i Nästa steg – gymnasiets kraft och rörelse:" och länkar som öppnar textboken vid avsnittet.
+    Länktexten är avsnittets nummer och titel. Rutan är motorns (blocktypen `vidare`), inte källtextens.
+  - **Kopplingen** står i `verktyg/vidare-rutor.js`, som skriver rutan i filerna och räknar länktexterna ur textboken.
+    Den följer ordern rakt av:
+    - III A Rörelse: 1. Storheter med riktning · 2. Medelhastighet och momentanhastighet · 3. Rörelsen i diagram ·
+      4. Acceleration
+    - III B Kraft och friktion: 7. Friktionskoefficienten · 6. Tyngden och fritt fall
+    - III C Kraft och motkraft: 5. Newtons andra lag · 8. Rörelsemängd och impuls
+    - III D Tyngdkraften: 6. Tyngden och fritt fall · 5. Newtons andra lag
+    - IV A Resulterande kraft: 1. Storheter med riktning · 5. Newtons andra lag
+    Avsnitt 9 och 10 (tryck och lyftkraft) har inga länkar än.
+  - **IV A** skrivs om av `kap3-omvandlare.js`, som lägger in rutan i Fördjupningen. Ordagrant-kontrollen godkänner
+    rutan bara sist i Fördjupningens Sammanfattning och bara med kopplingens länkar (prövat: en bytt länk ger FEL).
+  - **Avsnittssida IV** har textboken, övningsboken och Matematiken i fysiken som länkmål utan kort.
+  - **Grinden:** varje Fördjupningsbok med rutan öppnas, rutan står sist i boken, och varje länk öppnar textboken vid
+    avsnittet med det numret och den titeln. "↩ Tillbaka till" leder tillbaka. Negativt prov: `vidare-länk med fel
+    id` (`?kontroll&prova=vidare-fel`).

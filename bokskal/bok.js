@@ -64,7 +64,7 @@
   // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id), 'innehall' eller
   // 'omslag'. nr: sidan som visas – 0 är omslaget.
   // flytt räknas upp när blockens element flyttas mellan sidor (en ny brytning), så att sidorna byggs om.
-  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false, provaRuta = null, provaExempelHelt = false;
+  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false, provaRuta = null, provaExempelHelt = false, provaVidare = false;
   let tillbaka = null, vandning = 'blad', helskarm = true, reglage = 'alltid', vilaTimer = null;
   let fokusEfter = null, panelFran = null, senasteEsc = 0;
   const ui = {};
@@ -266,6 +266,12 @@
     d.lankar.map((l, i) => [i ? ' · ' : '', bokLank(l.bok, l.ankare, l.text)]));
   // {typ: 'boklank', bok}: en länk till en annan bok med dess titel (textboken → övningsboken)
   blocktyper.boklank = d => h('p', { class: 'b-boklank' }, bokLank(d.bok, null, null, true));
+  // Rutan "Vill du gå vidare?" sist i en Fördjupningsbok (arbetsorder 13, 2026-11-08): {typ: 'vidare', lankar: [{text, bok,
+  // ankare}]}. Rubriken och inledningen är motorns, inte källtextens; länkarna öppnar Nästa steg-textboken vid avsnittet,
+  // och texten är avsnittets nummer och titel (kontrolläget prövar det). Länkarna skrivs av verktyg/vidare-rutor.js.
+  const VIDARE_RUBRIK = 'Vill du gå vidare?', VIDARE_TEXT = 'Läs mer i Nästa steg – gymnasiets kraft och rörelse:';
+  blocktyper.vidare = d => h('aside', { class: 'b-ruta b-vidare' }, h('h4', null, VIDARE_RUBRIK), h('p', null, VIDARE_TEXT),
+    h('ul', { class: 'b-punkter vidare-lankar' }, d.lankar.map(l => h('li', null, bokLank(l.bok, l.ankare, l.text)))));
   blocktyper.tabell = d => h('div', { class: 'b-tabell' },
     h('table', null,
       d.rubriker && h('thead', null, h('tr', null, d.rubriker.map(r => h('th', { scope: 'col', html: symboler(inline(r)) })))),
@@ -348,6 +354,10 @@
       const poster = a.nummer ? [{ typ: 'avsnittsstart', id: a.id + '-start', avsnitt: a }] : [];
       // Blockens id i strömformatet: avsnitt-id-b<n>. Rubrikernas adresser är avsnitt-id-<n> (byggBok), och en
       // läsplats slås upp bland adresserna först – utan b skulle block 7 vara samma namn som rubrik 7.
+      // Provkrok för grindens negativa prov (bara med ?kontroll&prova=vidare-fel, arbetsorder 13): den första länken i
+      // rutan "Vill du gå vidare?" får ett avsnitt som inte finns
+      if (provaVidare && Array.isArray(a.block)) a.block = a.block.map(b => b.typ === 'vidare' && b.lankar.length
+        ? Object.assign({}, b, { lankar: [Object.assign({}, b.lankar[0], { ankare: 'finns-inte' }), ...b.lankar.slice(1)] }) : b);
       if (Array.isArray(a.block)) a.block.forEach((b, j) => {
         // EXEMPEL ({typ: 'exempel', rubrik, stycken: [[rad, …], …]}) och PROVA ({typ: 'prova', rader}): en post per rad
         // (blocktyper.rutarad). Raderna hålls ihop i brytningen (enheter, paginera).
@@ -1774,11 +1784,18 @@
       if (b.typ === 'lank') [].concat(b.till || []).filter(id => !ids.includes(id))
         .forEach(id => ut.problem.push(`${kalla}: länk till okänt hjälpmedel ”${id}”`));
       // en länk till en annan bok: boken finns på den här avsnittssidan, och avsnittet finns i den
-      [].concat(b.typ === 'bokref' ? b.lankar.filter(l => l.bok) : b.typ === 'boklank' ? [{ bok: b.bok, text: b.bok }] : []).forEach(l => {
+      // (rutan "Vill du gå vidare?", arbetsorder 13: länken går till ett avsnitts början, och texten är avsnittets nummer
+      // och titel)
+      const vid = b.typ === 'vidare' ? `rutan ”${VIDARE_RUBRIK}”: ` : '';
+      [].concat(b.typ === 'bokref' ? b.lankar.filter(l => l.bok) : b.typ === 'boklank' ? [{ bok: b.bok, text: b.bok }] : b.typ === 'vidare' ? b.lankar : []).forEach(l => {
         const ex = extraFor(l.bok);
-        if (!ex) ut.problem.push(`${kalla}: länken ”${l.text}” går till boken ”${l.bok}”, som inte finns på avsnittssidan`);
-        else if (l.ankare && harInnehall(ex.slag.niva.id, l.bok) && !byggBok(ex.slag.niva.id, l.bok).ankare.has(l.ankare))
-          ut.problem.push(`${kalla}: länken ”${l.text}” går till ”${l.ankare}”, som inte finns i ${ex.titel}`);
+        if (!ex) ut.problem.push(`${kalla}: ${vid}länken ”${l.text}” går till boken ”${l.bok}”, som inte finns på avsnittssidan`);
+        else if (l.ankare && harInnehall(ex.slag.niva.id, l.bok)) {
+          const mal = byggBok(ex.slag.niva.id, l.bok).ankare.get(l.ankare);
+          if (!mal) ut.problem.push(`${kalla}: ${vid}länken ”${l.text}” går till ”${l.ankare}”, som inte finns i ${ex.titel}`);
+          else if (vid && (mal.typ !== 'avsnittsstart' || `${mal.avsnitt.nummer}. ${mal.avsnitt.titel}` !== l.text))
+            ut.problem.push(`${kalla}: ${vid}länken ”${l.text}” går till ”${mal.avsnitt.nummer ? mal.avsnitt.nummer + '. ' : ''}${mal.avsnitt.titel}”` + (mal.typ !== 'avsnittsstart' ? ' (inte ett avsnitts början)' : ''));
+        }
       });
       // En läsplats (ett block-id) slås upp bland adresserna först: samma namn som en annan rubriks adress ger fel plats
       const a = bok.ankare.get(p.id);
@@ -1875,6 +1892,7 @@
       provaRubrikSist = kontroll && adress.get('prova') === 'rubrik-sist';   // grindens negativa prov, se paginera
       provaLangsam = kontroll && adress.get('prova') === 'langsam';
       provaRuta = kontroll && ['formel-skild', 'exempel-delat', 'svar-ensam', 'prova-delad', 'exempel-mellanled'].includes(adress.get('prova')) ? adress.get('prova') : null;
+      provaVidare = kontroll && adress.get('prova') === 'vidare-fel';           // rutan "Vill du gå vidare?" (arbetsorder 13)
       provaExempelHelt = kontroll && adress.get('prova') === 'exempel-helt';    // exempelregeln avstängd (arbetsorder 13)
       // Bladvändning På (blad) eller Av (direkt); den som valt "Snabb" (före 2026-11-04) får På
       vandning = lager.hamta(nyckel('vandning'), 'blad') === 'direkt' ? 'direkt' : 'blad';

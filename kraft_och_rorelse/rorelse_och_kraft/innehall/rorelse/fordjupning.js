@@ -82,7 +82,13 @@ Bok.niva('fordjupning', {
           'Farten räknas ut som v = s/t. 1 m/s = 3,6 km/h.',
           '*Medelfarten* räknas ut med hela sträckan och hela tiden – inte som medelvärdet av farterna.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] },
+        { typ: 'vidare', lankar: [
+          { text: '1. Storheter med riktning', bok: 'nasta-kraft-och-rorelse', ankare: 'storheter-med-riktning' },
+          { text: '2. Medelhastighet och momentanhastighet', bok: 'nasta-kraft-och-rorelse', ankare: 'medelhastighet' },
+          { text: '3. Rörelsen i diagram', bok: 'nasta-kraft-och-rorelse', ankare: 'rorelsen-i-diagram' },
+          { text: '4. Acceleration', bok: 'nasta-kraft-och-rorelse', ankare: 'acceleration' }
+        ] }
       ]
     }
   ]

@@ -75,7 +75,11 @@ Bok.niva('fordjupning', {
           'En kraft kan delas upp i två delar, till exempel tyngdkraften i en backe eller dragkraften i ett snett rep.',
           'Ett spänt snöre med en tyngd kan aldrig bli helt rakt, eftersom kraften i snöret då skulle bli oändligt stor.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] },
+        { typ: 'vidare', lankar: [
+          { text: '1. Storheter med riktning', bok: 'nasta-kraft-och-rorelse', ankare: 'storheter-med-riktning' },
+          { text: '5. Newtons andra lag', bok: 'nasta-kraft-och-rorelse', ankare: 'newtons-andra-lag' }
+        ] }
       ]
     }
   ]

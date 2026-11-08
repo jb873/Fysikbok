@@ -8,6 +8,7 @@
 // stycken, punkter. Enkel/Fördjupning: tecken för tecken (med markeringarna). Standard: utan markeringarna, och
 // markeringarna ska vara det enda som skiljer. Bildmarkeringarna ska finnas som kommentarer i samma ordning.
 const fs = require('fs'), path = require('path');
+const VIDARE = require('./vidare-rutor.js');       // rutan "Vill du gå vidare?" i Fördjupningen (arbetsorder 13, del 2)
 const MAPP = process.argv[2] || path.join(__dirname, '..', 'materia_och_universum', 'solsystemet_och_jorden', 'innehall');
 const DL = path.join(__dirname, '..', 'kallor', 'kap1') + path.sep;
 const TEXTER = [['A', 'solsystemet', 'Kap1-Avsnitt1-A-Solsystemet-Enkel-Fordjupning.md'], ['B', 'himlakroppar', 'Kap1-Avsnitt1-B-Himlakroppar-Enkel-Fordjupning.md'],
@@ -221,6 +222,7 @@ for (const B of NS) {
         else if (b.typ === 'formel') f.push(`FORMEL ${b.uttryck} – ${b.forklaring}`);
         else if (b.typ === 'ruta') f.push('RUTA ' + b.rubrik + ': ' + b.punkter.join(' / '));
         else if (b.typ === 'lank') f.push('LANK ' + b.till.join(','));
+        else if (b.typ === 'vidare') f.push('VIDARE ' + b.lankar.map(l => `${l.text} → ${l.bok}/${l.ankare}`).join(' · '));
         else if (b.typ !== 'figur') f.push('OKÄNT ' + b.typ); } }
     const k = kalla(delar[niva] || []), tFel = [], seq = f.slice();
     // tilläggen på sina platser
@@ -230,6 +232,14 @@ for (const B of NS) {
     if (seq[nInl - 1] === RUTA_T) seq.splice(nInl - 1, 1); else tFel.push('rutan står inte sist i Inledningen');
     const iSam = seq.indexOf('AVSNITT Sammanfattning onumrerad');
     if (seq[iSam - 1] === 'LANK ova,sjalvskattning') seq.splice(iSam - 1, 1); else tFel.push('länkblocket står inte sist i det sista numrerade avsnittet');
+    // Fördjupning (arbetsorder 13, del 2): rutan "Vill du gå vidare?" sist i Sammanfattningen, med kopplingens länkar
+    // (verktyg/vidare-rutor.js) – och ingen annanstans
+    if (niva === 'fordjupning') {
+      const vb = VIDARE.block('kraft_och_rorelse/fall_kast_och_balans/innehall/resulterande-kraft/fordjupning.js');
+      const vant = 'VIDARE ' + vb.lankar.map(l => `${l.text} → ${l.bok}/${l.ankare}`).join(' · ');
+      if (seq[seq.length - 1] === vant) seq.pop(); else tFel.push('rutan "Vill du gå vidare?" står inte sist i Sammanfattningen med länkarna ' + vant.slice(7));
+    }
+    if (seq.some(x => x.startsWith('VIDARE '))) tFel.push('rutan "Vill du gå vidare?" står på fel plats');
     const iSam2 = seq.indexOf('AVSNITT Sammanfattning onumrerad');
     if (seq[seq.length - 1] === 'LANK ova,sjalvskattning,elevbok' && iSam2 >= 0) seq.pop(); else tFel.push('länkblocket står inte sist i Sammanfattningen');
     const ok = k.ut.length === seq.length && k.ut.every((x, i) => x === seq[i]);
@@ -244,5 +254,5 @@ for (const B of NS) {
 console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.' +
   '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.' +
   '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.' +
-  '\nKraft och rörelse IV A (Resulterande kraft, tre nivåer) ordagrant mot källan, med rutan och länkblocken enligt III:s norm och inget annat.');
+  '\nKraft och rörelse IV A (Resulterande kraft, tre nivåer) ordagrant mot källan, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.');
 process.exitCode = fel ? 1 : 0;

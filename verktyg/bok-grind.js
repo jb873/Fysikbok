@@ -70,7 +70,10 @@ const FEL = {
   // Exempelregeln (arbetsorder 13): ett exempel delat före ett mellanled ska ge rött, och utan regeln (exemplet hålls
   // helt) blir sidan före exemplet i provbokens avsnitt "Provexempel efter ett kort stycke" tunn i alla lägen
   'exempel delat i ett mellanled': { adress: '&prova=exempel-mellanled', dk: 'provbok', regel: /mellanled/ },
-  'exempel helt fast sidan blir tunn': { adress: '&prova=exempel-helt', dk: 'provbok', regel: /fylld/ }
+  'exempel helt fast sidan blir tunn': { adress: '&prova=exempel-helt', dk: 'provbok', regel: /fylld/ },
+  // Rutan "Vill du gå vidare?" (arbetsorder 13, del 2): motorns provkrok ger den första länken i varje ruta ett id som
+  // inte finns i textboken – kontrolläget och grindens prov av länkarna ska ge rött
+  'vidare-länk med fel id': { adress: '&prova=vidare-fel', dk: 'rorelse_och_kraft', regel: /vidare/i }
 };
 // --negativ=<del av namnet>: bara de negativa proven vars namn innehåller texten
 const NEGATIV_BARA = (process.argv.find(a => a.startsWith('--negativ=')) || '').slice(10);
@@ -697,6 +700,56 @@ const FRISTAENDE = String.raw`
     !lFel.length && stangd(), lFel.join(' | '));
 `;
 
+/* ---------- Rutan "Vill du gå vidare?" (arbetsorder 13, del 2) ----------
+ * Klistras in i scenariot för delkapitel med texter. Varje Fördjupningsbok öppnas från hubben; har den rutan ska den stå
+ * sist i boken (bara upphovsraden efter), med rubriken och inledningen. Varje länk i rutan öppnar Nästa steg-textboken
+ * vid avsnittet: adressen är bokens och avsnittets, avsnittets början syns, och avsnittets nummer och titel är länkens
+ * text. "↩ Tillbaka till <boken>" leder tillbaka till rutan. */
+const VIDARE = String.raw`
+  {
+    const vFel = [], vProv = [];
+    const kn = JSON.parse(document.body.dataset.kontroll).nivaer;
+    const fordj = Object.keys(kn).filter(k => /\/fordjupning$/.test(k) && typeof kn[k] === 'object').map(k => k.split('/')[0]);
+    const nivKnapp = n => $$('section[data-flik="laes"] > .niva-valjare > button.niva-knapp').find(b => b.dataset.niva === n);
+    const niva0 = ($('section[data-flik="laes"] > .niva-valjare > button.niva-knapp.aktiv') || { dataset: {} }).dataset.niva;
+    let rutor = 0;
+    if (nivKnapp('fordjupning')) for (const t of fordj) {
+      await klicka(nivKnapp('fordjupning'), 150);
+      const knapp = $$('.underdel-knapp[data-oppna]').find(b => b.dataset.text === t); if (!knapp) continue;
+      await gest(knapp, 900);
+      const n = $$('.lr-sida').length; let sida = 0;
+      for (let s = n; s >= Math.max(1, n - 4) && !sida; s--) { Bok.gaTill(s); await v(40); if ($$('.scen .b-vidare').some(e => e.offsetParent !== null)) sida = s; }
+      if (!sida) { await klicka(synlig('.bok-stang'), 450); continue; }
+      rutor++;
+      const ruta = $$('.scen .b-vidare').find(e => e.offsetParent !== null), efter = [];
+      for (let e = ruta.nextElementSibling; e; e = e.nextElementSibling) if (!e.matches('.upphov')) efter.push(e.className || e.tagName);
+      if (sida !== n || efter.length) vFel.push(t + ': rutan står inte sist i boken (s.' + sida + ' av ' + n + (efter.length ? ', efter den: ' + efter.join(', ') : '') + ')');
+      const rub = (ruta.querySelector('h4') || {}).textContent, inl = (ruta.querySelector('p') || {}).textContent;
+      if (rub !== 'Vill du gå vidare?' || inl !== 'Läs mer i Nästa steg – gymnasiets kraft och rörelse:') vFel.push(t + ': rubriken/inledningen ”' + rub + '” / ”' + inl + '”');
+      const antal = ruta.querySelectorAll('a.bok-lank').length;
+      if (!antal) vFel.push(t + ': rutan har inga länkar');
+      for (let i = 0; i < antal; i++) {
+        Bok.gaTill(sida); await v(80);
+        const lank = $$('.scen .b-vidare a.bok-lank').filter(a => a.offsetParent !== null)[i];
+        const fore = Bok.plats, mal = lank.dataset.bok, ankare = lank.dataset.ankare, text = lank.textContent.trim();
+        await klicka(lank, 450);
+        const start = synlig('.scen [data-post="' + ankare + '-start"]');
+        const namn = start ? (start.querySelector('.avsnittsnr').textContent.trim() + '. ' + start.querySelector('h1').textContent.trim()) : '';
+        if (!oppen() || location.hash !== '#' + mal + '/' + ankare || !start || namn !== text)
+          vFel.push(t + ' → ”' + text + '”: ' + location.hash + ', ' + (start ? 'avsnittet heter ”' + namn + '”' : 'avsnittets början syns inte'));
+        const chip = synlig('.tillbaka-chip:not([hidden])');
+        if (chip) await klicka(chip, 450); else vFel.push(t + ' → ”' + text + '”: inget tillbaka-chip');
+        if (Bok.plats !== fore) vFel.push(t + ' → ”' + text + '”: tillbaka hamnade på ' + Bok.plats + ' (väntat ' + fore + ')');
+        vProv.push(t + ' → ' + text);
+      }
+      await klicka(synlig('.bok-stang'), 450);
+    }
+    if (niva0 && nivKnapp(niva0)) await klicka(nivKnapp(niva0), 150);
+    if (rutor) prova('vidare: rutan "Vill du gå vidare?" står sist i Fördjupningen, och varje länk öppnar Nästa steg-textboken vid avsnittet med det numret och den titeln; Tillbaka leder tillbaka (' + rutor + ' rutor, ' + vProv.length + ' länkar: ' + vProv.join('; ') + ')',
+      !vFel.length && stangd(), vFel.join(' | '));
+  }
+`;
+
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
 
 const SCENARIO = String.raw`async (helskarmLage) => {
@@ -1038,6 +1091,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
       !ddFel.length, ddFel.join(' | ') || ddKort().map(b => b.dataset.text).join(', '));
   }
   ${FRISTAENDE}
+  ${VIDARE}
   if (spar.some(x => x.antal)) prova('figur: rörelsespårens avstånd följer rörelsetypen (' + spar.map(x => x.antal).join(' + ') + ' spår)',
     spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   if (spar.some(x => x.par.antal)) prova('figur: kraftparens pilar är lika långa, motriktade och börjar i var sitt föremåls mitt (' + spar.map(x => x.par.antal).join(' + ') + ' par)',

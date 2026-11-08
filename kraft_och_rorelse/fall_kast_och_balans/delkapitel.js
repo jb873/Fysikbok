@@ -29,6 +29,19 @@ Bok.delkapitel({
     { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }
   ],
 
+  // Nästa steg (arbetsorder 13, del 2): textboken finns här utan kort, som mål för länkarna i rutan "Vill du gå vidare?"
+  // sist i Fördjupningen – och övningsboken och Matematiken i fysiken, som textboken i sin tur länkar till. Böckerna är
+  // III:s (samma id: samma bok, men läsplatsen sparas per avsnittssida).
+  nastaSteg: [
+    { id: 'kraft-och-rorelse', titel: 'Nästa steg · Kraft och rörelse – textbok', fil: '../rorelse_och_kraft/innehall/nasta-steg/textbok.js', kort: false }
+  ],
+  ovningsbocker: [
+    { id: 'kraft-och-rorelse', titel: 'Nästa steg · Kraft och rörelse – övningsbok', fil: '../rorelse_och_kraft/innehall/nasta-steg/ovningsbok.js', kort: false }
+  ],
+  stodbocker: [
+    { id: 'matematiken', titel: 'Matematiken i fysiken', fil: '../../nasta_steg/matematiken_i_fysiken/innehall/matematiken.js' }
+  ],
+
   // Plattformens hjälpmedel. Utan adress är de synliga, märkta "kommer" och inte klickbara.
   hjalpmedel: {
     forelasning:    { href: null },

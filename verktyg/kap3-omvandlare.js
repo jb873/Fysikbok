@@ -23,6 +23,7 @@ const NIVAER = [['STANDARD', 'standard', '📘'], ['ENKEL', 'enkel', '📗'], ['
 const RUTA = { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: ['Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
   'Klicka i innehållet för att gå till en sida.', 'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'] };
 const fel = [];
+const VIDARE = require('./vidare-rutor.js');      // rutan "Vill du gå vidare?" sist i Fördjupningen (arbetsorder 13)
 
 const r = fs.readFileSync(KALLA, 'utf8').replace(/\r/g, '').split('\n');
 // de tre delarna (FIGURER-delen sist hör inte till någon bok)
@@ -69,6 +70,9 @@ function las(rad, niva) {
     inl.block.push(Object.assign({}, RUTA));
     numr[numr.length - 1].block.push({ typ: 'lank', till: ['ova', 'sjalvskattning'] });
     sam.block.push({ typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] });
+    // Fördjupning (arbetsorder 13, del 2): rutan "Vill du gå vidare?" sist i Sammanfattningen – länkarna till Nästa steg
+    // ur kopplingen i verktyg/vidare-rutor.js
+    if (niva === 'fordjupning') sam.block.push(VIDARE.block(MAPP + '/fordjupning.js'));
   }
   return avs;
 }
@@ -90,6 +94,7 @@ function blockText(b) {
   if (['punkter', 'numrerad'].includes(b.typ)) return `        { typ: '${b.typ}', punkter: [\n` + b.punkter.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'ruta') return `        { typ: 'ruta', rubrik: ${q(b.rubrik)}, punkter: [\n` + b.punkter.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'rader') return `        { typ: 'rader', rader: [\n` + b.rader.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
+  if (b.typ === 'vidare') return VIDARE.blockRad(b);
   return '        ' + js(b);
 }
 for (const [kod, n, ikon] of NIVAER) {

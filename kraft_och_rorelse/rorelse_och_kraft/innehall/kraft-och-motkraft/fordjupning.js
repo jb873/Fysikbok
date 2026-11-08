@@ -85,7 +85,11 @@ Bok.niva('fordjupning', {
           'Lika stora krafter ger olika rörelser om massorna är olika.',
           'I en dragkamp avgör friktionen mot marken, inte vem som drar hårdast.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] },
+        { typ: 'vidare', lankar: [
+          { text: '5. Newtons andra lag', bok: 'nasta-kraft-och-rorelse', ankare: 'newtons-andra-lag' },
+          { text: '8. Rörelsemängd och impuls', bok: 'nasta-kraft-och-rorelse', ankare: 'rorelsemangd' }
+        ] }
       ]
     }
   ]
