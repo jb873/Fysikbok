@@ -34,6 +34,8 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'En bil har fått motorstopp. Två personer skjuter på den bakifrån. Den ena skjuter med 300 N och den andra med 200 N. Båda skjuter framåt, så de hjälps åt.' },
         { typ: 'text', text: 'Då lägger man ihop krafterna: 300 N + 200 N = 500 N. Den resulterande kraften är alltså 500 N, och den pekar framåt. Ritar man krafterna som pilar sätter man den ena pilen direkt efter den andra. Tillsammans blir de en lång pil.' },
         // [BILD R1: krafter åt samma håll och åt motsatt håll]
+        { id: 'bild-r1-samma', typ: 'figur', namn: 'kraftpilar', kedja: true, rod: true, resultant: true, krafter: [{ riktning: 'hoger', storlek: 300 }, { riktning: 'hoger', storlek: 200 }] },
+        { id: 'bild-r1-motsatt', typ: 'figur', namn: 'kraftpilar', rod: true, resultant: true, krafter: [{ riktning: 'vanster', storlek: 300 }, { riktning: 'hoger', storlek: 250 }] },
         { typ: 'rubrik', text: 'Två krafter åt motsatt håll motverkar varandra' },
         { typ: 'text', text: 'Nu tänker vi oss en dragkamp. Laget till vänster drar med 300 N. Laget till höger drar med 250 N. Krafterna drar åt var sitt håll, så de motverkar varandra.' },
         { typ: 'text', text: 'Då räknar man ut skillnaden: 300 N − 250 N = 50 N. Den resulterande kraften är alltså 50 N. Den pekar åt vänster, mot laget som drar hårdast. När två krafter drar åt motsatt håll pekar den resulterande kraften alltid åt den största kraftens håll.' },
@@ -64,6 +66,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Nu flyttar du pilen på 50 N. Du ritar den igen, men nu ska den börja där pilen på 40 N slutar, vid spetsen.' },
         { typ: 'text', text: 'Det viktiga är att pilen är precis likadan efter flytten. Den ska vara lika lång och peka åt exakt samma håll. Du flyttar den, men du vrider den inte. Räkna rutorna: pilen ska gå 3 rutor åt höger och 4 rutor uppåt, precis som förut.' },
         // [BILD R2: att rita den resulterande kraften på rutat papper, i tre steg]
+        { id: 'bild-r2', typ: 'figur', namn: 'resultant_rutor', lage: 'steg', krafter: [{ dx: 4, dy: 0, namn: '40 N' }, { dx: 3, dy: 4, namn: '50 N' }], resultant: { namn: '≈ 81 N' }, rubriker: ['1. Båda krafterna från samma punkt', '2. Flytta 50 N till spetsen av 40 N', '3. Resultanten från start till slut'], bildtext: 'Skala: 1 ruta = 10 N. 50 N = 3 rutor höger + 4 rutor upp. Resultanten = 7 rutor höger + 4 rutor upp ≈ 8,1 rutor ≈ 81 N.' },
         { typ: 'rubrik', text: 'Steg 3: Rita pilen från start till slut' },
         { typ: 'text', text: 'Nu ritar du en ny pil. Den börjar i pricken där du startade. Den slutar vid spetsen av pilen som du flyttade. Den nya pilen är den resulterande kraften.' },
         { typ: 'text', text: 'Mät hur lång pilen är. I exemplet blir den ungefär 8 rutor lång. En ruta är 10 N, så den resulterande kraften är ungefär 80 N. Det är mindre än 90 N, precis som vi trodde. Pilen pekar snett framåt.' },
@@ -74,6 +77,7 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'Ju mer krafterna drar isär, desto mindre blir den resulterande kraften' },
         { typ: 'text', text: 'Tänk dig två krafter som är 100 N var. Drar de åt exakt samma håll blir de 200 N tillsammans. Drar de lite isär, med vinkeln 45°, blir de ungefär 185 N. Drar de rakt åt sidan från varandra, med vinkeln 90°, blir de ungefär 140 N. Drar de rakt mot varandra, med vinkeln 180°, blir det noll.' },
         // [BILD R3: två krafter på 100 N med vinkeln 0°, 45°, 90° och 180°]
+        { id: 'bild-r3', typ: 'figur', namn: 'resultant_rutor', lage: 'vinklar', kraft: 100, vinklar: [0, 45, 90, 180], bildtext: 'Två krafter på 100 N. Ju större vinkel, desto mindre resulterande kraft.' },
         { typ: 'text', text: 'Ju mer krafterna drar isär, desto mer av kraften drar åt sidorna i stället för framåt. Därför går man bredvid varandra när man är två som drar en tung släde. Då drar båda nästan åt samma håll, och släden får nästan all kraft.' },
         { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]

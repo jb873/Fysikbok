@@ -165,7 +165,7 @@ async function chrome() {
  *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -394,6 +394,94 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         ng.set(id, { typ, minPx: Math.min(...tx.map(x => x[2])), fel: f_ });
       });
+      // Resulterande kraft (Kraft och rörelse IV A, arbetsorder 12), mätt i figurernas egna element:
+      //  - resultant_rutor steg: varje pil börjar och slutar i ett rutnätshörn; den flyttade F₂ har samma komposanter som
+      //    F₂ i det första steget; resultanten går från startpunkten till den flyttade pilens spets;
+      //  - resultant_rutor vinklar: resultantens längd på skärmen = kraftens pil × det uträknade värdet / kraften (±1 px);
+      //  - resultant_rutor komposanter: komposanterna längs rutlinjerna, från pilens början till dess spets;
+      //  - kraftpilar: pilarnas längder i proportion till krafterna (±1 %), och resultanten = summan med tecken (en kedja:
+      //    från den första pilens början till den sista spetsen); med komposanter: sidodelarna tar ut varandra och
+      //    uppåtdelarna är tillsammans lika med den nedåtriktade kraften (lampan i två snören).
+      $$('.scen svg[data-resultant-rutor], .scen svg[data-kraftpilar]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (rk.has(id)) return;
+        const f_ = [], N = 0.6, nara = (a, b, t = N) => Math.abs(a - b) <= t;
+        const pilAv = g => { const l = g.querySelector('line.fig-pil'), t = g.querySelector('polygon.fig-pilspets'), c = g.querySelector('circle');
+          if (!l) return c ? { a: [c.cx.baseVal.value, c.cy.baseVal.value], b: [c.cx.baseVal.value, c.cy.baseVal.value] } : null;
+          return { a: [l.x1.baseVal.value, l.y1.baseVal.value], b: [t.points[0].x, t.points[0].y] }; };
+        const vek = p => [p.b[0] - p.a[0], p.b[1] - p.a[1]], langd = p => Math.hypot(...vek(p));
+        let typ;
+        if (s.dataset.resultantRutor) {
+          typ = 'resultant_rutor ' + s.dataset.resultantRutor;
+          if (s.dataset.resultantRutor === 'steg') {
+            const steg = [...s.querySelectorAll('g.fig-rr-steg')], f2 = [];
+            if (steg.length !== 3) f_.push(steg.length + ' steg');
+            steg.forEach((g, i) => {
+              const L = [...g.querySelectorAll('line.fig-rutnat')], vx = L.filter(l => nara(l.x1.baseVal.value, l.x2.baseVal.value)).map(l => l.x1.baseVal.value),
+                hy = L.filter(l => nara(l.y1.baseVal.value, l.y2.baseVal.value)).map(l => l.y1.baseVal.value);
+              const horn = ([x, y]) => vx.some(v => nara(v, x)) && hy.some(v => nara(v, y));
+              const P = [...g.querySelectorAll('g.fig-rr-pil')].map(e => Object.assign(pilAv(e), { e }));
+              P.forEach(p => { if (!horn(p.a) || !horn(p.b)) f_.push('steg ' + (i + 1) + ': en pil börjar eller slutar inte i ett rutnätshörn'); });
+              const F1 = P.find(p => p.e.dataset.kraft === '1'), F2 = P.find(p => p.e.dataset.kraft === '2'), R = P.find(p => p.e.hasAttribute('data-resultant'));
+              if (F2) f2.push(vek(F2));
+              if (i > 0 && F1 && F2 && (!nara(F2.a[0], F1.b[0]) || !nara(F2.a[1], F1.b[1]))) f_.push('steg ' + (i + 1) + ': F₂ börjar inte vid spetsen av F₁');
+              if (i === 2 && (!R || !nara(R.a[0], F1.a[0]) || !nara(R.a[1], F1.a[1]) || !nara(R.b[0], F2.b[0]) || !nara(R.b[1], F2.b[1]))) f_.push('steg 3: resultanten går inte från start till den flyttade pilens spets');
+            });
+            if (f2.length === 3 && f2.slice(1).some(v => !nara(v[0], f2[0][0]) || !nara(v[1], f2[0][1]))) f_.push('F₂ har inte samma komposanter efter flytten (' + f2.map(v => v.map(x => x.toFixed(1)).join(',')).join(' / ') + ')');
+          } else if (s.dataset.resultantRutor === 'vinklar') {
+            const k = s.getBoundingClientRect().width / s.viewBox.baseVal.width;
+            s.querySelectorAll('g.fig-rr-vinkel').forEach(g => {
+              const F1 = pilAv(g.querySelector('g.fig-rr-pil[data-kraft="1"]')), R = pilAv(g.querySelector('g.fig-rr-pil[data-resultant]'));
+              const vantat = langd(F1) * k * +g.dataset.varde / +g.dataset.kraft, fick = langd(R) * k;
+              if (Math.abs(vantat - fick) > 1) f_.push(g.dataset.vinkel + '°: resultanten är ' + fick.toFixed(1) + ' px, ska vara ' + vantat.toFixed(1) + ' px (' + g.dataset.varde + ' av ' + g.dataset.kraft + ')');
+            });
+          } else if (s.dataset.resultantRutor === 'komposanter') {
+            const g = s.querySelector('g.fig-rr-komp'), P = pilAv(g.querySelector('g.fig-rr-pil[data-kraft="1"]'));
+            const cx = g.querySelector('line.fig-komposant[data-komposant="x"]'), cyl = g.querySelector('line.fig-komposant[data-komposant="y"]');
+            const L = [...g.querySelectorAll('line.fig-rutnat')], vx = L.filter(l => nara(l.x1.baseVal.value, l.x2.baseVal.value)).map(l => l.x1.baseVal.value),
+              hy = L.filter(l => nara(l.y1.baseVal.value, l.y2.baseVal.value)).map(l => l.y1.baseVal.value);
+            const pa = l => [l.x1.baseVal.value, l.y1.baseVal.value, l.x2.baseVal.value, l.y2.baseVal.value];
+            const [ax1, ay1, ax2, ay2] = pa(cx), [bx1, by1, bx2, by2] = pa(cyl);
+            if (!nara(ay1, ay2) || !hy.some(v => nara(v, ay1))) f_.push('komposanten åt sidan går inte längs en rutlinje');
+            if (!nara(bx1, bx2) || !vx.some(v => nara(v, bx1))) f_.push('komposanten uppåt går inte längs en rutlinje');
+            if (!nara(ax1, P.a[0]) || !nara(ay1, P.a[1]) || !nara(ax2, bx1) || !nara(ay2, by1) || !nara(bx2, P.b[0]) || !nara(by2, P.b[1])) f_.push('komposanterna går inte från pilens början till dess spets');
+          }
+        } else {
+          typ = 'kraftpilar' + (s.dataset.kraftpilar === 'kedja' ? ' (kedja)' : s.dataset.kraftpilar === 'lampa' ? ' (lampa)' : '');
+          const K = [...s.querySelectorAll('g.fig-kraft')].map(e => Object.assign(pilAv(e), { m: +e.dataset.storlek, g: +e.dataset.g, res: e.hasAttribute('data-resultant'), e }));
+          const F = K.filter(p => !p.res), R = K.find(p => p.res);
+          // längderna i proportion (pilar som har sin minsta längd, 16, räknas inte)
+          const kvot = F.filter(p => langd(p) > 16.5 && p.m).map(p => langd(p) / p.m), hi = Math.max(...kvot), lo = Math.min(...kvot);
+          if (kvot.length > 1 && (hi - lo) / hi > 0.01) f_.push('pilarnas längder står inte i proportion till krafterna');
+          if (R) {
+            const k = kvot.length ? kvot[0] : 1, sum = F.reduce((a, p) => [a[0] + vek(p)[0], a[1] + vek(p)[1]], [0, 0]), r = vek(R);
+            // (bara när ingen pil har sin minsta längd: då står längderna inte i proportion)
+            if (langd(R) > 16.5 && F.every(p => langd(p) > 16.5) && (!nara(r[0], sum[0], 1) || !nara(r[1], sum[1], 1))) f_.push('resultanten är inte summan av krafterna (' + r.map(x => x.toFixed(1)) + ' / ' + sum.map(x => x.toFixed(1)) + ')');
+            if (s.dataset.kraftpilar === 'kedja' && (!nara(R.a[0], F[0].a[0]) || !nara(R.b[0], F[F.length - 1].b[0]))) f_.push('resultanten går inte från den första pilens början till den sista spetsen (i sidled)');
+            if (Math.abs(+R.e.dataset.storlek - Math.hypot(...[F.reduce((a, p) => a + p.m * Math.cos(p.g * Math.PI / 180), 0), F.reduce((a, p) => a + p.m * Math.sin(p.g * Math.PI / 180), 0)])) > 0.02) f_.push('resultantens värde är inte summan med tecken');
+          }
+          if (s.dataset.kraftpilar === 'kedja') F.slice(1).forEach((p, i) => { if (!nara(p.a[0], F[i].b[0]) || !nara(p.a[1], F[i].b[1])) f_.push('pil ' + (i + 2) + ' börjar inte vid spetsen av pil ' + (i + 1)); });
+          const komp = [...s.querySelectorAll('line.fig-komposant')];
+          if (komp.length) {
+            const sx = komp.filter(l => l.dataset.komposant === 'x').map(l => l.x2.baseVal.value - l.x1.baseVal.value);
+            const sy = komp.filter(l => l.dataset.komposant === 'y').map(l => l.y1.baseVal.value - l.y2.baseVal.value);
+            const ner = F.filter(p => nara(p.g, 270, 0.01)).reduce((a, p) => a + langd(p), 0);
+            if (Math.abs(sx.reduce((a, b) => a + b, 0)) > 1 || sx.length < 2) f_.push('snörkrafternas sidodelar tar inte ut varandra (' + sx.map(x => x.toFixed(1)).join(', ') + ')');
+            if (Math.abs(sy.reduce((a, b) => a + b, 0) - ner) > 1) f_.push('snörkrafternas uppåtdelar (' + sy.map(x => x.toFixed(1)).join(' + ') + ') är inte lika med tyngdkraften (' + ner.toFixed(1) + ')');
+          }
+        }
+        // texterna: inga utanför figuren eller över en annan; i resultant_rutor ingen under 14 px (kraftpilar har sin
+        // egen textstorlek sedan förut, som i III:s figurer)
+        if (s.dataset.resultantRutor || ['kedja', 'lampa'].includes(s.dataset.kraftpilar) || s.querySelector('.fig-rod')) {
+          const vb = s.viewBox.baseVal, skala = s.getBoundingClientRect().width / vb.width, tx = [...s.querySelectorAll('text')].filter(t => t.textContent.trim()).map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * skala]);
+          tx.forEach(([a, p, px], j) => {
+            if (s.dataset.resultantRutor && px < 13.95) f_.push('”' + a + '” är ' + px.toFixed(1) + ' px');
+            if (p.x < -0.5 || p.y < -0.5 || p.x + p.width > vb.width + 0.5 || p.y + p.height > vb.height + 0.5) f_.push('”' + a + '” står utanför figuren');
+            tx.slice(j + 1).forEach(([b, q]) => { if (p.x < q.x + q.width - 0.5 && q.x < p.x + p.width - 0.5 && p.y < q.y + q.height - 0.5 && q.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
+          });
+        }
+        rk.set(id, { typ, fel: f_ });
+      });
       $$('.scen svg[data-bildpilar]').forEach(s => {
         const id = s.closest('[data-post]').dataset.post;
         if (bp.has(id)) return;
@@ -501,12 +589,15 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         fel: [...pn].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       jm: { antal: jm.size, fel: [...jm].flatMap(([id, x]) => x.fel.map(e => id + ': ' + e)) },
       ry: { antal: ry.size, typer: [...new Set([...ry.values()].map(x => x.typ))], fel: [...ry].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
+      rk: { antal: rk.size, typer: [...new Set([...rk.values()].map(x => x.typ))], fel: [...rk].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       ng: { antal: ng.size, typer: [...new Set([...ng.values()].map(x => x.typ))], minPx: Math.min(...[...ng.values()].map(x => x.minPx)), fel: [...ng].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
 // Diagrammen och vektorerna (figurKoll: ng), i scenarierna
-const NG_PROV = String.raw`if (spar.some(x => x.ng && x.ng.antal)) prova('figur: diagram och vektorer – punkterna på sina koordinater och grafen genom dem, de skuggade ytorna under grafen, pilarna efter varandra och resultanten från början till spets, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.ng.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.ng.typer))].join(', ') + ')',
+const NG_PROV = String.raw`if (spar.some(x => x.rk && x.rk.antal)) prova('figur: resulterande kraft – kraftpilarnas längder i proportion och resultanten summan med tecken (en kedja: från första början till sista spets), pilarna på rutat papper i rutnätets hörn och den flyttade pilen med samma komposanter, resultantens längd vid varje vinkel (±1 px), komposanterna längs rutlinjerna och snörkrafternas delar (sidodelarna tar ut varandra, uppåtdelarna = tyngden), inga texter utanför eller över varandra (' + spar.map(x => x.rk.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.rk.typer))].join(', ') + ')',
+    spar.every(x => !x.rk.fel.length), spar.flatMap(x => x.rk.fel).join(' | '));
+  if (spar.some(x => x.ng && x.ng.antal)) prova('figur: diagram och vektorer – punkterna på sina koordinater och grafen genom dem, de skuggade ytorna under grafen, pilarna efter varandra och resultanten från början till spets, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.ng.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.ng.typer))].join(', ') + ')',
     spar.every(x => !x.ng.fel.length), spar.flatMap(x => x.ng.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.ng.antal).map(x => x.ng.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------

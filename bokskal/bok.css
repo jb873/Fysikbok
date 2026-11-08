@@ -122,6 +122,8 @@ main.sida {
    fliken Öva och en stödbok (på sin egen sida) i Läs, utan rubrik och linje ovanför */
 .vill-veta-mer.nasta-steg .fordj-kort { border-left-color: var(--accent); }
 .vill-veta-mer.stodbocker, .vill-veta-mer.ovningsbocker { margin-top: 0; padding-top: 0; border-top: none; }
+/* en sida utan flikrad (flikar: false): lika mycket luft under bannern som flikraden ger */
+.flikar-rad[hidden] + .flik-innehall { margin-top: 2.25rem; }
 .vill-veta-mer.ovningsbocker + .flik-ram { margin-top: 1.5rem; }
 .flik-ram { display: block; width: 100%; height: 75vh; border: 1px solid rgba(27, 42, 54, .18); border-radius: 4px;
   background: var(--papper-ljus); }
@@ -679,6 +681,22 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-vektor-text.fig-resultant { fill: var(--accent); }
 .fig-ratvinkel { fill: none; stroke: var(--black); stroke-width: 1.4; }
 .figur-bild svg[data-diagram-graf], .figur-bild svg[data-vektor-rutnat] { max-height: calc(var(--sh) * .45); }
+/* Resulterande kraft (Kraft och rörelse IV A, arbetsorder 12): F₁ indigo, F₂ i guld (streckad när den är flyttad),
+   resultanten röd, som i skisserna; komposanterna streckade i dämpat bläck; lampan i två snören. Texten 19 enheter. */
+.fig-pil.fig-rr-f1 { stroke: var(--accent); }
+.fig-pilspets.fig-rr-f1 { fill: var(--accent); }
+.fig-pil.fig-rr-flyttad { stroke-dasharray: 7 5; }
+.fig-pil.fig-rr-resultant, .fig-pil.fig-resultant.fig-rod { stroke: #b3261e; stroke-dasharray: none; }
+.fig-pilspets.fig-rr-resultant, .fig-pilspets.fig-resultant.fig-rod, .fig-rr-noll { fill: #b3261e; }
+.fig-pil-text.fig-resultant.fig-rod { fill: #b3261e; }
+.fig-rr-text { font-size: 19px; }
+.fig-rr-text.fig-rr-f1 { fill: var(--accent); font-weight: 600; }
+.fig-rr-text.fig-rr-f2 { fill: var(--accent-2-mork); font-weight: 600; }
+.fig-rr-text.fig-rr-resultant { fill: #b3261e; font-weight: 600; }
+.fig-rr-rubrik { font-weight: 600; }
+.fig-komposant { stroke: var(--dampad); stroke-width: 1.8; stroke-dasharray: 5 4; }
+.fig-lampa { fill: #f2d27b; stroke: #c98a3a; stroke-width: 1.2; }
+.figur-bild svg[data-resultant-rutor] { max-height: calc(var(--sh) * .45); }
 @container (max-width: 397px) {
   .fig-paneler[data-paneler="jord_och_mane"] { flex-direction: column; align-items: center; gap: .45em; max-width: none; }
   .figur-bild .fig-paneler[data-paneler="jord_och_mane"] svg { flex: none; width: min(100%, 199px); }

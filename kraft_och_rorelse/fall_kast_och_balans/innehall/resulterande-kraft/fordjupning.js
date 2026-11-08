@@ -40,8 +40,10 @@ Bok.niva('fordjupning', {
         { typ: 'formel', uttryck: 'R = √(Fₓ² + Fᵧ²)', forklaring: 'R resultantens storlek (N), Fₓ delen åt sidan (N), Fᵧ delen uppåt (N)' },
         { typ: 'rubrik', text: 'Jämvikt betyder att delarna tar ut varandra i båda riktningarna' },
         { typ: 'text', text: 'Med komposanter blir det tydligt vad jämvikt betyder när krafterna inte ligger längs samma linje. Resultanten är noll bara om delarna åt sidan tar ut varandra och delarna uppåt och nedåt också tar ut varandra. Båda villkoren måste gälla samtidigt.' },
-        { typ: 'text', text: 'Tänk på en lampa som hänger i två snören som går snett uppåt åt var sitt håll. Snörenas delar åt sidan är lika stora och motriktade, så de tar ut varandra. Snörenas delar uppåt är tillsammans lika stora som lampans tyngd. Därför hänger lampan still.' }
+        { typ: 'text', text: 'Tänk på en lampa som hänger i två snören som går snett uppåt åt var sitt håll. Snörenas delar åt sidan är lika stora och motriktade, så de tar ut varandra. Snörenas delar uppåt är tillsammans lika stora som lampans tyngd. Därför hänger lampan still.' },
         // [BILD R4: en kraft delad i två komposanter på rutat papper, och lampan i två snören]
+        { id: 'bild-r4-komposanter', typ: 'figur', namn: 'resultant_rutor', lage: 'komposanter', kraft: { dx: 5, dy: 1, namn: 'F' }, komposanter: ['50 N', '10 N'], skala: '1 ruta = 10 N' },
+        { id: 'bild-r4-lampa', typ: 'figur', namn: 'kraftpilar', foremal: { form: 'lampa' }, snoren: true, komposanter: true, varden: false, krafter: [{ namn: 'snörkraft', riktning: 130, storlek: 6.527036446661393 }, { namn: 'snörkraft', riktning: 50, storlek: 6.527036446661393 }, { namn: 'tyngdkraft', riktning: 'ner', storlek: 10 }] }
       ]
     },
     {

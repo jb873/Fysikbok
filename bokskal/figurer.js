@@ -35,6 +35,8 @@
  *                       diagram med rutnät, grafer, skuggade ytor och Δ-linjer (Nästa steg, se nedan)
  *   vektor_rutnat       pilar: [{dx, dy, namn?}], resultant?: {namn?}, ratVinkel?, skala? – pilar efter varandra på
  *                       rutat papper (Nästa steg, se nedan)
+ *   resultant_rutor     lage: 'steg' | 'vinklar' | 'komposanter' – den resulterande kraften på rutat papper (Kraft och
+ *                       rörelse IV A, se nedan); kraftpilar har dessutom kedja, rod, komposanter och lampan i snören
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -169,7 +171,13 @@
   });
 
   /* Kraftpilar: krafterna på ett föremål, ritade från dess mitt. Pilens riktning är kraftens riktning och dess
-     längd är proportionell mot storleken (den största kraften får den längsta pilen). */
+     längd är proportionell mot storleken (den största kraften får den längsta pilen).
+     Arbetsorder 12 (2026-11-07), utan att det som fanns ändras:
+       kedja: true      krafterna efter varandra (varje pil börjar vid den förras spets), resultanten under (R1)
+       rod: true        resultanten röd (som i figurerna med rutat papper), inte streckad indigo
+       komposanter: true  varje sned kraft med sina komposanter streckade: först åt sidan, sedan uppåt/nedåt (R4)
+       foremal.form: 'lampa'  en lampa; snoren: true ritar snörena från lampan längs krafterna upp till taket (R4)
+     Varje pil står i en g med data-storlek och data-g (grinden mäter längderna, summan och komposanterna). */
   const RIKTNING = { upp: 90, ner: 270, hoger: 0, vanster: 180, 'höger': 0, 'vänster': 180 };
   const RIKTORD = { 90: 'uppåt', 270: 'nedåt', 0: 'åt höger', 180: 'åt vänster' };
   Bok.figur('kraftpilar', d => {
@@ -183,12 +191,12 @@
     // största ritas över föremålet. Figurens höjd följer krafterna, så att en figur med bara vågräta krafter blir låg.
     // skala: den storlek som får den längsta pilen – samma skala i flera figurer gör pilarna jämförbara mellan dem.
     // varden: false ritar längderna ur storleken men skriver inte ut värdena.
-    const B = 440, L = 104, bh = 24, cx = 220, KANT = 12;
+    const B = 440, L = 104, bh = 24, KANT = 12;
     const storst = d.skala || Math.max(...krafter.map(k => k.storlek || 1));
     const visa = d.varden !== false;
     const varde = m => m != null && visa ? `${tal(m)} ${enhet}` : '';
     const pilar = krafter.map(k => ({ namn: k.namn, g: vinkel(k.riktning), m: k.storlek, klass: '' }));
-    const beskr = pilar.map(p => `${p.namn}${varde(p.m) ? ' ' + varde(p.m) : ''} ${riktord(p.g)}`);
+    const beskr = pilar.map(p => `${p.namn ? p.namn + ' ' : ''}${varde(p.m) ? varde(p.m) + ' ' : ''}${riktord(p.g)}`.trim());
     if (d.resultant) {
       let rx = 0, ry = 0;
       krafter.forEach(k => { const v = vinkel(k.riktning) * Math.PI / 180, m = k.storlek || 0; rx += m * Math.cos(v); ry += m * Math.sin(v); });
@@ -196,36 +204,68 @@
       if (m > 0) {
         const g = grader(Math.round(Math.atan2(ry, rx) * 180 / Math.PI));
         // Parallell med en av krafterna: resultanten ritas en bit vid sidan om, med etiketten på andra sidan.
-        pilar.push({ namn: 'Resultant', g, m, klass: 'fig-resultant', bredvid: pilar.some(p => p.g === g) });
+        pilar.push({ namn: 'Resultant', g, m, klass: 'fig-resultant' + (d.rod ? ' fig-rod' : ''), resultant: true, bredvid: !d.kedja && pilar.some(p => p.g === g) });
         beskr.push(`Resultanten${varde(m) ? ' ' + varde(m) : ''} ${riktord(g)}`);
       } else beskr.push('krafterna tar ut varandra');
     }
-    // Lägen i förhållande till föremålets mitt
+    // Lägen i förhållande till föremålets mitt (kedja: varje kraft från den förras spets, resultanten under)
+    let kx = 0, ky = 0;
     for (const p of pilar) {
       const v = p.g * Math.PI / 180, l = Math.max(16, L * (p.m || storst) / storst);   // 16: pilspetsens egen längd
       p.lodrat = Math.abs(Math.sin(v)) >= Math.abs(Math.cos(v));
+      if (d.kedja) {
+        if (p.resultant) { p.x1 = 0; p.y1 = bh + 26; } else { p.x1 = kx; p.y1 = ky; }
+        p.x2 = p.x1 + l * Math.cos(v); p.y2 = p.y1 - l * Math.sin(v);
+        if (!p.resultant) { kx = p.x2; ky = p.y2; }
+        continue;
+      }
       // vågrät resultant över mitten, så att etiketten inte hamnar på underlaget
-      p.x1 = p.bredvid ? (p.lodrat ? -18 : 0) : 0; p.y1 = p.bredvid && !p.lodrat ? -18 : 0;
+      p.x1 = p.bredvid ? (p.lodrat ? -18 : 0) : 0; p.y1 = p.bredvid && !p.lodrat ? (d.rod ? bh + 18 : -18) : 0;   // röd: under föremålet
       p.x2 = p.x1 + l * Math.cos(v); p.y2 = p.y1 - l * Math.sin(v);
     }
-    // överst: föremålets namn (över föremålet) eller pilarna
+    // i en kedja: föremålet och pilarna i mitten av figuren i sidled
+    const xs = pilar.flatMap(p => [p.x1, p.x2]), cx = d.kedja ? B / 2 - (Math.min(0, ...xs) + Math.max(0, ...xs)) / 2 : 220;
+    // överst: föremålets namn (över föremålet) eller pilarna; snörena går till taket ovanför de högsta pilarna
     const namnHojd = d.foremal && d.foremal.namn ? 8 + 15 : 0;
-    const overst = Math.min(-bh - namnHojd, ...pilar.map(p => p.y2 - 6)), nederst = Math.max(bh + (d.underlag ? 13 : 0), ...pilar.map(p => p.y2 + 6));
+    const overst = Math.min(-bh - namnHojd, ...pilar.map(p => p.y2 - 6)) - (d.snoren ? 26 : 0), nederst = Math.max(bh + (d.underlag ? 13 : 0), ...pilar.map(p => Math.max(p.y1, p.y2) + 6) , ...(d.kedja ? pilar.filter(p => p.resultant).map(p => p.y1 + 24) : []));
     const cy = KANT - overst, H = Math.ceil(nederst - overst + 2 * KANT);
 
     let s = '';
     if (d.underlag) s += `<line class="fig-bord" x1="70" y1="${cy + bh}" x2="370" y2="${cy + bh}"/>` +
       Array.from({ length: 15 }, (_, i) => `<line class="fig-skraffer" x1="${80 + i * 20}" y1="${cy + bh + 1}" x2="${70 + i * 20}" y2="${cy + bh + 12}"/>`).join('');
-    s += form === 'boll' ? `<circle class="fig-foremal" cx="${cx}" cy="${cy}" r="${bh + 2}"/>`
+    // snörena: från lampan längs varje kraft som drar uppåt, till taket
+    if (d.snoren) {
+      const tak = KANT + 6;
+      s += `<line class="fig-bord" x1="40" y1="${tak}" x2="400" y2="${tak}"/>` +
+        Array.from({ length: 18 }, (_, i) => `<line class="fig-skraffer" x1="${50 + i * 20}" y1="${tak - 1}" x2="${40 + i * 20}" y2="${tak - 12}"/>`).join('');
+      pilar.filter(p => !p.resultant && Math.sin(p.g * Math.PI / 180) > 0.01).forEach(p => {
+        const v = p.g * Math.PI / 180, t = (cy - tak) / Math.sin(v);
+        s += `<line class="fig-snore" x1="${f(cx)}" y1="${f(cy)}" x2="${f(cx + t * Math.cos(v))}" y2="${tak}"/>`;
+      });
+    }
+    if (!d.kedja) s += form === 'boll' ? `<circle class="fig-foremal" cx="${cx}" cy="${cy}" r="${bh + 2}"/>`
+      : form === 'lampa' ? `<path class="fig-foremal" d="M${f(cx - 22)} ${f(cy + 6)} L${f(cx - 10)} ${f(cy - 12)} L${f(cx + 10)} ${f(cy - 12)} L${f(cx + 22)} ${f(cy + 6)} Z"/><circle class="fig-lampa" cx="${f(cx)}" cy="${f(cy + 10)}" r="7"/>`
       : `<rect class="fig-foremal" x="${cx - 32}" y="${cy - bh}" width="64" height="${2 * bh}" rx="2"/>`;
     if (d.foremal && d.foremal.namn) s += text(cx - 38, cy - bh - 8, d.foremal.namn, 'fig-text fig-hoger fig-dampad');
     for (const p of pilar) {
       const x1 = cx + p.x1, y1 = cy + p.y1, x2 = cx + p.x2, y2 = cy + p.y2;
-      s += pil(x1, y1, x2, y2, 9, p.klass);
-      if (p.lodrat) {
+      // komposanterna: en sned kraft, streckat först åt sidan och sedan uppåt/nedåt till spetsen
+      if (d.komposanter && !p.resultant && p.g % 90) s += `<line class="fig-komposant" data-komposant="x" data-kraft="${pilar.indexOf(p)}" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y1)}"/>` +
+        `<line class="fig-komposant" data-komposant="y" data-kraft="${pilar.indexOf(p)}" x1="${f(x2)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`;
+      s += `<g class="fig-kraft" data-storlek="${p.m || ''}" data-g="${p.g}"${p.resultant ? ' data-resultant=""' : ''}>` + pil(x1, y1, x2, y2, 9, p.klass) + '</g>';
+      if ((d.komposanter || d.snoren) && p.g % 90) {
+        const v = p.g * Math.PI / 180, tx = x2 + 14 * Math.cos(v), ty = y2 - 14 * Math.sin(v) + 5;
+        s += text(tx, ty, p.namn, `fig-pil-text fig-halo ${Math.cos(v) > 0 ? 'fig-vanster' : 'fig-hoger'} ${p.klass}`);
+      } else if (p.lodrat) {
         // bredvid spetsen, namnet över värdet; resultanten till vänster om pilen
         const ty = y2 < y1 ? y2 + 10 : y2 - 20, tx = p.bredvid ? x2 - 10 : x2 + 10, ank = p.bredvid ? 'fig-hoger' : 'fig-vanster';
         s += text(tx, ty, p.namn, `fig-pil-text ${ank} ${p.klass}`) + (varde(p.m) ? text(tx, ty + 17, varde(p.m), `fig-text ${ank}`) : '');
+      } else if (d.kedja) {
+        // i en kedja: namnet och värdet över pilens mitt (resultanten: under den)
+        // (en pil som går bakåt i kedjan: namnet under den, så att det inte hamnar på den förra pilens namn)
+        const ty = p.resultant ? y1 + 22 : Math.cos(p.g * Math.PI / 180) < 0 ? y1 + 20 : y1 - 10;
+        s += `<text x="${f((x1 + x2) / 2)}" y="${f(ty)}" class="fig-pil-text fig-halo fig-mitt ${p.klass}">${esc(p.namn || '')}` +
+          (varde(p.m) ? `${p.namn ? ' ' : ''}<tspan class="fig-varde">${esc(varde(p.m))}</tspan>` : '') + `</text>`;
       } else {
         // bortom spetsen, på en rad – men aldrig inne i föremålet, när pilen är kortare än det
         const hoger = x2 > x1, ut = Math.max(Math.abs(p.x2), form === 'boll' ? bh + 2 : 32);
@@ -234,9 +274,9 @@
           (varde(p.m) ? ` <tspan class="fig-varde">${esc(varde(p.m))}</tspan>` : '') + `</text>`;
       }
     }
-    s += `<circle class="fig-angrepp" cx="${cx}" cy="${f(cy)}" r="3.5"/>`;
-    const vad = (d.foremal && d.foremal.namn) || (form === 'boll' ? 'en boll' : 'en låda');
-    return { svg: svg(B, H, s), beskrivning: `Kraftpilar på ${vad}: ${beskr.join(', ')}.` };
+    if (!d.kedja) s += `<circle class="fig-angrepp" cx="${cx}" cy="${f(cy)}" r="3.5"/>`;
+    const vad = (d.foremal && d.foremal.namn) || (form === 'boll' ? 'en boll' : form === 'lampa' ? 'en lampa' : 'en låda');
+    return { svg: svg(B, H, s).replace('<svg ', `<svg data-kraftpilar="${d.kedja ? 'kedja' : form}" `), beskrivning: d.beskrivning || `Kraftpilar på ${vad}${d.kedja ? ', satta efter varandra' : ''}: ${beskr.join(', ')}.` };
   });
 
   /* Skalmodell: atomer och joner med elektronerna i skal, eller isotoper med kärnans partiklar. Motorn räknar ut
@@ -1199,5 +1239,129 @@
     const beskr = `Rutat papper${d.skala ? ` (skalan ${d.skala})` : ''}: ` + P.map(p => `en pil ${Math.abs(p.dx) ? Math.abs(p.dx) + ' rutor ' + (p.dx > 0 ? 'åt höger' : 'åt vänster') : ''}${p.dx && p.dy ? ' och ' : ''}${Math.abs(p.dy) ? Math.abs(p.dy) + ' rutor ' + (p.dy > 0 ? 'uppåt' : 'nedåt') : ''}${p.namn ? ' (' + p.namn + ')' : ''}`).join(', ') +
       ', satta efter varandra' + (d.resultant ? `, och resultanten från den första pilens början till den sista pilens spets${d.resultant.namn ? ' (' + d.resultant.namn + ')' : ''}` : '') + (d.ratVinkel ? '; den räta vinkeln är markerad' : '') + '.';
     return { svg: svg(B, H, s).replace('<svg ', '<svg data-vektor-rutnat="' + P.length + '" '), beskrivning: beskr };
+  });
+  /* ---------- Resulterande kraft på rutat papper (Kraft och rörelse IV A, arbetsorder 12, 2026-11-07) ----------
+   *   resultant_rutor  lage: 'steg' | 'vinklar' | 'komposanter'
+   *     steg         krafter: [{dx, dy, namn?}, {dx, dy, namn?}] (rutor, dy uppåt), resultant?: {namn?}, rubriker?: [3],
+   *                  skala?: text – tre rutor bredvid varandra: 1 båda krafterna från samma punkt, 2 den andra flyttad
+   *                  (streckad) till den förstas spets, 3 resultanten (röd) från start till den flyttade pilens spets
+   *     vinklar      kraft: 100, vinklar: [0, 45, 90, 180], enhet?: 'N' – två lika stora krafter från samma punkt med
+   *                  vinkeln mellan sig, och resultanten (röd); värdet över varje (≈ när det inte är jämnt)
+   *     komposanter  kraft: {dx, dy, namn?}, komposanter?: [namn x, namn y], skala?: text – en pil och dess
+   *                  komposanter streckade längs rutorna (först åt sidan, sedan uppåt, till pilens spets)
+   * Grinden mäter: pilarna börjar och slutar i rutnätets hörn, den flyttade pilen har samma komposanter, resultanten går
+   * från start till den sista spetsen (steg); resultantens längd mot det uträknade värdet inom en pixel (vinklar);
+   * komposanterna längs rutlinjerna och till pilens spets (komposanter). */
+  const RR_TEXT = 19;
+  // en rad som ryms i bredden b (EB Garamond, ungefär) – ord för ord
+  const radbrytFig = (s, b, px = RR_TEXT) => { const ut = [];
+    String(s).split(' ').forEach(o => { const r = ut.length ? ut[ut.length - 1] + ' ' + o : o;
+      if (ut.length && r.length * px * 0.47 <= b) ut[ut.length - 1] = r; else ut.push(o); }); return ut; };
+  const rrPil = (x1, y1, x2, y2, klass, data) => `<g class="fig-rr-pil ${klass}" ${data}>` +
+    (Math.hypot(x2 - x1, y2 - y1) < 1 ? `<circle class="fig-rr-noll" cx="${f(x1)}" cy="${f(y1)}" r="4"/>` : pil(x1, y1, x2, y2, 8, klass)) + '</g>';
+  const rrText = (x, y, s, klass = '', ank = 'fig-mitt') => `<text x="${f(x)}" y="${f(y)}" class="fig-text fig-rr-text ${ank} ${klass}">${esc(s)}</text>`;
+  // Namnen vid pilarna: för varje namn prövas några lägen runt pilens mitt (kand: [dx, dy], i ordning), och det första
+  // som ryms i området [x0, x1, y0, y1] och inte ligger på ett namn som redan står väljs (bredden ungefär, som ovan).
+  const RR_RAD = RR_TEXT + 7;                // radavståndet i rubrikerna
+  function placera(namn, omr) {
+    const satta = [], ut = [];
+    const ruta = (x, y, t, ank) => { const w = String(t).length * RR_TEXT * 0.5, x0 = ank === 'fig-vanster' ? x : ank === 'fig-hoger' ? x - w : x - w / 2;
+      return [x0, y - RR_TEXT * 0.8, x0 + w, y + RR_TEXT * 0.3]; };
+    const krock = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+    namn.filter(n => n.t).forEach(n => {
+      const val = n.kand.map(([dx, dy]) => { const ank = dx > 4 ? 'fig-vanster' : dx < -4 ? 'fig-hoger' : 'fig-mitt', x = n.mx + dx, y = n.my + dy;
+        return { x, y, ank, r: ruta(x, y, n.t, ank) }; });
+      const ok = val.find(v => v.r[0] >= omr[0] && v.r[2] <= omr[1] && v.r[1] >= omr[2] && v.r[3] <= omr[3] && !satta.some(r => krock(r, v.r))) || val[0];
+      satta.push(ok.r); ut.push(rrText(ok.x, ok.y, n.t, n.klass, ok.ank));
+    });
+    return ut.join('');
+  }
+  const KAND = [[10, 14], [-10, -6], [10, -6], [-10, 14], [0, -10], [0, 26]];
+  Bok.figur('resultant_rutor', d => {
+    const lage = d.lage || fel('resultant_rutor behöver lage: steg, vinklar eller komposanter');
+    const B = 440;
+    let s = '', H, beskr;
+    if (lage === 'steg') {
+      const [F1, F2] = d.krafter || fel('resultant_rutor (steg) behöver krafter: [F1, F2]');
+      const R = [F1.dx + F2.dx, F1.dy + F2.dy];
+      const rub = d.rubriker || ['1', '2', '3'];
+      // rutnätet: från en ruta till vänster om starten till en ruta bortom den längsta spetsen
+      const xs = [0, F1.dx, F2.dx, R[0]], ys = [0, F1.dy, F2.dy, R[1]];
+      const minX = Math.min(...xs) - 1, maxX = Math.max(...xs) + 3, minY = Math.min(...ys) - 1, maxY = Math.max(...ys) + 1;   // (3: namnen till höger)
+      const mellan = 14, pw = (B - 2 * mellan) / 3, ruta = Math.min((pw - 4) / (maxX - minX), 26);
+      const rubRader = rub.map(r => radbrytFig(r, pw - 4)), nRub = Math.max(...rubRader.map(r => r.length));
+      const topp = nRub * RR_RAD + 8, gh = (maxY - minY) * ruta, nedre = RR_TEXT + 10 + (d.skala ? RR_TEXT + 6 : 0);   // F1:s namn under rutnätet
+      H = Math.ceil(topp + gh + nedre);
+      [0, 1, 2].forEach(i => {
+        const x0 = i * (pw + mellan) + (pw - (maxX - minX) * ruta) / 2;
+        const X = v => x0 + (v - minX) * ruta, Y = v => topp + (maxY - v) * ruta;
+        s += `<g class="fig-rr-steg" data-steg="${i + 1}" data-ruta="${f(ruta)}" data-origo="${f(X(0))},${f(Y(0))}">`;
+        for (let v = minX; v <= maxX; v++) s += `<line class="fig-rutnat" x1="${f(X(v))}" y1="${f(Y(minY))}" x2="${f(X(v))}" y2="${f(Y(maxY))}"/>`;
+        for (let v = minY; v <= maxY; v++) s += `<line class="fig-rutnat" x1="${f(X(minX))}" y1="${f(Y(v))}" x2="${f(X(maxX))}" y2="${f(Y(v))}"/>`;
+        rubRader[i].forEach((r, k) => { s += rrText(i * (pw + mellan) + pw / 2, RR_TEXT + k * RR_RAD, r, 'fig-rr-rubrik'); });
+        const mitt = (a, b) => [(X(a[0]) + X(b[0])) / 2, (Y(a[1]) + Y(b[1])) / 2];
+        // F1 från start; F2 från start (steg 1) eller från F1:s spets, streckad (steg 2 och 3); resultanten i steg 3
+        s += rrPil(X(0), Y(0), X(F1.dx), Y(F1.dy), 'fig-rr-f1', `data-kraft="1" data-d="${F1.dx},${F1.dy}"`);
+        const F2a = i === 0 ? [0, 0] : [F1.dx, F1.dy], F2b = i === 0 ? [F2.dx, F2.dy] : R;
+        s += rrPil(X(F2a[0]), Y(F2a[1]), X(F2b[0]), Y(F2b[1]), 'fig-rr-f2' + (i ? ' fig-rr-flyttad' : ''), `data-kraft="2" data-d="${F2.dx},${F2.dy}"${i ? ' data-flyttad=""' : ''}`);
+        if (i === 2) s += rrPil(X(0), Y(0), X(R[0]), Y(R[1]), 'fig-rr-resultant', `data-resultant=""`);
+        const [m1x, m1y] = mitt([0, 0], [F1.dx, F1.dy]), [m2x, m2y] = mitt(F2a, F2b), [mrx, mry] = mitt([0, 0], R);
+        s += placera([
+          { t: F1.namn, mx: m1x, my: m1y, klass: 'fig-rr-f1', kand: [[0, 26], [0, -10], ...KAND] },
+          i === 2 && d.resultant && { t: d.resultant.namn, mx: mrx, my: mry, klass: 'fig-rr-resultant', kand: [[-6, -12], [0, -14], ...KAND] },
+          { t: F2.namn, mx: m2x, my: m2y, klass: 'fig-rr-f2', kand: KAND }
+        ].filter(Boolean), [i * (pw + mellan), i * (pw + mellan) + pw, topp - 4, H]);
+        s += '</g>';
+      });
+      if (d.skala) s += rrText(B / 2, H - 6, d.skala, 'fig-rr-skala');
+      beskr = `Rutat papper i tre steg${d.skala ? ` (${d.skala})` : ''}. 1: båda krafterna från samma punkt, ${F1.dx} rutor åt höger och ${F2.dx} rutor åt höger och ${F2.dy} uppåt. ` +
+        `2: den andra kraften flyttad, utan att vridas, så att den börjar vid spetsen av den första. 3: resultanten från startpunkten till den flyttade pilens spets, ${R[0]} rutor åt höger och ${R[1]} uppåt.`;
+    } else if (lage === 'vinklar') {
+      const F = d.kraft || 100, V = d.vinklar || [0, 45, 90, 180], enhet = d.enhet || 'N', n = V.length;
+      const mellan = 10, pw = (B - mellan * (n - 1)) / n, L = Math.min(pw * 0.42, 52);
+      const varden = V.map(v => 2 * F * Math.cos(v * Math.PI / 360));
+      const etikett = (v, r) => [`${tal(v)}°`, `${Math.abs(r - Math.round(r)) > 0.05 ? '≈ ' + tal(Math.round(r / 5) * 5) : tal(Math.round(r))} ${enhet}`];
+      const topp = 2 * RR_RAD + 12;
+      // höjden: den högsta pilen (den andra kraften och resultanten når lika högt: L · sin v) plus marginal
+      const upp = Math.max(...V.map(v => L * Math.sin(v * Math.PI / 180))) + 14;
+      H = Math.ceil(topp + upp + 18);
+      V.forEach((v, i) => {
+        // pilarnas utsträckning i sidled (från startpunkten), i mitten av sin del av figuren
+        const rad = v * Math.PI / 180, ex = [0, L, L * Math.cos(rad), L + L * Math.cos(rad)];
+        const cx = i * (pw + mellan) + pw / 2, ox = cx - (Math.min(...ex) + Math.max(...ex)) / 2, oy = topp + upp;
+        const ax = ox + L, ay = oy, bx = ox + L * Math.cos(rad), by = oy - L * Math.sin(rad);
+        const rx = ox + (ax - ox) + (bx - ox), ry = oy + (by - oy);
+        s += `<g class="fig-rr-vinkel" data-vinkel="${v}" data-kraft="${F}" data-varde="${f(varden[i] * 1000) / 1000}">`;
+        s += rrPil(ox, oy, ax, ay, 'fig-rr-f1', 'data-kraft="1"') + rrPil(ox, oy, bx, by, 'fig-rr-f1', 'data-kraft="2"');
+        s += rrPil(ox, oy, rx, ry, 'fig-rr-resultant', 'data-resultant=""');
+        etikett(v, varden[i]).forEach((t, k) => { s += rrText(cx, RR_TEXT + k * RR_RAD, t, k ? 'fig-rr-resultant fig-rr-varde' : 'fig-rr-rubrik'); });
+        s += '</g>';
+      });
+      beskr = `Två krafter på ${tal(F)} ${enhet} från samma punkt med vinkeln ${V.map(v => tal(v) + '°').join(', ')} mellan sig, och resultanten: ` +
+        V.map((v, i) => `${tal(v)}° ger ${etikett(v, varden[i])[1]}`).join(', ') + '.';
+    } else if (lage === 'komposanter') {
+      const K = d.kraft || fel('resultant_rutor (komposanter) behöver kraft: {dx, dy}');
+      const [nx, ny] = d.komposanter || [];
+      const minX = Math.min(0, K.dx) - 1, maxX = Math.max(0, K.dx) + 1, minY = Math.min(0, K.dy) - 1, maxY = Math.max(0, K.dy) + 1;
+      const ruta = Math.min(40, 380 / (maxX - minX)), bredd = (maxX - minX) * ruta, x0 = (B - bredd) / 2, nedre = d.skala ? RR_TEXT + 14 : 6;
+      const gh = (maxY - minY) * ruta; H = Math.ceil(gh + 8 + nedre + RR_TEXT);
+      const X = v => x0 + (v - minX) * ruta, Y = v => 4 + (maxY - v) * ruta;
+      s += `<g class="fig-rr-komp" data-ruta="${f(ruta)}" data-origo="${f(X(0))},${f(Y(0))}">`;
+      for (let v = minX; v <= maxX; v++) s += `<line class="fig-rutnat" x1="${f(X(v))}" y1="${f(Y(minY))}" x2="${f(X(v))}" y2="${f(Y(maxY))}"/>`;
+      for (let v = minY; v <= maxY; v++) s += `<line class="fig-rutnat" x1="${f(X(minX))}" y1="${f(Y(v))}" x2="${f(X(maxX))}" y2="${f(Y(v))}"/>`;
+      s += `<line class="fig-komposant" data-komposant="x" x1="${f(X(0))}" y1="${f(Y(0))}" x2="${f(X(K.dx))}" y2="${f(Y(0))}"/>` +
+        `<line class="fig-komposant" data-komposant="y" x1="${f(X(K.dx))}" y1="${f(Y(0))}" x2="${f(X(K.dx))}" y2="${f(Y(K.dy))}"/>`;
+      s += rrPil(X(0), Y(0), X(K.dx), Y(K.dy), 'fig-rr-f1', `data-kraft="1" data-d="${K.dx},${K.dy}"`);
+      // namnen: komposanten åt sidan under (eller över) den, komposanten uppåt bredvid den, pilen vid sin mitt
+      s += placera([
+        { t: nx, mx: (X(0) + X(K.dx)) / 2, my: Y(0), klass: 'fig-rr-komp-text', kand: K.dy >= 0 ? [[0, 24], [0, -8]] : [[0, -8], [0, 24]] },
+        { t: ny, mx: X(K.dx), my: (Y(0) + Y(K.dy)) / 2 + 6, klass: 'fig-rr-komp-text', kand: K.dx >= 0 ? [[8, 0], [-8, 0]] : [[-8, 0], [8, 0]] },
+        { t: K.namn, mx: (X(0) + X(K.dx)) / 2, my: (Y(0) + Y(K.dy)) / 2, klass: 'fig-rr-f1', kand: [[-6, -10], [6, -10], [0, -14], ...KAND] }
+      ], [0, B, 0, H]);
+      s += '</g>';
+      if (d.skala) s += rrText(X(minX), H - 6, d.skala, 'fig-rr-skala', 'fig-vanster');
+      beskr = `En kraft på rutat papper, ${K.dx} rutor åt höger och ${K.dy} uppåt${d.skala ? ` (${d.skala})` : ''}, med komposanterna streckade längs rutorna: först ${K.dx} rutor åt sidan, sedan ${K.dy} uppåt till pilens spets.`;
+    } else fel(`resultant_rutor: okänt läge ”${lage}”`);
+    return { svg: svg(B, H, s).replace('<svg ', `<svg data-resultant-rutor="${lage}" `), beskrivning: d.beskrivning || beskr };
   });
 })();

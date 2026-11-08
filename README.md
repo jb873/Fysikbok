@@ -470,6 +470,26 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `bildpilar` | `bild` (adress från delkapitlets sida), `bredd`, `hojd` (fotots pixlar), `utsnitt?: [x, y, b, h]`, `pilar: [{namn, fran: [x, y], till: [x, y], etikett?: [x, y]}]`, `lika?: [[0, 1]]`, `beskrivning` (krävs), `bildtext?`, `maxhojd?: 0.2–0.45`, `prickar?: [[x, y], …]`, `stråle?: {fran, till}` | ett foto med kraftpilar ritade ovanpå. Allt i fotots pixlar. Fotot visar den verkliga situationen; pilarna ritas ur data, så att de alltid blir rätt. Pilarna är röda (#b3261e) med vit kant och en prick i angreppspunkten; etiketten (namnet, mitt på `etikett`, annars över pilens mitt) i samma röda, halvfet med vit kant. `lika`: pilar som ska vara lika långa – motorn vägrar rita annars (högst 1 px skillnad i fotot), och grinden mäter. En pil utanför utsnittet är fel. Fotot görs utan pilar. Figuren får vara upp till 45 % av sidhöjden; `maxhojd` ger en lägre gräns för just den bilden (ett stående foto som annars inte ryms med stycket före, som dynamometern i III D: 0,43). Etiketterna är aldrig mindre än 14 px på skärmen: när fotot skalas ner växer etiketten och pilarnas tjocklek (`passaEtiketter` i `bok.js`), och grinden mäter det i alla lägen. `prickar` är lägesmarkeringar (som i rörelsespåren) i samma röda färg med vit kant, och `stråle` en pil under dem som visar riktningen; med prickar behövs inga pilar. Grinden mäter att prickarna har lika stora avstånd (±1 px) och att allt ligger inom bilden. |
 | `diagram_graf` | `diagram: [{rubrik?, x: {storhet, enhet, max, steg?, tal?}, y: {…}, grafer: [{punkter: [[x, y], …], kurva?}], ytor?: [{punkter, ton?: 1 \| 2}], delta?: [{fran, till, dx?, dy?}]}]` (1–3), `bildtext?`, `beskrivning?` | Nästa steg (arbetsorder 11): ett till tre diagram bredvid varandra. Varje diagram har kvadratiskt rutnät (en ruta = `steg`) och axlar med pilspets. Storhet och enhet står vid varje axel ("tid (s)", "läge (m)"), och talen var `tal`:e enhet (utan `tal` inga tal). Graferna är räta linjer mellan punkterna, eller en mjuk kurva genom dem (`kurva: true`), och punkterna markeras. `ytor` (trianglar, rektanglar) skuggas i två ljusa toner (guld, indigo). `delta` ritar streckade Δ-linjer från `fran` vågrätt och sedan lodrätt till `till`, med namnen. En rubrik kan ha flera rader (`['Konstant', 'hastighet']`). Texten är 19 enheter och figuren får ta upp till 45 % av sidhöjden, så att ingen text blir under 14 px, inte heller på mobilen. Grinden mäter: punkterna på sina koordinater (räknade ur rutnätet och axelns största värde), grafen genom punkterna, talen på axlarna, de skuggade ytornas hörn på tidsaxeln eller grafen och deras övre kant längs grafen, och ingen text under 14 px, utanför figuren eller över en annan. |
 | `vektor_rutnat` | `pilar: [{dx, dy, namn?}]` (rutor, `dy` uppåt), `resultant?: {namn?}`, `ratVinkel?: true`, `skala?: '1 ruta = 10 N'`, `bildtext?`, `beskrivning?` | Nästa steg: rutat papper med pilarna efter varandra (varje pil börjar där den förra slutar) och resultanten streckad från den första pilens början till den sista pilens spets. Namnen står på den sida av pilen som vetter bort från figurens mitt. `ratVinkel` markerar en rät vinkel mellan de två första pilarna med en liten kvadrat, och skalan står under rutnätet. Grinden mäter att varje pil börjar där den förra slutar och att resultanten går från den första början till den sista spetsen, och texterna som i `diagram_graf`. |
+| `resultant_rutor` | `lage: 'steg'` – `krafter: [{dx, dy, namn?}, {dx, dy, namn?}]`, `resultant?: {namn?}`, `rubriker?: [3]`, `skala?`; `lage: 'vinklar'` – `kraft: 100`, `vinklar: [0, 45, 90, 180]`, `enhet?`; `lage: 'komposanter'` – `kraft: {dx, dy, namn?}`, `komposanter?: [namn x, namn y]`, `skala?` | Kraft och rörelse IV A (arbetsorder 12): den resulterande kraften på rutat papper.<br>• *steg:* tre rutor bredvid varandra – båda krafterna från samma punkt, den andra flyttad (streckad) till den förstas spets, och resultanten (röd) från start till den flyttade pilens spets.<br>• *vinklar:* två lika stora krafter från samma punkt vid varje vinkel, med resultanten och värdet över (≈ när det inte är jämnt).<br>• *komposanter:* en pil med komposanterna streckade längs rutorna.<br>F₁ är indigo, F₂ guld och resultanten röd, som i skisserna. Namnen placeras där de ryms utan att ligga på varandra, och texten är 19 enheter. Grinden mäter: pilarna i rutnätets hörn, den flyttade pilen med samma komposanter, resultanten från start till spets, resultantens längd vid varje vinkel (±1 px) och komposanterna längs rutlinjerna. Den mäter också att ingen text är under 14 px, utanför figuren eller över en annan. |
+
+`kraftpilar` har sedan arbetsorder 12 också:
+
+- `kedja: true` – krafterna efter varandra, utan föremål, och resultanten under. En pil som går bakåt har namnet
+  under sig.
+- `rod: true` – resultanten röd och hel, inte streckad indigo. Är den parallell med en vågrät kraft står den under
+  föremålet.
+- `komposanter: true` – varje sned kraft med sina komposanter streckade, och namnet utanför spetsen.
+- `foremal: {form: 'lampa'}` med `snoren: true` – en lampa med snörena längs krafterna upp till ett tak.
+
+Varje pil står i en `g` med `data-storlek`. Grinden mäter:
+
+- längderna i proportion till krafterna;
+- resultanten som summan med tecken;
+- i en kedja: att varje pil börjar vid den förras spets;
+- med komposanter: att sidodelarna tar ut varandra och att uppåtdelarna är tillsammans lika med den nedåtriktade
+  kraften.
+
+Det som fanns förut ritas som förut.
 
 - `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data (inte `bildpilar`: ett foto
   kan inte beskrivas ur data).
@@ -1251,3 +1271,19 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Motorn:** webbläsarens framåt öppnar nu boken på läsplatsen, som sparas i historiken. Förut öppnades den vid
     adressen, och den pekar på sidans senaste rubrik. Börjar sidan mitt i ett avsnitt hamnade boken då ett uppslag
     för tidigt. Det syntes först på IV, där bara en text har innehåll.
+- **2026-11-08, figurerna R1–R4 i IV A (arbetsorder 12, steg 2):**
+  - **Den nya figurtypen** `resultant_rutor` har tre lägen: steg, vinklar och komposanter. `kraftpilar` har fått
+    kedja, röd resultant, komposanter och lampan i snören (se *Figurer*).
+  - **Figurerna står efter sina bildmarkeringar**, i `verktyg/kap3-figurer.js`:
+    - R1: två kraftpilar på Standard och Enkel – 300 N + 200 N efter varandra, och 300 N åt vänster mot 250 N åt
+      höger. Resultanterna är röda.
+    - R2: tre steg på Standard och Enkel. F₁ (4, 0) och F₂ (3, 4) ger resultanten (7, 4) ≈ 81 N. Rubrikerna och
+      bildtexten är skissens.
+    - R3: 100 N vid 0°, 45°, 90° och 180° (200, ≈ 185, ≈ 140 och 0 N) på Standard och Enkel. Bildtexten är
+      skissens.
+    - R4: Fördjupning. Pilen (5, 1) har komposanterna 50 N och 10 N, och lampan hänger i två snören (50° och 130°
+      från det vågräta, tyngden 10 N).
+    - R4:s två delar står under varandra, som två figurer efter markeringen.
+  - **Provboken (Tryck)** har ett fall av varje läge och av kedjan och lampan, med andra data.
+  - **Negativt prövat:** ett fel per läge och per kraftpilsvariant. Alla fem röda.
+  - **Matematikens sida** har fått luft under bannern (sidan har ingen flikrad).
