@@ -398,6 +398,21 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
   - Ett exempel som ryms på en sida står helt på en sida. Det ryms då alltid på ett uppslag.
   - Ett exempel som är högre än sidan bryts, men bara mellan raderna. Raden Svar står i samma grupp som raden före
     och står därför aldrig ensam på en ny sida.
+  - **40 %-regeln väger tyngre än att hålla exemplet helt (arbetsorder 13, 2026-11-08).** Ett exempel som ryms på en
+    sida, men inte efter det som redan står på sidan, delas mellan raderna om sidan annars blir under 40 % fylld. Så
+    många rader som ryms stannar, och resten börjar nästa sida. Exemplet delas aldrig före raden Svar och aldrig mitt
+    i ett mellanled. Ett mellanled är en rad i samma stycke (utan tom rad före) som antingen är en uträkning (börjar
+    inte med versal, eller börjar som "x = …") eller följer en rad som slutar med kolon (`bundenRad` i `bok.js`).
+    Finns ingen tillåten plats står exemplet helt på nästa sida, som förut. Nära 40 %-gränsen avgör en riktig sida.
+    Regeln gäller bara där en konflikt finns kvar: avsnittet packas först som förut, och först om en sida står kvar
+    tunn efter balansen och nästa sida börjar med ett helt exempel packas avsnittet om med det exemplet delbart. (Den
+    första versionen delade redan under packningen och delade då två exempel i textboken v3 där balansen ändå hade
+    fyllt sidan.) Ingen riktig bok i dag (med textboken v3) bryts annorlunda än förut, enligt `brytning-jamfor`.
+  - `?kontroll` och grindens mätning på skärmen godtar ett delat exempel som ryms bara när det som står före det på
+    sidan (utan rubrikerna före exemplet) är under 40 %, och aldrig en delning mitt i ett mellanled. Provboken (Nästa
+    steg) har avsnittet *Provexempel efter ett kort stycke*, där regeln delar exemplet i alla lägen. Negativa prov:
+    `exempel delat i ett mellanled` (`?kontroll&prova=exempel-mellanled`) och `exempel helt fast sidan blir tunn`
+    (`?kontroll&prova=exempel-helt`, regeln avstängd).
   - Exemplet följer inte med stycket före.
 - **PROVA-rutan** delas aldrig.
 - **Kontrollen:** `?kontroll` (brytningsreglerna) och grindens mätning på skärmen säger till om en regel bryts.

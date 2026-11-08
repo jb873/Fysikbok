@@ -57,6 +57,23 @@ Bok.niva('nasta-steg', {
           ['Svar: Provsvaret.'] ] },
         { typ: 'text', text: 'Provtext efter det långa exemplet.' }
       ]
+    },
+    {
+      // Exempelregeln (arbetsorder 13): ett exempel som ryms på en sida men inte efter avsnittets början och stycket, som
+      // då är under 40 % av sidan. Exemplet delas mellan raderna, inte mitt i ett mellanled (en uträkning, eller raden
+      // efter en rad som slutar med kolon) och inte före Svar. Grindens negativa prov stänger av regeln
+      // (?prova=exempel-helt): då blir sidan med stycket tunn.
+      id: 'exempel-fyrtio', titel: 'Provexempel efter ett kort stycke',
+      block: [
+        { typ: 'text', text: 'Provtext före ett exempel som ryms på en sida, men inte efter det här stycket.' },
+        { typ: 'exempel', rubrik: 'Provexempel som delas enligt 40 %-regeln', stycken: [
+          ['En provfråga: hur långt kommer provet på 3,0 s?'],
+          ['Givet: v₀ = 2,0 m/s, a = 2,0 m/s², t = 3,0 s. Sökt: s.'],
+          ['Lösning: Först provhastigheten i slutet:', 'v = 2,0 + 2,0 · 3,0 = 8,0 m/s', 'Sedan provsträckan med s-formeln:',
+            's = 2,0 · 3,0 + 2,0 · 3,0² / 2', 's = 6,0 + 9,0 = 15 m', 'Kontroll med medelhastigheten:', 's = (2,0 + 8,0) / 2 · 3,0 = 15 m',
+            'Samma provsvar som förut.', 'Provsträckan blir alltså densamma med båda formlerna.', 'Det är rimligt för ett prov som ökar farten.',
+            'Svar: 15 m.'] ] }
+      ]
     }
   ]
 });

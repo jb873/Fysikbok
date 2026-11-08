@@ -66,7 +66,11 @@ const FEL = {
   'formel skild från stycket': { adress: '&prova=formel-skild', dk: 'provbok', regel: /formel/i },
   'exempel delat fast det ryms': { adress: '&prova=exempel-delat', dk: 'provbok', regel: /exempel/i },
   'Svar ensam på ny sida': { adress: '&prova=svar-ensam', dk: 'provbok', regel: /Svar/ },
-  'PROVA-ruta delad': { adress: '&prova=prova-delad', dk: 'provbok', regel: /PROVA/ }
+  'PROVA-ruta delad': { adress: '&prova=prova-delad', dk: 'provbok', regel: /PROVA/ },
+  // Exempelregeln (arbetsorder 13): ett exempel delat före ett mellanled ska ge rött, och utan regeln (exemplet hålls
+  // helt) blir sidan före exemplet i provbokens avsnitt "Provexempel efter ett kort stycke" tunn i alla lägen
+  'exempel delat i ett mellanled': { adress: '&prova=exempel-mellanled', dk: 'provbok', regel: /mellanled/ },
+  'exempel helt fast sidan blir tunn': { adress: '&prova=exempel-helt', dk: 'provbok', regel: /fylld/ }
 };
 // --negativ=<del av namnet>: bara de negativa proven vars namn innehåller texten
 const NEGATIV_BARA = (process.argv.find(a => a.startsWith('--negativ=')) || '').slice(10);
@@ -1477,15 +1481,22 @@ const TOMMA_SVEP = String.raw`async () => {
   const medStycket = sl => sl === 'f' || sl === 'm';
   // Rutorna och formlerna (arbetsorder 11), mätta på skärmen: varje rad i ett EXEMPEL eller en PROVA-ruta (sida, höjd,
   // Svar) och sidans plats för text; varje formels uttryck – på en rad, inom spalten
-  const rutor = { exempel: 0, prova: 0, delade: 0, fel: [] }, formler = { antal: 0, fel: [] };
-  const hela = async (namn, jamfor) => { const n = $$('.lr-sida').length, ids = {}, bl = {}, rr = {}, kap = {}, uppslag = !!$('.scen .uppslag.ar-uppslag');
+  const rutor = { exempel: 0, prova: 0, delade: 0, fyrtio: 0, fel: [] }, formler = { antal: 0, fel: [] };
+  // (arbetsorder 13) en rad i ett exempel som hör ihop med raden före – Svar, eller ett mellanled: i samma stycke och en
+  // uträkning (börjar inte med versal, eller "x = …") eller efter en rad som slutar med kolon; samma regel som bok.js
+  const RAKNING = /^(?!\p{Lu})|^\S{1,15} [=≈<>≤≥]/u, bunden = (x, fore) => x.svar || (!x.ny && (/:\s*$/.test(fore.t) || RAKNING.test(x.t)));
+  const hela = async (namn, jamfor) => { const n = $$('.lr-sida').length, ids = {}, bl = {}, rr = {}, kap = {}, pos = {}, uppslag = !!$('.scen .uppslag.ar-uppslag');
     for (let s = 1; s <= n; s += 1) { Bok.gaTill(s); await v(25); const t = tomma(); if (t.length) fel.push(namn + ': sida ' + t.join(','));
       $$('.scen .uppslag > .sida[data-nr]').forEach(e => { ids[e.dataset.nr] = [...e.querySelectorAll('[data-post]')].map(p => p.dataset.post).join(',');
         const inne = e.querySelector('.sidinnehall'); if (inne && !e.classList.contains('innehallssida')) bl[e.dataset.nr] = [...inne.children].map(b => [b.dataset.post, slag(b)]);
         if (inne && !jamfor && !(e.dataset.nr in rr)) {
           const cs = getComputedStyle(inne); kap[e.dataset.nr] = inne.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
           rr[e.dataset.nr] = [...inne.querySelectorAll('.b-rutarad')].map(x => ({ ruta: x.dataset.ruta, rad: +x.dataset.rad, svar: x.hasAttribute('data-svar'),
-            prova: x.classList.contains('rr-prova'), h: x.getBoundingClientRect().height }));
+            prova: x.classList.contains('rr-prova'), h: x.getBoundingClientRect().height, post: x.dataset.post, ny: x.classList.contains('rr-ny'),
+            t: (x.querySelector('p') || x).textContent }));
+          // blockens läge på sidan (från textens överkant): det som står före ett exempel som delats enligt 40 %-regeln
+          const topp = inne.getBoundingClientRect().top + parseFloat(cs.paddingTop);
+          pos[e.dataset.nr] = [...inne.children].map(b => { const q = b.getBoundingClientRect(); return { post: b.dataset.post, sl: slag(b), top: q.top - topp, bottom: q.bottom - topp }; });
           const ir = inne.getBoundingClientRect();
           inne.querySelectorAll('.formel-uttryck').forEach(u => { const r = u.getBoundingClientRect(), lh = parseFloat(getComputedStyle(u).fontSize) * 1.6;
             formler.antal++;
@@ -1510,7 +1521,18 @@ const TOMMA_SVEP = String.raw`async () => {
         if (rad[0].prova) { rutor.prova++; if (sid.length > 1) rutor.fel.push(namn + ': PROVA-rutan ' + id + ' är delad (s.' + sid.join('–') + ')'); return; }
         rutor.exempel++;
         if (sid.length > 1) rutor.delade++;
-        if (new Set(sid.map(plats)).size > 1 && hojd <= minKap) rutor.fel.push(namn + ': exemplet ' + id + ' står på flera ' + (uppslag ? 'uppslag' : 'sidor') + ' (s.' + sid.join('–') + ') fast det ryms på en sida (' + Math.round(hojd) + ' av ' + Math.round(minKap) + ' px)');
+        // Ett exempel som ryms får delas enligt 40 %-regeln (arbetsorder 13): det som står före exemplet och rubrikerna
+        // före det på dess första sida är under 40 % av sidan – och aldrig mitt i ett mellanled eller före Svar
+        let fyrtio = false;
+        if (sid.length > 1 && hojd <= minKap) {
+          const P = pos[sid[0]] || [];
+          let st = P.findIndex(b => b.post === rad[0].post); while (st > 0 && P[st - 1].sl === 'r') st--;
+          fyrtio = st > 0 && P[st - 1].bottom - P[0].top < 0.4 * kap[sid[0]] + 1;
+          if (fyrtio) rutor.fyrtio++;
+          rad.forEach((x, k) => { if (k && x.nr !== rad[k - 1].nr && !x.svar && bunden(x, rad[k - 1]))
+            rutor.fel.push(namn + ': exemplet ' + id + ' är delat mitt i ett mellanled (s.' + x.nr + ': ”' + x.t.slice(0, 40) + '”)'); });
+        }
+        if (!fyrtio && new Set(sid.map(plats)).size > 1 && hojd <= minKap) rutor.fel.push(namn + ': exemplet ' + id + ' står på flera ' + (uppslag ? 'uppslag' : 'sidor') + ' (s.' + sid.join('–') + ') fast det ryms på en sida (' + Math.round(hojd) + ' av ' + Math.round(minKap) + ' px)');
         const sv = rad[rad.length - 1], fore = rad[rad.length - 2];
         if (sv.svar && fore && plats(sv.nr) !== plats(fore.nr)) rutor.fel.push(namn + ': raden Svar i exemplet ' + id + ' står ensam på ' + (uppslag ? 'ett nytt uppslag' : 'en ny sida') + ' (s.' + sv.nr + ')');
       });
@@ -1596,7 +1618,7 @@ async function provaTommaSidor(c, lage) {
   k.varningar = varn.map(x => `${x.formel ? 'formeln' : 'figuren'} på ${x.uppslag ? 'ett annat uppslag' : 'en annan sida'} än stycket: ${beskriv(x)}` + (x.uppslag ? ' – stycket först på sin sida (undantag)' : ' – mobilen'));
   // Nästa steg (arbetsorder 11): rutorna och formlerna, mätta på skärmen i varje bok
   const ru = r.svep.rutor, fo = r.svep.formler;
-  if (ru.exempel) k.push({ namn: `rutor: varje EXEMPEL som ryms står på ${lage.mobil ? 'en sida' : 'ett uppslag'}, och raden Svar står aldrig ensam på ${lage.mobil ? 'en ny sida' : 'ett nytt uppslag'} (${ru.exempel} exempel, ${ru.delade} delade mellan raderna)`,
+  if (ru.exempel) k.push({ namn: `rutor: varje EXEMPEL som ryms står på ${lage.mobil ? 'en sida' : 'ett uppslag'}, och raden Svar står aldrig ensam på ${lage.mobil ? 'en ny sida' : 'ett nytt uppslag'}; ett exempel som ryms delas bara enligt 40 %-regeln och aldrig mitt i ett mellanled (${ru.exempel} exempel, ${ru.delade} delade mellan raderna, ${ru.fyrtio} av dem enligt 40 %-regeln)`,
     ok: !ru.fel.some(f => !/PROVA/.test(f)), detalj: ru.fel.filter(f => !/PROVA/.test(f)).join('; ') });
   if (ru.prova) k.push({ namn: `rutor: varje PROVA-ruta är hel (${ru.prova})`, ok: !ru.fel.some(f => /PROVA/.test(f)), detalj: ru.fel.filter(f => /PROVA/.test(f)).join('; ') });
   if (fo.antal) k.push({ namn: `formel: varje formel står på en rad och ryms i spalten (${fo.antal})`, ok: !fo.fel.length, detalj: fo.fel.slice(0, 4).join('; ') });

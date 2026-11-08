@@ -64,7 +64,7 @@
   // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id), 'innehall' eller
   // 'omslag'. nr: sidan som visas – 0 är omslaget.
   // flytt räknas upp när blockens element flyttas mellan sidor (en ny brytning), så att sidorna byggs om.
-  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false, provaRuta = null;
+  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false, provaRuta = null, provaExempelHelt = false;
   let tillbaka = null, vandning = 'blad', helskarm = true, reglage = 'alltid', vilaTimer = null;
   let fokusEfter = null, panelFran = null, senasteEsc = 0;
   const ui = {};
@@ -330,6 +330,11 @@
   const nivaFil = (t, id) => ddFor(t) ? ddFor(t).fil : `innehall/${t ? t + '/' : ''}${id}.js`;
   const RUBRIKER = ['avsnittsstart', 'rubrik', 'underrubrik'];      // står aldrig sist på en sida
   const MED_STYCKET = ['figur', 'formel', 'exempel'];               // står på samma sida som stycket före
+  // En rad i ett EXEMPEL som hör ihop med raden före och inte får börja en ny sida när ett exempel som ryms delas
+  // (40 %-regeln, arbetsorder 13): raden Svar, och ett mellanled – en rad i samma stycke (utan tom rad före) som är en
+  // uträkning (börjar inte med versal, eller börjar som "x = …") eller som följer en rad som slutar med kolon.
+  const RAKNING = /^(?!\p{Lu})|^\S{1,15} [=≈<>≤≥]/u;
+  const bundenRad = (p, fore) => !!p.b.svar || (!p.b.ny && (/:\s*$/.test(fore.b.text) || RAKNING.test(p.b.text)));
   const MED_UPPSLAG = ['figur', 'formel'];                          // uppslagsregeln: på samma uppslag som stycket (order 8, 11)
   const INNEHALL = { id: 'innehall', titel: 'Innehåll', nummer: null };
 
@@ -734,11 +739,19 @@
     };
 
     const sidor = [{ typ: 'innehall', bok, avsnitt: INNEHALL, poster: [] }];
-    const packa = (d, villkor) => {
+    const packa = (d, villkor, delaEx) => {
       const E = d.enheter.map(u => Object.assign({}, u, { folj: villkor.has(u.poster[0]) }));
       const ny = forsta => { const s = { bok, avsnitt: d.avsnitt, poster: [], enheter: [], forsta }; sidor.push(s); return s; };
       const fran = sidor.length;
       let s = ny(true), i = 0;
+      // Är sidan s utan nästa grupp tunn (under 40 %)? Nära gränsen (inom NARA) avgör en riktig sida, som i kontrollen
+      // av tunna sidor; mätningen sparas (fyllFore), så att regelkontrollen kan se att en delning var tillåten.
+      const tunnUtan = () => {
+        const hh = hojd(s.poster), k = kap(s.poster);
+        if (hh < TUNN * k) return true;
+        if (hh >= TUNN * k + NARA) return false;
+        prova(s); s.fyllFore = s.fyll; return s.fyll < TUNN;
+      };
       for (;;) {
         if (i < E.length) {
           let u = E[i];
@@ -752,6 +765,27 @@
             delar[delar.length - 1].push(...u.poster.slice(l + 1));          // länken i foten, upphovet
             E.splice(i, 1, ...delar.map((ps, k) => Object.assign({}, u, { poster: ps, radvis: true, brytFore: k ? false : u.brytFore, rubrik: k ? false : u.rubrik, delVid: null })));
             u = E[i];
+          }
+          // 40 %-regeln väger tyngre än att hålla ett EXEMPEL helt (arbetsorder 13, 2026-11-08): ett exempel som ryms på
+          // en sida men inte efter det som redan står på sidan, och som annars lämnar sidan under 40 %, delas mellan
+          // raderna – så många rader som ryms här, resten först på nästa sida. Bara före en rad som inte hör ihop med
+          // raden före (bundenRad: aldrig före Svar, aldrig mitt i ett mellanled). Finns ingen sådan plats står
+          // exemplet helt på nästa sida, som förut.
+          // (Bara ett exempel i delaEx: en sida som står kvar tunn efter balansen, se nedan – annars packas allt som förut.)
+          if (u.ruta && u.ruta.slag === 'exempel' && !u.radvis && !u.folj && s.enheter.length && !u.brytFore && delaEx.has(u.ruta.id) &&
+            hojd(s.poster.concat(u.poster)) > kap(s.poster.concat(u.poster)) && tunnUtan()) {
+            const f = u.poster.findIndex(p => p.ruta), rader = u.poster.filter(p => p.ruta);
+            let vid = -1;
+            for (let k = 1; k < rader.length; k++) {
+              if (bundenRad(rader[k], rader[k - 1])) continue;
+              const fore = s.poster.concat(u.poster.slice(0, f + k));
+              if (hojd(fore) <= kap(fore)) vid = f + k; else break;
+            }
+            if (vid > 0) {
+              E.splice(i, 1, Object.assign({}, u, { poster: u.poster.slice(0, vid), radvis: true, delVid: null }),
+                Object.assign({}, u, { poster: u.poster.slice(vid), radvis: true, brytFore: true, delad: true, rubrik: false, delVid: null }));
+              u = E[i];
+            }
           }
           // Regelkonflikten: ryms inte stycket och figuren på en tom sida delas gruppen – figuren börjar nästa sida.
           // Står flera figurer efter stycket stannar så många som ryms med det; gruppen delas före den första som
@@ -771,12 +805,6 @@
           // Nära gränsen (inom NARA) avgör en riktig sida, som i kontrollen av tunna sidor; mätningen sparas
           // (fyllFore), så att regelkontrollen kan se att delningen var tillåten.
           const forDel = u.delVid !== null && u.poster.slice(0, u.delVid);
-          const tunnUtan = () => {
-            const hh = hojd(s.poster), k = kap(s.poster);
-            if (hh < TUNN * k) return true;
-            if (hh >= TUNN * k + NARA) return false;
-            prova(s); s.fyllFore = s.fyll; return s.fyll < TUNN;
-          };
           if (forDel && !u.folj && s.enheter.length && !u.brytFore && hojd(s.poster.concat(u.poster)) > kap(s.poster.concat(u.poster)) &&
             hojd(s.poster.concat(forDel)) <= kap(s.poster.concat(forDel)) && tunnUtan()) {
             E.splice(i, 1, Object.assign({}, u, { poster: forDel, delVid: null }),
@@ -854,6 +882,13 @@
     // figuren högst 15 % togs bort samma dag: det löste 0 av 15 fall och kunde ge text under 14 px – Joachims beslut.)
     const undantag = [];
     const uppslagNr = nr => nr % 2 ? nr : nr - 1;
+    // Är en färdig sida tunn (under 40 %)? Som kontrollen av tunna sidor: nära gränsen (inom NARA) avgör en riktig sida.
+    const tunnSida = t => {
+      const hh = hojd(t.poster), k = kap(t.poster);
+      if (hh < TUNN * k) return true;
+      if (hh >= TUNN * k + NARA) return false;
+      const prov = { bok, avsnitt: t.avsnitt, poster: t.poster }; prova(prov); return prov.fyll < TUNN;
+    };
     // de delade figurerna i avsnittet som står på ett annat uppslag än stycket: [index för figurens sida, stycket, figuren]
     // (en FORMEL följer samma regel som en figur, arbetsorder 11)
     const skilda = fran => sidor.slice(fran + 1).map((T, n) => [fran + 1 + n, T]).filter(([j, T]) => T.enheter[0] && T.enheter[0].skild &&
@@ -861,12 +896,20 @@
       .map(([j, T]) => [j, sidor[j - 1].enheter[sidor[j - 1].enheter.length - 1], T.enheter[0]]);
     for (const d of bok.delar) {
       const fran = sidor.length, villkor = new Set();      // grupper (första posten) där stycket följer figuren
+      const delaEx = new Set();                                // exempel (rutans id) som får delas enligt 40 %-regeln
       for (let varv = 0; ; varv++) {
         sidor.length = fran;
-        packa(d, villkor);
-        if (!g.uppslag) break;
+        packa(d, villkor, delaEx);
         let nytt = false;
-        for (const [j, U, F] of skilda(fran)) {
+        // Exempelregeln (arbetsorder 13): står en sida kvar tunn efter balansen, och börjar nästa sida med ett helt EXEMPEL
+        // (inte efter en sidbrytning), packas avsnittet om med det exemplet delbart (packa). Där balansen redan fyllde
+        // sidan hålls exemplet helt.
+        if (!provaExempelHelt && varv < 6) for (let j = fran; j < sidor.length - 1; j++) {
+          const t = sidor[j], n = sidor[j + 1], u = n.enheter[0];
+          if (t.sist || t.forFigur || n.avsnitt !== t.avsnitt || !u || !u.ruta || u.ruta.slag !== 'exempel' || u.radvis || u.brytFore || delaEx.has(u.ruta.id)) continue;
+          if (tunnSida(t)) { delaEx.add(u.ruta.id); nytt = true; }
+        }
+        if (g.uppslag) for (const [j, U, F] of skilda(fran)) {
           const P = sidor[j - 1], fore = P.poster.slice(0, P.poster.length - U.poster.length);
           if (varv < 6 && fore.some(iFlodet) && !villkor.has(U.poster[0])) { villkor.add(U.poster[0]); nytt = true; }
         }
@@ -899,6 +942,8 @@
           if (provaRuta === 'exempel-delat' && R.slag === 'exempel') gjort = flytta(s, ps[Math.ceil(ps.length / 2)]);
           if (provaRuta === 'svar-ensam' && R.slag === 'exempel' && ps[ps.length - 1].b.svar) gjort = flytta(s, ps[ps.length - 1]);
           if (provaRuta === 'prova-delad' && R.slag === 'prova') gjort = flytta(s, ps[ps.length - 1]);
+          // (arbetsorder 13) ett exempel delat före ett mellanled: raden och det som står efter den börjar nästa sida
+          if (provaRuta === 'exempel-mellanled' && R.slag === 'exempel') { const k = ps.findIndex((p, j) => j > 0 && !p.b.svar && bundenRad(p, ps[j - 1])); if (k > 0) gjort = flytta(s, ps[k]); }
         }
         if (gjort) break;
       }
@@ -987,7 +1032,18 @@
       const nrs = sid.map(x => x.nr).join('–'), rubrik = R.slag === 'exempel' ? ` ”${renText(ps[0].b.rubrik)}”` : '';
       if (R.slag === 'prova') { brott.push(`sida ${nrs}: PROVA-rutan är delad`); continue; }
       const ihop = r.matt.get(ps[ps.length - 1]).bottom - r.matt.get(ps[0]).top;
-      if (ihop <= Math.min(r.kap, r.kapFot)) brott.push(`sida ${nrs}: exemplet${rubrik} är delat, fast det ryms på en sida`);
+      if (ihop <= Math.min(r.kap, r.kapFot)) {
+        // Ett exempel som ryms får delas bara enligt 40 %-regeln (arbetsorder 13): det som står före exemplet och
+        // rubrikerna före det på dess första sida är under 40 % (nära gränsen avgjorde en riktig sida: fyllFore) – och
+        // aldrig mitt i ett mellanled eller före raden Svar (bundenRad)
+        const P = r.postSida.get(ps[0]), fl = P.poster.filter(p => r.matt.has(p));
+        let start = fl.indexOf(ps[0]);
+        while (start > 0 && RUBRIKER.includes(fl[start - 1].typ)) start--;
+        const innan = start > 0 ? r.matt.get(fl[start - 1]).bottom - r.matt.get(fl[0]).top : null;
+        if (innan === null || !(innan < TUNN * r.kap || P.fyllFore < TUNN)) brott.push(`sida ${nrs}: exemplet${rubrik} är delat, fast det ryms på en sida`);
+        ps.forEach((p, k) => { if (k && r.postSida.get(p) !== r.postSida.get(ps[k - 1]) && !p.b.svar && bundenRad(p, ps[k - 1]))
+          brott.push(`sida ${r.postSida.get(p).nr}: exemplet${rubrik} är delat mitt i ett mellanled`); });
+      }
       const sv = ps[ps.length - 1], fore = ps[ps.length - 2];
       if (sv.b.svar && fore && r.postSida.get(sv) !== r.postSida.get(fore)) brott.push(`sida ${r.postSida.get(sv).nr}: raden Svar i exemplet${rubrik} står ensam på en ny sida`);
     }
@@ -1818,7 +1874,8 @@
       kontroll = adress.has('kontroll');
       provaRubrikSist = kontroll && adress.get('prova') === 'rubrik-sist';   // grindens negativa prov, se paginera
       provaLangsam = kontroll && adress.get('prova') === 'langsam';
-      provaRuta = kontroll && ['formel-skild', 'exempel-delat', 'svar-ensam', 'prova-delad'].includes(adress.get('prova')) ? adress.get('prova') : null;
+      provaRuta = kontroll && ['formel-skild', 'exempel-delat', 'svar-ensam', 'prova-delad', 'exempel-mellanled'].includes(adress.get('prova')) ? adress.get('prova') : null;
+      provaExempelHelt = kontroll && adress.get('prova') === 'exempel-helt';    // exempelregeln avstängd (arbetsorder 13)
       // Bladvändning På (blad) eller Av (direkt); den som valt "Snabb" (före 2026-11-04) får På
       vandning = lager.hamta(nyckel('vandning'), 'blad') === 'direkt' ? 'direkt' : 'blad';
       helskarm = lager.hamta(nyckel('lashelskarm'), true);
