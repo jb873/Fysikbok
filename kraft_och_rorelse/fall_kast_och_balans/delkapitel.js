@@ -9,7 +9,7 @@ Bok.delkapitel({
            { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
   nummer: 4,                                 // brödsmulan "4. Fall, kast och balans" och etiketten "Avsnitt IV"
   titel: 'Fall, kast och balans',
-  undertitel: 'fritt fall, kaströrelse, tyngdpunkt och balans',  // bannerns rad: kapitelindexets beskrivning av IV
+  undertitel: 'resulterande kraft, fritt fall, kaströrelse, tyngdpunkt och balans',  // bannerns rad: kapitelindexets beskrivning av IV
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
   kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)

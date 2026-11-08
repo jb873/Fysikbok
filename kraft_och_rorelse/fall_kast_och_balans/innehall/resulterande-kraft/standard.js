@@ -1,5 +1,5 @@
 /* Avsnittssida IV. Fall, kast och balans, text A: Resulterande kraft – nivån standard (📘). Arbetsorder 12
- * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v3.md (# 📘 STANDARD), införd ordagrant i
+ * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v4.md (# 📘 STANDARD), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du
  * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och
  * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.
@@ -56,10 +56,10 @@ Bok.niva('standard', {
           'Flytta den andra pilen så att den börjar där den första pilen slutar. Pilen ska ha samma längd och samma riktning som förut – du flyttar den, men vrider den inte.',
           'Rita en pil från startpunkten till spetsen av den flyttade pilen. Det är den resulterande kraften. Mät hur lång den är och räkna om med skalan.'
         ] },
-        { typ: 'text', text: 'I exemplet med pulkan går den resulterande kraften 7 rutor åt höger och 4 rutor uppåt. Mäter du den blir den ungefär 8 rutor lång, alltså ungefär 80 N. Den pekar snett framåt, lite närmare det andra barnets riktning eftersom den kraften är störst.' },
-        { typ: 'text', text: 'I exemplet går pilarna genom rutornas hörn, och därför kan du räkna rutorna. Så är det inte alltid. Går en pil inte genom hörnen ritar och mäter du längden med linjal och vinkeln med gradskiva. Rutorna är då ett stöd, men det är mätningen som gäller.' },
         // [BILD R2: att rita den resulterande kraften på rutat papper, i tre steg]
         { id: 'bild-r2', typ: 'figur', namn: 'resultant_rutor', lage: 'steg', krafter: [{ dx: 4, dy: 0, namn: '40 N' }, { dx: 3, dy: 4, namn: '50 N' }], resultant: { namn: '≈ 81 N' }, rubriker: ['1. Båda krafterna från samma punkt', '2. Flytta 50 N till spetsen av 40 N', '3. Resultanten från start till slut'], bildtext: 'Skala: 1 ruta = 10 N. 50 N = 3 rutor höger + 4 rutor upp. Resultanten = 7 rutor höger + 4 rutor upp ≈ 8,1 rutor ≈ 81 N.' },
+        { typ: 'text', text: 'I exemplet med pulkan går den resulterande kraften 7 rutor åt höger och 4 rutor uppåt. Mäter du den blir den ungefär 8 rutor lång, alltså ungefär 80 N. Den pekar snett framåt, lite närmare det andra barnets riktning eftersom den kraften är störst.' },
+        { typ: 'text', text: 'I exemplet går pilarna genom rutornas hörn, och därför kan du räkna rutorna. Så är det inte alltid. Går en pil inte genom hörnen ritar och mäter du längden med linjal och vinkeln med gradskiva. Rutorna är då ett stöd, men det är mätningen som gäller.' },
         { typ: 'rubrik', text: 'Pilen behåller sin riktning när den flyttas' },
         { typ: 'text', text: 'Det vanligaste misstaget när man ritar är att vrida pilen när man flyttar den, så att den till exempel pekar rakt uppåt eller fortsätter i samma riktning som den första pilen. Men en kraft har både storlek och riktning, och båda måste vara desamma efter flytten. Rutorna hjälper dig: pilen på 50 N gick tre rutor åt höger och fyra rutor uppåt, och den ska göra exakt samma sak efter flytten.' },
         { typ: 'text', text: 'Det spelar ingen roll vilken av pilarna du flyttar. Flyttar du den första pilen till spetsen av den andra i stället får du samma resulterande kraft.' },

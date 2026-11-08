@@ -1287,3 +1287,11 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Provboken (Tryck)** har ett fall av varje läge och av kedjan och lampan, med andra data.
   - **Negativt prövat:** ett fel per läge och per kraftpilsvariant. Alla fem röda.
   - **Matematikens sida** har fått luft under bannern (sidan har ingen flikrad).
+- **2026-11-08, två rättelser i IV A:**
+  - **Källan är nu v4** (`IV-A-Resulterande-kraft-alla-nivaer-v4.md`; v3 ligger kvar i `kallor/kap3/`). Enda
+    skillnaden: [BILD R2] i Standard står direkt efter de tre stegen. Omvandlaren och ordagrant-kontrollen läser v4.
+  - **R2 och stegen:** på dator och i helskärm står de på samma uppslag (stegen s. 9, R2 s. 10). På mobilen står
+    stegen sist på s. 8 och R2 först på s. 9. De ryms inte på en sida tillsammans med rubriken och stycket före, och
+    flyttas listan blir s. 8 tunn (under 40 %). Motorn är oförändrad, och ingen sida är delad för hand.
+  - **Kapitelindexet, kort IV:** "Resulterande kraft, fritt fall, kaströrelse, tyngdpunkt och balans." Bannerns rad
+    på avsnittssidan är samma text med liten bokstav.

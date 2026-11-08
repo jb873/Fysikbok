@@ -1,5 +1,5 @@
 /* Avsnittssida IV. Fall, kast och balans, text A: Resulterande kraft – nivån enkel (📗). Arbetsorder 12
- * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v3.md (# 📗 ENKEL), införd ordagrant i
+ * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v4.md (# 📗 ENKEL), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du
  * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och
  * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.

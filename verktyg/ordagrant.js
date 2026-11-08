@@ -180,13 +180,13 @@ for (const B of NS) {
   if (tFel.length) { fel++; console.log('   ' + tFel.join('\n   ')); }
 }
 
-// ---------- Kraft och rörelse, avsnitt IV, text A Resulterande kraft (arbetsorder 12): kallor/kap3/IV-A-…-v3.md ----------
+// ---------- Kraft och rörelse, avsnitt IV, text A Resulterande kraft (arbetsorder 12): kallor/kap3/IV-A-…-v4.md ----------
 // Var och en av de tre nivåerna mot sin del av källan (# 📘 STANDARD, # 📗 ENKEL, # 📕 FÖRDJUPNING), i ordning: avsnitt,
 // rubriker, "Det här lär du dig", stycken, punkter, numrerade punkter, formler. Bildmarkeringarna som kommentarer i samma
 // ordning. Godkända tillägg (III:s norm, ordern): rutan "Så bläddrar du" sist i Inledningen och länkblocket sist i det
 // sista numrerade avsnittet och sist i Sammanfattningen – på just de platserna, och inget annat.
 {
-  const r = las(path.join(__dirname, '..', 'kallor', 'kap3', 'IV-A-Resulterande-kraft-alla-nivaer-v3.md')), delar = {};
+  const r = las(path.join(__dirname, '..', 'kallor', 'kap3', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md')), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);
     if (m) { cur = { STANDARD: 'standard', ENKEL: 'enkel', 'FÖRDJUPNING': 'fordjupning' }[m[1]]; delar[cur] = []; continue; }

@@ -1,6 +1,6 @@
 // node verktyg/kap3-omvandlare.js [utmapp]
 // Arbetsorder 12 (2026-11-07): Kraft och rörelse, avsnitt IV Fall, kast och balans, text A Resulterande kraft –
-// kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v3.md → innehall/resulterande-kraft/{standard,enkel,fordjupning}.js,
+// kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v4.md → innehall/resulterande-kraft/{standard,enkel,fordjupning}.js,
 // ordagrant i strömformatet. Utan utmapp skrivs filerna på sin plats i repot (och skriver över dem); med en tom utmapp
 // hamnar de där, så att de kan jämföras först.
 //
@@ -16,7 +16,7 @@
 // numrerade avsnittet (Öva, Självskattning) och i Sammanfattningen (Öva, Självskattning, Elevboken).
 'use strict';
 const fs = require('fs'), path = require('path');
-const ROT = path.join(__dirname, '..'), KALLA = path.join(ROT, 'kallor', 'kap3', 'IV-A-Resulterande-kraft-alla-nivaer-v3.md');
+const ROT = path.join(__dirname, '..'), KALLA = path.join(ROT, 'kallor', 'kap3', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md');
 const UT = process.argv.slice(2).find(a => !a.startsWith('--'));
 const MAPP = 'kraft_och_rorelse/fall_kast_och_balans/innehall/resulterande-kraft';
 const NIVAER = [['STANDARD', 'standard', '📘'], ['ENKEL', 'enkel', '📗'], ['FÖRDJUPNING', 'fordjupning', '📕']];
@@ -95,7 +95,7 @@ function blockText(b) {
 for (const [kod, n, ikon] of NIVAER) {
   const avs = bocker[n], ut = [];
   ut.push(`/* Avsnittssida IV. Fall, kast och balans, text A: Resulterande kraft – nivån ${n} (${ikon}). Arbetsorder 12`,
-    ` * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v3.md (# ${ikon} ${kod}), införd ordagrant i`,
+    ` * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v4.md (# ${ikon} ${kod}), införd ordagrant i`,
     ' * strömformatet av verktyg/kap3-omvandlare.js: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du',
     ' * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och',
     ' * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.', ' */');
