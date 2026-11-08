@@ -371,14 +371,25 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
               if (!graf.isPointInStroke(new DOMPoint(cx, cy))) f_.push('grafen går inte genom punkten (' + X + '; ' + Y + ')');
             });
             // ytorna: hörnen på tidsaxeln eller på grafen, och mitten av varje kant som inte ligger på axeln eller är lodrät på grafen
+            // (arbetsorder 13: en yta kan ligga på en annan – rektangeln under triangeln – och då får hörnet eller kanten
+            // ligga på den andra ytans kant; varje hörn står på sin koordinat i data, och ytans namn står inne i ytan)
             const paGraf = (x, y) => graf.isPointInStroke(new DOMPoint(x, y));
+            const ytor = [...g.querySelectorAll('polygon.fig-yta')].map(p => [...p.points].map(q => [q.x, q.y]));
+            const paStracka = (x, y, [a, b], [c, d]) => { const L = (c - a) ** 2 + (d - b) ** 2, t = L ? Math.max(0, Math.min(1, ((x - a) * (c - a) + (y - b) * (d - b)) / L)) : 0;
+              return Math.hypot(x - a - t * (c - a), y - b - t * (d - b)) <= N; };
+            const paAnnanYta = (x, y, j) => ytor.some((h, k) => k !== j && h.some((p, i) => paStracka(x, y, p, h[(i + 1) % h.length])));
             g.querySelectorAll('polygon.fig-yta').forEach((p, j) => {
-              const h = [...p.points].map(q => [q.x, q.y]);
-              h.forEach(([x, y]) => { if (!nara(y, y0) && !paGraf(x, y)) f_.push('yta ' + (j + 1) + ': hörnet (' + x.toFixed(1) + ', ' + y.toFixed(1) + ') ligger varken på tidsaxeln eller på grafen'); });
+              const h = ytor[j];
+              h.forEach(([x, y]) => { if (!nara(y, y0) && !paGraf(x, y) && !paAnnanYta(x, y, j)) f_.push('yta ' + (j + 1) + ': hörnet (' + x.toFixed(1) + ', ' + y.toFixed(1) + ') ligger varken på tidsaxeln, på grafen eller på en annan yta'); });
               h.forEach(([x, y], k) => { const [x2, y2] = h[(k + 1) % h.length];
                 if (nara(y, y0) && nara(y2, y0)) return;                 // på tidsaxeln
                 if (nara(x, x2)) return;                                 // en lodrät kant
-                if (!paGraf((x + x2) / 2, (y + y2) / 2)) f_.push('yta ' + (j + 1) + ': den övre kanten följer inte grafen'); });
+                if (!paGraf((x + x2) / 2, (y + y2) / 2) && !paAnnanYta((x + x2) / 2, (y + y2) / 2, j)) f_.push('yta ' + (j + 1) + ': den övre kanten följer inte grafen'); });
+              if (p.dataset.punkter) p.dataset.punkter.split(' ').forEach((q, k) => { const [X, Y] = q.split(',').map(Number);
+                if (!h[k] || !nara(h[k][0], x0 + X * kx) || !nara(h[k][1], y0 - Y * ky)) f_.push('yta ' + (j + 1) + ': hörnet (' + X + '; ' + Y + ') står inte på sin koordinat'); });
+              const namn = g.querySelector('text.fig-yta-namn[data-yta="' + p.dataset.yta + '"]');
+              if (namn) { const b = namn.getBBox(), in_ = (x, y) => p.isPointInFill(new DOMPoint(x, y));
+                if (![[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].every(([x, y]) => in_(x, y))) f_.push('yta ' + (j + 1) + ': namnet ”' + namn.textContent + '” står inte inne i ytan'); }
             });
           });
         } else {

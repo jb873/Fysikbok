@@ -674,7 +674,8 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-yta-1 { fill: rgba(160, 125, 47, .26); }
 .fig-yta-2 { fill: rgba(74, 45, 102, .14); }
 .fig-delta { stroke: var(--accent-2-mork); stroke-width: 1.8; stroke-dasharray: 5 4; }
-.fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala { font-size: 19px; }
+.fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala, .fig-yta-namn { font-size: 19px; }
+.fig-yta-namn { font-weight: 600; fill: var(--black); }   /* ytans namn i diagram_graf (arbetsorder 13) */
 .fig-diagram-rubrik { font-weight: 600; }
 .fig-delta-text { fill: var(--accent-2-mork); font-weight: 600; }
 .fig-vektor-text { font-weight: 600; fill: var(--accent-2-mork); }

@@ -1115,12 +1115,14 @@
   });
   /* ---------- Diagram och vektorer (Nästa steg, arbetsorder 11, 2026-11-07) ----------
    *   diagram_graf   diagram: [{ rubrik?, x: {storhet, enhet, max, steg?, tal?}, y: {…},
-   *                    grafer: [{ punkter: [[x, y], …], kurva?: true }], ytor?: [{ punkter, ton?: 1|2 }],
+   *                    grafer: [{ punkter: [[x, y], …], kurva?: true }], ytor?: [{ punkter, ton?: 1|2, namn?, etikett?: [x, y] }],
    *                    delta?: [{ fran: [x, y], till: [x, y], dx?: 'Δt', dy?: 'Δv' }] }] (1–3, bredvid varandra)
    *                  Axlar med rutnät (steg: en ruta), storhet och enhet på varje axel, talen var tal:e enhet (utan tal:
    *                  inga tal). Graferna: räta linjer mellan punkterna, eller en mjuk kurva genom dem (kurva: true).
    *                  Punkterna markeras. Ytorna (trianglar, rektanglar) skuggas i två ljusa toner, och Δ-linjerna är
    *                  streckade. Grinden mäter att varje punkt ligger på sin koordinat och att ytorna följer grafen.
+   *                  En yta kan ha ett namn (arbetsorder 13: "v₀ · t", "a · t² / 2"), i ytans tyngdpunkt eller vid
+   *                  etikett (textens mitt i axlarnas värden). Grinden mäter ytans hörn mot data och att namnet står i ytan.
    *   vektor_rutnat  pilar: [{ dx, dy, namn? }] (rutor; dy uppåt), resultant?: { namn? }, ratVinkel?: true, skala?: text
    *                  Rutat papper; pilarna efter varandra (varje pil börjar där den förra slutar), resultanten från den
    *                  första pilens början till den sista pilens spets. Grinden mäter det. */
@@ -1149,7 +1151,7 @@
       // (axlarnas största värden ur data: grinden räknar punkternas lägen ur rutnätet och dem)
       s += `<g class="fig-diagram" data-diagram="${i + 1}" data-xmax="${xs}" data-ymax="${ys}">`;
       // ytorna under graferna
-      (dg.ytor || []).forEach(y => { s += `<polygon class="fig-yta fig-yta-${y.ton || 1}" points="${y.punkter.map(([a, b]) => f(X(a)) + ',' + f(Y(b))).join(' ')}"/>`; });
+      (dg.ytor || []).forEach((y, j) => { s += `<polygon class="fig-yta fig-yta-${y.ton || 1}" points="${y.punkter.map(([a, b]) => f(X(a)) + ',' + f(Y(b))).join(' ')}" data-yta="${j + 1}" data-punkter="${y.punkter.map(p => p.join(',')).join(' ')}"/>`; });
       // rutnätet
       for (let v = 0; v <= xs + 1e-9; v += dg.x.steg || 1) s += `<line class="fig-rutnat" x1="${f(X(v))}" y1="${f(Y(0))}" x2="${f(X(v))}" y2="${f(Y(ys))}"/>`;
       for (let v = 0; v <= ys + 1e-9; v += dg.y.steg || 1) s += `<line class="fig-rutnat" x1="${f(X(0))}" y1="${f(Y(v))}" x2="${f(X(xs))}" y2="${f(Y(v))}"/>`;
@@ -1168,6 +1170,12 @@
         if (dl.dx) s += `<text x="${f((X(a) + X(c)) / 2)}" y="${f(Y(b) - 7)}" class="fig-text fig-delta-text fig-mitt">${esc(dl.dx)}</text>`;
         if (dl.dy) s += `<text x="${f(X(c) + 7)}" y="${f((Y(b) + Y(e)) / 2 + 6)}" class="fig-text fig-delta-text fig-vanster">${esc(dl.dy)}</text>`;
       });
+      // ytornas namn (arbetsorder 13): i ytans tyngdpunkt, eller där etikett anger (textens mitt, i axlarnas värden)
+      (dg.ytor || []).forEach((y, j) => {
+        if (!y.namn) return;
+        const [ex, ey] = y.etikett || [y.punkter.reduce((a, p) => a + p[0], 0) / y.punkter.length, y.punkter.reduce((a, p) => a + p[1], 0) / y.punkter.length];
+        s += `<text x="${f(X(ex))}" y="${f(Y(ey) + 6.5)}" class="fig-text fig-yta-namn fig-mitt" data-yta="${j + 1}">${esc(y.namn)}</text>`;
+      });
       // graferna och punkterna
       (dg.grafer || []).forEach(g => {
         const P = g.punkter.map(([a, b]) => [X(a), Y(b)]);
@@ -1185,7 +1193,8 @@
       s += '</g>';
       beskr.push(`${rubriker[i].length ? rubriker[i].join(' ') + ': ' : ''}ett diagram med ${dg.x.storhet} (${dg.x.enhet}) på den vågräta axeln och ${dg.y.storhet} (${dg.y.enhet}) på den lodräta; ` +
         (dg.grafer || []).map(g => `${g.kurva ? 'en kurva' : 'en graf'} genom ${g.punkter.map(([a, b]) => `(${tal(a)}; ${tal(b)})`).join(', ')}`).join(', ') +
-        ((dg.ytor || []).length ? `, med ${dg.ytor.length} skuggade ytor under grafen` : '') + ((dg.delta || []).length ? ' och streckade Δ-linjer' : ''));
+        ((dg.ytor || []).length ? `, med ${dg.ytor.length} skuggade ytor under grafen` +
+          (dg.ytor.some(y => y.namn) ? ` (${dg.ytor.filter(y => y.namn).map(y => y.namn).join(' och ')})` : '') : '') + ((dg.delta || []).length ? ' och streckade Δ-linjer' : ''));
     });
     return { svg: svg(B, H, s).replace('<svg ', '<svg data-diagram-graf="' + n + '" '), beskrivning: beskr.join('. ') + '.' };
   });

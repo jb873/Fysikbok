@@ -101,11 +101,11 @@ DD.forEach(([B, fil], i) => {
 // Källan och filen läses var för sig till samma följd: avsnitt (titel, numrerad), rubriker, stycken (rader i följd som
 // ett stycke med radbrytningar), punkter, numrerade punkter (med numret), formler (uttryck – förklaring), exempel
 // (rubrik, raderna och de tomma raderna mellan styckena), PROVA-raderna, MATTE och ANVÄNDS I (posterna). Bildmarkeringarna
-// ska stå som kommentarer i samma ordning. Det enda godkända tillägget: länken till övningsboken sist i textbokens första
-// avsnitt (ordern). Dessutom: varje länk pekar på ett avsnitt med just det namnet (MATTE: rubriken, ANVÄNDS I: numret).
+// ska stå som kommentarer i samma ordning. Det enda godkända tillägget: länken till övningsboken i textbokens första
+// avsnitt, sist under rubriken "Pröva dig själv efter varje ny formel" (v4, arbetsorder 13). Dessutom: varje länk pekar på ett avsnitt med just det namnet (MATTE: rubriken, ANVÄNDS I: numret).
 const NS_KALLOR = path.join(__dirname, '..', 'kallor', 'nasta-steg') + path.sep, NS_ROT = path.join(__dirname, '..');
 const NS = [
-  { kalla: 'Nasta-steg-Kraft-och-rorelse-textbok-v3.md', fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/textbok.js', bok: 'nasta-kraft-och-rorelse', namn: 'textboken' },
+  { kalla: 'Nasta-steg-Kraft-och-rorelse-textbok-v4.md', fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/textbok.js', bok: 'nasta-kraft-och-rorelse', namn: 'textboken' },
   { kalla: 'Nasta-steg-Kraft-och-rorelse-ovningsbok-v2.md', fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/ovningsbok.js', bok: 'ovning-kraft-och-rorelse', namn: 'övningsboken' },
   { kalla: 'Matematiken-i-fysiken-v2.md', fil: 'nasta_steg/matematiken_i_fysiken/innehall/matematiken.js', bok: 'stod-matematiken', namn: 'Matematiken i fysiken' }
 ];
@@ -160,9 +160,12 @@ const nsFiler = Object.fromEntries(NS.map(B => [B.bok, nsFil(B.fil)]));
 for (const B of NS) {
   const k = nsKalla(B.kalla), f = nsFiler[B.bok], seq = f.ut.slice(), tFel = [];
   if (B.bok === 'nasta-kraft-och-rorelse') {
-    // tillägget: länken till övningsboken sist i det första avsnittet (före nästa AVSNITT)
-    const j = seq.findIndex((x, i) => i > 0 && x.startsWith('AVSNITT'));
-    if (seq[j - 1] === 'BOKLANK ovning-kraft-och-rorelse') seq.splice(j - 1, 1); else tFel.push('länken till övningsboken står inte sist i ”Så här använder du boken”');
+    // tillägget: länken till övningsboken i det första avsnittet, sist under rubriken "Pröva dig själv efter varje ny
+    // formel" (textboken v4, arbetsorder 13): före nästa rubrik eller nästa avsnitt, efter stycket om övningsboken
+    const r = seq.indexOf('RUBRIK Pröva dig själv efter varje ny formel'), a2 = seq.findIndex((x, i) => i > 0 && x.startsWith('AVSNITT'));
+    const j = seq.findIndex((x, i) => i > r && (x.startsWith('RUBRIK') || x.startsWith('AVSNITT')));
+    if (r > 0 && r < a2 && j <= a2 && seq[j - 1] === 'BOKLANK ovning-kraft-och-rorelse' && /övningsboken/.test(seq[j - 2])) seq.splice(j - 1, 1);
+    else tFel.push('länken till övningsboken står inte sist under ”Pröva dig själv efter varje ny formel” i ”Så här använder du boken”');
   }
   const ok = k.ut.length === seq.length && k.ut.every((x, i) => x === seq[i]);
   const bok = JSON.stringify(k.bilder) === JSON.stringify(f.bilder);

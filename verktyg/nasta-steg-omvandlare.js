@@ -16,7 +16,8 @@
 //   [BILD: …]                 kommentar på sin plats (figurerna: steg 3)
 //   - x                       punkter;  1. x  numrerad lista (stegplan)
 //   rader i följd utan tom rad emellan: rader (mellanled); en ensam rad: ett stycke
-// Tillägg som inte står i källan (ordern): länken till övningsboken sist i textbokens "Så här använder du boken".
+// Tillägg som inte står i källan (ordern): länken till övningsboken i textbokens "Så här använder du boken", sist under
+// rubriken "Pröva dig själv efter varje ny formel" (textboken v4, arbetsorder 13).
 'use strict';
 const fs = require('fs'), path = require('path');
 const ROT = path.join(__dirname, '..'), KALLOR = path.join(ROT, 'kallor', 'nasta-steg');
@@ -24,13 +25,14 @@ const UT = process.argv.slice(2).find(a => !a.startsWith('--'));
 // Böckernas adressnamn på avsnittssidorna (delkapitel.js: nastaSteg, ovningsbocker, stodbocker)
 const TEXTBOK = 'nasta-kraft-och-rorelse', OVNINGSBOK = 'ovning-kraft-och-rorelse', MATEMATIK = 'stod-matematiken';
 const BOCKER = [
-  { kalla: 'Nasta-steg-Kraft-och-rorelse-textbok-v3.md', niva: 'nasta-steg', bok: TEXTBOK,
+  { kalla: 'Nasta-steg-Kraft-och-rorelse-textbok-v4.md', niva: 'nasta-steg', bok: TEXTBOK,
     fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/textbok.js', titel: 'Nästa steg · Kraft och rörelse – textbok' },
   { kalla: 'Nasta-steg-Kraft-och-rorelse-ovningsbok-v2.md', niva: 'ovningsbok', bok: OVNINGSBOK,
     fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/ovningsbok.js', titel: 'Nästa steg · Kraft och rörelse – övningsbok' },
   { kalla: 'Matematiken-i-fysiken-v2.md', niva: 'stodbok', bok: MATEMATIK,
     fil: 'nasta_steg/matematiken_i_fysiken/innehall/matematiken.js', titel: 'Matematiken i fysiken' }
 ];
+const LANK_RUBRIK = 'Pröva dig själv efter varje ny formel';        // länken till övningsboken står sist under den (v4)
 const slug = s => s.toLowerCase().replace(/[åä]/g, 'a').replace(/ö/g, 'o').replace(/é/g, 'e').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const rader = f => fs.readFileSync(path.join(KALLOR, f), 'utf8').replace(/\r/g, '').split('\n');
 
@@ -121,8 +123,19 @@ for (const B of BOCKER) for (const a of lasta[B.bok].avs) a.block = a.block.map(
   });
   return { typ: 'bokref', etikett: b.etikett, lankar };
 });
-// Tillägget: länken till övningsboken sist i textbokens instruktionssida (det första avsnittet)
-text[0].block.push({ typ: 'boklank', bok: OVNINGSBOK });
+// Tillägget: länken till övningsboken i textbokens instruktionssida (det första avsnittet). Sedan v4 (arbetsorder 13):
+// sist i texten under rubriken "Pröva dig själv efter varje ny formel", efter meningen om övningsboken – före nästa
+// rubrik (eller sist i avsnittet om rubriken är den sista).
+{
+  const bl = text[0].block, r = bl.findIndex(b => b.typ === 'rubrik' && b.text === LANK_RUBRIK);
+  if (r < 0) fel.push(`textboken: rubriken ”${LANK_RUBRIK}” saknas i ”${text[0].titel}”`);
+  else {
+    let n = bl.findIndex((b, i) => i > r && b.typ === 'rubrik'); if (n < 0) n = bl.length;
+    const fore = bl[n - 1];
+    if (!fore || fore.typ !== 'text' || !/övningsboken/.test(fore.text)) fel.push('textboken: texten före länken handlar inte om övningsboken');
+    bl.splice(n, 0, { typ: 'boklank', bok: OVNINGSBOK });
+  }
+}
 
 // Steg 3 (arbetsorder 11): figurerna efter sina bildmarkeringar (kommentaren står kvar). Värdena är bildmarkeringarnas.
 // Textbokens klossen i vatten står bara som kommentar: kraftpilar ritar krafterna från föremålets mitt och kan inte rita
@@ -137,6 +150,13 @@ const FIGURER = [
   { bok: TEXTBOK, borjar: '[BILD: hastighet–tid-diagram för en cyklist', figur: { id: 'bild-cyklist', typ: 'figur', namn: 'diagram_graf', diagram: [
     { x: tid(10, 2), y: { storhet: 'hastighet', enhet: 'm/s', max: 8, steg: 1, tal: 2 }, grafer: [{ punkter: [[0, 0], [4, 6], [10, 6]] }],
       ytor: [{ punkter: [[0, 0], [4, 6], [4, 0]], ton: 1 }, { punkter: [[4, 0], [4, 6], [10, 6], [10, 0]], ton: 2 }] }
+  ] } },
+  // v4 (arbetsorder 13): arean under grafen vid konstant acceleration, med ordens data v₀ = 2 m/s, a = 1 m/s², t = 4 s –
+  // grafen från (0, 2) till (4, 6), rektangeln v₀ · t under och triangeln a · t² / 2 ovanpå, i två ljusa toner
+  { bok: TEXTBOK, borjar: '[BILD: hastighet–tid-diagram vid konstant acceleration', figur: { id: 'bild-s-formeln', typ: 'figur', namn: 'diagram_graf', diagram: [
+    { x: tid(5, 1), y: { storhet: 'hastighet', enhet: 'm/s', max: 7, steg: 1, tal: 1 }, grafer: [{ punkter: [[0, 2], [4, 6]] }],
+      ytor: [{ punkter: [[0, 0], [0, 2], [4, 2], [4, 0]], ton: 1, namn: 'v₀ · t' },
+        { punkter: [[0, 2], [4, 6], [4, 2]], ton: 2, namn: 'a · t² / 2', etikett: [2.75, 2.85] }] }
   ] } },
   { bok: MATEMATIK, borjar: '[BILD: Hastighet–tid-diagram på rutat papper', figur: { id: 'bild-diagram', typ: 'figur', namn: 'diagram_graf', diagram: [
     { x: tid(10, 2), y: { storhet: 'hastighet', enhet: 'm/s', max: 10, steg: 1, tal: 2 }, grafer: [{ punkter: [[0, 0], [4, 8], [10, 8]] }],
@@ -176,7 +196,7 @@ function skriv(B) {
     ' * strömformatet av verktyg/nasta-steg-omvandlare.js. ## = avsnitt, ### = rubrik, ett stycke = ett textblock, rader i',
     ' * följd = rader; [FORMEL], [EXEMPEL], [PROVA], [MATTE] och [ANVÄNDS I] = formel, exempel, prova och bokref (länkar',
     ' * till den andra boken); [BILD …] står som kommentar på sin plats.' +
-    (B.bok === TEXTBOK ? ' Tillägg (ordern): länken till övningsboken sist i "Så här\n * använder du boken".' : ''), ' */');
+    (B.bok === TEXTBOK ? ' Tillägg (ordern): länken till övningsboken sist under rubriken\n * "Pröva dig själv efter varje ny formel" i "Så här använder du boken".' : ''), ' */');
   ut.push(`Bok.niva('${B.niva}', {`, '  avsnitt: [');
   avs.forEach((a, ai) => {
     ut.push('    {', `      id: '${a.id}', titel: ${q(a.titel)}${a.numrerad ? '' : ', numrerad: false'},`, '      block: [');
