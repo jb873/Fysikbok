@@ -403,8 +403,24 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
 - **Kontrollen:** `?kontroll` (brytningsreglerna) och grindens mätning på skärmen säger till om en regel bryts.
 
 Brytningen väntar på typsnitten (annars mäts fel), sparas per sidmått och görs om bara när sidmåttet ändras. Den
-tar ungefär 10–90 ms med CPU:n strypt 6 gånger, som på en Chromebook (grinden: medianen under 200 ms). Innehållsförteckningen räknar ut sidnumren för
-rubrikerna och krymper fortfarande sin egen text (ned till 70 %) om den behöver.
+tar ungefär 5–50 ms med CPU:n strypt 6 gånger, som på en Chromebook, och 50–140 ms för Nästa steg-böckerna (grinden:
+medianen under 200 ms). Innehållsförteckningen räknar ut sidnumren för rubrikerna och krymper fortfarande sin egen
+text (ned till 70 %) om den behöver.
+
+**Snabbare brytning (2026-11-08).** Nästan all tid går åt till att webbläsaren lägger ut texten, och den formas om
+varje gång ett block flyttas. Tre ändringar, utan att någon sida bryts annorlunda (`verktyg/brytning-jamfor.js`):
+- Spalten där blocken mäts tas bort direkt efter mätningen. Förut låg den kvar, så att varje provad sida lade ut hela
+  spalten igen.
+- Elevens brytning provar inte längre en nästan full sida i en riktig sida. I alla böcker och lägen (10 202 provade
+  sidor) var räkningen och den riktiga sidan överens om vad som får plats, och en nästan full sidas fyllnad används inte
+  i elevens brytning. Nära 40 %-gränsen avgör fortfarande en riktig sida. Kontrolläget provar varje sida och kräver att
+  elevens brytning blir densamma, så ett fel i räkningen ger rött i grinden.
+- Innehållsförteckningen anpassas bara i kontrollägets brytning. Elevens brytning använder inte det måttet, och sidan
+  anpassas ändå när den visas.
+
+Med textboken v4 gick Nästa steg-textboken från cirka 250 till 140 ms, övningsboken från 105 till 50 ms och
+Matematiken i fysiken från 130 till 80 ms. Mätningen visade också att den riktiga sidan har cirka 5 px mer plats än
+räkningen tror (fyllnaden skiljer cirka 1 %). Det ändrar inget här, men räkningen är försiktig.
 - **I texten:**
   - `*begrepp*` blir betonat, i djupblått som i filmerna.
   - `*atomer|atom*` skriver begreppet böjt men länkar till grundformen.
@@ -716,6 +732,11 @@ beslut 2026-11-05.
   Det är ett snabbt prov medan man arbetar. Grinden är grön först när hela har körts.
 - **`--negativ=<namn>`** kör bara de negativa prov vars namn innehåller texten. **`--visa`** skriver också ut de prov
   som gick igenom.
+- **`node verktyg/brytning-jamfor.js --spara <fil> | --jamfor <fil>`** (2026-11-08): sidindelningen före och efter en
+  ändring i brytningen. Kör `--spara` före ändringen och `--jamfor` efter. Varje avsnittssida bryts i tre fönster
+  (1366×633, 1366×768, mobilen) i Chromebookens två mått och fönstrets eget (`Bok.sidindelning`), både elevens
+  brytning och kontrollägets provade. Jämförelsen gäller blocken på varje sida och det som inte får plats. Den
+  provade brytningen jämförs också i fyllnaden på fyra decimaler. Slutkoden är 1 om något skiljer.
 - **Fristående böcker och rutorna (arbetsorder 11):**
   - Nästa steg-blocket står sist i Läs, och fliken Öva har övningsböckernas kort.
   - Varje kort öppnar sin bok: adressen stämmer, ingen nivåväljare, förteckningen har titeln och omslaget har "Nästa

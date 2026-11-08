@@ -664,11 +664,12 @@
    * Sammanfattning (varje avsnitt) börjar på ny sida; en rubrik börjar ny sida om mindre än en tredjedel av sidan är
    * kvar (den mjuka idéregeln); {typ: 'sidbrytning'} ger ny sida. Textstorleken ändras aldrig för att få plats.
    * Blir en sida mitt i ett avsnitt tunn tar den sista gruppen från sidan före, om den ryms där (balansen).
-   * Alla block mäts i en spalt i ett enda layoutvarv; sedan packas grupperna med räkning, och varje sida provas en
-   * gång i en riktig sida (ryms den inte går den sista gruppen vidare). Brytningen sparas per sidmått. */
+   * Alla block mäts i en spalt i ett enda layoutvarv; sedan packas grupperna med räkning. Nära 40 %-gränsen avgör en
+   * riktig sida; i kontrolläget provas varje sida i en riktig sida (ryms den inte går den sista gruppen vidare), och den
+   * brytningen ska vara densamma som elevens. Brytningen sparas per sidmått. */
 
   const TUNN = 0.4;                                   // en sida som är mindre fylld än så är tunn
-  const NARA = 24;                                    // px: en sida så nära full provas i en riktig sida
+  const NARA = 24;                                    // px: så nära 40 %-gränsen avgör en riktig sida
   const geoNyckel = g => `${g.sb.toFixed(1)}x${g.sh.toFixed(1)}x${g.fs.toFixed(2)}`;
   function bryt(bok, g) {
     const k = geoNyckel(g);
@@ -678,7 +679,7 @@
     return r;
   }
 
-  // strikt (kontrolläget): varje sida provas i en riktig sida, inte bara de nästan fulla
+  // strikt (kontrolläget): varje sida provas i en riktig sida
   function paginera(bok, g, strikt = kontroll) {
     const t0 = performance.now();
     flytt++;
@@ -698,12 +699,16 @@
     };
     const kap0 = skal(false), kapFot = lankProv ? skal(true) : kap0;
     // Spalten: alla block i sidans bredd, mätta i ett varv
+    // (spalten fylls innan den sätts in, så att blocken läggs in i ett svep)
     const kinne = h('div', { class: 'sidinnehall', style: 'flex: none; overflow: visible' });
-    vard.append(h('article', { class: 'sida', style: 'height: auto' }, kinne));
     const flode = bok.poster.filter(iFlodet);
-    flode.forEach(p => kinne.append(postElement(p, bok)));
+    kinne.append(...flode.map(p => postElement(p, bok)));
+    vard.append(h('article', { class: 'sida', style: 'height: auto' }, kinne));
     const bas = kinne.getBoundingClientRect().top, matt = new Map();
     flode.forEach(p => { const rr = p.el.getBoundingClientRect(); matt.set(p, { top: rr.top - bas, bottom: rr.bottom - bas }); });
+    // Spalten behövs inte mer (måtten är sparade): utan den lägger webbläsaren bara ut den sida som provas, inte hela
+    // bokens spalt varje gång (2026-11-08: det mesta av brytningens tid). Blocken flyttas ut till sidorna som förut.
+    kinne.parentNode.remove();
     // Höjden för block i följd på en sida: från det första till det sista (det sista har ingen marginal under, bok.css)
     const hojd = ps => { const f = ps.filter(p => matt.has(p)); if (!f.length) return 0; return matt.get(f[f.length - 1]).bottom - matt.get(f[0]).top; };
     const kap = ps => ps.some(p => p.fot) ? kapFot : kap0;
@@ -718,9 +723,13 @@
       return s.over;
     };
 
-    // En stängd sida: provas i en riktig sida om den är nästan full (alltid i kontrolläget), annars räknas fyllnaden
+    // En stängd sida: provas i en riktig sida i kontrolläget, annars räknas fyllnaden. (Före 2026-11-08 provades också
+    // en nästan full sida i elevens brytning. Det ändrade aldrig sidindelningen: i 10 202 provade sidor i alla böcker och
+    // lägen var räkningen och den riktiga sidan överens om vad som får plats – och en nästan full sidas fyllnad används
+    // inte i elevens brytning. Kontrolläget provar varje sida och kräver att elevens brytning blir densamma. Det var en
+    // fjärdedel av brytningens tid.)
     const mat = s => {
-      if (strikt || hojd(s.poster) > kap(s.poster) - NARA) return prova(s);
+      if (strikt) return prova(s);
       s.over = 0; s.fyll = hojd(s.poster) / kap(s.poster); return 0;
     };
 
@@ -780,8 +789,8 @@
           if (!nySida) { s.enheter.push(u); s.poster.push(...u.poster); i++; continue; }
           if (u.folj) s.forFigur = true;              // sidan blir kvar när stycket följer figuren: får vara tunn
         }
-        // Sidan stängs. Räkningen är exakt (samma bredd, sista blockets marginal är borttagen), så bara en nästan full
-        // sida provas i en riktig sida; ryms den inte där går de sista grupperna vidare (minst en blir kvar).
+        // Sidan stängs. Räkningen är exakt (samma bredd, sista blockets marginal är borttagen); i kontrolläget provas sidan
+        // i en riktig sida, och ryms den inte där går de sista grupperna vidare (minst en blir kvar).
         while (mat(s) && s.enheter.length > 1) { const u = s.enheter.pop(); s.poster.length -= u.poster.length; i--; }
         if (i >= E.length) break;
         s = ny(false);
@@ -906,10 +915,14 @@
     });
     const r = { sidor, postSida, matt, kap: kap0, kapFot, g, undantag };
     sidor[0].brytning = r;
-    // Innehållsförteckningen (sida 1) ska rymmas; den krymper själv sin text (passaInnehall)
-    const toc = sidElement(sidor[0]); vard.append(toc); passaInnehall(toc);
-    const ti = toc.querySelector('.sidinnehall');
-    sidor[0].over = ti.scrollHeight - ti.clientHeight > 1 ? ti.scrollHeight - ti.clientHeight : 0;
+    // Innehållsförteckningen (sida 1) ska rymmas; den krymper själv sin text (passaInnehall). Det prövas bara i den
+    // provade brytningen (kontrolläget): elevens brytning använder inte måttet, och sidan anpassas ändå när den visas
+    // (layout) – 2026-11-08, en tiondel av brytningens tid.
+    if (strikt) {
+      const toc = sidElement(sidor[0]); vard.append(toc); passaInnehall(toc);
+      const ti = toc.querySelector('.sidinnehall');
+      sidor[0].over = ti.scrollHeight - ti.clientHeight > 1 ? ti.scrollHeight - ti.clientHeight : 0;
+    }
     vard.remove();
     // Provkrok för grindens negativa prov (bara med ?kontroll&prova=langsam): brytningen tar 250 ms längre
     if (provaLangsam) { const slut = performance.now() + 250; while (performance.now() < slut); }
@@ -1747,7 +1760,7 @@
         const g = geometri(B, H, m), r = bryt(bok, g), { brott, tunna, varningar } = regelkoll(r, bok);
         varningar.forEach(x => ut.varningar.push(`${namn}, ${mnamn}: ${x}`));
         const for_stora = r.sidor.filter(s => s.over).map(s => ({ sida: s.nr, px: s.over }));
-        // Elevens brytning litar på räkningen (provar bara nästan fulla sidor); den ska bli densamma som den provade
+        // Elevens brytning litar på räkningen (provar bara nära 40 %-gränsen); den ska bli densamma som den provade
         const spar = x => x.sidor.map(s => s.poster.map(p => p.id).join(',')).join('|');
         if (spar(paginera(bok, g, false)) !== spar(r)) brott.push('elevens snabba brytning skiljer sig från den provade (räkningen stämmer inte)');
         antalFel += for_stora.length + brott.length + tunna.length;
@@ -1881,6 +1894,24 @@
       });
       if (oppen) { aktuell = null; layout(); rita(null); }
       return { bocker: ut, median: Math.max(...ut.map(b => b.median)), max: Math.max(...ut.map(b => b.max)) };
+    },
+    // Sidindelningen för varje bok med innehåll, för jämförelsen före och efter en ändring i brytningen
+    // (verktyg/brytning-jamfor.js, 2026-11-08): Chromebookens två mått och det här fönstret (mobilen: mobilens mått),
+    // elevens brytning och kontrollägets provade. Varje sida: blockens id, och för en provad sida fyllnaden och det som
+    // inte får plats. Ändrar inget i boken.
+    sidindelning() {
+      const mobil = matchMedia(MOBIL).matches;
+      const storlekar = MALSKARMAR.map(([n, B, H]) => [n, B, H, false]);
+      storlekar.push(mobil ? ['mobilen (det här fönstret)', innerWidth, innerHeight - 96, true] : ['det här fönstret', innerWidth, innerHeight, false]);
+      const spar = r => r.sidor.map(s => s.poster.map(p => p.id).join(',') + (s.over ? ` +${s.over}` : '') + (s.fyll !== undefined ? ` ${s.fyll.toFixed(4)}` : ''));
+      const ut = {};
+      for (const x of allaBocker().filter(x => harInnehall(x.n.id, x.t))) {
+        const bok = byggBok(x.n.id, x.t), m = {};
+        for (const [mnamn, B, H, mb] of storlekar) { const g = geometri(B, H, mb); m[mnamn] = { elev: spar(paginera(bok, g, false)), provad: spar(paginera(bok, g, true)) }; }
+        ut[bokNyckel(x.t, x.n.id)] = m;
+      }
+      if (oppen) { aktuell = null; layout(); rita(null); }
+      return ut;
     },
     gaTill: n => { if (oppen) gaTill(n, { hopp: true }); else oppnaBok(n); }
   };
