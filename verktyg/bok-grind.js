@@ -76,7 +76,9 @@ const FEL = {
   'vidare-länk med fel id': { adress: '&prova=vidare-fel', dk: 'rorelse_och_kraft', regel: /vidare/i },
   // Länken i löptexten (2026-11-11): motorns provkrok låter länken i IV B Standard gå till en bok som inte finns på
   // avsnittssidan – kontrolläget och grindens prov av textlänkarna ska ge rött
-  'textlänk till en bok som inte finns': { adress: '&prova=textlank-fel', dk: 'fall_kast_och_balans', regel: /textlänk|finns inte på avsnittssidan/i }
+  'textlänk till en bok som inte finns': { adress: '&prova=textlank-fel', dk: 'fall_kast_och_balans', regel: /textlänk|finns inte på avsnittssidan/i },
+  // En punktlista får delas bara om den inte ryms (arbetsorder 16): motorns provkrok delar en lista som ryms på mitten
+  'punktlista delad fast den ryms': { adress: '&prova=punktlista-delad', dk: 'provbok', regel: /punktlista/i }
 };
 // --negativ=<del av namnet>: bara de negativa proven vars namn innehåller texten
 const NEGATIV_BARA = (process.argv.find(a => a.startsWith('--negativ=')) || '').slice(10);

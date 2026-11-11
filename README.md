@@ -124,7 +124,7 @@ Fysik/
                                 kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/;
                                 Nästa steg i innehall/nasta-steg/ (textboken och övningsboken)
     fall_kast_och_balans/       avsnittssida IV. Fall, kast och balans (arbetsorder 12): text A resulterande-kraft/
-                                och B fritt-fall/ (2026-11-11), tre nivåer var; C kastrorelse/ och
+                                B fritt-fall/ (2026-11-11) och C kastrorelse/ (arbetsorder 16), tre nivåer var;
                                 D tyngdpunkt-och-balans/ "kommer"
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   nasta_steg/                   Nästa steg (arbetsorder 11)
@@ -461,7 +461,7 @@ räkningen tror (fyllnaden skiljer cirka 1 %). Det ändrar inget här, men räkn
 |---|---|
 | `rubrik` | `text` |
 | `text` | `text` (brödtext) |
-| `punkter` | `punkter: [...]` |
+| `punkter` | `punkter: [...]`. En lista med flera punkter blir en post per punkt (`punktdel`), som hålls ihop som en grupp: den står hel på en sida om den ryms och delas bara mellan två punkter om den inte gör det (arbetsorder 16). Marginalerna är desamma som i en hel lista. Den första punkten har listans id. |
 | `figur` | `namn`, figurens data, `bildtext?`, `beskrivning?` (se *Figurer*) |
 | `lank` | `till: ['ova', 'sjalvskattning', …]`: länk till plattformens hjälpmedel (se *Hjälpmedel*) |
 | `ruta` | `rubrik?`, `text` eller `punkter`, `stil: 'definition'` för en större definitionsruta |
@@ -1429,3 +1429,14 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     - hjälpmedel per text: varje text visar sin video, en text utan är tonad, och Läs-flikens textval rörs inte;
     - textlänkarna: länken öppnar boken, och Tillbaka leder tillbaka.
     - Negativt prov: `textlänk till en bok som inte finns`.
+- **2026-11-11, IV C Kaströrelse, steg 1 (arbetsorder 16):**
+  - **Källan** `kallor/kap3/IV-C-Kastrorelse-alla-nivaer-v1.md` (en oförändrad kopia) är omvandlad av
+    `kap3-omvandlare.js --text c` och prövas av `ordagrant.js`.
+  - **Bildmarkeringarna K1–K6** står som kommentarer. `verktyg/kap3-figurer-c.js` är tom tills steg 2.
+  - **"Vill du gå vidare?"** i C: 1. Storheter med riktning · 6. Tyngden och fritt fall.
+  - **En punktlista kan delas** mellan två punkter om den inte ryms på en sida (blocktypen `punktdel`, se blocken).
+    Sammanfattningarnas "Det viktigaste" i C rymdes inte på någon nivå (15–178 px för mycket), och texten ska in
+    ordagrant. Marginalerna är desamma som i en hel lista. `brytning-jamfor.js` före och efter: sidindelningen är
+    densamma i alla 567 böcker × mått utom C, där listan nu delas i stället för att gå utanför sidan.
+  - Kontrolläget säger till om en punktlista är delad fast den ryms. Det räknas som i brytningen: med rubrikerna före
+    listan, och med sidfoten om en fot följer.

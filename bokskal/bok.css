@@ -466,6 +466,9 @@ sub, sup { font-size: .7em; line-height: 0; }
 
 .b-punkter { list-style: none; margin: 0 0 .6em; padding: 0; }
 .b-punkter li { position: relative; padding-left: 1.05em; margin-bottom: .28em; }
+/* en punkt ur en punktlista som får delas (arbetsorder 16): samma avstånd som mellan punkterna i en hel lista, och
+   listans marginal under den sista – höjden blir densamma som den hela listans */
+.b-punktdel:not(.pd-sista) { margin-bottom: .28em; }
 .b-punkter li::before {
   content: ""; position: absolute; left: .1em; top: .6em; width: .3em; height: .3em;
   background: var(--accent-2); transform: rotate(45deg);

@@ -1,6 +1,6 @@
 /* Avsnittssida IV. Fall, kast och balans (Fysik · Kraft och rörelse), med texterna A Resulterande kraft, B Fritt fall,
- * C Kaströrelse och D Tyngdpunkt och balans, en bok per text och nivå (arbetsorder 12, 2026-11-07). A och B (Fritt
- * fall, 2026-11-11) har innehåll; C och D är "kommer" (tomma filer). Inga djupdykningar än. Bara data; motorn är
+ * C Kaströrelse och D Tyngdpunkt och balans, en bok per text och nivå (arbetsorder 12, 2026-11-07). A, B (Fritt fall,
+ * 2026-11-11) och C (Kaströrelse, arbetsorder 16) har innehåll; D är "kommer" (tomma filer). Bara data; motorn är
  * bokskal/. Fälten beskrivs i Fysik/README.md. */
 Bok.delkapitel({
   id: 'fysik-fall-kast-och-balans',           // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
@@ -15,7 +15,7 @@ Bok.delkapitel({
   kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
-  // sparat – byt det aldrig. Källorna till A och B: kallor/kap3/, omvandlade av verktyg/kap3-omvandlare.js (B: --text b).
+  // sparat – byt det aldrig. Källorna till A–C: kallor/kap3/, omvandlade av verktyg/kap3-omvandlare.js (--text b, c).
   // Föreläsning och musikvideo per text (2026-11-11): hjalpmedel i texten går före avsnittssidans. YouTube med
   // inbäddningsadressen (youtube-nocookie.com/embed/<id>); motorn lägger till ?embed=1, som YouTube inte bryr sig om.
   texter: [

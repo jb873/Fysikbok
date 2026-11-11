@@ -24,7 +24,10 @@ const TABELL = [
     avsnitt: ['storheter-med-riktning', 'newtons-andra-lag'] },
   // IV B (2026-11-11): fallsträckan och g (avsnitt 6), hastighet och sträcka i diagram (3), a = F / m (5)
   { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/fritt-fall/fordjupning.js', text: 'IV B Fritt fall',
-    avsnitt: ['tyngden-och-fritt-fall', 'rorelsen-i-diagram', 'newtons-andra-lag'] }
+    avsnitt: ['tyngden-och-fritt-fall', 'rorelsen-i-diagram', 'newtons-andra-lag'] },
+  // IV C (arbetsorder 16): kastet delat i komposanter (avsnitt 1) och fallet (6)
+  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/kastrorelse/fordjupning.js', text: 'IV C Kaströrelse',
+    avsnitt: ['storheter-med-riktning', 'tyngden-och-fritt-fall'] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };

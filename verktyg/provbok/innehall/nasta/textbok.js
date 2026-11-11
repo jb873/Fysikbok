@@ -74,6 +74,18 @@ Bok.niva('nasta-steg', {
             'Samma provsvar som förut.', 'Provsträckan blir alltså densamma med båda formlerna.', 'Det är rimligt för ett prov som ökar farten.',
             'Svar: 15 m.'] ] }
       ]
+    },
+    {
+      // Punktlistor (arbetsorder 16): en kort lista som ryms (grindens negativa prov ?prova=punktlista-delad delar den)
+      // och en lång lista som är högre än sidan och delas mellan punkterna
+      id: 'punktlistor', titel: 'Provpunktlistor',
+      block: [
+        { typ: 'rubrik', text: 'En kort lista ryms på en sida' },
+        { typ: 'text', text: 'Provtext före den korta listan.' },
+        { typ: 'punkter', punkter: ['Första punkten i den korta listan.', 'Andra punkten i den korta listan.', 'Tredje punkten i den korta listan.'] },
+        { typ: 'rubrik', text: 'En lång lista delas mellan punkterna' },
+        { typ: 'punkter', punkter: Array.from({ length: 34 }, (_, i) => `Punkt ${i + 1} i den långa provlistan, som är högre än en sida.`) }
+      ]
     }
   ]
 });

@@ -248,6 +248,8 @@
   blocktyper.rubrik = d => h('h2', { class: 'sidtitel', html: symboler(inline(d.text, false)) });
   blocktyper.underrubrik = d => h('h3', { class: 'b-rubrik', html: symboler(inline(d.text)) });
   blocktyper.punkter = d => lista(d.punkter);
+  // en punkt ur en punktlista som brytningen får dela (normalisera): en egen lista med en punkt
+  blocktyper.punktdel = d => h('ul', { class: 'b-punkter b-punktdel' + (d.sista ? ' pd-sista' : '') }, h('li', { html: inline(d.punkt) }));
   blocktyper.ruta = d => h('aside', { class: 'b-ruta' + (d.stil ? ' b-ruta-' + d.stil : '') },
     d.rubrik && h('h4', { html: symboler(inline(d.rubrik)) }),
     d.text && h('p', { html: inline(d.text) }),
@@ -399,6 +401,14 @@
           const ruta = { id: pid, slag: b.typ, antal: rader.length };
           rader.forEach((r, k) => poster.push(Object.assign(post({ typ: 'rutarad', slag: b.typ, ruta: pid, rad: k + 1, rubrik: b.rubrik,
             text: r.text, ny: r.ny, forsta: k === 0, sista: k === rader.length - 1, svar: b.typ === 'exempel' && /^Svar:/.test(r.text) }, `${pid}-r${k + 1}`), { ruta })));
+        } else if (b.typ === 'punkter' && Array.isArray(b.punkter) && b.punkter.length > 1) {
+          // En punktlista (arbetsorder 16, 2026-11-11): en post per punkt, hållna ihop som en grupp – listan står hel på
+          // en sida om den ryms, och delas bara mellan två punkter om den är högre än sidan (IV C: Sammanfattningens
+          // "Det viktigaste" ryms inte). Den första punkten behåller listans id (läsplatsen), de andra heter …-p2, …-p3.
+          // Marginalerna är desamma som i en hel lista (bok.css), så att höjden och brytningen inte ändras.
+          const ruta = { id: pid, slag: 'punkter', antal: b.punkter.length };
+          b.punkter.forEach((x, k) => poster.push(Object.assign(post({ typ: 'punktdel', punkt: x, forsta: k === 0,
+            sista: k === b.punkter.length - 1 }, k ? `${pid}-p${k + 1}` : pid), { ruta })));
         } else poster.push(post(b, pid));
       });
       else (a.sidor || []).forEach((s, si) => {
@@ -806,7 +816,8 @@
           // Ett EXEMPEL som inte ryms på en sida (arbetsorder 11) får brytas – bara mellan raderna: en grupp per rad, och
           // den sista raden (Svar) i samma grupp som raden före, så att den aldrig står ensam på en ny sida. Rubrikerna
           // före exemplet följer den första raden. Ett exempel som ryms står helt på en sida; en PROVA-ruta delas aldrig.
-          if (u.ruta && u.ruta.slag === 'exempel' && !u.radvis && hojd(u.poster) > kap(u.poster)) {
+          // (En punktlista som inte ryms delas likadant, mellan punkterna, arbetsorder 16.)
+          if (u.ruta && (u.ruta.slag === 'exempel' || u.ruta.slag === 'punkter') && !u.radvis && hojd(u.poster) > kap(u.poster)) {
             const f = u.poster.findIndex(p => p.ruta), l = u.poster.map(p => !!p.ruta).lastIndexOf(true), rader = u.poster.slice(f, l + 1), delar = [];
             rader.forEach((p, k) => { if (k === rader.length - 1 && delar.length) delar[delar.length - 1].push(p); else delar.push([p]); });
             delar[0].unshift(...u.poster.slice(0, f));
@@ -990,6 +1001,8 @@
           if (provaRuta === 'exempel-delat' && R.slag === 'exempel') gjort = flytta(s, ps[Math.ceil(ps.length / 2)]);
           if (provaRuta === 'svar-ensam' && R.slag === 'exempel' && ps[ps.length - 1].b.svar) gjort = flytta(s, ps[ps.length - 1]);
           if (provaRuta === 'prova-delad' && R.slag === 'prova') gjort = flytta(s, ps[ps.length - 1]);
+          // (arbetsorder 16) en punktlista som ryms delas på mitten
+          if (provaRuta === 'punktlista-delad' && R.slag === 'punkter') gjort = flytta(s, ps[Math.ceil(ps.length / 2)]);
           // (arbetsorder 13) ett exempel delat före ett mellanled: raden och det som står efter den börjar nästa sida
           if (provaRuta === 'exempel-mellanled' && R.slag === 'exempel') { const k = ps.findIndex((p, j) => j > 0 && !p.b.svar && bundenRad(p, ps[j - 1])); if (k > 0) gjort = flytta(s, ps[k]); }
         }
@@ -1079,6 +1092,16 @@
       if (sid.length < 2) continue;
       const nrs = sid.map(x => x.nr).join('–'), rubrik = R.slag === 'exempel' ? ` ”${renText(ps[0].b.rubrik)}”` : '';
       if (R.slag === 'prova') { brott.push(`sida ${nrs}: PROVA-rutan är delad`); continue; }
+      // en punktlista (arbetsorder 16) delas bara om den inte ryms på en sida
+      // (som brytningen: med rubrikerna före listan, och med sidfotens plats om en fot följer listan)
+      if (R.slag === 'punkter') {
+        let f = bok.poster.indexOf(ps[0]);
+        while (f > 0 && RUBRIKER.includes(bok.poster[f - 1].typ)) f--;
+        const efter = bok.poster.slice(bok.poster.indexOf(ps[ps.length - 1]) + 1).find(p => p.fot || iFlodet(p));
+        const ihop = r.matt.get(ps[ps.length - 1]).bottom - r.matt.get(bok.poster[f]).top;
+        if (ihop <= (efter && efter.fot ? r.kapFot : r.kap)) brott.push(`sida ${nrs}: punktlistan är delad, fast den ryms på en sida`);
+        continue;
+      }
       const ihop = r.matt.get(ps[ps.length - 1]).bottom - r.matt.get(ps[0]).top;
       if (ihop <= Math.min(r.kap, r.kapFot)) {
         // Ett exempel som ryms får delas bara enligt 40 %-regeln (arbetsorder 13): det som står före exemplet och
@@ -1963,7 +1986,7 @@
       kontroll = adress.has('kontroll');
       provaRubrikSist = kontroll && adress.get('prova') === 'rubrik-sist';   // grindens negativa prov, se paginera
       provaLangsam = kontroll && adress.get('prova') === 'langsam';
-      provaRuta = kontroll && ['formel-skild', 'exempel-delat', 'svar-ensam', 'prova-delad', 'exempel-mellanled'].includes(adress.get('prova')) ? adress.get('prova') : null;
+      provaRuta = kontroll && ['formel-skild', 'exempel-delat', 'svar-ensam', 'prova-delad', 'exempel-mellanled', 'punktlista-delad'].includes(adress.get('prova')) ? adress.get('prova') : null;
       provaVidare = kontroll && adress.get('prova') === 'vidare-fel';           // rutan "Vill du gå vidare?" (arbetsorder 13)
     provaTextlank = kontroll && adress.get('prova') === 'textlank-fel';       // en länk i löptexten (2026-11-11)
       provaExempelHelt = kontroll && adress.get('prova') === 'exempel-helt';    // exempelregeln avstängd (arbetsorder 13)
@@ -2051,7 +2074,9 @@
       const mobil = matchMedia(MOBIL).matches;
       const storlekar = MALSKARMAR.map(([n, B, H]) => [n, B, H, false]);
       storlekar.push(mobil ? ['mobilen (det här fönstret)', innerWidth, innerHeight - 96, true] : ['det här fönstret', innerWidth, innerHeight, false]);
-      const spar = r => r.sidor.map(s => s.poster.map(p => p.id).join(',') + (s.over ? ` +${s.over}` : '') + (s.fyll !== undefined ? ` ${s.fyll.toFixed(4)}` : ''));
+      // (en punktlistas punkter räknas som listan: dess id en gång per sida, arbetsorder 16)
+      const ids = s => s.poster.map(p => p.typ === 'punktdel' ? p.ruta.id : p.id).filter((x, i, a) => x !== a[i - 1]);
+      const spar = r => r.sidor.map(s => ids(s).join(',') + (s.over ? ` +${s.over}` : '') + (s.fyll !== undefined ? ` ${s.fyll.toFixed(4)}` : ''));
       const ut = {};
       for (const x of allaBocker().filter(x => harInnehall(x.n.id, x.t))) {
         const bok = byggBok(x.n.id, x.t), m = {};

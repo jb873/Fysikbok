@@ -192,7 +192,8 @@ for (const B of NS) {
 // IV B Fritt fall (2026-11-11) prövas likadant mot kallor/kap3/IV-B-…-v2.md. Där finns också [EXEMPEL: rubrik] (raderna
 // under) och [RUTA: rubrik] (punkterna under): de hör till källan och ska stå på sin plats i boken.
 for (const [TX, KF, MP] of [['A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', 'resulterande-kraft'],
-                            ['B', 'IV-B-Fritt-fall-alla-nivaer-v2.md', 'fritt-fall']]) {
+                            ['B', 'IV-B-Fritt-fall-alla-nivaer-v2.md', 'fritt-fall'],
+                            ['C', 'IV-C-Kastrorelse-alla-nivaer-v1.md', 'kastrorelse']]) {   // (arbetsorder 16)
   const r = las(path.join(__dirname, '..', 'kallor', 'kap3', KF)), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);
@@ -262,5 +263,5 @@ for (const [TX, KF, MP] of [['A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', '
 console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.' +
   '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.' +
   '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.' +
-  '\nKraft och rörelse IV A (Resulterande kraft) och IV B (Fritt fall), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.');
+  '\nKraft och rörelse IV A (Resulterande kraft), IV B (Fritt fall) och IV C (Kaströrelse), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.');
 process.exitCode = fel ? 1 : 0;

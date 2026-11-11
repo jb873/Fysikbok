@@ -26,9 +26,12 @@ const TEXT = (process.argv.find(a => a.startsWith('--text=')) || '').slice(7) ||
   (process.argv.includes('--text') ? process.argv[process.argv.indexOf('--text') + 1] : 'a');
 const TEXTER = {
   a: { kalla: 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', mapp: 'resulterande-kraft', figurer: './kap3-figurer.js' },
-  b: { kalla: 'IV-B-Fritt-fall-alla-nivaer-v2.md', mapp: 'fritt-fall', figurer: './kap3-figurer-b.js' }
+  b: { kalla: 'IV-B-Fritt-fall-alla-nivaer-v2.md', mapp: 'fritt-fall', figurer: './kap3-figurer-b.js' },
+  // C Kaströrelse (arbetsorder 16, 2026-11-11): node verktyg/kap3-omvandlare.js --text c
+  c: { kalla: 'IV-C-Kastrorelse-alla-nivaer-v1.md', mapp: 'kastrorelse', figurer: './kap3-figurer-c.js',
+       titel: 'C: Kaströrelse', order: 'Arbetsorder 16 (2026-11-11)' }
 };
-if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a eller b)'); process.exit(1); }
+if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b eller c)'); process.exit(1); }
 const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);
 const UT = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--text');
 const MAPP = 'kraft_och_rorelse/fall_kast_och_balans/innehall/' + TEXTER[TEXT].mapp;
@@ -127,6 +130,12 @@ for (const [kod, n, ikon] of NIVAER) {
     ' * strömformatet av verktyg/kap3-omvandlare.js: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du',
     ' * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och',
     ' * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.', ' */');
+  else if (TEXTER[TEXT].order) ut.push(`/* Avsnittssida IV. Fall, kast och balans, text ${TEXTER[TEXT].titel} – nivån ${n} (${ikon}).`,
+    ` * ${TEXTER[TEXT].order}: kallor/kap3/${TEXTER[TEXT].kalla} (# ${ikon} ${kod}), införd ordagrant i`,
+    ` * strömformatet av verktyg/kap3-omvandlare.js --text ${TEXT}: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,`,
+    ' * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i',
+    ' * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill',
+    ` * du gå vidare?" sist. [BILD …] står som kommentar, med figuren efter (${TEXTER[TEXT].figurer.slice(2)}).`, ' */');
   else ut.push(`/* Avsnittssida IV. Fall, kast och balans, text B: Fritt fall – nivån ${n} (${ikon}). Joachims uppdrag`,
     ` * 2026-11-11: kallor/kap3/IV-B-Fritt-fall-alla-nivaer-v2.md (# ${ikon} ${kod}), införd ordagrant i strömformatet av`,
     ' * verktyg/kap3-omvandlare.js --text b: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du dig:" =',
