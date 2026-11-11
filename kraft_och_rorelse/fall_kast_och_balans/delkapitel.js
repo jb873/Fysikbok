@@ -16,11 +16,21 @@ Bok.delkapitel({
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
   // sparat – byt det aldrig. Källorna till A och B: kallor/kap3/, omvandlade av verktyg/kap3-omvandlare.js (B: --text b).
+  // Föreläsning och musikvideo per text (2026-11-11): hjalpmedel i texten går före avsnittssidans. YouTube med
+  // inbäddningsadressen (youtube-nocookie.com/embed/<id>); motorn lägger till ?embed=1, som YouTube inte bryr sig om.
   texter: [
     { id: 'resulterande-kraft', titel: 'Resulterande kraft' },
-    { id: 'fritt-fall', titel: 'Fritt fall' },
+    { id: 'fritt-fall', titel: 'Fritt fall',
+      hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/9Pf7AWzPKds' },   // youtu.be/9Pf7AWzPKds
+                    musikvideo: { href: null } } },                                           // på gång
     { id: 'kastrorelse', titel: 'Kaströrelse' },
     { id: 'tyngdpunkt-och-balans', titel: 'Tyngdpunkt och balans' }
+  ],
+
+  // Djupdykningar (2026-11-11): Galileo-djupdykningen hör till avsnittssida III, men finns också här under "Vill du veta
+  // mer?" – samma bok (samma fil och id), ingen kopia. IV B Standard länkar dit. Läsplatsen sparas per avsnittssida.
+  djupdykningar: [
+    { id: 'galileo', titel: 'Galileo mot Aristoteles – hur tröghetslagen upptäcktes', fil: '../rorelse_och_kraft/innehall/djupdykningar/galileo.js' }
   ],
 
   // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning).
@@ -44,10 +54,9 @@ Bok.delkapitel({
 
   // Plattformens hjälpmedel. Utan adress är de synliga, märkta "kommer" och inte klickbara.
   hjalpmedel: {
-    // Föreläsningen Fritt fall (Joachim, 2026-11-11: https://youtu.be/9Pf7AWzPKds), inbäddad med YouTubes
-    // inbäddningsadress (motorn lägger till ?embed=1, som YouTube inte bryr sig om). Fliken gäller hela avsnittssidan;
-    // det är IV:s enda föreläsning än så länge.
-    forelasning:    { href: 'https://www.youtube-nocookie.com/embed/9Pf7AWzPKds' },
+    // Föreläsningarna och musikvideorna står per text (texter ovan); fliken visar den valda textens.
+    forelasning:    { href: null },
+    musikvideo:     { href: null },
     ova:            { href: null },
     sjalvskattning: { href: null },
     begreppslista:  { href: null },

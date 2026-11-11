@@ -143,6 +143,22 @@ main.sida {
 .underdel-knapp.aktiv { background-color: var(--accent); border-color: var(--accent); }
 .underdel-knapp.aktiv .underdel-bokstav, .underdel-knapp.aktiv .underdel-titel { color: var(--papper); }
 .underdel-knapp[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }   /* en text utan innehåll: "kommer" */
+/* Textvalet i en hjälpmedelsflik (föreläsning och musikvideo per avsnitt, 2026-11-11): samma utseende som textvalet
+   i Läs, men egna klasser – .underdel-knapp är Läs-flikens */
+.flik-texter {
+  display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; margin: 0 auto 1.25rem;
+  width: fit-content; max-width: 100%; background: var(--papper-ljus);
+  border: 1px solid rgba(160, 125, 47, .35); border-radius: 8px; padding: .45rem .7rem;
+}
+.flik-text {
+  display: flex; align-items: center; gap: .6rem; background-color: var(--papper-ljus);
+  border: 1px solid rgba(27, 42, 54, .18); border-radius: 4px; padding: .45rem .9rem; cursor: pointer;
+  text-align: left; line-height: normal; transition: background-color .15s ease, border-color .15s ease;
+}
+.flik-text:hover { background-color: #faf4e4; }
+.flik-text.aktiv { background-color: var(--accent); border-color: var(--accent); }
+.flik-text.aktiv .underdel-bokstav, .flik-text.aktiv .underdel-titel { color: var(--papper); }
+.flik-text[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
 .underdel-bokstav { font-family: var(--rubrik); font-size: 1.35rem; line-height: 1; color: var(--accent-2-mork); }
 .underdel-titel { font-family: var(--text); font-size: .95rem; color: var(--dampad); }
 
@@ -164,9 +180,9 @@ main.sida {
   font-style: italic; color: var(--dampad); font-size: .98rem; }
 
 @media (max-width: 600px) {
-  .underdel-knapp { width: 100%; }
-  .flikar-rad { gap: .3rem .7rem; flex-wrap: wrap; }       /* fyra flikar på en rad också i en mobil */
-  .flik { font-size: .82rem; letter-spacing: .06em; padding: .6rem .2rem; }
+  .underdel-knapp, .flik-text { width: 100%; }
+  .flikar-rad { gap: .3rem .5rem; flex-wrap: wrap; }       /* fem flikar på en rad också i en mobil (2026-11-11) */
+  .flik { font-size: .76rem; letter-spacing: .03em; padding: .6rem .15rem; }
   .niva-valjare { flex-wrap: wrap; }                         /* fler än tre nivåer ryms inte på en rad */
   .niva-valjare .niva-knapp { padding: .45rem .55rem; letter-spacing: .04em; }
 }
@@ -530,11 +546,13 @@ sub, sup { font-size: .7em; line-height: 0; }
 
 /* Länken ut till hjälpmedlen (blocktypen lank), t.ex. i slutet av ett avsnitt. Den står i sidans fot (bok.js:
    byggSida): en tyst rad under en tunn linje, i stället för det mesta av sidans nedre marginal. */
-.sidfot { margin: 0 8%; padding: .25em 0 .4em; border-top: 1px solid var(--linje); font-size: .76em; line-height: 1.2; }
+.sidfot { margin: 0 8%; padding: .15em 0 .3em; border-top: 1px solid var(--linje); font-size: .76em; line-height: 1.2; }  /* (luften minskad 2026-11-11, se .b-lank) */
 .sida.har-fot .sidinnehall { padding-bottom: .25em; }
 .sida.har-fot .mer-hint { bottom: 2.4em; }
 @media (max-width: 599px) { .sidfot { margin: 0 6%; } }
-.b-lank { display: flex; flex-wrap: wrap; gap: .2em 1.6em; font-family: var(--rubrik); }
+/* (2026-11-11) tätare radavstånd: med Musikvideo blir Sammanfattningens rad ofta två rader, och då ska foten inte ta
+   mer plats än nödvändigt */
+.b-lank { display: flex; flex-wrap: wrap; gap: 0 1.6em; line-height: 1.1; font-family: var(--rubrik); }
 .lank-post { color: var(--accent); text-decoration: none; }
 a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .lank-post.kommer { color: var(--dampad); opacity: .8; }

@@ -52,11 +52,13 @@
   // (Djupdykningar är ingen nivå: de är egna böcker på avsnittssidan, se djupdykningar.)
   const NIVAER = [{ id: 'enkel', namn: 'Enkel', ikon: '📗' }, { id: 'standard', namn: 'Standard', ikon: '📘' },
     { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }];
+  // Musikvideon (Joachims beslut 2026-11-11): plattformens nya hjälpmedel, i alla ämnen – en musikvideo per avsnitt.
   const HJALPMEDEL = [['forelasning', 'Föreläsning'], ['ova', 'Öva'], ['sjalvskattning', 'Självskattning'],
-    ['begreppslista', 'Begreppslista'], ['elevbok', 'Elevbok']];
+    ['begreppslista', 'Begreppslista'], ['elevbok', 'Elevbok'], ['musikvideo', 'Musikvideo']];
   // Delkapitelsidans flikar, som i plattformens andra böcker: [flik, namn, hjälpmedlet den visar]. Läs är boken.
+  // Musikvideo står sist, som arbetsgången: föreläsning, läsa, öva och elevboken, och sist musikvideon som repetition.
   const FLIKAR = [['forelasning', 'Föreläsning', 'forelasning'], ['laes', 'Läs', null], ['ova', 'Öva', 'ova'],
-    ['elevboken', 'Elevboken', 'elevbok']];
+    ['elevboken', 'Elevboken', 'elevbok'], ['musikvideo', 'Musikvideo', 'musikvideo']];
 
   const blocktyper = {}, figurer = {}, illustrationer = {}, nivadata = {}, bocker = {}, problem = [];
   let kapitel = null;                          // kapitlets gemensamma data (kapitel.js): omslaget
@@ -64,7 +66,7 @@
   // aktuell: brytningen som visas (sidorna för bokens sidmått). plats: läsplatsen, ett block (post-id), 'innehall' eller
   // 'omslag'. nr: sidan som visas – 0 är omslaget.
   // flytt räknas upp när blockens element flyttas mellan sidor (en ny brytning), så att sidorna byggs om.
-  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false, provaRuta = null, provaExempelHelt = false, provaVidare = false;
+  let aktuell = null, plats = null, flytt = 0, typsnittKlara = false, provaRubrikSist = false, provaLangsam = false, provaRuta = null, provaExempelHelt = false, provaVidare = false, provaTextlank = false;
   let tillbaka = null, vandning = 'blad', helskarm = true, reglage = 'alltid', vilaTimer = null;
   let fokusEfter = null, panelFran = null, senasteEsc = 0;
   const ui = {};
@@ -110,6 +112,7 @@
   const symboler = html => html.split(/(<[^>]*>)/).map((d, i) => i % 2 ? d : d.replace(SYM, x => `<span class="sym">${x}</span>`)).join('');
   const symText = s => h('span', { html: symboler(esc(s)) });
 
+  const BOKLANK_INLINE = /\[([^\][]+)\]\(#([a-z0-9-]+)(?:\/([a-z0-9-]+))?\)/g;
   // Textens enda markering: *begrepp* (betonat, djupblått), *böjd form|grundform* när begreppet står böjt,
   // [[täljare|nämnare]] (bråk) och <sub>/<sup>. Har delkapitlet en begreppslista blir varje begrepp en länk dit.
   // Ett index skrivet med understreck (F_N, μ_vila, ρ_is – Nästa steg, arbetsorder 11) blir nedsänkt: F<sub>N</sub>.
@@ -119,13 +122,18 @@
       .replace(/(\p{L})_([\p{L}\p{N}]+)/gu, '$1<sub>$2</sub>')
       .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g,
         '<span class="brak"><span class="brak-t">$1</span><span class="brak-n">$2</span></span>')
+      // [text](#bok/ankare) – en länk i löptexten till en annan bok på avsnittssidan (2026-11-11: IV B → djupdykningen
+      // om Galileo), som bokref; utan ankare öppnas boken där eleven var. Finns boken inte här blir det text.
+      .replace(BOKLANK_INLINE, (_, text, t, ankare) => lankar && extraFor(t)
+        ? `<a class="bok-lank" href="#${t}/${ankare || 'innehall'}" data-bok="${t}" data-ankare="${ankare || ''}">${text}</a>`
+        : `<span class="bok-lank-text">${text}</span>`)
       .replace(/\*([^*|]+)(?:\|([^*]+))?\*/g, (_, text, grund) => {
         const url = lankar && hjalpmedelUrl('begreppslista', { begrepp: (grund || text).trim().toLowerCase() });
         return url ? `<a class="begrepp" href="${esc(url)}" data-hjalpmedel="begreppslista">${text}</a>`
           : `<strong class="begrepp">${text}</strong>`;
       });
   }
-  const renText = s => String(s || '').replace(/\*([^*|]+)(?:\|[^*]+)?\*/g, '$1').replace(/<\/?su[bp]>/g, '').replace(/(\p{L})_([\p{L}\p{N}]+)/gu, '$1$2');
+  const renText = s => String(s || '').replace(BOKLANK_INLINE, '$1').replace(/\*([^*|]+)(?:\|[^*]+)?\*/g, '$1').replace(/<\/?su[bp]>/g, '').replace(/(\p{L})_([\p{L}\p{N}]+)/gu, '$1$2');
 
   const lager = {
     hamta(k, standard) {
@@ -186,10 +194,20 @@
   }
   const hjalpmedelNamn = id => (hjalpmedel().find(x => x.id === id) || { namn: id }).namn;
   // {begrepp}, {avsnitt}, {niva} och {text} i adressen fylls i där länken står.
+  // Ett hjälpmedel kan också höra till en text (2026-11-11: föreläsning och musikvideo per avsnitt):
+  // texter: [{id, titel, hjalpmedel: {forelasning: {href}, musikvideo: {href}}}]. Textens adress går före
+  // avsnittssidans; varden.text väljer texten (annars den text som är vald eller öppen).
+  const textHjalpmedel = (t, id) => {
+    const tx = info && info.texter && info.texter.find(x => x.id === t);
+    return tx && tx.hjalpmedel && tx.hjalpmedel[id] && tx.hjalpmedel[id].href ? tx.hjalpmedel[id] : null;
+  };
+  // Har sidan hjälpmedlet alls – på avsnittssidan eller i någon text?
+  const harHjalpmedel = id => !!(info && ((info.hjalpmedel && info.hjalpmedel[id] && info.hjalpmedel[id].href) ||
+    (info.texter || []).some(t => textHjalpmedel(t.id, id))));
   function hjalpmedelUrl(id, varden = {}) {
-    const hm = info && info.hjalpmedel && info.hjalpmedel[id];
-    if (!hm || !hm.href) return null;
     const v = Object.assign({ niva: nivaId, text: textId }, varden);
+    const hm = textHjalpmedel(v.text, id) || (info && info.hjalpmedel && info.hjalpmedel[id]);
+    if (!hm || !hm.href) return null;
     return hm.href.replace(/\{(\w+)\}/g, (_, k) => encodeURIComponent(v[k] == null ? '' : v[k]));
   }
   // Inifrån boken öppnas hjälpmedlet inbäddat (plattformens ?embed=1), så att eleven behåller sidan och helskärmen.
@@ -289,7 +307,10 @@
   };
   // Länken ut till plattformens hjälpmedel, t.ex. i slutet av ett avsnitt: {typ: 'lank', till: ['ova', 'sjalvskattning']}.
   // Den står alltid på sin plats, så att sidan rymmer den redan innan hjälpmedlet finns; utan adress är den tonad.
-  blocktyper.lank = (d, ctx) => h('nav', { class: 'b-lank', 'aria-label': 'Hjälpmedel' }, [].concat(d.till || []).map(id => {
+  // Musikvideon (2026-11-11) står sist i Sammanfattningens länkblock – det med Elevbok – i alla böcker, utan att den
+  // skrivs i innehållsfilerna: arbetsgången slutar med den, som flikraden.
+  const lankTill = d => { const t = [].concat(d.till || []); return t.includes('elevbok') && !t.includes('musikvideo') ? t.concat('musikvideo') : t; };
+  blocktyper.lank = (d, ctx) => h('nav', { class: 'b-lank', 'aria-label': 'Hjälpmedel' }, lankTill(d).map(id => {
     const namn = hjalpmedelNamn(id), url = hjalpmedelUrl(id, { avsnitt: ctx.avsnitt });
     return url
       ? h('a', { class: 'lank-post', href: url, 'data-hjalpmedel': id }, namn, h('span', { class: 'lank-pil', 'aria-hidden': 'true' }, ' →'))
@@ -347,8 +368,15 @@
   function normalisera(id, data, fil) {
     if (!data || !Array.isArray(data.avsnitt)) throw new Error(`${fil}: Bok.niva('${id}', {avsnitt: [...]}) saknar avsnitt`);
     let n = 0;
+    // En bok från ett annat delkapitel (fil: '../rorelse_och_kraft/innehall/…', t.ex. djupdykningen om Galileo på IV,
+    // 2026-11-11): ett fotos adress (bildpilar: bild) är skriven från bokens egen avsnittssida och räknas om därifrån.
+    const bas = /^\.\.\//.test(fil || '') && fil.includes('innehall/') ? fil.slice(0, fil.indexOf('innehall/')) : '';
+    const omBild = b => bas && b && b.typ === 'figur' && typeof b.bild === 'string' && !/^([a-z]+:|\/|\.\.\/)/i.test(b.bild)
+      ? Object.assign({}, b, { bild: bas + b.bild }) : b;
     data.avsnitt.forEach((a, i) => {
       if (!a.id) a.id = 'avsnitt-' + (i + 1);
+      if (bas && Array.isArray(a.block)) a.block = a.block.map(omBild);
+      if (bas && Array.isArray(a.sidor)) a.sidor.forEach(s => { if (Array.isArray(s.block)) s.block = s.block.map(omBild); });
       a.nummer = a.numrerad === false ? null : ++n;
       const post = (b, pid) => ({ typ: b.typ, b, id: b.id || pid, avsnitt: a, fot: b.typ === 'lank' });
       const poster = a.nummer ? [{ typ: 'avsnittsstart', id: a.id + '-start', avsnitt: a }] : [];
@@ -358,6 +386,9 @@
       // rutan "Vill du gå vidare?" får ett avsnitt som inte finns
       if (provaVidare && Array.isArray(a.block)) a.block = a.block.map(b => b.typ === 'vidare' && b.lankar.length
         ? Object.assign({}, b, { lankar: [Object.assign({}, b.lankar[0], { ankare: 'finns-inte' }), ...b.lankar.slice(1)] }) : b);
+      // (?kontroll&prova=textlank-fel, 2026-11-11: en länk i löptexten går till en bok som inte finns på avsnittssidan)
+      if (provaTextlank && Array.isArray(a.block)) a.block = a.block.map(b => b.typ === 'text' && new RegExp(BOKLANK_INLINE.source).test(b.text)
+        ? Object.assign({}, b, { text: b.text.replace(BOKLANK_INLINE, '[$1](#djupdykning-finns-inte)') }) : b);
       if (Array.isArray(a.block)) a.block.forEach((b, j) => {
         // EXEMPEL ({typ: 'exempel', rubrik, stycken: [[rad, …], …]}) och PROVA ({typ: 'prova', rader}): en post per rad
         // (blocktyper.rutarad). Raderna hålls ihop i brytningen (enheter, paginera).
@@ -702,17 +733,24 @@
     sattStorlek(vard, g);
     document.body.append(vard);
     const pad = el => { const cs = getComputedStyle(el); return parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom); };
-    // Sidans plats för text, utan och med fot (länken till hjälpmedlen)
-    const lankProv = bok.poster.find(p => p.fot);
-    const skal = medFot => {
+    // Sidans plats för text, utan och med fot (länken till hjälpmedlen). Foten mäts med just den länkrad som står på
+    // sidan (2026-11-11): Sammanfattningens rad (Öva · Självskattning · Elevbok · Musikvideo) kan vara två rader hög,
+    // det sista numrerade avsnittets (Öva · Självskattning) en. Förut mättes alla fötter med bokens första rad.
+    const skal = fotPost => {
       const inne = h('div', { class: 'sidinnehall' });
-      const el = h('article', { class: 'sida' + (medFot ? ' har-fot' : '') },
+      const el = h('article', { class: 'sida' + (fotPost ? ' har-fot' : '') },
         h('header', { class: 'sidhuvud' }, h('span', { class: 'sh-namn' }, 'X'), h('span', { class: 'sh-folio' }, '1')), inne,
-        medFot && h('footer', { class: 'sidfot' }, postElement(lankProv, bok).cloneNode(true)));
+        fotPost && h('footer', { class: 'sidfot' }, postElement(fotPost, bok).cloneNode(true)));
       vard.append(el);
       return inne.clientHeight - pad(inne);
     };
-    const kap0 = skal(false), kapFot = lankProv ? skal(true) : kap0;
+    const kap0 = skal(null), kapAvFot = new Map();
+    const fotNyckel = p => p.typ === 'lank' ? lankTill(p.b).join(',') : p.id;          // samma rad: samma mått
+    const kapPerPost = new Map();                      // (svaret sparas per post: kap anropas mycket ofta i brytningen)
+    const kapForFot = p => { let v = kapPerPost.get(p); if (v !== undefined) return v;
+      const k = fotNyckel(p); if (!kapAvFot.has(k)) kapAvFot.set(k, skal(p)); v = kapAvFot.get(k); kapPerPost.set(p, v); return v; };
+    const fotPoster = bok.poster.filter(p => p.fot);
+    const kapFot = fotPoster.length ? Math.min(...fotPoster.map(kapForFot)) : kap0;    // (den minsta: rapporten nedan)
     // Spalten: alla block i sidans bredd, mätta i ett varv
     // (spalten fylls innan den sätts in, så att blocken läggs in i ett svep)
     const kinne = h('div', { class: 'sidinnehall', style: 'flex: none; overflow: visible' });
@@ -726,7 +764,7 @@
     kinne.parentNode.remove();
     // Höjden för block i följd på en sida: från det första till det sista (det sista har ingen marginal under, bok.css)
     const hojd = ps => { const f = ps.filter(p => matt.has(p)); if (!f.length) return 0; return matt.get(f[f.length - 1]).bottom - matt.get(f[0]).top; };
-    const kap = ps => ps.some(p => p.fot) ? kapFot : kap0;
+    const kap = ps => { for (let i = ps.length - 1; i >= 0; i--) if (ps[i].fot) return kapForFot(ps[i]); return kap0; };   // foten står sist
     // En sida provas i en riktig sida: får den plats, och hur fylld blir den?
     const prova = s => {
       const el = sidElement(s); vard.append(el);
@@ -1267,7 +1305,7 @@
     // (Öva visar också övningsböckerna: med en övningsbok är fliken inte "kommer")
     const ovKort = fristaende().some(d => d.slag.lista === 'ovningsbocker' && d.kort);
     ui.flikar = FLIKAR.map(([id, namn, hm]) => {
-      const kommer = !!hm && !hjalpmedelUrl(hm) && !(id === 'ova' && ovKort);
+      const kommer = !!hm && !harHjalpmedel(hm) && !(id === 'ova' && ovKort);
       return h('button', { type: 'button', class: 'flik' + (id === 'laes' ? ' aktiv' : ''), 'data-flik': id, role: 'tab',
         'aria-selected': String(id === 'laes'), 'aria-disabled': kommer ? 'true' : null, title: kommer ? `${namn} – kommer` : null,
         onclick: () => { if (!kommer) visaFlik(id); } }, namn);
@@ -1317,8 +1355,35 @@
   function visaFlik(id) {
     ui.flikar.forEach(f => { const pa = f.dataset.flik === id; f.classList.toggle('aktiv', pa); f.setAttribute('aria-selected', String(pa)); });
     ui.flikInnehall.forEach(s => s.classList.toggle('dold', s.dataset.flik !== id));
+    ritaFlik(id);
+  }
+  // Har texterna egna adresser för hjälpmedlet (föreläsning och musikvideo per avsnitt, 2026-11-11) står texterna
+  // överst i fliken (A, B …) och visar var sin video. Den text eleven läste senast är vald om den har hjälpmedlet,
+  // annars den första som har det; en text utan är tonad ("kommer"). Utan texternas adresser: avsnittssidans, som förut.
+  // (Egen klass flik-text: textvalet i Läs heter underdel-knapp.)
+  function ritaFlik(id) {
     const [, namn, hm] = FLIKAR.find(f => f[0] === id), sek = ui.flikInnehall.find(s => s.dataset.flik === id);
-    if (hm && hjalpmedelUrl(hm) && !sek.querySelector('iframe')) sek.append(h('iframe', { class: 'flik-ram', title: namn, src: medEmbed(hjalpmedelUrl(hm)) }));
+    if (!hm) return;
+    const perText = (info.texter || []).filter(t => textHjalpmedel(t.id, hm));
+    if (!perText.length) {
+      if (hjalpmedelUrl(hm) && !sek.querySelector('iframe')) sek.append(h('iframe', { class: 'flik-ram', title: namn, src: medEmbed(hjalpmedelUrl(hm)),
+        allowfullscreen: '', allow: 'fullscreen; picture-in-picture; encrypted-media' }));
+      return;
+    }
+    const url = t => hjalpmedelUrl(hm, { text: t.id });
+    const vald = perText.find(t => t.id === sek.dataset.vald) || perText.find(t => t.id === textId) || perText[0];
+    const src = medEmbed(url(vald)), ram = sek.querySelector('iframe');
+    if (ram && sek.dataset.vald === vald.id && ram.getAttribute('src') === src) return;
+    sek.dataset.vald = vald.id;
+    const rad = h('div', { class: 'flik-texter', role: 'group', 'aria-label': 'Text' }, info.texter.map((t, i) => {
+      const har = !!url(t), b = String.fromCharCode(65 + i);
+      return h('button', { type: 'button', class: 'flik-text' + (t === vald ? ' aktiv' : ''), 'data-flik-text': t.id,
+        'aria-pressed': String(t === vald), 'aria-disabled': har ? null : 'true', title: har ? null : `${renText(t.titel)} – kommer`,
+        onclick: () => { if (har && t !== vald) { sek.dataset.vald = t.id; ritaFlik(id); } } },
+        h('span', { class: 'underdel-bokstav' }, b), h('span', { class: 'underdel-titel', html: inline(t.titel, false) }));
+    }));
+    sek.replaceChildren(rad, h('iframe', { class: 'flik-ram', title: `${namn}: ${renText(vald.titel)}`, src, allowfullscreen: '',
+      allow: 'fullscreen; picture-in-picture; encrypted-media' }));
   }
 
   // Med texter i delkapitel.js är varje text (A, B …) en egen bok: den öppnas där eleven var i den, annars från
@@ -1787,7 +1852,10 @@
       // (rutan "Vill du gå vidare?", arbetsorder 13: länken går till ett avsnitts början, och texten är avsnittets nummer
       // och titel)
       const vid = b.typ === 'vidare' ? `rutan ”${VIDARE_RUBRIK}”: ` : '';
-      [].concat(b.typ === 'bokref' ? b.lankar.filter(l => l.bok) : b.typ === 'boklank' ? [{ bok: b.bok, text: b.bok }] : b.typ === 'vidare' ? b.lankar : []).forEach(l => {
+      // (och länkarna i löptexten, [text](#bok/ankare), 2026-11-11)
+      const iText = [...JSON.stringify(b).matchAll(BOKLANK_INLINE)].map(m => ({ text: m[1], bok: m[2], ankare: m[3] || null }));
+      iText.forEach(l => (ut.textlankar || (ut.textlankar = [])).push({ text: bok.text, niva: bok.niva, mal: l.bok, ankare: l.ankare, lanktext: l.text }));
+      [].concat(b.typ === 'bokref' ? b.lankar.filter(l => l.bok) : b.typ === 'boklank' ? [{ bok: b.bok, text: b.bok }] : b.typ === 'vidare' ? b.lankar : [], iText).forEach(l => {
         const ex = extraFor(l.bok);
         if (!ex) ut.problem.push(`${kalla}: ${vid}länken ”${l.text}” går till boken ”${l.bok}”, som inte finns på avsnittssidan`);
         else if (l.ankare && harInnehall(ex.slag.niva.id, l.bok)) {
@@ -1812,7 +1880,11 @@
   // inte får plats, ett brott mot brytningsreglerna eller en tunn sida (under 40 %, utom sist i ett avsnitt eller
   // före en sidbrytning).
   function kontrollera() {
-    const ut = { problem: problem.slice(), varningar: [], nivaer: {} };
+    const ut = { problem: problem.slice(), varningar: [], nivaer: {}, textlankar: [] };
+    // Grindens prov (2026-11-11): textens egna hjälpmedel (föreläsning och musikvideo per avsnitt), och länkarna i
+    // löptexten (fylls i av strukturkoll)
+    ut.textHjalpmedel = Object.fromEntries((info.texter || []).map(t => [t.id, Object.fromEntries(HJALPMEDEL
+      .map(([id]) => [id, textHjalpmedel(t.id, id) && textHjalpmedel(t.id, id).href]).filter(([, v]) => v))]));
     if (kapitel && kapitel.illustration && !illustrationer[kapitel.illustration]) ut.problem.push(`kapitel.js: illustrationen ”${kapitel.illustration}” finns inte (Bok.illustration i figurer.js)`);
     ut.omslag = !!kapitel;
     const mobil = matchMedia(MOBIL).matches;
@@ -1893,6 +1965,7 @@
       provaLangsam = kontroll && adress.get('prova') === 'langsam';
       provaRuta = kontroll && ['formel-skild', 'exempel-delat', 'svar-ensam', 'prova-delad', 'exempel-mellanled'].includes(adress.get('prova')) ? adress.get('prova') : null;
       provaVidare = kontroll && adress.get('prova') === 'vidare-fel';           // rutan "Vill du gå vidare?" (arbetsorder 13)
+    provaTextlank = kontroll && adress.get('prova') === 'textlank-fel';       // en länk i löptexten (2026-11-11)
       provaExempelHelt = kontroll && adress.get('prova') === 'exempel-helt';    // exempelregeln avstängd (arbetsorder 13)
       // Bladvändning På (blad) eller Av (direkt); den som valt "Snabb" (före 2026-11-04) får På
       vandning = lager.hamta(nyckel('vandning'), 'blad') === 'direkt' ? 'direkt' : 'blad';

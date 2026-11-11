@@ -14,6 +14,7 @@
 # Strömformat: ## = avsnitt, ### = rubrik (påstående), stycke = textblock. *ord|grundform* = begrepp.
 # Nytt i v2: [EXEMPEL: rubrik] med raderna under (till nästa tomma rad) = en exempelruta; [RUTA: rubrik] med
 # punkterna under = en ruta. [BILD B1–B6] = figurer som motorn ritar (beskrivs sist i filen).
+# [text](#bok) = länk i löptexten till en annan bok på avsnittssidan (2026-11-11: Standard → djupdykningen om Galileo).
 # Avsnittens id: Standard och Enkel: inledning · varfor-vi-faller · fritt-fall · fallskarmshopparen · sammanfattning.
 # Fördjupning: inledning · fallstracka · lika-fort · sammanfattning (nivåbyte: närmaste föregående).
 
@@ -105,7 +106,7 @@ Det har testats på riktigt. Månen har nästan ingen atmosfär. 1971 släppte a
 ### En gammal missuppfattning
 Många tror att tunga saker faller fortare än lätta. I luft kan det se ut så, men det är luftmotståndet som gör skillnaden, inte vikten.
 
-Missuppfattningen är mycket gammal. Den grekiske filosofen Aristoteles skrev för över 2 000 år sedan att tunga saker faller fortare, och i nästan två tusen år trodde de flesta honom. Ingen prövade det ordentligt. På 1600-talet gjorde italienaren Galileo Galilei försök och visade att föremål faller lika fort om luften inte bromsar dem olika mycket. Det var en av de första gångerna någon mätte i stället för att bara resonera. Du kan läsa mer om Galileo i djupdykningen om honom.
+Missuppfattningen är mycket gammal. Den grekiske filosofen Aristoteles skrev för över 2 000 år sedan att tunga saker faller fortare, och i nästan två tusen år trodde de flesta honom. Ingen prövade det ordentligt. På 1600-talet gjorde italienaren Galileo Galilei försök och visade att föremål faller lika fort om luften inte bromsar dem olika mycket. Det var en av de första gångerna någon mätte i stället för att bara resonera. [Du kan läsa mer om Galileo i djupdykningen om honom.](#djupdykning-galileo)
 
 ### Hastigheten ökar med 10 m/s varje sekund
 I ett fritt fall nära jordytan ökar hastigheten lika mycket varje sekund, med ungefär 10 meter per sekund. Det kallas *tyngdaccelerationen|tyngdacceleration* och skrivs ungefär 10 m/s².

@@ -312,11 +312,17 @@ ovan: en bok utan nivåer, med egen läsplats och adress, och elevens text och n
 
 - **Posten:** `{ id, titel, fil, kort? }`. `fil` får ligga i ett annat delkapitel (`../../…`). Då finns boken på båda
   sidorna, med var sin läsplats.
+  - Ett fotos adress (`bildpilar: bild`) räknas då från bokens egen avsnittssida (2026-11-11). Djupdykningen om
+    Galileo på IV visar curlingfotot ur `rorelse_och_kraft/bilder/`.
 - **`kort: false`:** boken har inget kort, och den finns bara som mål för länkar från en annan bok.
 - **Länkar mellan böckerna** på samma avsnittssida:
   - `{typ: 'bokref', etikett, lankar: [{text, bok, ankare}]}` är en liten rad, till exempel "Matematik du behöver:"
     följd av länkar. En post utan `bok` blir text utan länk.
   - `{typ: 'boklank', bok}` är en länk med bokens titel.
+  - `[text](#bok/ankare)` i en text (2026-11-11) gör orden till en länk i löptexten, till exempel
+    `[Du kan läsa mer om Galileo i djupdykningen om honom.](#djupdykning-galileo)` i IV B. Utan ankare öppnas boken
+    där eleven var. Kontrolläget säger till om boken eller ankaret inte finns. Provkroken
+    `?kontroll&prova=textlank-fel` låter länken gå till en bok som inte finns.
   - `bok` är bokens adressnamn (`stod-matematiken`) och `ankare` ett avsnitts id.
   - Länken öppnar den andra boken vid avsnittet. "↩ Tillbaka till <boken>" leder tillbaka dit eleven var.
   - `?kontroll` säger till om boken eller avsnittet inte finns.
@@ -547,9 +553,24 @@ Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga e
 | `forelasning` | fliken **Föreläsning** på delkapitlets sida |
 | `ova` | fliken **Öva**, och länken i slutet av varje text i boken |
 | `elevbok` | fliken **Elevboken**, och länken i Sammanfattningen i boken (se *Elevboken*) |
+| `musikvideo` | fliken **Musikvideo**, sist i flikraden, och länken sist i Sammanfattningen (efter Elevbok) |
 | `sjalvskattning` | länken i slutet av varje text i boken (resurskortet hör till kapitlets index) |
 | `begreppslista` | varje `*begrepp*` i boken (resurskortet Begreppsbank hör till kapitlets index) |
 
+- **Musikvideon** (Joachims beslut 2026-11-11) är plattformens nya hjälpmedel, i alla ämnen: minst en föreläsning och
+  en musikvideo per avsnitt.
+  - Fliken står **sist**, som arbetsgången: föreläsning, läsa, öva och elevboken, och sist musikvideon som repetition.
+  - Länken "Musikvideo" står sist i Sammanfattningens länkblock (det med Elevbok). Motorn lägger dit den, så den
+    skrivs inte i innehållsfilerna.
+- **Ett hjälpmedel per text** (2026-11-11), till exempel föreläsningen och musikvideon till varje avsnitt:
+  `texter: [{ id, titel, hjalpmedel: { forelasning: { href }, musikvideo: { href } } }]`.
+  - Textens adress går före avsnittssidans.
+  - Har någon text en egen adress står texterna överst i fliken (A, B …), och varje text visar sin video. Den text
+    eleven läste senast är vald om den har en, annars den första som har det. En text utan är tonad ("kommer").
+  - Fliken är "kommer" bara om varken avsnittssidan eller någon text har en adress.
+  - Länken i boken (Sammanfattningen) går till den öppna textens adress.
+  - **YouTube:** använd inbäddningsadressen, `https://www.youtube-nocookie.com/embed/<id>`. Från en lokal fil
+    (`file://`) visar YouTube "Fel 153", eftersom ingen avsändaradress skickas. På den publicerade sidan fungerar det.
 - **Adressen** sätts i `hjalpmedel` i `delkapitel.js`.
   - Utan adress (`href: null`) är hjälpmedlet synligt men tonat och inte klickbart: fliken är "kommer" och länken i
     boken märkt "kommer".
@@ -1390,3 +1411,21 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     ord och en bytt vidare-länk ger FEL.
   - **"Vill du gå vidare?"** i B: 6. Tyngden och fritt fall · 3. Rörelsen i diagram · 5. Newtons andra lag
     (`vidare-rutor.js`).
+- **2026-11-11, musikvideor och föreläsningar per text, och Galileo på IV (Joachims uppdrag):**
+  - **Musikvideo** är en ny flik, sist i flikraden, och en länk sist i Sammanfattningens länkblock.
+  - **Hjälpmedel per text** (`texter[].hjalpmedel`). IV B Fritt fall har föreläsningen
+    `youtube-nocookie.com/embed/9Pf7AWzPKds`. Musikvideon är på gång.
+  - **Länken i löptexten:** i IV B Standard (avsnitt 2 Fritt fall, "En gammal missuppfattning") är meningen "Du kan
+    läsa mer om Galileo i djupdykningen om honom." en länk till djupdykningen om Galileo. Meningen finns bara på
+    Standard: Enkel och Fördjupning har den inte.
+  - **Galileo-djupdykningen** står också på IV under "Vill du veta mer?". Det är samma bok (samma fil och id), ingen
+    kopia, och läsplatsen sparas per avsnittssida.
+  - **Sidfotens mått:** foten mäts med just den länkrad som står på sidan. Förut mättes alla fötter med bokens första
+    rad. Det syntes när Sammanfattningens rad (Öva · Självskattning · Elevbok · Musikvideo) blev två rader:
+    räkningen och den riktiga sidan skilde sig åt (IV B Enkel), och en sida fick inte plats (III B Enkel, helskärm).
+  - **Länkraden** har tätare radavstånd (1,1, utan mellanrum mellan raderna), och sidfoten har lite mindre luft.
+  - **Grinden:**
+    - flikraden med Musikvideo sist;
+    - hjälpmedel per text: varje text visar sin video, en text utan är tonad, och Läs-flikens textval rörs inte;
+    - textlänkarna: länken öppnar boken, och Tillbaka leder tillbaka.
+    - Negativt prov: `textlänk till en bok som inte finns`.

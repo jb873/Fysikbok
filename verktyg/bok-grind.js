@@ -73,7 +73,10 @@ const FEL = {
   'exempel helt fast sidan blir tunn': { adress: '&prova=exempel-helt', dk: 'provbok', regel: /fylld/ },
   // Rutan "Vill du gå vidare?" (arbetsorder 13, del 2): motorns provkrok ger den första länken i varje ruta ett id som
   // inte finns i textboken – kontrolläget och grindens prov av länkarna ska ge rött
-  'vidare-länk med fel id': { adress: '&prova=vidare-fel', dk: 'rorelse_och_kraft', regel: /vidare/i }
+  'vidare-länk med fel id': { adress: '&prova=vidare-fel', dk: 'rorelse_och_kraft', regel: /vidare/i },
+  // Länken i löptexten (2026-11-11): motorns provkrok låter länken i IV B Standard gå till en bok som inte finns på
+  // avsnittssidan – kontrolläget och grindens prov av textlänkarna ska ge rött
+  'textlänk till en bok som inte finns': { adress: '&prova=textlank-fel', dk: 'fall_kast_och_balans', regel: /textlänk|finns inte på avsnittssidan/i }
 };
 // --negativ=<del av namnet>: bara de negativa proven vars namn innehåller texten
 const NEGATIV_BARA = (process.argv.find(a => a.startsWith('--negativ=')) || '').slice(10);
@@ -750,6 +753,40 @@ const VIDARE = String.raw`
   }
 `;
 
+/* ---------- Länkar i löptexten (2026-11-11) ----------
+ * [text](#bok/ankare) i en text: kontrolläget listar länkarna (textlankar). Varje bok med en sådan länk öppnas från
+ * hubben, länken hittas i ett stycke eller en punkt, och den öppnar den andra boken (adressen börjar med bokens namn,
+ * och med ankaret om det finns). "↩ Tillbaka till <boken>" leder tillbaka dit eleven var. (IV B Standard → Galileo.) */
+const TEXTLANK = String.raw`
+  {
+    const tl = JSON.parse(document.body.dataset.kontroll).textlankar || [], tFel = [], tProv = [];
+    const nivKnapp = n => $$('section[data-flik="laes"] > .niva-valjare > button.niva-knapp').find(b => b.dataset.niva === n);
+    const niva0 = ($('section[data-flik="laes"] > .niva-valjare > button.niva-knapp.aktiv') || { dataset: {} }).dataset.niva;
+    for (const l of tl) {
+      if (!nivKnapp(l.niva)) continue;
+      await klicka(nivKnapp(l.niva), 150);
+      const knapp = $$('.underdel-knapp[data-oppna]').find(b => b.dataset.text === l.text);
+      if (!knapp) { tFel.push(l.text + ': texten går inte att öppna'); continue; }
+      await gest(knapp, 900);
+      const n = $$('.lr-sida').length; let sida = 0;
+      const hitta = () => $$('.scen a.bok-lank[data-bok="' + l.mal + '"]').find(a => a.offsetParent !== null && a.textContent === l.lanktext && a.closest('.b-text, li'));
+      for (let s = 1; s <= n && !sida; s++) { Bok.gaTill(s); await v(40); if (hitta()) sida = s; }
+      if (!sida) { tFel.push(l.text + '/' + l.niva + ': länken ”' + l.lanktext + '” syns inte'); await klicka(synlig('.bok-stang'), 450); continue; }
+      const fore = Bok.plats;
+      await klicka(hitta(), 600);
+      if (!oppen() || !location.hash.startsWith('#' + l.mal + '/' + (l.ankare || ''))) tFel.push(l.text + ' → ' + l.mal + ': ' + location.hash);
+      const chip = synlig('.tillbaka-chip:not([hidden])');
+      if (chip) await klicka(chip, 450); else tFel.push(l.text + ' → ' + l.mal + ': inget tillbaka-chip');
+      if (Bok.plats !== fore) tFel.push(l.text + ' → ' + l.mal + ': tillbaka hamnade på ' + Bok.plats + ' (väntat ' + fore + ')');
+      tProv.push(l.text + '/' + l.niva + ' s.' + sida + ' → ' + l.mal);
+      await klicka(synlig('.bok-stang'), 450);
+    }
+    if (niva0 && nivKnapp(niva0)) await klicka(nivKnapp(niva0), 150);
+    if (tl.length) prova('textlänkar: länken i löptexten öppnar boken (' + tProv.join('; ') + '), och Tillbaka leder tillbaka',
+      !tFel.length && stangd(), tFel.join(' | '));
+  }
+`;
+
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
 
 const SCENARIO = String.raw`async (helskarmLage) => {
@@ -811,11 +848,43 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   prova('hubben: sidan är inte bredare än skärmen (annars zoomar mobilen ut)', document.documentElement.scrollWidth <= innerWidth,
     document.documentElement.scrollWidth + ' > ' + innerWidth);
   const flikar = $$('main.sida > .flikar-rad > button.flik');
-  prova('hubben: flikarna Föreläsning · Läs · Öva · Elevboken, Läs vald',
-    flikar.map(f => f.textContent).join(' · ') === 'Föreläsning · Läs · Öva · Elevboken' && $('.flik.aktiv') && $('.flik.aktiv').dataset.flik === 'laes',
+  // (Musikvideo sist sedan 2026-11-11: arbetsgången föreläsning, läsa, öva, elevboken och sist musikvideon)
+  prova('hubben: flikarna Föreläsning · Läs · Öva · Elevboken · Musikvideo, Läs vald',
+    flikar.map(f => f.textContent).join(' · ') === 'Föreläsning · Läs · Öva · Elevboken · Musikvideo' && $('.flik.aktiv') && $('.flik.aktiv').dataset.flik === 'laes',
     flikar.map(f => f.textContent + (f.classList.contains('aktiv') ? '*' : '')).join(' · '));
   prova('hubben: en flik vars hjälpmedel saknar adress är tonad ("kommer") och går inte att välja',
     flikar.filter(f => f.getAttribute('aria-disabled') === 'true').every(f => { f.click(); return f.title.includes('kommer') && $('.flik.aktiv').dataset.flik === 'laes' && !$('section.flik-innehall[data-flik="laes"]').classList.contains('dold'); }));
+  // Hjälpmedel per text (2026-11-11: föreläsning och musikvideo per avsnitt): har en text en egen adress står texterna
+  // överst i fliken. Varje text med adress visar sin (vald, med sin video i ramen), en text utan är tonad ("kommer"), och
+  // Läs-flikens textval rörs inte.
+  {
+    const th = JSON.parse(document.body.dataset.kontroll).textHjalpmedel || {}, hfFel = [], hfProv = [];
+    const FL = { forelasning: 'forelasning', ova: 'ova', elevboken: 'elevbok', musikvideo: 'musikvideo' };
+    const lasKnappar = $$('.underdel-knapp').length;
+    for (const f of flikar.filter(f => FL[f.dataset.flik] && f.getAttribute('aria-disabled') !== 'true')) {
+      const hm = FL[f.dataset.flik];
+      if (!Object.keys(th).some(t => th[t][hm])) continue;
+      f.click(); await v(150);
+      const sek = $('section.flik-innehall[data-flik="' + f.dataset.flik + '"]');
+      const kn = () => [...sek.querySelectorAll('.flik-texter > button.flik-text')];
+      if (kn().length !== Object.keys(th).length) hfFel.push(f.dataset.flik + ': ' + kn().length + ' texter i fliken, väntat ' + Object.keys(th).length);
+      for (const t of kn().map(b => b.dataset.flikText)) {
+        const b = kn().find(x => x.dataset.flikText === t), url = th[t] && th[t][hm];
+        if (!url) { if (b.getAttribute('aria-disabled') !== 'true' || !b.title.includes('kommer')) hfFel.push(f.dataset.flik + '/' + t + ': inte tonad'); continue; }
+        b.click(); await v(150);
+        const nb = kn().find(x => x.dataset.flikText === t), ram = sek.querySelector('iframe'), src = ram && ram.getAttribute('src');
+        if (!nb || !nb.classList.contains('aktiv') || src !== url + (url.includes('?') ? '&' : '?') + 'embed=1') hfFel.push(f.dataset.flik + '/' + t + ': ' + src);
+        else hfProv.push(f.dataset.flik + '/' + t);
+      }
+    }
+    if ($$('.underdel-knapp').length !== lasKnappar || $$('.flik-text.underdel-knapp').length) hfFel.push('textvalet i Läs ändrades');
+    flikar.find(f => f.dataset.flik === 'laes').click(); await v(150);
+    // videoramarna tas bort igen (en inbäddad spelare tar fokus, och då vägrar webbläsaren nästa helskärm i scenariot)
+    $$('section.flik-innehall iframe').forEach(r => r.remove()); if (document.activeElement && document.activeElement.tagName === 'IFRAME') document.activeElement.blur();
+    window.focus();
+    if (hfProv.length || hfFel.length) prova('hubben: hjälpmedel per text – fliken visar den valda textens video (' + hfProv.join(', ') + '), en text utan är tonad',
+      !hfFel.length && !$('section.flik-innehall[data-flik="laes"]').classList.contains('dold'), hfFel.join(' | '));
+  }
   prova('hubben: inga egna hjälpmedelskort (Självskattning och Begreppsbank hör till kapitelindex)', !$('main.sida .resurs-kort, main.sida [class*="hjalp"]'));
   const nivaer = $$('section[data-flik="laes"] > .niva-valjare > button.niva-knapp');
   prova('hubben: nivåerna 📗 Enkel · 📘 Standard · 📕 Fördjupning',
@@ -1092,6 +1161,7 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   }
   ${FRISTAENDE}
   ${VIDARE}
+  ${TEXTLANK}
   if (spar.some(x => x.antal)) prova('figur: rörelsespårens avstånd följer rörelsetypen (' + spar.map(x => x.antal).join(' + ') + ' spår)',
     spar.every(x => !x.fel.length), spar.flatMap(x => x.fel).join(' | ') || spar.flatMap(x => x.typer).filter((t, i, l) => l.indexOf(t) === i).join(', '));
   if (spar.some(x => x.par.antal)) prova('figur: kraftparens pilar är lika långa, motriktade och börjar i var sitt föremåls mitt (' + spar.map(x => x.par.antal).join(' + ') + ' par)',
