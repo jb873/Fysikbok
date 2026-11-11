@@ -366,8 +366,8 @@ Titta på hur långt föremålet faller under varje enskild sekund: 5 m, sedan 1
 
 Galileo kunde inte mäta ett fritt fall, eftersom det går för fort för hans tids klockor. I stället lät han kulor rulla nedför lutande rännor. Där går rörelsen långsammare men följer samma mönster. Genom att mäta tiden med en vattenklocka kunde han se att sträckorna växte som de udda talen. Det var ett av de första exemplen på att man mätte i stället för att bara resonera, och det är grunden för hur fysiken arbetar i dag.
 
-### I ett diagram blir hastigheten en rak linje och sträckan en kurva
-Ritar man hastigheten mot tiden blir det en rak linje, eftersom hastigheten ökar lika mycket varje sekund. Linjen lutar mer ju större accelerationen är. Ritar man fallsträckan mot tiden blir det i stället en kurva som blir brantare och brantare, eftersom föremålet hinner längre för varje sekund.
+### Fallet i diagram
+Hastigheten mot tiden blir en rak linje, eftersom hastigheten ökar lika mycket varje sekund. Fallsträckan mot tiden blir en kurva som blir allt brantare.
 
 [BILD B6: två diagram bredvid varandra för ett fritt fall de första fyra sekunderna – hastigheten mot tiden (en rak linje till 40 m/s) och fallsträckan mot tiden (en kurva genom 5, 20, 45 och 80 m)]
 

@@ -44,6 +44,6 @@ module.exports = [
         grafer: [{ punkter: [[0, 0], [1, 10], [2, 20], [3, 30], [4, 40]] }] },
       { rubrik: 'Fallsträcka', x: { storhet: 'tid', enhet: 's', max: 4, steg: 1, tal: 1 }, y: { storhet: 'fallsträcka', enhet: 'm', max: 80, steg: 20, tal: 20 },
         grafer: [{ punkter: [[0, 0], [1, 5], [2, 20], [3, 45], [4, 80]], kurva: true }] }],
-      bildtext: 'Ett fritt fall de första fyra sekunderna (g ≈ 10 m/s²). Hastigheten ökar lika mycket varje sekund: en rak linje. Fallsträckan växer allt snabbare: en kurva.' }
+      bildtext: 'Ett fritt fall de första fyra sekunderna (g ≈ 10 m/s²).' }
   ] }
 ];
