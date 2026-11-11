@@ -189,16 +189,23 @@ for (const B of NS) {
 // rubriker, "Det här lär du dig", stycken, punkter, numrerade punkter, formler. Bildmarkeringarna som kommentarer i samma
 // ordning. Godkända tillägg (III:s norm, ordern): rutan "Så bläddrar du" sist i Inledningen och länkblocket sist i det
 // sista numrerade avsnittet och sist i Sammanfattningen – på just de platserna, och inget annat.
-{
-  const r = las(path.join(__dirname, '..', 'kallor', 'kap3', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md')), delar = {};
+// IV B Fritt fall (2026-11-11) prövas likadant mot kallor/kap3/IV-B-…-v2.md. Där finns också [EXEMPEL: rubrik] (raderna
+// under) och [RUTA: rubrik] (punkterna under): de hör till källan och ska stå på sin plats i boken.
+for (const [TX, KF, MP] of [['A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', 'resulterande-kraft'],
+                            ['B', 'IV-B-Fritt-fall-alla-nivaer-v2.md', 'fritt-fall']]) {
+  const r = las(path.join(__dirname, '..', 'kallor', 'kap3', KF)), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);
     if (m) { cur = { STANDARD: 'standard', ENKEL: 'enkel', 'FÖRDJUPNING': 'fordjupning' }[m[1]]; delar[cur] = []; continue; }
     if (/^# FIGURER/.test(l)) { cur = null; continue; } if (cur) delar[cur].push(l); }
   const kalla = rad => { const ut = [], bilder = []; let st = [];
     const slut = () => { if (st.length) ut.push('STYCKE ' + st.join(' ⏎ ')); st = []; };
-    for (const l of rad) { let m;
+    for (let i = 0; i < rad.length; i++) { const l = rad[i]; let m;
       if (!l.trim() || /^={3,}/.test(l) || /^# /.test(l)) { slut(); continue; }
+      if ((m = /^\[EXEMPEL: (.+)\]$/.exec(l))) { slut(); const rr = []; while (i + 1 < rad.length && rad[i + 1].trim()) rr.push(rad[++i]);
+        ut.push(`EXEMPEL Exempel: ${m[1]}: ${rr.join(' ⏎ ')}`); continue; }
+      if ((m = /^\[RUTA: (.+)\]$/.exec(l))) { slut(); const ps = []; while (i + 1 < rad.length && rad[i + 1].startsWith('- ')) ps.push(rad[++i].slice(2));
+        ut.push(`RUTA ${m[1]}: ${ps.join(' / ')}`); continue; }
       if ((m = /^## (.+?) \((numrerad|onumrerad)/.exec(l))) { slut(); ut.push(`AVSNITT ${m[1]} ${m[2]}`); continue; }
       if (l.startsWith('### ')) { slut(); ut.push('RUBRIK ' + l.slice(4)); continue; }
       if (l === 'Det här lär du dig:') { slut(); ut.push('UNDERRUBRIK Det här lär du dig'); continue; }
@@ -209,7 +216,7 @@ for (const B of NS) {
       st.push(l); }
     slut(); return { ut, bilder }; };
   for (const niva of ['standard', 'enkel', 'fordjupning']) {
-    const fil = path.join(__dirname, '..', 'kraft_och_rorelse', 'fall_kast_och_balans', 'innehall', 'resulterande-kraft', niva + '.js');
+    const fil = path.join(__dirname, '..', 'kraft_och_rorelse', 'fall_kast_och_balans', 'innehall', MP, niva + '.js');
     let data; global.Bok = { niva: (n, d) => { data = d; } };
     const kod = fs.readFileSync(fil, 'utf8'); eval(kod);
     const f = [];
@@ -221,6 +228,7 @@ for (const B of NS) {
         else if (b.typ === 'numrerad') b.punkter.forEach((p, k) => f.push(`NUMMER ${k + 1}. ${p}`));
         else if (b.typ === 'formel') f.push(`FORMEL ${b.uttryck} – ${b.forklaring}`);
         else if (b.typ === 'ruta') f.push('RUTA ' + b.rubrik + ': ' + b.punkter.join(' / '));
+        else if (b.typ === 'exempel') f.push(`EXEMPEL ${b.rubrik}: ${b.rader.join(' ⏎ ')}`);
         else if (b.typ === 'lank') f.push('LANK ' + b.till.join(','));
         else if (b.typ === 'vidare') f.push('VIDARE ' + b.lankar.map(l => `${l.text} → ${l.bok}/${l.ankare}`).join(' · '));
         else if (b.typ !== 'figur') f.push('OKÄNT ' + b.typ); } }
@@ -235,7 +243,7 @@ for (const B of NS) {
     // Fördjupning (arbetsorder 13, del 2): rutan "Vill du gå vidare?" sist i Sammanfattningen, med kopplingens länkar
     // (verktyg/vidare-rutor.js) – och ingen annanstans
     if (niva === 'fordjupning') {
-      const vb = VIDARE.block('kraft_och_rorelse/fall_kast_och_balans/innehall/resulterande-kraft/fordjupning.js');
+      const vb = VIDARE.block(`kraft_och_rorelse/fall_kast_och_balans/innehall/${MP}/fordjupning.js`);
       const vant = 'VIDARE ' + vb.lankar.map(l => `${l.text} → ${l.bok}/${l.ankare}`).join(' · ');
       if (seq[seq.length - 1] === vant) seq.pop(); else tFel.push('rutan "Vill du gå vidare?" står inte sist i Sammanfattningen med länkarna ' + vant.slice(7));
     }
@@ -244,7 +252,7 @@ for (const B of NS) {
     if (seq[seq.length - 1] === 'LANK ova,sjalvskattning,elevbok' && iSam2 >= 0) seq.pop(); else tFel.push('länkblocket står inte sist i Sammanfattningen');
     const ok = k.ut.length === seq.length && k.ut.every((x, i) => x === seq[i]);
     const bilder = [...kod.matchAll(/^\s*\/\/ (\[BILD.*)$/gm)].map(m => m[1]), bok = JSON.stringify(k.bilder) === JSON.stringify(bilder);
-    console.log(`${ok && bok && !tFel.length ? 'ORDAGRANT' : 'FEL      '}  IV A resulterande-kraft/${niva}: ${k.ut.filter(x => x.startsWith('AVSNITT')).length} avsnitt, ${k.ut.length} rader ur källan, ${k.bilder.length} bildmarkeringar`);
+    console.log(`${ok && bok && !tFel.length ? 'ORDAGRANT' : 'FEL      '}  IV ${TX} ${MP}/${niva}: ${k.ut.filter(x => x.startsWith('AVSNITT')).length} avsnitt, ${k.ut.length} rader ur källan, ${k.bilder.length} bildmarkeringar`);
     if (!ok) { fel++; const i = k.ut.findIndex((x, j) => x !== seq[j]); console.log('   första skillnaden:\n   källan: ' + k.ut[i] + '\n   filen:  ' + seq[i]); }
     if (!bok) { fel++; console.log('   bildmarkeringarna skiljer: ' + JSON.stringify(k.bilder) + ' / ' + JSON.stringify(bilder)); }
     if (tFel.length) { fel++; console.log('   TILLÄGGEN: ' + tFel.join(', ')); }
@@ -254,5 +262,5 @@ for (const B of NS) {
 console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.' +
   '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.' +
   '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.' +
-  '\nKraft och rörelse IV A (Resulterande kraft, tre nivåer) ordagrant mot källan, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.');
+  '\nKraft och rörelse IV A (Resulterande kraft) och IV B (Fritt fall), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.');
 process.exitCode = fel ? 1 : 0;

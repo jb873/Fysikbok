@@ -1,7 +1,7 @@
 /* Avsnittssida IV. Fall, kast och balans (Fysik · Kraft och rörelse), med texterna A Resulterande kraft, B Fritt fall,
- * C Kaströrelse och D Tyngdpunkt och balans, en bok per text och nivå (arbetsorder 12, 2026-11-07). Bara A har
- * innehåll; B–D är "kommer" (tomma filer). Inga djupdykningar än. Bara data; motorn är bokskal/. Fälten beskrivs i
- * Fysik/README.md. */
+ * C Kaströrelse och D Tyngdpunkt och balans, en bok per text och nivå (arbetsorder 12, 2026-11-07). A och B (Fritt
+ * fall, 2026-11-11) har innehåll; C och D är "kommer" (tomma filer). Inga djupdykningar än. Bara data; motorn är
+ * bokskal/. Fälten beskrivs i Fysik/README.md. */
 Bok.delkapitel({
   id: 'fysik-fall-kast-och-balans',           // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
   amne: 'Fysik',
@@ -15,7 +15,7 @@ Bok.delkapitel({
   kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
-  // sparat – byt det aldrig. Källan till A: kallor/kap3/, omvandlad av verktyg/kap3-omvandlare.js.
+  // sparat – byt det aldrig. Källorna till A och B: kallor/kap3/, omvandlade av verktyg/kap3-omvandlare.js (B: --text b).
   texter: [
     { id: 'resulterande-kraft', titel: 'Resulterande kraft' },
     { id: 'fritt-fall', titel: 'Fritt fall' },

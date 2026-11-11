@@ -14,11 +14,24 @@
 //   rader i följd utan tom rad: rader;  en ensam rad: ett stycke;  ==== och FIGURER-delen sist läses inte
 // Tilläggen enligt III:s norm (ordern): rutan "Så bläddrar du" sist i Inledningen, och länkblocket sist i det sista
 // numrerade avsnittet (Öva, Självskattning) och i Sammanfattningen (Öva, Självskattning, Elevboken).
+//
+// IV B Fritt fall (2026-11-11, Joachims uppdrag): node verktyg/kap3-omvandlare.js --text b [utmapp]. Källan
+// kallor/kap3/IV-B-Fritt-fall-alla-nivaer-v2.md har två märkningar till (bara i B): [EXEMPEL: rubrik] med raderna under
+// (till nästa tomma rad) blir en exempelruta ("Exempel: rubrik"), och [RUTA: rubrik] med punkterna under blir en ruta.
+// Figurerna står i kap3-figurer-b.js. Utan --text skrivs A som förut, tecken för tecken.
 'use strict';
 const fs = require('fs'), path = require('path');
-const ROT = path.join(__dirname, '..'), KALLA = path.join(ROT, 'kallor', 'kap3', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md');
-const UT = process.argv.slice(2).find(a => !a.startsWith('--'));
-const MAPP = 'kraft_och_rorelse/fall_kast_och_balans/innehall/resulterande-kraft';
+const ROT = path.join(__dirname, '..');
+const TEXT = (process.argv.find(a => a.startsWith('--text=')) || '').slice(7) ||
+  (process.argv.includes('--text') ? process.argv[process.argv.indexOf('--text') + 1] : 'a');
+const TEXTER = {
+  a: { kalla: 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', mapp: 'resulterande-kraft', figurer: './kap3-figurer.js' },
+  b: { kalla: 'IV-B-Fritt-fall-alla-nivaer-v2.md', mapp: 'fritt-fall', figurer: './kap3-figurer-b.js' }
+};
+if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a eller b)'); process.exit(1); }
+const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);
+const UT = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--text');
+const MAPP = 'kraft_och_rorelse/fall_kast_och_balans/innehall/' + TEXTER[TEXT].mapp;
 const NIVAER = [['STANDARD', 'standard', '📘'], ['ENKEL', 'enkel', '📗'], ['FÖRDJUPNING', 'fordjupning', '📕']];
 const RUTA = { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: ['Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
   'Klicka i innehållet för att gå till en sida.', 'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'] };
@@ -54,6 +67,15 @@ function las(rad, niva) {
     if (l === 'Det här lär du dig:') { slut(); a.block.push({ typ: 'underrubrik', text: 'Det här lär du dig' }); continue; }
     if ((m = /^\[FORMEL: (.+?) – (.+)\]$/.exec(l))) { slut(); a.block.push({ typ: 'formel', uttryck: m[1], forklaring: m[2] }); continue; }
     if (/^\[BILD/.test(l)) { slut(); a.block.push({ kommentar: l }); continue; }
+    // (B) [EXEMPEL: rubrik] + raderna under, [RUTA: rubrik] + punkterna under
+    if ((m = /^\[EXEMPEL: (.+)\]$/.exec(l))) { slut(); const rr = [];
+      while (i + 1 < rad.length && rad[i + 1].trim()) rr.push(rad[++i]);
+      if (!rr.length) fel.push(`${niva}: exemplet ”${m[1]}” har inga rader`);
+      a.block.push({ typ: 'exempel', rubrik: 'Exempel: ' + m[1], rader: rr }); continue; }
+    if ((m = /^\[RUTA: (.+)\]$/.exec(l))) { slut(); const ps = [];
+      while (i + 1 < rad.length && rad[i + 1].startsWith('- ')) ps.push(rad[++i].slice(2));
+      if (!ps.length) fel.push(`${niva}: rutan ”${m[1]}” har inga punkter`);
+      a.block.push({ typ: 'ruta', rubrik: m[1], punkter: ps }); continue; }
     if (/^\[/.test(l) || /^#/.test(l)) fel.push(`${niva}: okänd märkning: ${l}`);
     if (l.startsWith('- ')) { slut(); const ps = [l.slice(2)]; while (i + 1 < rad.length && rad[i + 1].startsWith('- ')) ps.push(rad[++i].slice(2));
       a.block.push({ typ: 'punkter', punkter: ps }); continue; }
@@ -79,7 +101,7 @@ function las(rad, niva) {
 const bocker = Object.fromEntries(NIVAER.map(([, n]) => [n, las(delar[n] || [], n)]));
 
 // Steg 2 (arbetsorder 12): figurerna efter sina bildmarkeringar – fylls i när figurtyperna finns
-const FIGURER = require('./kap3-figurer.js');
+const FIGURER = require(TEXTER[TEXT].figurer);
 if (!process.argv.includes('--utan-figurer')) for (const [n, avs] of Object.entries(bocker)) for (const F of FIGURER) {
   for (const a of avs) a.block = a.block.flatMap(b => b.kommentar && b.kommentar.startsWith(F.borjar) ? [b, ...F.figurer] : [b]);
 }
@@ -94,16 +116,23 @@ function blockText(b) {
   if (['punkter', 'numrerad'].includes(b.typ)) return `        { typ: '${b.typ}', punkter: [\n` + b.punkter.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'ruta') return `        { typ: 'ruta', rubrik: ${q(b.rubrik)}, punkter: [\n` + b.punkter.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'rader') return `        { typ: 'rader', rader: [\n` + b.rader.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
+  if (b.typ === 'exempel') return `        { typ: 'exempel', rubrik: ${q(b.rubrik)}, rader: [\n` + b.rader.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'vidare') return VIDARE.blockRad(b);
   return '        ' + js(b);
 }
 for (const [kod, n, ikon] of NIVAER) {
   const avs = bocker[n], ut = [];
-  ut.push(`/* Avsnittssida IV. Fall, kast och balans, text A: Resulterande kraft – nivån ${n} (${ikon}). Arbetsorder 12`,
+  if (TEXT === 'a') ut.push(`/* Avsnittssida IV. Fall, kast och balans, text A: Resulterande kraft – nivån ${n} (${ikon}). Arbetsorder 12`,
     ` * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v4.md (# ${ikon} ${kod}), införd ordagrant i`,
     ' * strömformatet av verktyg/kap3-omvandlare.js: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du',
     ' * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och',
     ' * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.', ' */');
+  else ut.push(`/* Avsnittssida IV. Fall, kast och balans, text B: Fritt fall – nivån ${n} (${ikon}). Joachims uppdrag`,
+    ` * 2026-11-11: kallor/kap3/IV-B-Fritt-fall-alla-nivaer-v2.md (# ${ikon} ${kod}), införd ordagrant i strömformatet av`,
+    ' * verktyg/kap3-omvandlare.js --text b: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du dig:" =',
+    ' * liten rubrik utan kolon, [EXEMPEL: …] = exempelruta, [RUTA: …] = ruta. Tilläggen enligt III:s norm: rutan "Så',
+    ' * bläddrar du" sist i Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i',
+    ' * Fördjupningen rutan "Vill du gå vidare?" sist. [BILD …] står som kommentar, med figuren efter (kap3-figurer-b.js).', ' */');
   ut.push(`Bok.niva('${n}', {`, '  avsnitt: [');
   avs.forEach((a, ai) => {
     ut.push('    {', `      id: '${a.id}', titel: ${q(a.titel)}${a.numrerad ? '' : ', numrerad: false'},`, '      block: [');

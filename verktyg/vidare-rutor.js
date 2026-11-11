@@ -21,7 +21,10 @@ const TABELL = [
   { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/tyngdkraften/fordjupning.js', text: 'III D Tyngdkraften',
     avsnitt: ['tyngden-och-fritt-fall', 'newtons-andra-lag'] },
   { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/resulterande-kraft/fordjupning.js', text: 'IV A Resulterande kraft',
-    avsnitt: ['storheter-med-riktning', 'newtons-andra-lag'] }
+    avsnitt: ['storheter-med-riktning', 'newtons-andra-lag'] },
+  // IV B (2026-11-11): fallsträckan och g (avsnitt 6), hastighet och sträcka i diagram (3), a = F / m (5)
+  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/fritt-fall/fordjupning.js', text: 'IV B Fritt fall',
+    avsnitt: ['tyngden-och-fritt-fall', 'rorelsen-i-diagram', 'newtons-andra-lag'] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };

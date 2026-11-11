@@ -124,18 +124,21 @@ Fysik/
                                 kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/;
                                 Nästa steg i innehall/nasta-steg/ (textboken och övningsboken)
     fall_kast_och_balans/       avsnittssida IV. Fall, kast och balans (arbetsorder 12): text A resulterande-kraft/
-                                (tre nivåer); B fritt-fall/, C kastrorelse/, D tyngdpunkt-och-balans/ "kommer"
+                                och B fritt-fall/ (2026-11-11), tre nivåer var; C kastrorelse/ och
+                                D tyngdpunkt-och-balans/ "kommer"
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   nasta_steg/                   Nästa steg (arbetsorder 11)
     matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
   kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (djupdykningarna),
                                 nasta-steg/ (textboken, övningsboken, Matematiken i fysiken); kap3/ också IV A (order 12)
+                                och IV B (Fritt fall v2, skriven av Claude 2026-11-11)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
     kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlarna)
     nasta-steg-omvandlare.js    Nästa steg och Matematiken i fysiken: källorna → böckernas filer
-    kap3-omvandlare.js          Kraft och rörelse IV A: källan (tre nivåer) → innehall/ (figurerna i kap3-figurer.js)
-    ordagrant.js                innehållet ordagrant mot källorna (kapitel 1 och Nästa steg)
+    kap3-omvandlare.js          Kraft och rörelse IV A och B (--text b): källan (tre nivåer) → innehall/
+                                (figurerna i kap3-figurer.js och kap3-figurer-b.js)
+    ordagrant.js                innehållet ordagrant mot källorna (kapitel 1, Nästa steg, IV A och B)
     bilder/                     skärmbilder: grind/ (--bilder) och en mapp per arbete
     provbok/                    provdata för grinden, med texter (en bok per text) – inte elevinnehåll
     provkapitel.js              provbokens kapitel: ett omslag med en titel på två rader
@@ -782,9 +785,11 @@ beslut 2026-11-05.
   befintliga filer skrivs över. Med en tom `utmapp` hamnar de där, så att de kan jämföras med repot först.
 - **`node verktyg/nasta-steg-omvandlare.js [utmapp]`** gör samma sak för Nästa steg och Matematiken i fysiken. Den
   skriver ut de länkar som inte kunde matchas. Formatet står överst i skriptet.
-- **`node verktyg/kap3-omvandlare.js [utmapp]`** gör samma sak för Kraft och rörelse IV, text A (en källa med tre
-  nivåer). Den skriver också ut begreppen som är markerade på varje nivå. Figurerna står i
-  `verktyg/kap3-figurer.js`.
+- **`node verktyg/kap3-omvandlare.js [--text b] [utmapp]`** gör samma sak för Kraft och rörelse IV, text A (utan
+  `--text`) och text B Fritt fall (`--text b`), en källa med tre nivåer var. Den skriver också ut begreppen som är
+  markerade på varje nivå. Figurerna står i `verktyg/kap3-figurer.js` (A) och `verktyg/kap3-figurer-b.js` (B). B:s
+  källa har två märkningar till: `[EXEMPEL: rubrik]` med raderna under (blocket `exempel`, rubriken "Exempel: …") och
+  `[RUTA: rubrik]` med punkterna under (blocket `ruta`). A skrivs tecken för tecken som förut.
 
 ## Interaktiva inslag (senare)
 
@@ -1365,3 +1370,23 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Grinden:** varje Fördjupningsbok med rutan öppnas, rutan står sist i boken, och varje länk öppnar textboken vid
     avsnittet med det numret och den titeln. "↩ Tillbaka till" leder tillbaka. Negativt prov: `vidare-länk med fel
     id` (`?kontroll&prova=vidare-fel`).
+- **2026-11-11, IV B Fritt fall (Joachims uppdrag):**
+  - **Källan** `kallor/kap3/IV-B-Fritt-fall-alla-nivaer-v2.md` är skriven av Claude. Den bygger på v1 (Joachims
+    föreläsningsanteckningar), inspelningsmanuset och den inspelade föreläsningen, och går längre än filmen:
+    - **Ur föreläsningen:** försöket med boken och pappret, "det är inte tyngdkraften som är lika stor, det är
+      accelerationen" och stolen och taket.
+    - **Nytt:** räkneexempel (stol eller tak, m/s till km/h), "en längre inbromsning ger en mindre kraft" (mattan,
+      sanden, krockkudden, hjälmen), pappret ovanpå boken, Aristoteles och Galileo, hopparens kroppsställning och
+      regndropparna.
+    - **Fördjupning:** dessutom tiohoppet, sten och fjäder i siffror (a = F / m) och ett diagram (hastigheten och
+      fallsträckan mot tiden).
+  - **Figurerna** (`kap3-figurer-b.js`) är av befintliga sorter: kraftpilar (B1, B2, B4 och fallskärmshopparens fyra
+    lägen med samma skala), `jordklot_tyngd` (B3) och `diagram_graf` (B6). Motorn är inte ändrad.
+  - **Sammanfattningarna** är korta och delade i två punktlistor: motorn delar aldrig en punktlista, och en lång lista
+    fick inte plats på en sida.
+  - **Fördjupningens diagram** står efter Galileo. Direkt efter fallsträckorna stod det skilt från stycket före, fast de
+    ryms tillsammans (kontrolläget, rött).
+  - **Ordagrant-kontrollen** prövar B som A, också exempelrutorna och rutan "Testa själv". Negativt prövat: ett bytt
+    ord och en bytt vidare-länk ger FEL.
+  - **"Vill du gå vidare?"** i B: 6. Tyngden och fritt fall · 3. Rörelsen i diagram · 5. Newtons andra lag
+    (`vidare-rutor.js`).
