@@ -44,7 +44,10 @@ Bok.delkapitel({
 
   // Plattformens hjälpmedel. Utan adress är de synliga, märkta "kommer" och inte klickbara.
   hjalpmedel: {
-    forelasning:    { href: null },
+    // Föreläsningen Fritt fall (Joachim, 2026-11-11: https://youtu.be/9Pf7AWzPKds), inbäddad med YouTubes
+    // inbäddningsadress (motorn lägger till ?embed=1, som YouTube inte bryr sig om). Fliken gäller hela avsnittssidan;
+    // det är IV:s enda föreläsning än så länge.
+    forelasning:    { href: 'https://www.youtube-nocookie.com/embed/9Pf7AWzPKds' },
     ova:            { href: null },
     sjalvskattning: { href: null },
     begreppslista:  { href: null },
