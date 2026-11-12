@@ -1299,6 +1299,11 @@ const SCENARIO = String.raw`async (helskarmLage) => {
     prova('djupdykningar: "Vill du veta mer?" står längst ned i Läs (bara Nästa steg under), ett kort per djupdykning (' + ddAntal + ')',
       sek && !sek.hidden && efterDd.every(e => e.matches('.vill-veta-mer.nasta-steg')) && sek.querySelector('h2').textContent === 'Vill du veta mer?' && ddKort().length === ddAntal,
       ddKort().map(b => b.textContent).join(' | '));
+    // ingressen (arbetsorder 19): på ett kort som har en står den under titeln, syns och är en mening
+    const ingr = ddKort().map(b => b.querySelector('.fordj-kort-ingress')).filter(Boolean);
+    if (ingr.length) prova('djupdykningar: kortens ingress står under titeln och är en mening (' + ingr.length + ' kort)',
+      ingr.every(e => e.previousElementSibling && e.previousElementSibling.matches('.fordj-kort-titel') && e.getBoundingClientRect().height > 0 &&
+        /^[^.!?]+[.!?]$/.test(e.textContent.trim())), ingr.map(e => e.textContent.trim()).join(' | '));
     const valt = () => ({ text: ($('.underdel-knapp.aktiv') || { dataset: {} }).dataset.text, niva: ($('.niva-valjare .niva-knapp.aktiv') || { dataset: {} }).dataset.niva });
     const f0 = valt(), ddFel = [];
     for (let i = 0; i < ddKort().length; i++) {

@@ -1476,7 +1476,9 @@
       return h('button', { type: 'button', class: 'fordj-kort', 'data-text': t, 'data-oppna': har ? sparadPlats(t) : null,
         'data-fokus': d.slag.lista === 'djupdykningar' ? 'dd-' + d.id : t,
         'aria-disabled': har ? null : 'true', title: har ? null : `${d.titel} – kommer` },
-        h('span', { class: 'fordj-kort-text' }, h('span', { class: 'fordj-kort-titel', html: inline(d.titel, false) })));
+        h('span', { class: 'fordj-kort-text' }, h('span', { class: 'fordj-kort-titel', html: inline(d.titel, false) }),
+          // en ingress (arbetsorder 19): en mening under titeln, om kortet har en
+          d.ingress && h('span', { class: 'fordj-kort-ingress', html: inline(d.ingress, false) })));
     };
     ui.ddGrid.replaceChildren(...fristaende().filter(d => d.slag.lista === 'djupdykningar').map(kort));
     Object.entries(ui.kortGrid).forEach(([lista, grid]) => grid.replaceChildren(...fristaende().filter(d => d.slag.lista === lista && d.kort).map(kort)));

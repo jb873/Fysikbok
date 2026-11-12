@@ -129,7 +129,7 @@ Fysik/
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   nasta_steg/                   Nästa steg (arbetsorder 11)
     matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
-  kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (djupdykningarna),
+  kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (IV:s texter och djupdykningar),
                                 nasta-steg/ (textboken, övningsboken, Matematiken i fysiken); kap3/ också IV A (order 12)
                                 och IV B (Fritt fall v2, skriven av Claude 2026-11-11)
   verktyg/
@@ -291,8 +291,12 @@ djupdykningar: [
 - **Läsplatsen** är egen per djupdykning (nyckeln `djupdykning-<id>:djupdykning:plats`).
 - **Adressen** är `#djupdykning-<id>/<rubrik>`.
 - **Elevens val ändras inte:** en djupdykning byter varken elevens text eller nivå, och när den stängs gäller de igen.
-- **Korten** visar bara titeln, utan ikon och sammanfattning (Joachims val). Stilen är plattformens
-  (`.vill-veta-mer`, `.fordj-kort` ur geografi.css).
+- **Korten** visar titeln, utan ikon (Joachims val). Stilen är plattformens (`.vill-veta-mer`, `.fordj-kort` ur
+  geografi.css). Sedan arbetsorder 19 kan ett kort ha en **ingress**, en mening under titeln (`ingress: '…'`,
+  `.fordj-kort-ingress`); IV:s kort har det, III:s inte. Grinden prövar att den står under titeln och är en mening.
+- **Samma bok på flera avsnittssidor:** `fil` kan peka på en annan avsnittssidas bok (Galileo på IV:
+  `'../rorelse_och_kraft/innehall/djupdykningar/galileo.js'`). Det är samma bok, ingen kopia; läsplatsen sparas per
+  avsnittssida.
 - **Id:t** är nyckeln för det eleven sparat. Byt det aldrig.
 - **Avsnittens `id`** ska vara desamma på alla nivåer som har avsnittet. Det är så nivåbytet hittar rätt ställe.
   Ett avsnitt som bara finns på en nivå får ett eget id.
@@ -1472,3 +1476,11 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   (IV B) – i `texter[].hjalpmedel.musikvideo` i `delkapitel.js`, YouTube med inbäddningsadressen. III har fått
   `musikvideo: { href: null }` på avsnittssidan, som IV.
 - **2026-11-12, föreläsning:** Rörelse och tröghetslagen (III A Rörelse) – `texter[].hjalpmedel.forelasning`.
+- **2026-11-12, arbetsorder 19: fyra djupdykningar till avsnitt IV:**
+  - **Källorna** `kallor/kap3/IV-DD-1…4-*-redigerad.md` (oförändrade kopior) är omvandlade av
+    `verktyg/iv-dd-omvandlare.js` till `kraft_och_rorelse/fall_kast_och_balans/innehall/djupdykningar/` (rymdhoppet,
+    bollar, berg-och-dalbanan, bilbaltet) och prövas av `ordagrant.js`.
+  - **Formatet:** källorna har bara `#` och `##`. `##` blir ett avsnitt med samma text som påståenderubrik överst, så
+    att sidan får en rubrik; det är det enda tillägget. Styckena före första `##` är Inledningen, utan rubrik (som
+    kapitel 1:s djupdykningar). `[BILD …]` står som kommentar på sin plats.
+  - **Korten** på IV: de fyra i orderns ordning med en ingress var, och Galileo (III:s bok) femte.

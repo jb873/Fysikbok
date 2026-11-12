@@ -118,6 +118,7 @@ main.sida {
 .fordj-kort[aria-disabled="true"] { opacity: .55; cursor: default; transform: none; }
 .fordj-kort-text { display: flex; flex-direction: column; gap: 0.2rem; }
 .fordj-kort-titel { font-family: var(--rubrik); color: var(--black); font-size: 1.05rem; letter-spacing: 0.03em; }
+.fordj-kort-ingress { font-size: 0.95rem; line-height: 1.4; color: var(--dampad); }   /* arbetsorder 19 */
 /* Nästa steg (arbetsorder 11): blocket under djupdykningarna i samma stil, med indigo kant; övningsböckerna överst i
    fliken Öva och en stödbok (på sin egen sida) i Läs, utan rubrik och linje ovanför */
 .vill-veta-mer.nasta-steg .fordj-kort { border-left-color: var(--accent); }

@@ -98,6 +98,35 @@ DD.forEach(([B, fil], i) => {
   if (!bok) { fel++; console.log('   bildmarkeringarna skiljer: ' + JSON.stringify(k.bilder) + ' / ' + JSON.stringify(f.bilder)); }
   if (!inl) { fel++; console.log('   det första avsnittet är inte Inledningen (onumrerad)'); }
 });
+// Djupdykningarna till IV (arbetsorder 19): kallor/kap3/IV-DD-*, prövade som kapitel 1:s. Källorna har bara # och ##:
+// ## är både avsnitt och påståenderubrik, så varje numrerat avsnitt börjar med en rubrik med avsnittets titel – det enda
+// godkända tillägget. Korten på avsnittssida IV: de fyra i källornas ordning med källornas titlar, och Galileo femte –
+// III:s bok (samma fil), ingen kopia.
+const IV_DD = ['IV-DD-1-Hoppet-fran-rymdens-kant-redigerad.md', 'IV-DD-2-Bollar-som-svanger-i-luften-redigerad.md',
+  'IV-DD-3-Berg-och-dalbanan-redigerad.md', 'IV-DD-4-Bilbaltet-en-svensk-uppfinning-redigerad.md'];
+const IV_MAPP = path.join(__dirname, '..', 'kraft_och_rorelse', 'fall_kast_och_balans'), K3 = path.join(__dirname, '..', 'kallor', 'kap3');
+let ivdk; global.Bok = { delkapitel: d => { ivdk = d; } };
+eval(fs.readFileSync(path.join(IV_MAPP, 'delkapitel.js'), 'utf8'));
+const ivKort = ivdk.djupdykningar || [];
+if (ivKort.length !== 5 || ivKort[4].id !== 'galileo' || ivKort[4].fil !== '../rorelse_och_kraft/innehall/djupdykningar/galileo.js') {
+  fel++; console.log(`FEL        IV:s djupdykningar: korten ${ivKort.map(d => d.id).join(', ')} (ska vara de fyra och Galileo, III:s fil, femte)`); }
+IV_DD.forEach((fil, i) => {
+  const r = las(path.join(K3, fil)), it = r.findIndex(l => /^# /.test(l)), titel = r[it].slice(2);
+  const k = kallsekvens(['## Inledning (onumrerad)'].concat(r.slice(it + 1).map(l => /^## /.test(l) ? l + ' (numrerad)' : l)));
+  const d = ivKort[i];
+  if (!d || d.titel !== titel) { fel++; console.log(`FEL        IV DD ${i + 1}: kortet heter ”${d && d.titel}”, källan ”${titel}”`); return; }
+  const f = filsekvens(path.join(IV_MAPP, d.fil));
+  let tillagg = 0; const seq = f.ut.filter((x, j) => { const t = x.startsWith('RUBRIK ') && f.ut[j - 1] === 'AVSNITT ' + x.slice(7) + ' numrerad'; if (t) tillagg++; return !t; });
+  const numrerade = k.ut.filter(x => x.startsWith('AVSNITT ') && x.endsWith(' numrerad')).length;
+  const ok = k.ut.length === seq.length && k.ut.every((x, j) => x === seq[j]) && tillagg === numrerade;
+  const bok = JSON.stringify(k.bilder) === JSON.stringify(f.bilder);
+  const inl = f.data.avsnitt[0] && f.data.avsnitt[0].titel === 'Inledning' && f.data.avsnitt[0].numrerad === false;
+  console.log(`${ok && bok && inl ? 'ORDAGRANT' : 'FEL      '}  IV DD ${i + 1} djupdykningar/${d.id}: ”${titel}”, ${numrerade} avsnitt (med påståenderubriken) + ` +
+    `Inledningen, ${k.ut.length} rader ur källan, ${k.bilder.length} bildmarkeringar`);
+  if (!ok) { fel++; const j = k.ut.findIndex((x, n) => x !== seq[n]); console.log(j < 0 ? `   påståenderubrikerna: ${tillagg} av ${numrerade}` : '   första skillnaden:\n   källan: ' + k.ut[j] + '\n   filen:  ' + seq[j]); }
+  if (!bok) { fel++; console.log('   bildmarkeringarna skiljer: ' + JSON.stringify(k.bilder) + ' / ' + JSON.stringify(f.bilder)); }
+  if (!inl) { fel++; console.log('   det första avsnittet är inte Inledningen (onumrerad)'); }
+});
 // ---------- Nästa steg (arbetsorder 11): textboken, övningsboken och Matematiken i fysiken mot kallor/nasta-steg/ ----------
 // Källan och filen läses var för sig till samma följd: avsnitt (titel, numrerad), rubriker, stycken (rader i följd som
 // ett stycke med radbrytningar), punkter, numrerade punkter (med numret), formler (uttryck – förklaring), exempel
@@ -263,6 +292,7 @@ for (const [TX, KF, MP] of [['A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', '
 
 console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.' +
   '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.' +
+  '\nIV:s fyra djupdykningar ordagrant mot källorna, med påståenderubriken överst i varje avsnitt och inget annat; korten heter som böckerna och Galileo (III:s bok) är femte.' +
   '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.' +
   '\nKraft och rörelse IV A (Resulterande kraft), IV B (Fritt fall), IV C (Kaströrelse) och IV D (Tyngdpunkt, balans och kroppen), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.');
 process.exitCode = fel ? 1 : 0;

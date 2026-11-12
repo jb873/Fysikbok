@@ -1,0 +1,98 @@
+# Berg-och-dalbanan
+Du sitter fastspänd i en berg-och-dalbana som långsamt klättrar uppför en hög backe. Under dig hörs ett metalliskt rasslande när kedjan drar tåget uppåt. Ju högre du kommer, desto längre bort ser marken ut att vara. Plötsligt når tåget toppen, kedjan släpper och vagnen börjar störta nedför den branta backen.
+
+Några sekunder senare pressas du hårt mot sätet. Det känns som om du plötsligt blivit mycket tyngre, trots att din kropp inte har förändrats. Sedan kommer ett nytt krön där du nästan lyfter från sätet och känner dig tyngdlös. Strax därefter rusar vagnen in i en loop och du hänger upp och ned, högt ovanför marken.
+
+Hur kan en berg-och-dalbana skapa så olika känslor under en enda åktur? Varför känns kroppen ibland dubbelt så tung och ibland nästan viktlös? Och hur kan vagnen fortsätta genom en loop utan att passagerarna faller ur? Förklaringarna finns i samspelet mellan tyngdkraft, tröghet, cirkelrörelse och de krafter som sätet och säkerhetsbyglarna utövar på kroppen.
+
+## Den första backen ger tåget energi för resten av åkturen
+
+De flesta traditionella berg-och-dalbanor börjar med en långsam färd uppför en hög backe. Tåget dras uppåt av en kedja eller en annan lyftanordning som drivs av en motor. Under uppstigningen arbetar motorn mot tyngdkraften och lyfter både tåget och passagerarna. Ju högre tåget kommer, desto mer lägesenergi får det.
+
+Lägesenergi är energi som ett föremål har på grund av sitt läge i ett kraftfält, exempelvis jordens gravitationsfält. En sten som ligger högt uppe på en klippa har mer lägesenergi än samma sten på marken nedanför. Om stenen faller omvandlas lägesenergin till rörelseenergi när farten ökar. Samma sak händer med berg-och-dalbanans tåg när det passerar den första toppen.
+
+När tåget börjar rulla nedför backen drar tyngdkraften det nedåt och farten ökar. Samtidigt minskar lägesenergin medan rörelseenergin ökar. I en traditionell berg-och-dalbana behövs därför ingen motor som driver tåget framåt under den fortsatta åkturen. Tyngdkraften och den rörelseenergi som tåget redan har räcker för att föra det genom backar, kurvor och loopar.
+
+Det betyder inte att tåget kan fortsätta hur länge som helst. Friktionen mellan hjul och räls samt luftmotståndet omvandlar en del av rörelseenergin till värme och andra energiformer. Därför blir den mekaniska energin gradvis mindre under åkturen. Utan ytterligare energitillförsel kan tåget inte nå lika högt som den första toppen om det har startat nästan från vila där.
+
+Tänk dig att du åker skateboard nedför en ramp och sedan uppför en annan. När du rullar nedåt ökar farten, men på väg uppåt minskar den igen. Om du inte tar ny fart kommer du vanligtvis inte lika högt på andra sidan, eftersom friktion och luftmotstånd bromsar dig. En berg-och-dalbana fungerar på samma sätt, men konstruktörerna planerar banans höjder så att tåget har tillräcklig fart för att klara hela sträckan.
+
+Det finns också moderna berg-och-dalbanor som fungerar annorlunda. Vissa använder kraftiga motorer som skjuter iväg tåget från stationen, och andra kan ge tåget ytterligare fart på flera platser längs banan. Dessa kallas ofta uppskjutningsbanor eller launched coasters. Men i den klassiska berg-och-dalbanan är den första uppförsbacken själva energiförrådet som gör resten av åkturen möjlig.
+
+## I botten av backen känns kroppen tyngre än vanligt
+
+När tåget når botten av den första backen är farten ofta mycket hög. Men det är inte bara hastigheten som gör att kroppen pressas hårt mot sätet. Tåget ska också ändra riktning, från att röra sig nedåt till att röra sig framåt och sedan uppåt. För att denna förändring ska ske måste en resulterande kraft verka uppåt mot kurvans centrum.
+
+Tyngdkraften drar hela tiden din kropp nedåt, även när tåget passerar botten av backen. Samtidigt trycker sätet uppåt mot kroppen och hindrar dig från att fortsätta längs den bana du annars skulle ha följt. För att kroppen ska accelerera uppåt måste sätets uppåtriktade kraft vara större än tyngdkraften. Det är denna extra kraft från sätet som gör att du känner dig tyngre.
+
+Tänk dig att du står på en badrumsvåg i en hiss. När hissen börjar accelerera uppåt visar vågen ett högre värde än när du står stilla. Din massa har inte ökat och jordens tyngdkraft har inte blivit starkare. Vågen visar ett högre värde eftersom golvet måste trycka hårdare mot dina fötter för att accelerera dig uppåt.
+
+I berg-och-dalbanan kan samma effekt bli mycket kraftigare. Om sätet trycker på kroppen med en kraft som är tre gånger så stor som din vanliga tyngd, upplever du ungefär 3 g. Det betyder inte att jordens gravitation har blivit tre gånger starkare. Det betyder att sätets kraft på kroppen är tre gånger så stor som den kraft som normalt håller dig uppe när du står stilla.
+
+[BILD: Sidovy av en berg-och-dalbana i botten av en rundad backe. En passagerare sitter i vagnen. Visa tyngdkraften nedåt med en pil och sätets normalkraft uppåt med en tydligt längre pil. Markera att den resulterande kraften är riktad uppåt, mot kurvans centrum.]
+
+Hur starkt trycket blir beror på både tågets fart och hur tvär svängen är. Vid hög fart måste rörelseriktningen ändras snabbt, vilket kräver en större resulterande kraft. Om kurvan dessutom är snäv blir riktningsförändringen ännu kraftigare. Därför kan konstruktörer minska belastningen på passagerarna genom att göra kurvan i botten bredare och mjukare.
+
+Det är också viktigt att förstå att hög fart inte automatiskt innebär hög G-belastning. Ett tåg som rör sig mycket snabbt längs en rak, jämn bana kan ge passagerarna ungefär samma stöd från sätet som när de sitter stilla. Den stora belastningen uppstår framför allt när tåget accelererar, bromsar eller ändrar riktning. Det är alltså förändringen av hastigheten, inte bara hastighetens storlek, som är avgörande.
+
+## Över ett krön kan du nästan bli tyngdlös
+
+Efter en kraftig nedförsbacke kommer ofta ett krön där banan böjer sig nedåt igen. När tåget passerar toppen kan du känna hur kroppen blir lättare och nästan lyfter från sätet. Det är en av de mest uppskattade känslorna i många berg-och-dalbanor. Den kallas ofta airtime, eftersom det känns som om kroppen svävar en kort stund.
+
+Förklaringen är att tåget och din kropp måste accelerera nedåt när banan böjer sig över krönet. Tyngdkraften hjälper till med denna acceleration eftersom den redan verkar nedåt. Sätet behöver därför inte trycka lika hårt uppåt mot kroppen som när du sitter stilla. Resultatet blir att du känner dig lättare.
+
+Om banans form och tågets hastighet är sådana att kroppen accelererar nedåt lika snabbt som vid fritt fall, behöver sätet inte trycka uppåt alls. Då är du tillfälligt tyngdlös i förhållande till sätet. Tyngdkraften verkar fortfarande på kroppen, men du känner inget stöd från underlaget. Det är samma grundläggande förklaring som när en astronaut upplever tyngdlöshet i en rymdstation.
+
+Tänk dig att du hoppar från en låg höjd och faller mot marken. Under den korta stund du befinner dig i luften känner du inte något tryck från golvet mot fötterna. Du har fortfarande samma massa och påverkas fortfarande av tyngdkraften. Men eftersom inget underlag håller dig uppe känner du dig tyngdlös.
+
+[BILD: En berg-och-dalbanevagn som passerar toppen av ett rundat krön. Visa en passagerare som nästan lyfter från sätet, med säkerhetsbygeln på plats. Tyngdkraften pekar nedåt och sätets normalkraft är mycket liten eller noll. Jämför med en liten figur bredvid där passageraren sitter stilla och sätet trycker uppåt med normal kraft.]
+
+På vissa berg-och-dalbanor är krönen utformade så att passagerarna faktiskt skulle börja röra sig uppåt i förhållande till sätet om säkerhetsbyglarna inte fanns. Det kallas ibland negativ G-belastning, även om det inte betyder att tyngdkraften har bytt riktning. I stället måste bygeln hålla kvar kroppen och utöva en kraft som hindrar den från att lämna tågets bana. Känslan kan vara mycket stark trots att den bara varar någon sekund.
+
+Många tror att man blir tyngdlös över ett krön därför att tyngdkraften försvinner när man rör sig snabbt. Men tyngdkraften är nästan oförändrad under hela åkturen. Det som förändras är hur hårt sätet eller säkerhetsbygeln trycker mot kroppen. När sätets kraft blir liten känner du dig lätt, och när den blir noll upplever du tyngdlöshet.
+
+## I loopen tvingas vagnen hela tiden att ändra riktning
+
+En loop är en av berg-och-dalbanans mest spektakulära delar. Tåget rusar in i en brant uppförsbacke, fortsätter runt en böjd bana och hamnar till slut upp och ned. Ändå faller inte vagnen från rälsen och passagerarna kan fortsätta genom hela rörelsen. Förklaringen är att tåget hela tiden tvingas följa en böjd bana.
+
+När ett föremål rör sig i en cirkel måste dess hastighet hela tiden ändra riktning. Denna riktningsförändring är en acceleration, även om farten skulle vara konstant. För att accelerationen ska uppstå behövs en resulterande kraft riktad inåt mot kurvans centrum. Den kallas centripetalkraft, men är inte en extra kraft vid sidan av de vanliga krafterna.
+
+I en berg-och-dalbana kommer den inåtriktade kraften från en kombination av tyngdkraften och kontakten mellan tåget och rälsen. Hjul och räls håller tåget på den avsedda banan och kan utöva krafter i olika riktningar beroende på var tåget befinner sig. Sätet och säkerhetsbyglarna ser samtidigt till att passagerarna följer tågets rörelse. Det är alltså verkliga kontaktkrafter och tyngdkraften som tillsammans skapar den nödvändiga centripetalkraften.
+
+I loopens nedersta del ligger centrum ovanför tåget. Där måste den resulterande kraften vara riktad uppåt, vilket innebär att rälsen måste trycka tåget uppåt med större kraft än dess tyngd. I den översta delen ligger centrum nedanför tåget, och då verkar tyngdkraften redan i rätt riktning. Om tåget har tillräcklig fart kan tyngdkraften bidra starkt till att hålla det i den böjda banan.
+
+I en enkel modell med en helt rund loop kan tyngdkraften ensam ge den nödvändiga inåtriktade accelerationen högst upp vid en viss hastighet. Om farten är högre behövs även en inåtriktad kontaktkraft från banan. Om farten är lägre skulle ett föremål som inte sitter fast inte kunna följa samma cirkelbana. Moderna berg-och-dalbanor har däremot hjulkonstruktioner som griper om rälsen och säkerhetssystem som håller tåget och passagerarna på plats.
+
+Många tror att centrifugalkraften håller kvar passagerarna i loopen genom att pressa dem utåt. Men sett från marken är det inte någon utåtriktad kraft som får kroppen att följa den böjda banan. Kroppens tröghet innebär att den skulle fortsätta ungefär rakt fram om de krafter som böjer av rörelsen försvann. Sätet och byglarna tvingar i stället kroppen att ändra riktning tillsammans med tåget.
+
+Begreppet centrifugalkraft används ibland när man beskriver rörelsen från ett roterande perspektiv, till exempel inifrån en karusell. Där kan det kännas som om något drar kroppen utåt. Men när vi undersöker krafterna från marken räcker tyngdkraften och kontaktkrafterna för att förklara rörelsen. Den inåtriktade resulterande kraften är det som gör att kroppen följer loopen i stället för att fortsätta rakt fram.
+
+## Droppformade loopar gör åkturen säkrare
+
+De första berg-och-dalbanorna med loopar hade ibland nästan cirkelformade loopar. Det visade sig vara problematiskt eftersom belastningen på passagerarna kunde bli mycket stor, särskilt i loopens nedersta del. Där är tågets fart vanligtvis hög eftersom det har förlorat lägesenergi på väg nedåt. Samtidigt kräver en snäv kurva en stor inåtriktad acceleration.
+
+Om en loop är helt rund har den samma krökningsradie överallt. Men tågets fart är inte densamma genom hela loopen. I botten rör sig tåget snabbt, medan det bromsas på väg uppåt och har lägre fart nära toppen. Kombinationen av hög fart och snäv kurva i botten kan därför skapa mycket stora G-belastningar.
+
+För att minska problemet började konstruktörer använda loopar som liknar en utdragen droppe. Den nedersta delen är bredare och har en större krökningsradie, medan den översta delen är smalare. Det betyder att tåget får en mjukare riktningsförändring när farten är hög och kan följa en snävare kurva när farten är lägre. På så sätt kan belastningen på passagerarna hållas jämnare.
+
+[BILD: Två loopar bredvid varandra i sidovy. Till vänster en helt cirkelformad loop med snäv kurva i botten och markering för hög G-belastning. Till höger en modern droppformad loop med bredare nederdel och smalare överdel. Visa att tåget har högre fart i botten och lägre fart nära toppen.]
+
+Den droppformade loopen brukar beskrivas som en variant av en klotoidloop. En klotoid är en kurva där krökningen förändras gradvis längs banan. Det gör det möjligt att undvika plötsliga förändringar i den acceleration som passagerarna utsätts för. I verkliga berg-och-dalbanor används avancerade kurvformer som anpassas efter tågets fart, konstruktion och önskade rörelse.
+
+Det räcker nämligen inte att begränsa hur många G passagerarna utsätts för. Det är också viktigt hur snabbt belastningen förändras. Om en kraft ökar mycket hastigt kan kroppen uppleva en kraftig stöt, även om den högsta belastningen inte är särskilt stor. Konstruktörerna försöker därför skapa övergångar där accelerationen förändras mjukt.
+
+Det kan jämföras med att åka bil över ett farthinder. Om hindret har en mjuk, rundad form förändras bilens rörelse gradvis och passagerarna får en relativt behaglig färd. Om hindret i stället har skarpa kanter kan bilen utsättas för en kraftig stöt. Berg-och-dalbanans kurvor måste utformas med samma tanke, men för betydligt högre hastigheter.
+
+## Konstruktörerna mäter krafterna innan människor får åka
+
+Att bygga en berg-och-dalbana handlar inte bara om att skapa en spännande bana. Konstruktörerna måste också se till att människor kan åka utan att utsättas för farliga belastningar. Därför används datorberäkningar för att undersöka tågets hastighet, acceleration och krafter längs hela banan. Redan innan den första rälsen byggs kan ingenjörerna upptäcka platser där belastningen riskerar att bli för stor.
+
+Människokroppen klarar olika stora G-belastningar beroende på riktning och hur länge belastningen varar. När kroppen pressas nedåt mot sätet under en kort stund kan den tåla betydligt högre belastning än om samma kraft skulle verka under lång tid. Belastningar som verkar från huvudet mot fötterna påverkar blodcirkulationen på ett annat sätt än krafter som verkar från bröstet mot ryggen. Därför räcker det inte att bara ange ett enda högsta G-värde för att avgöra om en åktur är säker.
+
+När en ny berg-och-dalbana ska provas används mätutrustning som registrerar accelerationerna under färden. Sensorerna kan mäta belastningen i flera riktningar samtidigt och visa hur den förändras genom backar, kurvor och loopar. Resultaten jämförs med konstruktörernas beräkningar och med de säkerhetskrav som gäller för åkattraktioner. Om mätningarna visar för höga belastningar eller alltför snabba förändringar måste problemet åtgärdas innan banan får användas.
+
+Men även om banan är noggrant konstruerad behövs säkerhetsbyglar och ibland bälten. När tåget passerar ett krön med mycket liten eller negativ G-belastning kan passageraren annars lyfta från sätet. I en loop eller en kraftig kurva måste kroppen också följa tågets rörelse även om passageraren inte sitter i en idealisk ställning. Säkerhetsanordningarna ser till att passageraren hålls kvar i rätt position under hela åkturen.
+
+Det är viktigt att skilja mellan de krafter som håller tåget på rälsen och de krafter som håller passageraren i tåget. Hjulens konstruktion hindrar tåget från att lämna rälsen, även när banan går upp och ned. Säkerhetsbygeln och sätet håller i sin tur passageraren på plats och överför de krafter som behövs för att kroppen ska följa samma bana. Båda systemen behövs för att åkturen ska fungera säkert.
+
+Nästa gång du åker berg-och-dalbana kan du försöka känna efter när sätet trycker extra hårt mot kroppen och när trycket nästan försvinner. Lägg märke till att de starkaste känslorna ofta uppstår när tåget ändrar riktning, inte nödvändigtvis när det rör sig som snabbast. Bakom varje backe, krön och loop finns noggrant planerade krafter som får tåget att följa sin bana. Det som känns som ett okontrollerat fall är i själva verket en rörelse som ingenjörerna har beräknat och testat långt innan den första passageraren kliver ombord.

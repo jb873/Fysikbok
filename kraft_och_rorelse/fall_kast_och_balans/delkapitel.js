@@ -27,12 +27,22 @@ Bok.delkapitel({
     { id: 'tyngdpunkt-och-balans', titel: 'Tyngdpunkt, balans och kroppen' }
   ],
 
-  // Djupdykningar (2026-11-11): Galileo-djupdykningen hör till avsnittssida III, men finns också här under "Vill du veta
-  // mer?" – samma bok (samma fil och id), ingen kopia. IV B Standard länkar dit. Läsplatsen sparas per avsnittssida.
+  // Djupdykningar under "Vill du veta mer?" (arbetsorder 19, 2026-11-12): de fyra till IV, en bok var i
+  // innehall/djupdykningar/ (verktyg/iv-dd-omvandlare.js ur kallor/kap3/IV-DD-*), och Galileo sist. Galileo hör till
+  // avsnittssida III – samma bok (samma fil och id), ingen kopia; IV B Standard länkar dit. Läsplatsen sparas per
+  // avsnittssida. id är nyckeln för det eleven sparat – byt det aldrig. ingress: en mening under kortets titel.
   djupdykningar: [
-    { id: 'galileo', titel: 'Galileo mot Aristoteles – hur tröghetslagen upptäcktes', fil: '../rorelse_och_kraft/innehall/djupdykningar/galileo.js' }
+    { id: 'rymdhoppet', titel: 'Hoppet från rymdens kant', fil: 'innehall/djupdykningar/rymdhoppet.js',
+      ingress: 'Hur en fallskärmshoppare kunde falla fortare än ljudet – och sedan bromsas av luften på väg ned.' },
+    { id: 'bollar', titel: 'Bollar som svänger i luften', fil: 'innehall/djupdykningar/bollar.js',
+      ingress: 'Varför en skruvad frispark svänger, en tennisboll dyker och en golfboll har gropar.' },
+    { id: 'berg-och-dalbanan', titel: 'Berg-och-dalbanan', fil: 'innehall/djupdykningar/berg-och-dalbanan.js',
+      ingress: 'Vad kroppen känner i backar, krön och loopar – och hur banorna görs säkra.' },
+    { id: 'bilbaltet', titel: 'Bilbältet – en svensk uppfinning', fil: 'innehall/djupdykningar/bilbaltet.js',
+      ingress: 'Hur Nils Bohlins trepunktsbälte från Volvo fick människorna att stanna med bilen.' },
+    { id: 'galileo', titel: 'Galileo mot Aristoteles – hur tröghetslagen upptäcktes', fil: '../rorelse_och_kraft/innehall/djupdykningar/galileo.js',
+      ingress: 'Hur experiment med kulor på lutande plan visade att en rörelse inte behöver en kraft för att fortsätta.' }
   ],
-
   // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning).
   nivaer: [
     { id: 'enkel', namn: 'Enkel', ikon: '📗' }, { id: 'standard', namn: 'Standard', ikon: '📘' },
