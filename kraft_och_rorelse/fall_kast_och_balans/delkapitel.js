@@ -1,7 +1,7 @@
 /* Avsnittssida IV. Fall, kast och balans (Fysik · Kraft och rörelse), med texterna A Resulterande kraft, B Fritt fall,
- * C Kaströrelse och D Tyngdpunkt och balans, en bok per text och nivå (arbetsorder 12, 2026-11-07). A, B (Fritt fall,
- * 2026-11-11) och C (Kaströrelse, arbetsorder 16) har innehåll; D är "kommer" (tomma filer). Bara data; motorn är
- * bokskal/. Fälten beskrivs i Fysik/README.md. */
+ * C Kaströrelse och D Tyngdpunkt, balans och kroppen, en bok per text och nivå (arbetsorder 12, 2026-11-07). B (Fritt
+ * fall, 2026-11-11), C (Kaströrelse, arbetsorder 16) och D (arbetsorder 17; titeln var "Tyngdpunkt och balans", mappen
+ * heter som förut) har fått innehåll efter A. Bara data; motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
 Bok.delkapitel({
   id: 'fysik-fall-kast-och-balans',           // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
   amne: 'Fysik',
@@ -9,13 +9,13 @@ Bok.delkapitel({
            { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
   nummer: 4,                                 // brödsmulan "4. Fall, kast och balans" och etiketten "Avsnitt IV"
   titel: 'Fall, kast och balans',
-  undertitel: 'resulterande kraft, fritt fall, kaströrelse, tyngdpunkt och balans',  // bannerns rad: kapitelindexets beskrivning av IV
+  undertitel: 'resulterande kraft, fritt fall, kaströrelse, tyngdpunkt, balans och kroppen',  // bannerns rad: kapitelindexets beskrivning av IV
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
   kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
-  // sparat – byt det aldrig. Källorna till A–C: kallor/kap3/, omvandlade av verktyg/kap3-omvandlare.js (--text b, c).
+  // sparat – byt det aldrig. Källorna till A–D: kallor/kap3/, omvandlade av verktyg/kap3-omvandlare.js (--text a–d).
   // Föreläsning och musikvideo per text (2026-11-11): hjalpmedel i texten går före avsnittssidans. YouTube med
   // inbäddningsadressen (youtube-nocookie.com/embed/<id>); motorn lägger till ?embed=1, som YouTube inte bryr sig om.
   texter: [
@@ -24,7 +24,7 @@ Bok.delkapitel({
       hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/9Pf7AWzPKds' },   // youtu.be/9Pf7AWzPKds
                     musikvideo: { href: null } } },                                           // på gång
     { id: 'kastrorelse', titel: 'Kaströrelse' },
-    { id: 'tyngdpunkt-och-balans', titel: 'Tyngdpunkt och balans' }
+    { id: 'tyngdpunkt-och-balans', titel: 'Tyngdpunkt, balans och kroppen' }
   ],
 
   // Djupdykningar (2026-11-11): Galileo-djupdykningen hör till avsnittssida III, men finns också här under "Vill du veta

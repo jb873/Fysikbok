@@ -27,7 +27,10 @@ const TABELL = [
     avsnitt: ['tyngden-och-fritt-fall', 'rorelsen-i-diagram', 'newtons-andra-lag'] },
   // IV C (arbetsorder 16): kastet delat i komposanter (avsnitt 1) och fallet (6)
   { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/kastrorelse/fordjupning.js', text: 'IV C Kaströrelse',
-    avsnitt: ['storheter-med-riktning', 'tyngden-och-fritt-fall'] }
+    avsnitt: ['storheter-med-riktning', 'tyngden-och-fritt-fall'] },
+  // IV D (arbetsorder 17): G-kraften ur accelerationen (avsnitt 4), a = F / m (5) och impulsen i krocken (8)
+  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/tyngdpunkt-och-balans/fordjupning.js', text: 'IV D Tyngdpunkt, balans och kroppen',
+    avsnitt: ['acceleration', 'newtons-andra-lag', 'rorelsemangd'] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };

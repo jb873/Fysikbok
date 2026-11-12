@@ -124,8 +124,8 @@ Fysik/
                                 kraft-och-motkraft/ och tyngdkraften/ (A–D, strömformatet); fotona i bilder/;
                                 Nästa steg i innehall/nasta-steg/ (textboken och övningsboken)
     fall_kast_och_balans/       avsnittssida IV. Fall, kast och balans (arbetsorder 12): text A resulterande-kraft/
-                                B fritt-fall/ (2026-11-11) och C kastrorelse/ (arbetsorder 16), tre nivåer var;
-                                D tyngdpunkt-och-balans/ "kommer"
+                                B fritt-fall/ (2026-11-11), C kastrorelse/ (arbetsorder 16) och D tyngdpunkt-och-balans/
+                                ("Tyngdpunkt, balans och kroppen", arbetsorder 17), tre nivåer var
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   nasta_steg/                   Nästa steg (arbetsorder 11)
     matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
@@ -1452,3 +1452,10 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Kontrolläget, punktlistor:** upphovsraden sist i boken hör till gruppen före (som i brytningen) och räknas nu med
     när kontrollen avgör om en delad lista hade rymts. Utan den sa kontrollen "delad fast den ryms" om "Det viktigaste"
     i III B Enkel, 1366×768. Brytningen är oförändrad.
+- **2026-11-12, IV D Tyngdpunkt, balans och kroppen, steg 1 (arbetsorder 17):**
+  - **Källan** `kallor/kap3/IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md` (en oförändrad kopia) är omvandlad av
+    `kap3-omvandlare.js --text d` och prövas av `ordagrant.js`. Bildmarkeringarna D1–D5 står som kommentarer.
+  - **Titeln** är "Tyngdpunkt, balans och kroppen" (förut "Tyngdpunkt och balans"): kortet och boken (`texter` i
+    `delkapitel.js`), bannerns rad (`undertitel`) och kapitelindexets beskrivning av IV. Mappen och id:t
+    `tyngdpunkt-och-balans` är desamma, så det eleven sparat gäller.
+  - **"Vill du gå vidare?"** i D: 4. Acceleration · 5. Newtons andra lag · 8. Rörelsemängd och impuls.

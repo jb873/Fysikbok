@@ -29,9 +29,12 @@ const TEXTER = {
   b: { kalla: 'IV-B-Fritt-fall-alla-nivaer-v2.md', mapp: 'fritt-fall', figurer: './kap3-figurer-b.js' },
   // C Kaströrelse (arbetsorder 16, 2026-11-11): node verktyg/kap3-omvandlare.js --text c
   c: { kalla: 'IV-C-Kastrorelse-alla-nivaer-v1.md', mapp: 'kastrorelse', figurer: './kap3-figurer-c.js',
-       titel: 'C: Kaströrelse', order: 'Arbetsorder 16 (2026-11-11)' }
+       titel: 'C: Kaströrelse', order: 'Arbetsorder 16 (2026-11-11)' },
+  // D Tyngdpunkt, balans och kroppen (arbetsorder 17, 2026-11-12): node verktyg/kap3-omvandlare.js --text d
+  d: { kalla: 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', mapp: 'tyngdpunkt-och-balans', figurer: './kap3-figurer-d.js',
+       titel: 'D: Tyngdpunkt, balans och kroppen', order: 'Arbetsorder 17 (2026-11-12)' }
 };
-if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b eller c)'); process.exit(1); }
+if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c eller d)'); process.exit(1); }
 const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);
 const UT = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--text');
 const MAPP = 'kraft_och_rorelse/fall_kast_och_balans/innehall/' + TEXTER[TEXT].mapp;
