@@ -1468,3 +1468,6 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Negativa prov**, ett per nytt läge, med ett fel i taget i figurkoden (provboken): lådans tyngdpunkt på 40 % av
     höjden, fordonets stödyta 0,4 m för bred, höjdhopparens tyngdpunkt 0,3 m för högt, en hoppprick utanför banan och
     kupén 10 % kortare i bilen med deformationszon.
+- **2026-11-12, musikvideor:** Friktion (III B Kraft och friktion), Massa och tyngd (III D Tyngdkraften) och Fritt fall
+  (IV B) – i `texter[].hjalpmedel.musikvideo` i `delkapitel.js`, YouTube med inbäddningsadressen. III har fått
+  `musikvideo: { href: null }` på avsnittssidan, som IV.

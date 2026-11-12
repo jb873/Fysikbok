@@ -22,7 +22,7 @@ Bok.delkapitel({
     { id: 'resulterande-kraft', titel: 'Resulterande kraft' },
     { id: 'fritt-fall', titel: 'Fritt fall',
       hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/9Pf7AWzPKds' },   // youtu.be/9Pf7AWzPKds
-                    musikvideo: { href: null } } },                                           // på gång
+                    musikvideo: { href: 'https://www.youtube-nocookie.com/embed/jNTgCvWn1Qs' } } },   // youtu.be/jNTgCvWn1Qs
     { id: 'kastrorelse', titel: 'Kaströrelse' },
     { id: 'tyngdpunkt-och-balans', titel: 'Tyngdpunkt, balans och kroppen' }
   ],
