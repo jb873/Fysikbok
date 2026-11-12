@@ -723,6 +723,36 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-vag-mitt { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 10 8; }
 .fig-bil rect { fill: var(--accent); stroke: var(--black); stroke-width: 1.2; }
 .fig-bil rect.fig-bil-ruta { fill: #cddbe6; }
+/* Stabilitet, hopp och krock (IV D, arbetsorder 17) */
+.fig-lada { fill: #e6dcc6; stroke: var(--black); stroke-width: 1.6; }
+.fig-tyngdpunkt { fill: var(--accent-2-mork); stroke: #fff; stroke-width: 1.5; }
+.fig-lodlinje { stroke: var(--accent-2-mork); stroke-width: 1.8; stroke-dasharray: 5 4; }
+.fig-stodyta { stroke: var(--accent); stroke-width: 5; stroke-linecap: butt; }
+.fig-pil.fig-stab-pil { fill: none; stroke-width: 2; }
+.fig-pil.fig-stab-tillbaka { stroke: var(--accent); } .fig-pilspets.fig-stab-tillbaka { fill: var(--accent); }
+.fig-pil.fig-stab-valter { stroke: #b3261e; } .fig-pilspets.fig-stab-valter { fill: #b3261e; }
+.fig-stab-valter-text { fill: #b3261e; font-weight: 600; }
+.fig-fordon { fill: #d6c08f; stroke: var(--black); stroke-width: 1.4; stroke-linejoin: round; }
+.fig-fordon-chassi { fill: #8a8273; stroke: var(--black); stroke-width: 1.2; }
+.fig-fordon-dorr { fill: #cddbe6; stroke: var(--black); stroke-width: 1; }
+.fig-hjul { fill: #3a3631; stroke: var(--black); stroke-width: 1; }
+.fig-stang { stroke: var(--dampad); stroke-width: 4; }
+.fig-ribba { fill: #b3261e; stroke: var(--black); stroke-width: 1; }
+.fig-kropp { fill: none; stroke: var(--accent); stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.fig-kropp.fig-lem { stroke-width: 8; }
+.fig-huvud, .fig-hopp-huvud { fill: var(--accent); }
+.fig-tp-streck { stroke: var(--accent-2-mork); stroke-width: 1.4; }
+.fig-hopp-kropp { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+.fig-hopp-lem { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.fig-vagg { fill: #b9ad97; stroke: var(--dampad); stroke-width: 1.4; }
+.fig-krock-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.fig-krock-bil { fill: #d6c08f; stroke: var(--black); stroke-width: 1.4; stroke-linejoin: round; }
+.fig-krock-veck { fill: none; stroke: #b3261e; stroke-width: 1.8; stroke-linejoin: miter; }
+.fig-kupe { fill: #cddbe6; stroke: var(--black); stroke-width: 1; }
+.fig-krock-hjul { fill: #3a3631; }
+.fig-krock-matt { stroke: var(--black); stroke-width: 1.4; }
+.fig-krock-namn { font-weight: 600; }
+.fig-ribba-tecken { fill: #b3261e; stroke: var(--black); stroke-width: 1; }
 .fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala, .fig-yta-namn { font-size: 19px; }
 .fig-yta-namn { font-weight: 600; fill: var(--black); }   /* ytans namn i diagram_graf (arbetsorder 13) */
 .fig-diagram-rubrik { font-weight: 600; }

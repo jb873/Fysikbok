@@ -37,6 +37,10 @@
  *                       rutat papper (Nästa steg, se nedan)
  *   resultant_rutor     lage: 'steg' | 'vinklar' | 'komposanter' – den resulterande kraften på rutat papper (Kraft och
  *                       rörelse IV A, se nedan); kraftpilar har dessutom kedja, rod, komposanter och lampan i snören
+ *   kastbana            lage: 'hoghus' | 'komposanter' | 'vinklar' | 'hopp' – kaströrelsen räknad ur fysiken (IV C och D)
+ *   cirkelrorelse       lage: 'snore' | 'bil' – kraften in mot mitten och den raka banan längs tangenten (IV C)
+ *   stabilitet          lage: 'lada' | 'fordon' | 'hojdhopp' – tyngdpunkt, lodlinje och stödyta (IV D)
+ *   krock               stopp?: [styv, deformationszon] (m) – två bilar mot en vägg, stoppsträckan och kupén (IV D)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -1382,13 +1386,15 @@
    *   kastbana, lage 'komposanter':  fart (m/s), sekunder?: 3, g?: 10 – ett vågrätt kast med bollens läge varje sekund,
    *                                  en vågrät pil (farten framåt) och en lodrät pil (farten nedåt) vid varje läge
    *   kastbana, lage 'vinklar':      fart (m/s), vinklar?: [30, 45, 60], g?: 10 – banorna från samma punkt, utan luft
+   *   kastbana, lage 'hopp':         fart?: 6, vinkel?: 45, g?: 10 – (IV D, arbetsorder 17) en enkel figur i fem lägen i ett hopp,
+   *                                  tyngdpunkten som en prick på kastbanan i varje läge, figuren i olika ställning
    * Bollarnas lägen räknas ur fysiken (x = v·t, fallet g·t²/2), inte ritas för hand. */
   const KT = 19;
   const kastText = (x, y, s, k = '') => `<text x="${f(x)}" y="${f(y)}" class="fig-text fig-kast-text ${k}">${esc(s)}</text>`;
   const skraffer = (x1, x2, y) => `<line class="fig-bord" x1="${f(x1)}" y1="${f(y)}" x2="${f(x2)}" y2="${f(y)}"/>` +
     Array.from({ length: Math.floor((x2 - x1) / 20) }, (_, i) => `<line class="fig-skraffer" x1="${f(x1 + 10 + i * 20)}" y1="${f(y + 1)}" x2="${f(x1 + i * 20)}" y2="${f(y + 12)}"/>`).join('');
   Bok.figur('kastbana', d => {
-    const lage = d.lage || fel('kastbana behöver lage: hoghus, komposanter eller vinklar'), g = d.g || 10, B = 440;
+    const lage = d.lage || fel('kastbana behöver lage: hoghus, komposanter, vinklar eller hopp'), g = d.g || 10, B = 440;
     let s = '', H = 0, beskr = '';
     if (lage === 'hoghus') {
       const h = d.hojd || fel('kastbana hoghus behöver hojd'), v = d.fart || fel('kastbana hoghus behöver fart'), dt = d.steg || 0.5;
@@ -1463,6 +1469,38 @@
       const bast = V.reduce((a, b) => (R(b) > R(a) ? b : a));
       beskr = `Tre kastbanor från samma punkt med farten ${tal(v)} m/s, utan luftmotstånd: ${V.map(a => a + '°').join(', ')}. ${bast}° landar längst` +
         (V.length === 3 && Math.abs(V[0] + V[2] - 90) < 1e-9 ? `, ${V[0]}° och ${V[2]}° landar på samma ställe, och ${V[2]}° når högst.` : '.');
+    } else if (lage === 'hopp') {
+      // IV D (arbetsorder 17): en enkel figur i fem lägen i ett hopp – avstamp, uppåt, högst, nedåt, landning – med
+      // tyngdpunkten som en prick i varje läge. Prickarna räknas ur kastet (samma tid mellan lägena); figurens
+      // ställning ritas runt pricken och ändrar inte banan. Figuren är ritad mindre än i skala.
+      const v = d.fart || 6, a = (d.vinkel || 45) * Math.PI / 180, T = 2 * v * Math.sin(a) / g, vx = v * Math.cos(a), vy = v * Math.sin(a);
+      const kf = 52, x0 = 44, bredd = B - 2 * x0, k = Math.min(bredd / (vx * T), 120 / (vy * vy / (2 * g)));
+      const topp = KT + 26 + 0.75 * kf, Y0 = topp + vy * vy / (2 * g) * k, mark = Y0 + 0.95 * kf;
+      H = Math.ceil(mark + 16);
+      const X = t => x0 + (bredd - vx * T * k) / 2 + vx * t * k, Y = t => Y0 - (vy * t - g * t * t / 2) * k;
+      s += skraffer(6, B - 6, mark);
+      const P = Array.from({ length: 41 }, (_, i) => [X(T * i / 40), Y(T * i / 40)]);
+      s += `<path class="fig-kast-bana" d="M${P.map(p => f(p[0]) + ' ' + f(p[1])).join(' L')}"/>`;
+      // ställningarna (meter från tyngdpunkten, y uppåt): huvud, nacke, höft, armar och ben (armbåge/knä, hand/fot)
+      const S = [
+        { hu: [0.33, 0.62], na: [0.25, 0.45], ho: [0, -0.12], ar: [[[0.45, 0.6], [0.6, 0.78]], [[0.02, 0.18], [-0.16, 0.02]]], be: [[[-0.15, -0.52], [-0.32, -0.95]], [[0.3, -0.32], [0.24, -0.76]]] },
+        { hu: [0.2, 0.68], na: [0.14, 0.5], ho: [0, -0.12], ar: [[[0.28, 0.76], [0.38, 1.0]], [[0.04, 0.76], [0.14, 1.0]]], be: [[[-0.1, -0.52], [-0.36, -0.9]], [[0.16, -0.46], [0.0, -0.86]]] },
+        { hu: [0.08, 0.68], na: [0.05, 0.5], ho: [0, -0.12], ar: [[[0.3, 0.36], [0.5, 0.3]], [[0.25, 0.3], [0.45, 0.24]]], be: [[[0.36, -0.08], [0.26, -0.5]], [[0.3, -0.14], [0.2, -0.56]]] },
+        { hu: [-0.05, 0.68], na: [-0.04, 0.5], ho: [0, -0.12], ar: [[[0.24, 0.26], [0.5, 0.12]], [[0.2, 0.2], [0.46, 0.06]]], be: [[[0.4, -0.2], [0.76, -0.44]], [[0.35, -0.26], [0.7, -0.5]]] },
+        { hu: [0.3, 0.6], na: [0.2, 0.44], ho: [0, -0.12], ar: [[[0.44, 0.4], [0.7, 0.42]], [[0.4, 0.34], [0.66, 0.36]]], be: [[[0.36, -0.46], [0.3, -0.95]], [[0.3, -0.5], [0.18, -0.95]]] }
+      ];
+      S.forEach((st, i) => {
+        const t = T * i / 4, cx = X(t), cy = Y(t), p = q => f(cx + q[0] * kf) + ' ' + f(cy - q[1] * kf);
+        let fig = `<path class="fig-hopp-kropp" d="M${p(st.na)} L${p(st.ho)}"/>`;
+        st.ar.forEach(([e, h]) => { fig += `<path class="fig-hopp-lem" d="M${p(st.na)} L${p(e)} L${p(h)}"/>`; });
+        st.be.forEach(([kn, fo]) => { fig += `<path class="fig-hopp-lem" d="M${p(st.ho)} L${p(kn)} L${p(fo)}"/>`; });
+        fig += `<circle class="fig-hopp-huvud" cx="${f(cx + st.hu[0] * kf)}" cy="${f(cy - st.hu[1] * kf)}" r="${f(0.12 * kf)}"/>`;
+        s += `<g class="fig-hopp-figur" data-t="${tal(Math.round(t * 1000) / 1000)}">${fig}</g>`;
+        s += `<circle class="fig-tyngdpunkt fig-hopp-tp" cx="${f(cx)}" cy="${f(cy)}" r="5" data-t="${Math.round(t * 1000) / 1000}"/>`;
+      });
+      s += kastText(10, KT + 4, 'tyngdpunktens bana', 'fig-vanster fig-kast-vx-text');
+      beskr = `Ett hopp i fem lägen med samma tid mellan: avstamp, på väg upp, högst upp, på väg ned och landning. Pricken är tyngdpunkten. ` +
+        'Den följer en kastbana (streckad), fast armar och ben har olika ställning i varje läge.';
     } else fel('kastbana: okänt läge ”' + lage + '”');
     return { svg: svg(B, H, s).replace('<svg ', `<svg data-kastbana="${lage}" `), beskrivning: d.beskrivning || beskr };
   });
@@ -1536,4 +1574,165 @@
     } else fel('cirkelrorelse: okänt läge ”' + lage + '”');
     return { svg: svg(B, H, s).replace('<svg ', `<svg data-cirkelrorelse="${lage}" `), beskrivning: d.beskrivning || beskr };
   });
+  /* Stabilitet (IV D, arbetsorder 17): tyngdpunkt, lodlinje och stödyta, i ett eller flera lägen bredvid varandra.
+   *   lage 'lada':     bredd?: 2, hojd?: 3, vinklar?: [0, 15, 45] – en låda per vinkel, lutad åt höger runt sin högra
+   *                    nedre kant; tyngdpunkten i lådans mitt och en streckad lodlinje ned till marken. Under varje låda
+   *                    vad som händer: står rakt, faller tillbaka eller välter (räknat ur var lodlinjen träffar).
+   *   lage 'fordon':   vinkel?: 30, fordon?: [{namn, sparvidd (m), tpHojd (m), hojd (m), form: 'racer' | 'last'}] –
+   *                    fordonen bakifrån, lutade runt det högra hjulet; stödytan är sträckan mellan hjulen
+   *   lage 'hojdhopp': ribba?: 2 (m) – en höjdhoppare i bågform (ryggen först) över ribban; tyngdpunkten räknad ur
+   *                    kroppens delar (bål och lår, huvud, armar, underben)
+   * Stödytan är markerad på marken. Grinden mäter var lodlinjen träffar, att tyngdpunkten ligger i lådans mitt och,
+   * i höjdhoppet, att tyngdpunkten är under ribbans överkant och kroppen över den. */
+  const vridP = (P, v) => ([x, y]) => [P[0] + x * Math.cos(v) - y * Math.sin(v), P[1] + x * Math.sin(v) + y * Math.cos(v)];
+  const hornP = q => q.map(p => f(p[0]) + ',' + f(p[1])).join(' ');
+  // en böjd pil runt P (radie R) från vinkeln a1 till a2 (radianer, skärmens): faller tillbaka eller välter
+  const stabBage = (P, R, a1, a2, klass) => {
+    const p = a => [P[0] + R * Math.cos(a), P[1] + R * Math.sin(a)], e = p(a2), riktn = Math.sign(a2 - a1), t = [-Math.sin(a2) * riktn, Math.cos(a2) * riktn];
+    const b = [e[0] - t[0] * 9, e[1] - t[1] * 9];
+    return `<path class="fig-pil fig-stab-pil ${klass}" d="M${f(p(a1)[0])} ${f(p(a1)[1])} A${f(R)} ${f(R)} 0 0 ${riktn > 0 ? 1 : 0} ${f(b[0])} ${f(b[1])}"/>` +
+      `<polygon class="fig-pilspets fig-stab-pil ${klass}" points="${f(e[0])},${f(e[1])} ${f(b[0] - t[1] * 5)},${f(b[1] + t[0] * 5)} ${f(b[0] + t[1] * 5)},${f(b[1] - t[0] * 5)}"/>`;
+  };
+  Bok.figur('stabilitet', d => {
+    const lage = d.lage || fel('stabilitet behöver lage: lada, fordon eller hojdhopp'), B = 440, rad = a => a * Math.PI / 180;
+    let s = '', H, beskr;
+    // ett lutat föremål i en panel: hörnen (lokalt, vridpunkten i 0,0, y uppåt negativ), tyngdpunkten och stödytans
+    // vänstra ände (lokalt); tillbaka: om lodlinjen träffar stödytan
+    const lutat = (P, v, tp, stod) => { const R = vridP(P, v), T = R(tp), S = R(stod);
+      return { R, T, ute: T[0] > P[0] + 1e-6, stodyta: [Math.min(S[0], P[0]), Math.max(S[0], P[0])] }; };
+    const lod = (T, mark, stodyta) => `<line class="fig-lodlinje" x1="${f(T[0])}" y1="${f(T[1])}" x2="${f(T[0])}" y2="${f(mark)}"/>` +
+      `<line class="fig-stodyta" x1="${f(stodyta[0])}" y1="${f(mark)}" x2="${f(stodyta[1])}" y2="${f(mark)}"/>` +
+      `<circle class="fig-tyngdpunkt" cx="${f(T[0])}" cy="${f(T[1])}" r="5.5"/>`;
+    if (lage === 'lada') {
+      const w = d.bredd || 2, h = d.hojd || 3, V = d.vinklar || [0, 15, 45], n = V.length, pb = B / n;
+      const ext = V.map(a => [w * Math.cos(rad(a)) + h * Math.sin(rad(a)), w * Math.sin(rad(a)) + h * Math.cos(rad(a))]);
+      const k = Math.min((pb - 34) / Math.max(...ext.map(e => e[0])), 180 / Math.max(...ext.map(e => e[1])));
+      const topp = KT + 26, mark = topp + Math.max(...ext.map(e => e[1])) * k;
+      H = Math.ceil(mark + 12 + KT + 8);
+      s += skraffer(6, B - 6, mark);
+      const utfall = [];
+      V.forEach((a, i) => {
+        const v = rad(a), hn = [[0, 0], [-w * k, 0], [-w * k, -h * k], [0, -h * k]];
+        const xs = hn.map(vridP([0, 0], v)).map(p => p[0]), P = [pb * (i + 0.5) - (Math.min(...xs) + Math.max(...xs)) / 2, mark];
+        const L = lutat(P, v, [-w * k / 2, -h * k / 2], [-w * k, 0]), ord = !a ? 'står rakt' : L.ute ? 'välter' : 'faller tillbaka';
+        utfall.push(a + '°: ' + ord);
+        let g = `<polygon class="fig-lada" points="${hornP(hn.map(L.R))}"/>` + lod(L.T, mark, L.stodyta);
+        if (a) { const topp_ = L.R([-w * k / 2, -h * k]), fi = Math.atan2(topp_[1] - P[1], topp_[0] - P[0]), R = Math.hypot(topp_[0] - P[0], topp_[1] - P[1]) + 12;
+          g += L.ute ? stabBage(P, R, fi - 0.12, fi + 0.3, 'fig-stab-valter') : stabBage(P, R, fi + 0.05, fi - 0.3, 'fig-stab-tillbaka'); }
+        g += kastText(pb * (i + 0.5), KT + 4, a ? a + '°' : 'rak', 'fig-mitt');
+        g += kastText(pb * (i + 0.5), mark + 12 + KT, ord, 'fig-mitt' + (a && L.ute ? ' fig-stab-valter-text' : ''));
+        s += `<g class="fig-stab-panel" data-vinkel="${a}" data-utfall="${!a ? 'star' : L.ute ? 'valter' : 'tillbaka'}">${g}</g>`;
+      });
+      beskr = `En låda (bredd ${tal(w)}, höjd ${tal(h)}) i ${n} lägen: ${utfall.join(', ')}. Tyngdpunkten är i lådans mitt, ` +
+        'och den streckade lodlinjen går rakt ned från den. Så länge linjen träffar lådans botten (stödytan) faller lådan tillbaka; hamnar den utanför välter lådan.';
+    } else if (lage === 'fordon') {
+      const a = d.vinkel != null ? d.vinkel : 30, v = rad(a);
+      const F = d.fordon || [{ namn: 'racerbil', sparvidd: 1.8, tpHojd: 0.35, hojd: 0.85, form: 'racer' }, { namn: 'lastbil', sparvidd: 2.0, tpHojd: 2.2, hojd: 3.8, form: 'last' }];
+      const n = F.length, pb = B / n;
+      const ext = F.map(x => [(x.sparvidd + 0.4) * Math.cos(v) + x.hojd * Math.sin(v), (x.sparvidd + 0.4) * Math.sin(v) + x.hojd * Math.cos(v)]);
+      const k = Math.min((pb - 30) / Math.max(...ext.map(e => e[0])), 200 / Math.max(...ext.map(e => e[1])));
+      const topp = KT + 22, mark = topp + Math.max(...ext.map(e => e[1])) * k;
+      H = Math.ceil(mark + 12 + KT + 8);
+      s += skraffer(6, B - 6, mark);
+      const utfall = [];
+      F.forEach((x, i) => {
+        const S = x.sparvidd * k, hj = (x.form === 'last' ? 0.5 : 0.32) * k, hb = (x.form === 'last' ? 0.3 : 0.28) * k;
+        const lok = [[0.2 * k, 0], [-S - 0.2 * k, 0], [-S - 0.2 * k, -x.hojd * k], [0.2 * k, -x.hojd * k]];
+        const xs = lok.map(vridP([0, 0], v)).map(p => p[0]), P = [pb * (i + 0.5) - (Math.min(...xs) + Math.max(...xs)) / 2, mark];
+        const L = lutat(P, v, [-S / 2, -x.tpHojd * k], [-S, 0]), R = L.R, ord = L.ute ? 'välter' : 'står kvar';
+        utfall.push(`${x.namn}: ${ord}`);
+        const ruta = (x1, y1, x2, y2) => [[x1, y1], [x2, y1], [x2, y2], [x1, y2]].map(R);
+        let g = '';
+        // karossen: racerbilen låg och bred med en vinge, lastbilen ett högt skåp på ett chassi
+        if (x.form === 'last') {
+          g += `<polygon class="fig-fordon-chassi" points="${hornP(ruta(-S - 0.05 * k, -0.25 * k, 0.05 * k, -0.85 * k))}"/>`;
+          g += `<polygon class="fig-fordon" points="${hornP(ruta(-S - 0.2 * k, -0.85 * k, 0.2 * k, -x.hojd * k))}"/>`;
+          g += `<polygon class="fig-fordon-dorr" points="${hornP(ruta(-S / 2 - 0.02 * k, -0.95 * k, -S / 2 + 0.02 * k, -x.hojd * k + 0.1 * k))}"/>`;
+        } else {
+          g += `<polygon class="fig-fordon" points="${hornP([[-S - 0.2 * k, -0.1 * k], [0.2 * k, -0.1 * k], [0.12 * k, -0.5 * k], [-S / 2 + 0.3 * k, -0.62 * k], [-S / 2 - 0.3 * k, -0.62 * k], [-S - 0.12 * k, -0.5 * k]].map(R))}"/>`;
+          g += `<polygon class="fig-fordon-dorr" points="${hornP([[-S / 2 - 0.25 * k, -0.5 * k], [-S / 2 + 0.25 * k, -0.5 * k], [-S / 2 + 0.18 * k, -0.62 * k], [-S / 2 - 0.18 * k, -0.62 * k]].map(R))}"/>`;
+          g += `<polygon class="fig-fordon" points="${hornP(ruta(-S / 2 - 0.55 * k, -x.hojd * k, -S / 2 + 0.55 * k, -x.hojd * k + 0.08 * k))}"/>`;
+          g += `<polygon class="fig-fordon-chassi" points="${hornP(ruta(-S / 2 - 0.35 * k, -0.62 * k, -S / 2 - 0.27 * k, -x.hojd * k + 0.1 * k))}"/>`;
+          g += `<polygon class="fig-fordon-chassi" points="${hornP(ruta(-S / 2 + 0.27 * k, -0.62 * k, -S / 2 + 0.35 * k, -x.hojd * k + 0.1 * k))}"/>`;
+        }
+        [0, -S].forEach(cx => { const kp = R([cx, 0]);
+          g += `<polygon class="fig-hjul" data-kx="${f(kp[0])}" data-ky="${f(kp[1])}" points="${hornP(ruta(cx - hb / 2, 0, cx + hb / 2, -hj))}"/>`; });
+        g += lod(L.T, mark, L.stodyta);
+        g += kastText(pb * (i + 0.5), KT + 4, x.namn, 'fig-mitt');
+        g += kastText(pb * (i + 0.5), mark + 12 + KT, ord, 'fig-mitt' + (L.ute ? ' fig-stab-valter-text' : ''));
+        s += `<g class="fig-stab-panel" data-vinkel="${a}" data-utfall="${L.ute ? 'valter' : 'tillbaka'}" data-sparvidd="${x.sparvidd}" data-tp-hojd="${x.tpHojd}">${g}</g>`;
+      });
+      beskr = `${F.map(x => x.namn[0].toUpperCase() + x.namn.slice(1)).join(' och ')} bakifrån, lutade ${a}° åt höger. Tyngdpunkten är markerad, och den streckade lodlinjen går rakt ned från den. ` +
+        `Stödytan är sträckan mellan hjulen. ${utfall.map(u => u[0].toUpperCase() + u.slice(1)).join('. ')}.`;
+    } else if (lage === 'hojdhopp') {
+      const hb = d.ribba || 2, Rc = 0.62, al = rad(78), k = 150, x0 = B / 2 - 10, botten = hb - 1.15, mark = KT + 20 + (hb + 0.2 - botten) * k;
+      const X = x => x0 + x * k, Y = y => mark - (y - botten) * k;
+      H = Math.ceil(mark + 14 + KT + 6);
+      // kroppen (meter, y uppåt): bål och lår en båge över ribban, huvud och armar till vänster, underbenen till höger
+      const yc = hb + 0.13 - Rc, bagP = Array.from({ length: 41 }, (_, i) => { const t = Math.PI / 2 + al - 2 * al * i / 40; return [Rc * Math.cos(t) + 0.04, yc + Rc * Math.sin(t)]; });
+      const axel = bagP[4], knä = bagP[40], huvud = [bagP[0][0] - 0.1, bagP[0][1] - 0.1];
+      const arm = [[axel[0], axel[1]], [axel[0] - 0.12, axel[1] - 0.3], [axel[0] - 0.06, axel[1] - 0.58]];
+      const ben = [[knä[0], knä[1]], [knä[0] + 0.1, knä[1] - 0.42]];
+      // tyngdpunkten: bål och lår (68 %) jämnt längs bågen, huvudet 8 %, armarna 10 %, underbenen 14 %
+      const langs = (p, m) => { const L = p.slice(1).map((q, i) => Math.hypot(q[0] - p[i][0], q[1] - p[i][1])), Lt = L.reduce((a, b) => a + b, 0);
+        return L.reduce((a, l, i) => [a[0] + (p[i][0] + p[i + 1][0]) / 2 * l / Lt * m, a[1] + (p[i][1] + p[i + 1][1]) / 2 * l / Lt * m], [0, 0]); };
+      const delar = [langs(bagP, 0.68), [huvud[0] * 0.08, huvud[1] * 0.08], langs(arm, 0.10), langs(ben, 0.14)];
+      const tp = delar.reduce((a, p) => [a[0] + p[0], a[1] + p[1]], [0, 0]);
+      // bara överdelen av stången
+      s += `<line class="fig-stang" x1="${f(X(0))}" y1="${f(mark)}" x2="${f(X(0))}" y2="${f(Y(hb) + 6)}"/>`;
+      const vag = p => 'M' + p.map(q => f(X(q[0])) + ' ' + f(Y(q[1]))).join(' L');
+      s += `<path class="fig-kropp" d="${vag(bagP)}"/><path class="fig-kropp fig-lem" d="${vag(arm)}"/><path class="fig-kropp fig-lem" d="${vag(ben)}"/>`;
+      s += `<circle class="fig-huvud" cx="${f(X(huvud[0]))}" cy="${f(Y(huvud[1]))}" r="${f(0.11 * k)}"/>`;
+      s += `<circle class="fig-ribba" cx="${f(X(0))}" cy="${f(Y(hb))}" r="5"/>`;
+      s += `<circle class="fig-tyngdpunkt" cx="${f(X(tp[0]))}" cy="${f(Y(tp[1]))}" r="5.5"/>`;
+      // teckenförklaringen under figuren
+      const ty = mark + 14 + KT * 0.7;
+      s += `<circle class="fig-tyngdpunkt fig-tecken" cx="60" cy="${f(ty - 6)}" r="5.5"/>` + kastText(72, ty, 'tyngdpunkten', 'fig-vanster');
+      s += `<circle class="fig-ribba-tecken" cx="260" cy="${f(ty - 6)}" r="5"/>` + kastText(272, ty, 'ribban', 'fig-vanster');
+      beskr = `En höjdhoppare går över ribban (${tal(hb)} m) med ryggen först och kroppen böjd som en båge. Tyngdpunkten, räknad ur kroppens delar, ligger ${tal(Math.round((hb - tp[1]) * 100))} cm under ribban, medan kroppen går över den.`;
+    } else fel('stabilitet: okänt läge ”' + lage + '”');
+    return { svg: svg(B, H, s).replace('<svg ', `<svg data-stabilitet="${lage}" `), beskrivning: d.beskrivning || beskr };
+  });
+
+  /* Krock (IV D, arbetsorder 17): två bilar från sidan mot en vägg, ögonblicket då de har stannat. Överst en styv bil,
+   * nederst en bil med deformationszon. Streckat: bilen när fronten nuddade väggen; den heldragna har rört sig
+   * stoppsträckan framåt, och fronten är hoptryckt lika mycket. Kupén är lika lång i båda.
+   *   stopp?: [0.05, 0.5] (m, den styva bilens och deformationszonens stoppsträcka), langd?: 4.4 (m), front?: 1.1 (m)
+   * Grinden mäter att deformationszonens sträcka är tydligt längre (minst dubbelt) och att kupén är lika lång. */
+  Bok.figur('krock', d => {
+    const [s1, s2] = d.stopp || [0.05, 0.5], L = d.langd || 4.4, Fr = d.front || 1.1, B = 440, vagg = B - 30;
+    if (!(s1 < s2) || s2 >= Fr) fel('krock: stopp ska vara [styv, deformationszon], den styva kortast och båda kortare än fronten');
+    const k = 260 / L, kh = 1.45 * k, radH = KT + 14 + kh + 12 + KT + 20;
+    let s = `<rect class="fig-vagg" x="${vagg}" y="8" width="20" height="${f(2 * radH - 8)}"/>`;
+    [[s1, 'styv bil', 'kort tid – stor kraft', 72, 'styv'], [s2, 'deformationszon', 'längre tid – mindre kraft', 34, 'zon']].forEach(([st, namn, kraft, pl, id], i) => {
+      const y0 = i * radH, mark = y0 + KT + 14 + kh, front0 = Fr * k, fram = vagg, bak0 = vagg - L * k, bak = bak0 + st * k;
+      const kupe = 2.3 * k, bakDel = L * k - front0 - kupe;
+      // kroppen (y uppåt från marken): bakdel, kupé och front
+      const bil = (x0, front, kl) => { const xb = x0, xk = x0 + bakDel, xf = xk + kupe, xe = xf + front, Yy = h => mark - h * k;
+        return `<polygon class="${kl}" points="${hornP([[xb, Yy(0.25)], [xb, Yy(0.95)], [xk, Yy(0.98)], [xk + 0.35 * k, Yy(1.45)], [xf - 0.3 * k, Yy(1.45)], [xf, Yy(0.98)], [xe, Yy(0.85)], [xe, Yy(0.25)]])}"/>`; };
+      s += `<g class="fig-krock-rad" data-rad="${id}" data-stopp="${st}">`;
+      s += bil(bak0, front0, 'fig-krock-fore');
+      s += bil(bak, front0 - st * k, 'fig-krock-bil');
+      // fronten hoptryckt: en sicksack över den del som har tryckts ihop (bara om den syns)
+      const xf = bak + bakDel + kupe, fe = fram;
+      if (st * k > 6) { const nz = Math.max(3, Math.round((fe - xf) / 9)), zz = Array.from({ length: nz + 1 }, (_, j) => [xf + (fe - xf) * j / nz, mark - (j % 2 ? 0.75 : 0.45) * k]);
+        s += `<polyline class="fig-krock-veck" points="${hornP(zz)}"/>`; }
+      s += `<rect class="fig-kupe" x="${f(bak + bakDel)}" y="${f(mark - 1.4 * k)}" width="${f(kupe)}" height="${f(0.36 * k)}" data-langd="${f(kupe)}"/>`;
+      [bak + 0.75 * k, bak + bakDel + kupe + 0.1 * k].forEach(cx => { s += `<circle class="fig-krock-hjul" cx="${f(cx)}" cy="${f(mark - 0.33 * k)}" r="${f(0.33 * k)}"/>`; });
+      s += `<line class="fig-bord" x1="6" y1="${f(mark)}" x2="${vagg}" y2="${f(mark)}"/>`;
+      // stoppsträckan: från den streckade bilens bakända till den heldragnas
+      s += `<line class="fig-krock-matt" x1="${f(bak0)}" y1="${f(mark + 10)}" x2="${f(bak)}" y2="${f(mark + 10)}" data-stracka="${f(bak - bak0)}"/>` +
+        `<line class="fig-krock-matt" x1="${f(bak0)}" y1="${f(mark + 4)}" x2="${f(bak0)}" y2="${f(mark + 16)}"/><line class="fig-krock-matt" x1="${f(bak)}" y1="${f(mark + 4)}" x2="${f(bak)}" y2="${f(mark + 16)}"/>`;
+      s += kastText(bak0 - 6, mark + 10 + KT * 0.35, 'stoppsträcka ' + (st < 1 ? tal(Math.round(st * 100)) + ' cm' : tal(st) + ' m'), 'fig-hoger');
+      s += '</g>';
+      s += kastText(10, y0 + KT + 4, namn, 'fig-vanster fig-krock-namn');
+      // kraften från väggen på bilen: en pil åt vänster vid väggen, med texten före
+      s += `<g class="fig-krock-kraft">${pil(vagg - 4, y0 + KT - 2, vagg - 4 - pl, y0 + KT - 2, 8)}</g>` + kastText(vagg - 4 - pl - 10, y0 + KT + 4, kraft, 'fig-hoger fig-kast-pil-text');
+    });
+    const H = Math.ceil(2 * radH);
+    const beskr = `Två bilar har krockat rakt in i en vägg, sedda från sidan. Streckat: bilen när fronten nuddade väggen. Den styva bilen stannar på ${tal(Math.round(s1 * 100))} cm: kort tid och stor kraft. ` +
+      `Bilen med deformationszon stannar på ${tal(Math.round(s2 * 100))} cm, fronten trycks ihop men kupén är hel: längre tid och mindre kraft.`;
+    return { svg: svg(B, H, s).replace('<svg ', '<svg data-krock="1" '), beskrivning: d.beskrivning || beskr };
+  });
+
 })();

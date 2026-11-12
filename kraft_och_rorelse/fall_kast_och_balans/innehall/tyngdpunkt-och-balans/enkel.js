@@ -41,11 +41,13 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'En sak står stadigt så länge tyngdpunkten ligger rakt ovanför stödytan. Tänk dig att du lutar en låda lite. Om du släpper den faller den tillbaka och står rakt igen. Men om du lutar den mycket välter den.' },
         { typ: 'text', text: 'Vad är skillnaden? Tänk dig en linje som går rakt ner från lådans tyngdpunkt. Om linjen träffar lådans botten faller lådan tillbaka. Om linjen hamnar utanför botten välter lådan.' },
         // [BILD D1: en låda i tre lägen – står rakt, lutar lite (lodlinjen från tyngdpunkten innanför stödytan, lådan faller tillbaka), lutar mycket (lodlinjen utanför stödytan, lådan välter)]
+        { id: 'bild-d1', typ: 'figur', namn: 'stabilitet', lage: 'lada', bredd: 2, hojd: 3, vinklar: [0, 15, 45], bildtext: 'Lutar lådan lite träffar lodlinjen från tyngdpunkten fortfarande stödytan, och lådan faller tillbaka. Lutar den mycket hamnar linjen utanför, och lådan välter.' },
         { typ: 'text', text: 'Det lutande tornet i Pisa i Italien lutar mycket. Men det står kvar, eftersom linjen rakt ner från tornets tyngdpunkt fortfarande träffar tornets bas.' },
         { typ: 'rubrik', text: 'Låg tyngdpunkt och bred stödyta ger stadighet' },
         { typ: 'text', text: 'Vissa saker är svåra att välta. En racerbil är låg och bred. Den har sin tyngdpunkt långt ner och en bred stödyta. Den kan luta mycket utan att välta.' },
         { typ: 'text', text: 'En hög lastbil med tung last högt upp är tvärtom. Den har sin tyngdpunkt högt upp. Den kan välta om den kör för fort i en skarp kurva.' },
         // [BILD D2: en låg, bred racerbil och en hög lastbil lutade lika mycket – racerbilens lodlinje innanför stödytan, lastbilens utanför]
+        { id: 'bild-d2', typ: 'figur', namn: 'stabilitet', lage: 'fordon', vinkel: 30, bildtext: 'Båda lutar 30°. Racerbilens lodlinje träffar mellan hjulen, men lastbilens hamnar utanför: lastbilen välter.' },
         { typ: 'text', text: 'Samma sak gäller dig. Står du på en buss med fötterna ihop är det lätt att tappa balansen när bussen bromsar. Står du med fötterna isär och lite böjda knän blir stödytan bredare och tyngdpunkten lägre. Då står du mycket stadigare.' },
         { typ: 'rubrik', text: 'Kroppen flyttar tyngdpunkten hela tiden' },
         { typ: 'text', text: 'Ställ dig på ett ben. Lägg märke till att du lutar överkroppen lite åt sidan. Det gör du för att få tyngdpunkten rakt ovanför den fot du står på.' },
@@ -62,10 +64,12 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'Ingenting du gör i luften ändrar banan' },
         { typ: 'text', text: 'Du kan sprattla med armarna, dra upp benen eller vrida dig i luften. Men din tyngdpunkt fortsätter längs samma båge ändå. För att ändra banan skulle du behöva trycka på något. I luften finns det inget att trycka emot.' },
         // [BILD D3: en person i ett hopp i fem lägen; tyngdpunkten markerad i varje läge och följer en jämn kastbana, medan armar och ben har olika ställning]
+        { id: 'bild-d3', typ: 'figur', namn: 'kastbana', lage: 'hopp', fart: 6, vinkel: 45, bildtext: 'Armar och ben har olika ställning i varje läge, men tyngdpunkten följer en jämn kastbana.' },
         { typ: 'rubrik', text: 'Men kroppen kan ändra form runt tyngdpunkten' },
         { typ: 'text', text: 'Även om tyngdpunkten följer en bestämd båge kan resten av kroppen ändra form. Det använder höjdhoppare.' },
         { typ: 'text', text: 'Nästan alla höjdhoppare går över ribban baklänges, med ryggen först. De böjer kroppen som en båge över ribban. Då är huvudet och benen på var sin sida om ribban, och bara en liten del av kroppen är ovanför den. Tyngdpunkten kan till och med passera strax under ribban. Så kan hopparen ta sig över en högre ribba än tyngdpunkten själv kommer upp till.' },
         // [BILD D4: höjdhoppare i bågform över ribban; tyngdpunkten markerad strax under ribban]
+        { id: 'bild-d4', typ: 'figur', namn: 'stabilitet', lage: 'hojdhopp', ribba: 2, bildtext: 'Kroppen går över ribban, men tyngdpunkten passerar strax under den.' },
         { typ: 'text', text: 'En balettdansare som gör ett stort språng gör något liknande. Högst upp drar hon upp armarna och benen. Då ser det ut som om hon svävar en kort stund, fast tyngdpunkten följer sin båge som vanligt.' },
         { typ: 'rubrik', text: 'När du landar måste tyngdpunkten vara över fötterna' },
         { typ: 'text', text: 'När du landar måste du få tyngdpunkten rakt ovanför fötterna igen. Annars ramlar du framåt eller bakåt. Därför böjer du knäna och sträcker fram armarna när du landar. Böjda knän gör dessutom att inbromsningen tar längre tid, så att det inte gör lika ont.' }
@@ -93,6 +97,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Kommer du ihåg landningen med böjda knän? När inbromsningen tar längre tid blir kraften mindre. Samma sak gäller en bil som krockar.' },
         { typ: 'text', text: 'Därför är fronten på en bil byggd för att tryckas ihop vid en krock. Den delen kallas *deformationszon|deformationszon*. När fronten trycks ihop tar det lite längre tid för bilen att stanna. Då blir kraften på dig mindre. Men den del av bilen där du sitter, kupén, är byggd stark och styv. Den ska inte tryckas ihop, så att du har plats och skyddas.' },
         // [BILD D5: två bilar som krockar med en vägg – en styv bil som stannar på en mycket kort sträcka, och en bil med deformationszon där fronten trycks ihop och kupén är hel]
+        { id: 'bild-d5', typ: 'figur', namn: 'krock', stopp: [0.05, 0.5], bildtext: 'Den styva bilen stannar på några centimeter. Bilen med deformationszon trycks ihop fram, stannar på en längre sträcka och får mindre kraft – kupén är hel.' },
         { typ: 'text', text: 'Många tror att den säkraste bilen är den som är så stark att den inte får en enda buckla. Men så är det inte. En helt styv bil skulle stanna nästan direkt, och då skulle kraften på dig bli enorm. När en modern bil ser helt förstörd ut fram efter en krock har fronten gjort sitt jobb. Den har tryckts ihop för att skydda människorna inuti.' },
         { typ: 'lank', till: ['ova', 'sjalvskattning'] }
       ]

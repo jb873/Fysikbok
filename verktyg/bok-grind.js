@@ -177,7 +177,7 @@ async function chrome() {
  *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map(), kc = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map(), kc = new Map(), tb = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -464,6 +464,17 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           B.forEach((a, i) => B.slice(i + 1).forEach(b => { if (a.v + b.v === 90 && Math.abs(a.x - b.x) * sk > 1) f_.push(a.v + '° och ' + b.v + '° landar ' + (Math.abs(a.x - b.x) * sk).toFixed(1) + ' px isär'); }));
           const hogst = B.reduce((a, b) => (b.topp < a.topp ? b : a), B[0]);
           if (hogst && hogst.v !== Math.max(...B.map(b => b.v))) f_.push(hogst.v + '° når högst, inte ' + Math.max(...B.map(b => b.v)) + '°');
+        } else if (s.dataset.kastbana === 'hopp') {
+          const D = [...s.querySelectorAll('circle.fig-hopp-tp')].map(c => [c.cx.baseVal.value, c.cy.baseVal.value]);
+          const dx = D.slice(1).map((p, i) => p[0] - D[i][0]), dy = D.slice(1).map((p, i) => p[1] - D[i][1]), d2 = dy.slice(1).map((v, i) => v - dy[i]);
+          if (D.length < 4) f_.push(D.length + ' lägen');
+          if (dx.some(v => !(v > 0) || !nara(v, dx[0]))) f_.push('tyngdpunkterna står inte lika långt isär i sidled: ' + dx.map(v => v.toFixed(1)).join('/'));
+          if (d2.some(v => !(v > 0.5) || !nara(v, d2[0]))) f_.push('tyngdpunkterna följer inte ett kast (lodräta steg ' + dy.map(v => v.toFixed(1)).join('/') + ')');
+          const bana = s.querySelector('path.fig-kast-bana'), L = bana ? bana.getTotalLength() : 0, B_ = bana ? Array.from({ length: 801 }, (_, i) => bana.getPointAtLength(L * i / 800)) : [];
+          D.forEach(p => { if (!B_.some(q => Math.hypot(q.x - p[0], q.y - p[1]) <= 1.2)) f_.push('tyngdpunkten vid (' + p.map(v => v.toFixed(0)) + ') ligger inte på den streckade banan'); });
+          const form = [...s.querySelectorAll('g.fig-hopp-figur')].map((g, i) => { const b = g.getBBox(); return D[i] ? [b.x - D[i][0], b.y - D[i][1], b.width, b.height] : [0, 0, 0, 0]; });
+          const olika = form.filter((x, i) => form.slice(0, i).every(y => x.some((v, j) => Math.abs(v - y[j]) > 2))).length;
+          if (olika < 3) f_.push('figuren har bara ' + olika + ' olika ställningar');
         } else if (s.dataset.cirkelrorelse) {
           const m = s.querySelector('.fig-cirkel-mitt, .fig-cirkel-mittkors'), mb = m && m.getBBox(), M = mb && [mb.x + mb.width / 2, mb.y + mb.height / 2];
           const K = [...s.querySelectorAll('g.fig-cirkel-kraft')], T = [...s.querySelectorAll('g.fig-cirkel-tangent')];
@@ -483,6 +494,84 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           tx.slice(j + 1).forEach(([b, q]) => { if (p.x < q.x + q.width - 0.5 && q.x < p.x + p.width - 0.5 && p.y < q.y + q.height - 0.5 && q.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
         });
         kc.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
+      });
+      // Tyngdpunkt, balans och kroppen (IV D, arbetsorder 17), mätt i figurernas egna element:
+      //  - stabilitet lada och fordon, i varje läge: lodlinjen lodrät från tyngdpunkten ned till marken; stödytan på
+      //    marken, från lådans ena nedre hörn till det andra (sett uppifrån) eller mellan hjulens kontaktpunkter; lådans
+      //    tyngdpunkt i lådans mitt; texten under ("välter" eller inte) stämmer med var lodlinjen träffar, och det stämmer
+      //    med fysiken: lådan välter när tan(vinkeln) > bredden / höjden (mätta i lådan), fordonet när tan(vinkeln) >
+      //    halva spårvidden / tyngdpunktens höjd;
+      //  - stabilitet hojdhopp: tyngdpunkten under ribbans överkant och kroppen (bågen) över ribban;
+      //  - kastbana hopp (i kc ovan): tyngdpunktsprickarna lika långt isär i sidled och lodrätt som i ett kast (samma
+      //    ökning i fallet mellan varje läge), på den streckade banan, och figuren i minst tre olika ställningar;
+      //  - krock: deformationszonens stoppsträcka minst dubbelt så lång som den styva bilens, kupén lika lång i båda och
+      //    båda bilarna an mot väggen;
+      //  - alla: ingen text under 14 px på skärmen, utanför figuren eller över en annan text.
+      $$('.scen svg[data-stabilitet], .scen svg[data-krock]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (tb.has(id)) return;
+        const f_ = [], N = 0.6, nara = (a, b, t = N) => Math.abs(a - b) <= t, sk = s.getBoundingClientRect().width / s.viewBox.baseVal.width;
+        const pts = e => [...e.points].map(p => [p.x, p.y]);
+        const typ = s.dataset.stabilitet ? 'stabilitet ' + s.dataset.stabilitet : 'krock';
+        if (s.dataset.stabilitet === 'lada' || s.dataset.stabilitet === 'fordon') {
+          const P = [...s.querySelectorAll('g.fig-stab-panel')];
+          if (!P.length) f_.push('inga lägen');
+          P.forEach(g => {
+            const v = +g.dataset.vinkel, namn = v + '°', T = g.querySelector('circle.fig-tyngdpunkt'), l = g.querySelector('line.fig-lodlinje'), st = g.querySelector('line.fig-stodyta');
+            if (!T || !l || !st) return f_.push(namn + ': tyngdpunkt, lodlinje eller stödyta saknas');
+            const tx = T.cx.baseVal.value, ty = T.cy.baseVal.value, mark = st.y1.baseVal.value, sx = [st.x1.baseVal.value, st.x2.baseVal.value].sort((a, b) => a - b);
+            if (!nara(l.x1.baseVal.value, tx) || !nara(l.x2.baseVal.value, tx) || !nara(l.y1.baseVal.value, ty) || !nara(l.y2.baseVal.value, mark)) f_.push(namn + ': lodlinjen går inte lodrätt från tyngdpunkten till marken');
+            let kant, tipp;
+            if (s.dataset.stabilitet === 'lada') {
+              const q = pts(g.querySelector('polygon.fig-lada'));
+              const mitt = [q.reduce((a, p) => a + p[0], 0) / q.length, q.reduce((a, p) => a + p[1], 0) / q.length];
+              if (q.length !== 4 || !nara(tx, mitt[0]) || !nara(ty, mitt[1])) f_.push(namn + ': tyngdpunkten är inte i lådans mitt');
+              kant = [q[0][0], q[1][0]].sort((a, b) => a - b);
+              if (!nara(q[0][1], mark)) f_.push(namn + ': lådan står inte på marken');
+              const w = Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]), h = Math.hypot(q[2][0] - q[1][0], q[2][1] - q[1][1]);
+              tipp = Math.tan(v * Math.PI / 180) > w / h;
+            } else {
+              kant = [...g.querySelectorAll('polygon.fig-hjul')].map(e => +e.dataset.kx).sort((a, b) => a - b);
+              if (kant.length !== 2) f_.push(namn + ': ' + kant.length + ' hjul');
+              kant = [kant[0], kant[kant.length - 1]];
+              tipp = Math.tan(v * Math.PI / 180) > +g.dataset.sparvidd / 2 / +g.dataset.tpHojd;
+            }
+            if (!nara(sx[0], kant[0]) || !nara(sx[1], kant[1])) f_.push(namn + ': stödytan är inte ' + (s.dataset.stabilitet === 'lada' ? 'lådans botten' : 'sträckan mellan hjulen') + ' (' + sx.map(x => x.toFixed(1)) + ' / ' + kant.map(x => x.toFixed(1)) + ')');
+            const inne = tx >= sx[0] - N && tx <= sx[1] + N, valter = [...g.querySelectorAll('text')].some(t => /välter/.test(t.textContent));
+            if (valter === inne) f_.push(namn + ': texten säger ' + (valter ? '”välter”' : 'att den står') + ', men lodlinjen träffar ' + (inne ? 'inom' : 'utanför') + ' stödytan');
+            if (tipp === inne) f_.push(namn + ': lodlinjen träffar ' + (inne ? 'inom' : 'utanför') + ' stödytan, men vid ' + v + '° ska den ' + (tipp ? 'välta' : 'stå'));
+          });
+        } else if (s.dataset.stabilitet === 'hojdhopp') {
+          const R = s.querySelector('circle.fig-ribba'), T = s.querySelector('circle.fig-tyngdpunkt:not(.fig-tecken)'), K = s.querySelector('path.fig-kropp:not(.fig-lem)');
+          if (!R || !T || !K) f_.push('ribba, tyngdpunkt eller kropp saknas');
+          else {
+            const rx = R.cx.baseVal.value, topp = R.cy.baseVal.value - R.r.baseVal.value, halv = parseFloat(getComputedStyle(K).strokeWidth) / 2;
+            if (!(T.cy.baseVal.value > topp)) f_.push('tyngdpunkten är inte under ribbans överkant');
+            const L = K.getTotalLength(), over = Array.from({ length: 401 }, (_, i) => K.getPointAtLength(L * i / 400)).filter(p => Math.abs(p.x - rx) <= 2);
+            if (!over.length || over.some(p => !(p.y + halv < topp))) f_.push('kroppen går inte över ribban');
+          }
+        } else {
+          const vagg = s.querySelector('rect.fig-vagg'), vx = vagg ? vagg.x.baseVal.value : NaN, rad = {};
+          s.querySelectorAll('g.fig-krock-rad').forEach(g => {
+            const fore = pts(g.querySelector('polygon.fig-krock-fore')), bil = pts(g.querySelector('polygon.fig-krock-bil')), kupe = g.querySelector('rect.fig-kupe');
+            const minx = q => Math.min(...q.map(p => p[0])), maxx = q => Math.max(...q.map(p => p[0]));
+            rad[g.dataset.rad] = { stracka: minx(bil) - minx(fore), kupe: kupe.width.baseVal.value };
+            if (!nara(maxx(bil), vx) || !nara(maxx(fore), vx)) f_.push(g.dataset.rad + ': bilen står inte an mot väggen');
+          });
+          const { styv, zon } = rad;
+          if (!styv || !zon) f_.push('raderna saknas');
+          else {
+            if (!(styv.stracka > 0) || !(zon.stracka >= 2 * styv.stracka)) f_.push('deformationszonens sträcka (' + zon.stracka.toFixed(1) + ') är inte tydligt längre än den styva bilens (' + styv.stracka.toFixed(1) + ')');
+            if (!nara(styv.kupe, zon.kupe)) f_.push('kupén är inte lika lång (' + styv.kupe.toFixed(1) + ' / ' + zon.kupe.toFixed(1) + ')');
+          }
+        }
+        const vb = s.viewBox.baseVal, tx = [...s.querySelectorAll('text')].filter(t => t.textContent.trim()).map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * sk]);
+        tx.forEach(([a, p, px], j) => {
+          if (px < 13.95) f_.push('”' + a + '” är ' + px.toFixed(1) + ' px');
+          if (p.x < -0.5 || p.y < -0.5 || p.x + p.width > vb.width + 0.5 || p.y + p.height > vb.height + 0.5) f_.push('”' + a + '” står utanför figuren');
+          tx.slice(j + 1).forEach(([b, q]) => { if (p.x < q.x + q.width - 0.5 && q.x < p.x + p.width - 0.5 && p.y < q.y + q.height - 0.5 && q.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
+        });
+        tb.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
       });
       // Resulterande kraft (Kraft och rörelse IV A, arbetsorder 12), mätt i figurernas egna element:
       //  - resultant_rutor steg: varje pil börjar och slutar i ett rutnätshörn; den flyttade F₂ har samma komposanter som
@@ -681,6 +770,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       ry: { antal: ry.size, typer: [...new Set([...ry.values()].map(x => x.typ))], fel: [...ry].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       rk: { antal: rk.size, typer: [...new Set([...rk.values()].map(x => x.typ))], fel: [...rk].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       ng: { antal: ng.size, typer: [...new Set([...ng.values()].map(x => x.typ))], minPx: Math.min(...[...ng.values()].map(x => x.minPx)), fel: [...ng].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
+      tb: { antal: tb.size, typer: [...new Set([...tb.values()].map(x => x.typ))], minPx: Math.min(...[...tb.values()].map(x => x.minPx)), fel: [...tb].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       kc: { antal: kc.size, typer: [...new Set([...kc.values()].map(x => x.typ))], minPx: Math.min(...[...kc.values()].map(x => x.minPx)), fel: [...kc].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
@@ -690,8 +780,10 @@ const NG_PROV = String.raw`if (spar.some(x => x.rk && x.rk.antal)) prova('figur:
     spar.every(x => !x.rk.fel.length), spar.flatMap(x => x.rk.fel).join(' | '));
   if (spar.some(x => x.ng && x.ng.antal)) prova('figur: diagram och vektorer – punkterna på sina koordinater och grafen genom dem, de skuggade ytorna under grafen, pilarna efter varandra och resultanten från början till spets, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.ng.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.ng.typer))].join(', ') + ')',
     spar.every(x => !x.ng.fel.length), spar.flatMap(x => x.ng.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.ng.antal).map(x => x.ng.minPx)).toFixed(1) + ' px');
-  if (spar.some(x => x.kc && x.kc.antal)) prova('figur: kaströrelse och cirkelrörelse – bollarna på samma höjd vid varje tidpunkt, den släppta rakt ned och den kastade lika långt framåt varje steg, de vågräta pilarna lika långa och de lodräta lika mycket längre varje sekund, 45° längst, 30° och 60° på samma ställe (±1 px) och 60° högst, kraftpilen mot mitten och den raka banan längs tangenten, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.kc.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.kc.typer))].join(', ') + ')',
-    spar.every(x => !x.kc.fel.length), spar.flatMap(x => x.kc.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.kc.antal).map(x => x.kc.minPx)).toFixed(1) + ' px');`;
+  if (spar.some(x => x.kc && x.kc.antal)) prova('figur: kaströrelse och cirkelrörelse – bollarna på samma höjd vid varje tidpunkt, den släppta rakt ned och den kastade lika långt framåt varje steg, de vågräta pilarna lika långa och de lodräta lika mycket längre varje sekund, 45° längst, 30° och 60° på samma ställe (±1 px) och 60° högst, hoppets tyngdpunkter på en kastbana, kraftpilen mot mitten och den raka banan längs tangenten, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.kc.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.kc.typer))].join(', ') + ')',
+    spar.every(x => !x.kc.fel.length), spar.flatMap(x => x.kc.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.kc.antal).map(x => x.kc.minPx)).toFixed(1) + ' px');
+  if (spar.some(x => x.tb && x.tb.antal)) prova('figur: tyngdpunkt, balans och krock – lodlinjen lodrät från tyngdpunkten, stödytan under lådan eller mellan hjulen, lådans tyngdpunkt i mitten, texten (välter eller inte) som lodlinjen och fysiken säger, höjdhopparens tyngdpunkt under ribban och kroppen över, deformationszonens sträcka minst dubbelt så lång och kupén lika lång, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.tb.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.tb.typer))].join(', ') + ')',
+    spar.every(x => !x.tb.fel.length), spar.flatMap(x => x.tb.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tb.antal).map(x => x.tb.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------
  * Klistras in i scenarierna (behöver v, $, $$, synlig, prova, gest, klicka, oppen, stangd, figurKoll, spar, harOmslag).
