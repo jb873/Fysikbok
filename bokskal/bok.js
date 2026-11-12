@@ -1098,7 +1098,11 @@
         let f = bok.poster.indexOf(ps[0]);
         while (f > 0 && RUBRIKER.includes(bok.poster[f - 1].typ)) f--;
         const efter = bok.poster.slice(bok.poster.indexOf(ps[ps.length - 1]) + 1).find(p => p.fot || iFlodet(p));
-        const ihop = r.matt.get(ps[ps.length - 1]).bottom - r.matt.get(bok.poster[f]).top;
+        // upphovsraden sist i boken följer med gruppen före (grupperna ovan), alltså med listan – räkna den också
+        // (2026-11-12: utan den sa kontrollen "delad fast den ryms" om "Det viktigaste" i III B Enkel, 1366×768)
+        const upph = bok.poster.slice(bok.poster.indexOf(ps[ps.length - 1]) + 1).find(p => !p.fot);
+        const slut = upph && upph.typ === 'upphov' && r.matt.has(upph) ? upph : ps[ps.length - 1];
+        const ihop = r.matt.get(slut).bottom - r.matt.get(bok.poster[f]).top;
         if (ihop <= (efter && efter.fot ? r.kapFot : r.kap)) brott.push(`sida ${nrs}: punktlistan är delad, fast den ryms på en sida`);
         continue;
       }

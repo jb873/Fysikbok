@@ -37,11 +37,13 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Tänk dig att du står på taket till ett höghus. Du släpper en boll rakt ned, och i samma ögonblick kastar du en annan boll rakt ut. Den kastade bollen landar långt bort från huset, och den släppta bollen landar vid husväggen. Men de landar samtidigt.' },
         { typ: 'text', text: 'Det beror på att fallet nedåt är exakt detsamma för båda. Båda börjar med farten noll nedåt, och tyngdkraften ger båda samma acceleration. Efter en sekund har båda fallit lika långt, efter två sekunder också. Att den ena bollen samtidigt rör sig framåt ändrar ingenting i fallet.' },
         // [BILD K1: höghus – en släppt boll och en kastad boll, bollarnas lägen varje halv sekund; de ligger på samma höjd vid varje tidpunkt]
+        { id: 'bild-k1', typ: 'figur', namn: 'kastbana', lage: 'hoghus', hojd: 20, fart: 10, steg: 0.5, bildtext: 'Två bollar startar samtidigt från taket. Den släppta och den kastade bollen ligger på samma höjd vid varje tidpunkt, och båda når marken samtidigt.' },
         { typ: 'text', text: 'Det samma gäller en kula som skjuts vågrätt ur ett gevär och en kula som släpps från samma höjd. Om marken är plan och luftmotståndet försumbart når de marken samtidigt, även om den skjutna kulan landar hundratals meter bort.' },
         { typ: 'rubrik', text: 'Farten framåt är konstant och farten nedåt ökar' },
         { typ: 'text', text: 'Man kan följa den kastade bollen sekund för sekund. Framåt rör den sig lika långt varje sekund, eftersom ingen kraft ändrar den rörelsen. Nedåt faller den längre för varje sekund, eftersom tyngdkraften hela tiden ökar farten nedåt med ungefär 10 m/s varje sekund.' },
         { typ: 'text', text: 'När de två rörelserna läggs ihop blir banan en böjd linje som blir brantare och brantare. Den kallas *kastbana|kastbana*. Formen kommer av att den jämna rörelsen framåt och den allt snabbare rörelsen nedåt sker samtidigt.' },
         // [BILD K2: kastbanan med bollens läge varje sekund – vågräta pilar lika långa hela vägen, lodräta pilar som växer]
+        { id: 'bild-k2', typ: 'figur', namn: 'kastbana', lage: 'komposanter', fart: 10, sekunder: 3, bildtext: 'Farten framåt är lika stor hela vägen. Farten nedåt ökar med 10 m/s varje sekund.' },
         { typ: 'text', text: 'Många tror att en kastad boll först flyger rakt fram och sedan plötsligt faller, som i en tecknad film där figuren springer ut över ett stup och hänger kvar i luften en stund. Men tyngdkraften verkar från första ögonblicket. Bollen börjar falla direkt när den lämnar handen.' },
         { typ: 'rubrik', text: 'En boll som kastas snett uppåt stiger först och faller sedan' },
         { typ: 'text', text: 'De flesta kast går snett uppåt, inte rakt fram. Då har bollen från början en fart både framåt och uppåt. Farten framåt är fortfarande konstant. Farten uppåt minskar däremot med 10 m/s varje sekund, eftersom tyngdkraften drar nedåt. Till slut är farten uppåt noll, och bollen är i banans högsta punkt. Sedan börjar den falla, och farten nedåt ökar.' },
@@ -50,6 +52,7 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Hur långt en boll kommer beror på hur fort den kastas och i vilken vinkel. Kastas den nästan rakt upp stiger den högt men kommer inte långt fram. Kastas den nästan vågrätt får den mycket fart framåt men landar snabbt. Någonstans mitt emellan finns den bästa vinkeln.' },
         { typ: 'text', text: 'Om luftmotståndet kan försummas och bollen landar på samma höjd som den kastades från, kommer den längst vid 45°. Vinklarna 30° och 60° ger då exakt samma längd. Den ena bollen flyger lågt och snabbt, den andra högt och länge.' },
         // [BILD K3: tre kastbanor från samma punkt med samma fart – 30°, 45° och 60°; 45° längst, 30° och 60° landar på samma ställe]
+        { id: 'bild-k3', typ: 'figur', namn: 'kastbana', lage: 'vinklar', fart: 20, vinklar: [30, 45, 60], bildtext: 'Samma fart, tre vinklar. 45° kommer längst. 30° och 60° landar på samma ställe, men 60° går högre.' },
         { typ: 'text', text: 'I verkligheten bromsar luften. Därför blir banan kortare än utan luft, och den blir brantare i slutet än i början. En fotboll eller en badmintonboll påverkas mycket av luften, en kula i kulstötning mycket lite.' }
       ]
     },
@@ -60,6 +63,7 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Isaac Newton tänkte sig en kanon högst upp på ett mycket högt berg. Kanonen skjuter en kula vågrätt. Med lite krut landar kulan nära berget. Med mer krut landar den längre bort. Varje gång faller kulan lika fort nedåt, men den hinner längre framåt innan den når marken.' },
         { typ: 'text', text: 'Men jorden är inte platt. Den är ett klot, och marken kröker sig nedåt. Om kulan skjuts tillräckligt fort kröker sig marken bort under den lika fort som kulan faller. Då når kulan aldrig marken. Den faller hela tiden, men den missar jorden och går runt den. Den är i *omloppsbana|omloppsbana*.' },
         // [BILD K4: Newtons kanon – kulbanor med ökande fart, den sista går runt jorden]
+        { id: 'bild-k4', typ: 'figur', namn: 'newtons_kanon', bildtext: 'Ju högre fart, desto längre bort landar kulan. Med tillräckligt hög fart faller den runt hela jorden.' },
         { typ: 'rubrik', text: 'En satellit faller hela tiden men missar jorden' },
         { typ: 'text', text: 'Det är så alla satelliter fungerar. En satellit är inte uppe för att tyngdkraften har försvunnit. Tyngdkraften drar den mot jorden hela tiden. Men satelliten rör sig så fort i sidled att den faller runt jorden i stället för ned på den.' },
         { typ: 'text', text: 'Nära jorden behövs en fart på ungefär 8 km i sekunden, alltså nästan 30 000 km/h. Rymdstationen ISS, som kretsar ungefär 400 km upp, går runt hela jorden på ungefär en och en halv timme. Astronauterna i stationen svävar därför att de och stationen faller tillsammans, hela tiden.' },
@@ -77,10 +81,12 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Om kraften försvinner fortsätter föremålet rakt fram' },
         { typ: 'text', text: 'En diskuskastare snurrar runt med diskusen i handen. Handen drar diskusen inåt hela tiden, så att den går i en cirkel. När kastaren släpper försvinner kraften inåt. Då fortsätter diskusen rakt fram i den riktning den hade just i det ögonblicket, längs en rak linje som bara snuddar vid cirkeln. Den flyger alltså inte rakt utåt från mitten.' },
         // [BILD K5: en boll som snurras i ett snöre – kraftpil in mot mitten; när snöret släpps fortsätter bollen rakt fram längs en tangent]
+        { id: 'bild-k5', typ: 'figur', namn: 'cirkelrorelse', lage: 'snore', bildtext: 'Snöret drar bollen in mot mitten. När snöret släpps fortsätter bollen rakt fram, inte utåt.' },
         { typ: 'rubrik', text: 'En bil i en kurva behöver friktion' },
         { typ: 'text', text: 'När en bil svänger måste något dra den in mot kurvans mitt. Det är friktionen mellan däcken och vägen. Däcken trycker mot vägen, och vägen trycker tillbaka på däcken, inåt.' },
         { typ: 'text', text: 'Om vägen är isig blir friktionen liten. Då räcker den inte till för att hålla bilen i kurvan, och bilen fortsätter rakt fram ut i diket. Kraften inåt behöver också bli större ju fortare bilen kör. Därför sänker man farten före en skarp kurva.' },
         // [BILD K6: bil i en kurva sedd uppifrån – friktionskraft från vägen in mot kurvans mitt; på is fortsätter bilen rakt fram]
+        { id: 'bild-k6', typ: 'figur', namn: 'cirkelrorelse', lage: 'bil', bildtext: 'Friktionen från vägen drar bilen in mot kurvans mitt. Utan friktion, till exempel på blankis, fortsätter bilen rakt fram.' },
         { typ: 'rubrik', text: 'Många tror att något kastas utåt i en kurva' },
         { typ: 'text', text: 'När du sitter i en bil som svänger känns det som om något trycker dig utåt, mot dörren. Det kallas ofta *centrifugalkraft*. Men det finns ingen kraft som trycker dig utåt. Det du känner är din tröghet. Din kropp vill fortsätta rakt fram, men bilen svänger. Då trycker bildörren, eller bältet, dig inåt, så att du följer med i kurvan.' },
         { typ: 'text', text: 'Samma sak händer i en tvättmaskin som centrifugerar. Trumman snurrar fort, och trumväggen trycker kläderna inåt så att de går runt. Men vattnet i kläderna hålls inte fast. Det fortsätter rakt fram, genom hålen i trumman. Det är så kläderna blir torrare.' },

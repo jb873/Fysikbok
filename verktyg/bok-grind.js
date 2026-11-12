@@ -177,7 +177,7 @@ async function chrome() {
  *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map(), kc = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -417,6 +417,73 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         ng.set(id, { typ, minPx: Math.min(...tx.map(x => x[2])), fel: f_ });
       });
+      // Kaströrelse och cirkelrörelse (IV C, arbetsorder 16), mätt i figurernas egna element:
+      //  - kastbana hoghus: den släppta och den kastade bollen på samma höjd vid varje tidpunkt (och den streckade linjen
+      //    mellan dem), den släppta rakt ned (samma x) och den kastade lika långt framåt varje steg;
+      //  - kastbana komposanter: pilarna från bollen; de vågräta lika långa, de lodräta 0 vid start och lika mycket
+      //    längre varje sekund;
+      //  - kastbana vinklar: vinkeln närmast 45° landar längst, vinklar som tillsammans är 90° (30° och 60°) landar på
+      //    samma ställe (±1 px på skärmen), och den största vinkeln når högst;
+      //  - cirkelrorelse: kraftpilen pekar mot mitten (den ritade mitten), och den raka banan börjar på cirkeln och är
+      //    vinkelrät mot radien där (tangenten), inte utåt;
+      //  - alla: ingen text under 14 px på skärmen, utanför figuren eller över en annan text.
+      $$('.scen svg[data-kastbana], .scen svg[data-cirkelrorelse]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (kc.has(id)) return;
+        const f_ = [], N = 0.6, nara = (a, b, t = N) => Math.abs(a - b) <= t, sk = s.getBoundingClientRect().width / s.viewBox.baseVal.width;
+        const pilAv = g => { const l = g.querySelector('line'), t = g.querySelector('polygon'); return l && t ? { a: [l.x1.baseVal.value, l.y1.baseVal.value], b: [t.points[0].x, t.points[0].y] } : null; };
+        const vinkelFel = (u, v) => { const a = Math.atan2(u[1], u[0]) - Math.atan2(v[1], v[0]); return Math.abs(Math.atan2(Math.sin(a), Math.cos(a))); };
+        const typ = s.dataset.kastbana ? 'kastbana ' + s.dataset.kastbana : 'cirkelrorelse ' + s.dataset.cirkelrorelse;
+        if (s.dataset.kastbana === 'hoghus') {
+          const B = k => [...s.querySelectorAll('circle[data-boll="' + k + '"]')].map(c => ({ t: +c.dataset.t, x: c.cx.baseVal.value, y: c.cy.baseVal.value }));
+          const sl = B('slappt'), ka = B('kastad');
+          if (sl.length < 3 || sl.length !== ka.length) f_.push(sl.length + ' släppta och ' + ka.length + ' kastade bollar');
+          sl.forEach((b, i) => { const k = ka[i];
+            if (!k || k.t !== b.t || !nara(k.y, b.y)) f_.push('bollarna står inte på samma höjd vid ' + b.t + ' s');
+            if (!nara(b.x, sl[0].x)) f_.push('den släppta bollen faller inte lodrätt (vid ' + b.t + ' s)'); });
+          s.querySelectorAll('line.fig-kast-hojd').forEach(l => { const b = sl.find(x => x.t === +l.dataset.t);
+            if (!b || !nara(l.y1.baseVal.value, b.y) || !nara(l.y2.baseVal.value, b.y)) f_.push('den streckade linjen vid ' + l.dataset.t + ' s ligger inte på bollarnas höjd'); });
+          const per = ka.length > 1 ? (ka[1].x - ka[0].x) / (ka[1].t - ka[0].t) : 0;
+          ka.slice(1).forEach((k, i) => { const dx = k.x - ka[i].x, bor = per * (k.t - ka[i].t);
+            if (!(dx > 0) || !nara(dx, bor)) f_.push('den kastade bollen flyttar ' + dx.toFixed(1) + ' framåt mellan ' + ka[i].t + ' och ' + k.t + ' s, ska vara ' + bor.toFixed(1)); });
+        } else if (s.dataset.kastbana === 'komposanter') {
+          const boll = t => s.querySelector('circle.fig-kast-boll[data-t="' + t + '"]');
+          const G = r => [...s.querySelectorAll('g.fig-kast-fart[data-riktning="' + r + '"]')].map(g => ({ t: g.dataset.t, p: pilAv(g) }));
+          const vx = G('x'), vy = G('y');
+          const fran = x => { const c = boll(x.t); return x.p && c && nara(x.p.a[0], c.cx.baseVal.value) && nara(x.p.a[1], c.cy.baseVal.value); };
+          vx.concat(vy).forEach(x => { if (x.p && !fran(x)) f_.push('pilen vid ' + x.t + ' s börjar inte i bollen'); });
+          const lx = vx.map(x => x.p ? x.p.b[0] - x.p.a[0] : 0);
+          if (vx.length < 3 || lx.some(l => !(l > 0) || !nara(l, lx[0])) || vx.some(x => x.p && !nara(x.p.a[1], x.p.b[1]))) f_.push('de vågräta pilarna är inte vågräta och lika långa: ' + lx.map(l => l.toFixed(1)).join('/'));
+          const ly = vy.map(x => x.p ? x.p.b[1] - x.p.a[1] : 0), okat = ly.slice(1).map((l, i) => l - ly[i]);
+          if (ly.length !== vx.length || !nara(ly[0], 0) || okat.some(d => !(d > 1) || !nara(d, okat[0])) || vy.some(x => x.p && !nara(x.p.a[0], x.p.b[0]))) f_.push('de lodräta pilarna växer inte lika mycket varje sekund från 0: ' + ly.map(l => l.toFixed(1)).join('/'));
+        } else if (s.dataset.kastbana === 'vinklar') {
+          const B = [...s.querySelectorAll('path.fig-kast-bana-v')].map(p => { const e = p.getPointAtLength(p.getTotalLength()); return { v: +p.dataset.vinkel, x: e.x, topp: p.getBBox().y }; });
+          if (B.length < 2) f_.push(B.length + ' banor');
+          const langst = B.reduce((a, b) => (b.x > a.x ? b : a), B[0]), nara45 = B.reduce((a, b) => (Math.abs(b.v - 45) < Math.abs(a.v - 45) ? b : a), B[0]);
+          if (langst && langst.v !== nara45.v && !nara(langst.x, nara45.x)) f_.push(langst.v + '° landar längst, inte ' + nara45.v + '°');
+          B.forEach((a, i) => B.slice(i + 1).forEach(b => { if (a.v + b.v === 90 && Math.abs(a.x - b.x) * sk > 1) f_.push(a.v + '° och ' + b.v + '° landar ' + (Math.abs(a.x - b.x) * sk).toFixed(1) + ' px isär'); }));
+          const hogst = B.reduce((a, b) => (b.topp < a.topp ? b : a), B[0]);
+          if (hogst && hogst.v !== Math.max(...B.map(b => b.v))) f_.push(hogst.v + '° når högst, inte ' + Math.max(...B.map(b => b.v)) + '°');
+        } else if (s.dataset.cirkelrorelse) {
+          const m = s.querySelector('.fig-cirkel-mitt, .fig-cirkel-mittkors'), mb = m && m.getBBox(), M = mb && [mb.x + mb.width / 2, mb.y + mb.height / 2];
+          const K = [...s.querySelectorAll('g.fig-cirkel-kraft')], T = [...s.querySelectorAll('g.fig-cirkel-tangent')];
+          if (!M || !K.length || !T.length) f_.push((M ? '' : 'ingen mitt, ') + K.length + ' kraftpilar, ' + T.length + ' raka banor');
+          K.forEach(g => { const p = pilAv(g), C = [+g.dataset.cx, +g.dataset.cy];
+            if (M && (!nara(C[0], M[0]) || !nara(C[1], M[1]))) f_.push('kraftpilens mitt är inte den ritade mitten');
+            if (vinkelFel([p.b[0] - p.a[0], p.b[1] - p.a[1]], [C[0] - p.a[0], C[1] - p.a[1]]) > 0.02) f_.push('kraftpilen pekar inte mot mitten'); });
+          T.forEach(g => { const p = pilAv(g), C = [+g.dataset.cx, +g.dataset.cy], b = [+g.dataset.bx, +g.dataset.by];
+            const u = [p.b[0] - p.a[0], p.b[1] - p.a[1]], r = [p.a[0] - C[0], p.a[1] - C[1]];
+            if (!nara(p.a[0], b[0]) || !nara(p.a[1], b[1])) f_.push('den raka banan börjar inte där bollen eller bilen är');
+            if (Math.abs(u[0] * r[0] + u[1] * r[1]) / Math.hypot(...u) / Math.hypot(...r) > 0.02) f_.push('den raka banan är inte vinkelrät mot radien (ingen tangent)'); });
+        }
+        const vb = s.viewBox.baseVal, tx = [...s.querySelectorAll('text')].filter(t => t.textContent.trim()).map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * sk]);
+        tx.forEach(([a, p, px], j) => {
+          if (px < 13.95) f_.push('”' + a + '” är ' + px.toFixed(1) + ' px');
+          if (p.x < -0.5 || p.y < -0.5 || p.x + p.width > vb.width + 0.5 || p.y + p.height > vb.height + 0.5) f_.push('”' + a + '” står utanför figuren');
+          tx.slice(j + 1).forEach(([b, q]) => { if (p.x < q.x + q.width - 0.5 && q.x < p.x + p.width - 0.5 && p.y < q.y + q.height - 0.5 && q.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
+        });
+        kc.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
+      });
       // Resulterande kraft (Kraft och rörelse IV A, arbetsorder 12), mätt i figurernas egna element:
       //  - resultant_rutor steg: varje pil börjar och slutar i ett rutnätshörn; den flyttade F₂ har samma komposanter som
       //    F₂ i det första steget; resultanten går från startpunkten till den flyttade pilens spets;
@@ -614,6 +681,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       ry: { antal: ry.size, typer: [...new Set([...ry.values()].map(x => x.typ))], fel: [...ry].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       rk: { antal: rk.size, typer: [...new Set([...rk.values()].map(x => x.typ))], fel: [...rk].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       ng: { antal: ng.size, typer: [...new Set([...ng.values()].map(x => x.typ))], minPx: Math.min(...[...ng.values()].map(x => x.minPx)), fel: [...ng].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
+      kc: { antal: kc.size, typer: [...new Set([...kc.values()].map(x => x.typ))], minPx: Math.min(...[...kc.values()].map(x => x.minPx)), fel: [...kc].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
 
@@ -621,7 +689,9 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
 const NG_PROV = String.raw`if (spar.some(x => x.rk && x.rk.antal)) prova('figur: resulterande kraft – kraftpilarnas längder i proportion och resultanten summan med tecken (en kedja: från första början till sista spets), pilarna på rutat papper i rutnätets hörn och den flyttade pilen med samma komposanter, resultantens längd vid varje vinkel (±1 px), komposanterna längs rutlinjerna och snörkrafternas delar (sidodelarna tar ut varandra, uppåtdelarna = tyngden), inga texter utanför eller över varandra (' + spar.map(x => x.rk.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.rk.typer))].join(', ') + ')',
     spar.every(x => !x.rk.fel.length), spar.flatMap(x => x.rk.fel).join(' | '));
   if (spar.some(x => x.ng && x.ng.antal)) prova('figur: diagram och vektorer – punkterna på sina koordinater och grafen genom dem, de skuggade ytorna under grafen, pilarna efter varandra och resultanten från början till spets, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.ng.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.ng.typer))].join(', ') + ')',
-    spar.every(x => !x.ng.fel.length), spar.flatMap(x => x.ng.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.ng.antal).map(x => x.ng.minPx)).toFixed(1) + ' px');`;
+    spar.every(x => !x.ng.fel.length), spar.flatMap(x => x.ng.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.ng.antal).map(x => x.ng.minPx)).toFixed(1) + ' px');
+  if (spar.some(x => x.kc && x.kc.antal)) prova('figur: kaströrelse och cirkelrörelse – bollarna på samma höjd vid varje tidpunkt, den släppta rakt ned och den kastade lika långt framåt varje steg, de vågräta pilarna lika långa och de lodräta lika mycket längre varje sekund, 45° längst, 30° och 60° på samma ställe (±1 px) och 60° högst, kraftpilen mot mitten och den raka banan längs tangenten, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.kc.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.kc.typer))].join(', ') + ')',
+    spar.every(x => !x.kc.fel.length), spar.flatMap(x => x.kc.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.kc.antal).map(x => x.kc.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------
  * Klistras in i scenarierna (behöver v, $, $$, synlig, prova, gest, klicka, oppen, stangd, figurKoll, spar, harOmslag).

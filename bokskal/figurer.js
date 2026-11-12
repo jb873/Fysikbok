@@ -1373,4 +1373,167 @@
     } else fel(`resultant_rutor: okänt läge ”${lage}”`);
     return { svg: svg(B, H, s).replace('<svg ', `<svg data-resultant-rutor="${lage}" `), beskrivning: d.beskrivning || beskr };
   });
+
+  /* Kaströrelse (Kraft och rörelse IV C, arbetsorder 16, 2026-11-11). Text 19 enheter (som diagrammen i order 11: minst
+   * 14 px i mobilens spalt), kraftpilarna i kraftpilarnas färg. Varje läge skriver sina mått i elementen (data-*), och
+   * grinden mäter det figuren påstår i elementen själva.
+   *   kastbana, lage 'hoghus':       hojd (m), fart (m/s), g?: 10, steg?: 0,5 (s) – ett hus, en släppt och en vågrätt
+   *                                  kastad boll med lägena varje steg, streckade vågräta linjer mellan bollarna
+   *   kastbana, lage 'komposanter':  fart (m/s), sekunder?: 3, g?: 10 – ett vågrätt kast med bollens läge varje sekund,
+   *                                  en vågrät pil (farten framåt) och en lodrät pil (farten nedåt) vid varje läge
+   *   kastbana, lage 'vinklar':      fart (m/s), vinklar?: [30, 45, 60], g?: 10 – banorna från samma punkt, utan luft
+   * Bollarnas lägen räknas ur fysiken (x = v·t, fallet g·t²/2), inte ritas för hand. */
+  const KT = 19;
+  const kastText = (x, y, s, k = '') => `<text x="${f(x)}" y="${f(y)}" class="fig-text fig-kast-text ${k}">${esc(s)}</text>`;
+  const skraffer = (x1, x2, y) => `<line class="fig-bord" x1="${f(x1)}" y1="${f(y)}" x2="${f(x2)}" y2="${f(y)}"/>` +
+    Array.from({ length: Math.floor((x2 - x1) / 20) }, (_, i) => `<line class="fig-skraffer" x1="${f(x1 + 10 + i * 20)}" y1="${f(y + 1)}" x2="${f(x1 + i * 20)}" y2="${f(y + 12)}"/>`).join('');
+  Bok.figur('kastbana', d => {
+    const lage = d.lage || fel('kastbana behöver lage: hoghus, komposanter eller vinklar'), g = d.g || 10, B = 440;
+    let s = '', H = 0, beskr = '';
+    if (lage === 'hoghus') {
+      const h = d.hojd || fel('kastbana hoghus behöver hojd'), v = d.fart || fel('kastbana hoghus behöver fart'), dt = d.steg || 0.5;
+      const T = Math.sqrt(2 * h / g), tider = [];
+      for (let k = 0; k * dt <= T + 1e-9; k++) tider.push(k * dt);
+      if (T - tider[tider.length - 1] > 1e-6) tider.push(T);
+      const r = 7, husB = 58, x0 = 18 + husB, topp = KT + 16, nedre = 14 + KT + 10;
+      const k = Math.min((B - x0 - 2 * r - 26) / (v * T), 250 / h);
+      const Y = y => topp + (h - y) * k, xs = x0 + r + 2;
+      H = Math.ceil(Y(0) + nedre);
+      // huset (med fönster) och marken
+      s += `<rect class="fig-hus" x="${18}" y="${topp}" width="${husB}" height="${f(h * k)}"/>`;
+      for (let yy = topp + 12; yy < Y(0) - 18; yy += 26) for (const xx of [28, 50]) s += `<rect class="fig-hus-fonster" x="${xx}" y="${f(yy)}" width="12" height="14"/>`;
+      s += skraffer(6, B - 6, Y(0));
+      // banan för den kastade bollen
+      const P = Array.from({ length: 41 }, (_, i) => { const t = T * i / 40; return [xs + v * t * k, Y(h - g * t * t / 2) - r]; });
+      s += `<path class="fig-kast-bana" d="M${P.map(p => f(p[0]) + ' ' + f(p[1])).join(' L')}"/>`;
+      // de streckade linjerna och bollarna vid varje tidpunkt
+      tider.forEach(t => { const y = Y(h - g * t * t / 2) - r, xk = xs + v * t * k;
+        if (t > 0) s += `<line class="fig-kast-hojd" x1="${f(xs + r)}" y1="${f(y)}" x2="${f(xk - r)}" y2="${f(y)}" data-t="${t}"/>`;
+        s += `<circle class="fig-kast-boll fig-kast-slappt" cx="${f(xs)}" cy="${f(y)}" r="${r}" data-boll="slappt" data-t="${t}"/>`;
+        s += `<circle class="fig-kast-boll fig-kast-kastad" cx="${f(xk)}" cy="${f(y)}" r="${r}" data-boll="kastad" data-t="${t}"/>`; });
+      s += kastText(xs, Y(0) + 12 + KT, 'släppt', 'fig-mitt') + kastText(xs + v * T * k, Y(0) + 12 + KT, 'kastad', 'fig-mitt');
+      s += kastText(18 + husB / 2, topp - 8, tal(h) + ' m', 'fig-mitt');
+      beskr = `Ett höghus som är ${tal(h)} m högt. Från taket släpps en boll rakt ned och en annan kastas vågrätt med ${tal(v)} m/s, samtidigt. ` +
+        `Bollarna är ritade var ${tal(dt)} sekund: de ligger på samma höjd vid varje tidpunkt, och båda når marken efter ${tal(Math.round(T * 100) / 100)} s, den kastade ${tal(Math.round(v * T * 10) / 10)} m från huset.`;
+    } else if (lage === 'komposanter') {
+      const v = d.fart || fel('kastbana komposanter behöver fart'), n = d.sekunder || 3;
+      const r = 7, vanster = 34, topp = KT + 20;
+      const k = Math.min((B - vanster - 40) / (v * n + 0.75 * v), 300 / (g * n * n / 2 + 0.75 * g * n)), kv = 0.75 * k;
+      const X = x => vanster + x * k, Y = y => topp + y * k;         // y: fallet nedåt (m)
+      H = Math.ceil(Y(g * n * n / 2) + g * n * kv + 14);
+      const P = Array.from({ length: 41 }, (_, i) => { const t = n * i / 40; return [X(v * t), Y(g * t * t / 2)]; });
+      s += `<path class="fig-kast-bana" d="M${P.map(p => f(p[0]) + ' ' + f(p[1])).join(' L')}"/>`;
+      for (let t = 0; t <= n; t++) {
+        const x = X(v * t), y = Y(g * t * t / 2), vy = g * t;
+        s += `<circle class="fig-kast-boll fig-kast-kastad" cx="${f(x)}" cy="${f(y)}" r="${r}" data-t="${t}"/>`;
+        s += `<g class="fig-kast-fart" data-riktning="x" data-t="${t}" data-varde="${v}" data-x1="${f(x)}" data-x2="${f(x + v * kv)}">${pil(x, y, x + v * kv, y, 7, 'fig-kast-vx')}</g>`;
+        s += `<g class="fig-kast-fart" data-riktning="y" data-t="${t}" data-varde="${vy}" data-y1="${f(y)}" data-y2="${f(y + vy * kv)}">${vy ? pil(x, y, x, y + vy * kv, 7, 'fig-kast-vy') : ''}</g>`;
+        s += kastText(x - r - 6, y + 6, tal(t) + ' s', 'fig-hoger');
+      }
+      s += kastText(X(0) + v * kv / 2 + 4, Y(0) - 12, 'framåt: lika', 'fig-vanster fig-kast-vx-text');
+      s += kastText(X(v * 2) - 10, Y(2 * g) + g * kv + KT, 'nedåt: ökar', 'fig-hoger fig-kast-vy-text');
+      beskr = `Ett vågrätt kast med ${tal(v)} m/s. Bollens läge är ritat varje sekund, ${n} sekunder. Vid varje läge visar en vågrät pil farten framåt, som är lika hela tiden, och en lodrät pil farten nedåt, som ökar med ${tal(g)} m/s varje sekund (${Array.from({ length: n + 1 }, (_, t) => tal(g * t)).join(', ')} m/s).`;
+    } else if (lage === 'vinklar') {
+      const v = d.fart || fel('kastbana vinklar behöver fart'), V = d.vinklar || [30, 45, 60], rad = a => a * Math.PI / 180;
+      const R = a => v * v * Math.sin(2 * rad(a)) / g, Hm = a => (v * Math.sin(rad(a))) ** 2 / (2 * g);
+      const maxR = Math.max(...V.map(R)), maxH = Math.max(...V.map(Hm)), x0 = 26, topp = KT + 18;
+      const k = Math.min((B - x0 - 30) / maxR, 190 / maxH), Y0 = topp + maxH * k;
+      H = Math.ceil(Y0 + 22);
+      s += skraffer(6, B - 6, Y0);
+      V.forEach(a => {
+        const T = 2 * v * Math.sin(rad(a)) / g, P = Array.from({ length: 61 }, (_, i) => { const t = T * i / 60; return [x0 + v * Math.cos(rad(a)) * t * k, Y0 - (v * Math.sin(rad(a)) * t - g * t * t / 2) * k]; });
+        s += `<path class="fig-kast-bana-v" d="M${P.map(p => f(p[0]) + ' ' + f(p[1])).join(' L')}" data-vinkel="${a}"/>`;
+        s += `<circle class="fig-kast-landning" cx="${f(P[60][0])}" cy="${f(Y0)}" r="4" data-vinkel="${a}"/>`;
+      });
+      // vinklarnas namn: på varje bana, på första stället (från toppen och utåt) där namnet inte ligger på en annan bana
+      // eller ett annat namn
+      const bana = a => { const T = 2 * v * Math.sin(rad(a)) / g; return t => [x0 + v * Math.cos(rad(a)) * t * T * k, Y0 - (v * Math.sin(rad(a)) * t * T - g * (t * T) ** 2 / 2) * k]; };
+      const lagda = [];
+      V.forEach(a => {
+        const w = (String(a).length + 1) * KT * 0.5 + 4, ovr = V.filter(b => b !== a).map(bana);
+        const ledig = ([x, y]) => { const r = [x - w / 2, y - KT, x + w / 2, y + 3];
+          return r[1] > 0 && ovr.every(b => Array.from({ length: 121 }, (_, i) => b(i / 120)).every(([px, py]) => px < r[0] - 3 || px > r[2] + 3 || py < r[1] - 3 || py > r[3] + 3)) &&
+            lagda.every(q => r[2] < q[0] || r[0] > q[2] || r[3] < q[1] || r[1] > q[3]); };
+        const kand = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82].map(t => { const [x, y] = bana(a)(t); return [x, y - 8]; });
+        const [lx, ly] = kand.find(ledig) || kand[0];
+        lagda.push([lx - w / 2, ly - KT, lx + w / 2, ly + 3]);
+        s += kastText(lx, ly, a + '°', 'fig-mitt fig-halo');
+      });
+      s += `<circle class="fig-kast-start" cx="${x0}" cy="${f(Y0)}" r="4"/>`;
+      const bast = V.reduce((a, b) => (R(b) > R(a) ? b : a));
+      beskr = `Tre kastbanor från samma punkt med farten ${tal(v)} m/s, utan luftmotstånd: ${V.map(a => a + '°').join(', ')}. ${bast}° landar längst` +
+        (V.length === 3 && Math.abs(V[0] + V[2] - 90) < 1e-9 ? `, ${V[0]}° och ${V[2]}° landar på samma ställe, och ${V[2]}° når högst.` : '.');
+    } else fel('kastbana: okänt läge ”' + lage + '”');
+    return { svg: svg(B, H, s).replace('<svg ', `<svg data-kastbana="${lage}" `), beskrivning: d.beskrivning || beskr };
+  });
+
+  /* Cirkelrörelse (IV C, arbetsorder 16), sedd uppifrån:
+   *   lage 'snore': radie?, vinkel? (grader, bollen i snöret), slapp? (grader, där snöret släpps) – en boll som snurras i
+   *                 ett snöre runt mitten (moturs): snöret och kraftpilen in mot mitten, och där snöret släpps bollen med
+   *                 sin fortsatta raka bana längs tangenten (streckad pil)
+   *   lage 'bil':   radie?, vinkel? – en bil i en kurva (moturs): friktionen från vägen in mot kurvans mitt, och en
+   *                 streckad rak linje längs tangenten för vart bilen tar vägen om friktionen inte räcker
+   * Vinklar räknas moturs från höger (matematikens). Grinden mäter att kraftpilen pekar mot mitten och att den raka
+   * banan är vinkelrät mot radien där den börjar. */
+  Bok.figur('cirkelrorelse', d => {
+    const lage = d.lage || fel('cirkelrorelse behöver lage: snore eller bil'), B = 440, rad = a => a * Math.PI / 180;
+    let s = '', H, beskr, nedersta = 0;
+    const P = (C, R, a) => [C[0] + R * Math.cos(rad(a)), C[1] - R * Math.sin(rad(a))];
+    const tangent = (a) => [-Math.sin(rad(a)), -Math.cos(rad(a))];          // moturs, i skärmens koordinater
+    const kraft = (C, p, L, namn, tx, klass = '') => {
+      const dx = C[0] - p[0], dy = C[1] - p[1], l = Math.hypot(dx, dy), e = [p[0] + dx / l * L, p[1] + dy / l * L];
+      // utan tx: namnet vid pilens mitt, vinkelrätt ut från pilen (uppåt, eller åt höger om pilen är vågrät)
+      let n = [-dy / l, dx / l]; if (n[1] > 0.2 || (Math.abs(n[1]) <= 0.2 && n[0] < 0)) n = [-n[0], -n[1]];
+      return `<g class="fig-cirkel-kraft" data-cx="${f(C[0])}" data-cy="${f(C[1])}">${pil(p[0], p[1], e[0], e[1], 8)}</g>` +
+        (tx ? kastText(tx[0], tx[1], namn, 'fig-kast-pil-text ' + klass) : etikett((p[0] + e[0]) / 2, (p[1] + e[1]) / 2, namn, n[0], n[1], 'fig-kast-pil-text ' + klass));
+    };
+    // en etikett vid punkten (x, y), förskjuten åt (ux, uy): förankrad efter riktningen och flyttad in i figuren om den
+    // skulle gå utanför (bredden uppskattad i överkant)
+    const etikett = (x, y, namn, ux, uy, klass = '', fore = null) => {
+      const w = namn.length * KT * 0.45;
+      let anc = ux > 0.35 ? 'fig-vanster' : ux < -0.35 ? 'fig-hoger' : 'fig-mitt';
+      // ryms den inte bredvid punkten står den över eller under den i stället – vid en pilspets på den sida pilen pekar åt
+      if ((anc === 'fig-vanster' && x + ux * 12 + w > B - 4) || (anc === 'fig-hoger' && x + ux * 12 - w < 4)) { ux = 0; uy = (fore ? fore[1] : uy) < 0 ? -1 : 1; anc = 'fig-mitt'; }
+      x += ux * 12; y += uy * 12 + (uy > 0.35 ? KT * 0.75 : uy < -0.35 ? 0 : KT * 0.35);
+      if (anc === 'fig-vanster') x = Math.min(x, B - 4 - w); else if (anc === 'fig-hoger') x = Math.max(x, 4 + w); else x = Math.max(4 + w / 2, Math.min(B - 4 - w / 2, x));
+      y = Math.max(KT, y); nedersta = Math.max(nedersta, y + 6);
+      return kastText(x, y, namn, anc + ' ' + klass); };
+    const ut = (C, p) => { const dx = p[0] - C[0], dy = p[1] - C[1], l = Math.hypot(dx, dy); return [dx / l, dy / l]; };
+    const rakt = (C, p, a, L, namn) => { const t = tangent(a), e = [p[0] + t[0] * L, p[1] + t[1] * L], u = ut(C, e);
+      return `<g class="fig-cirkel-tangent" data-cx="${f(C[0])}" data-cy="${f(C[1])}" data-bx="${f(p[0])}" data-by="${f(p[1])}">${pil(p[0], p[1], e[0], e[1], 8, 'fig-tangent')}</g>` +
+        etikett(e[0], e[1], namn, u[0], u[1], 'fig-halo', t); };
+    if (lage === 'snore') {
+      const R = d.radie || 105, a = d.vinkel != null ? d.vinkel : 40, b = d.slapp != null ? d.slapp : 200, C = [220, 40 + R + 20];
+      H = Math.ceil(C[1] + R + 40);
+      s += `<circle class="fig-cirkel-bana" cx="${C[0]}" cy="${f(C[1])}" r="${R}"/>`;
+      // rotationsriktningen: en kort båge med pilspets på banan, en bit före bollen
+      const b1 = P(C, R, a - 52), b2 = P(C, R, a - 22);
+      s += `<path class="fig-pil fig-cirkel-riktning" d="M${f(b1[0])} ${f(b1[1])} A${R} ${R} 0 0 0 ${f(b2[0])} ${f(b2[1])}"/>`;
+      const tr = tangent(a - 22);
+      s += `<polygon class="fig-pilspets fig-cirkel-riktning" points="${f(b2[0] + tr[0] * 9)},${f(b2[1] + tr[1] * 9)} ${f(b2[0] - tr[1] * 5)},${f(b2[1] + tr[0] * 5)} ${f(b2[0] + tr[1] * 5)},${f(b2[1] - tr[0] * 5)}"/>`;
+      s += `<circle class="fig-cirkel-mitt" cx="${C[0]}" cy="${f(C[1])}" r="4"/>` + kastText(C[0], C[1] + KT + 8, 'mitten', 'fig-mitt');
+      const p = P(C, R, a), q = P(C, R, b);
+      s += `<line class="fig-snore" x1="${C[0]}" y1="${f(C[1])}" x2="${f(p[0])}" y2="${f(p[1])}"/>`;
+      s += kraft(C, p, R * 0.55, 'snörets kraft', null, 'fig-halo');
+      s += `<circle class="fig-kast-boll fig-kast-kastad" cx="${f(p[0])}" cy="${f(p[1])}" r="9"/>`;
+      s += `<circle class="fig-kast-boll fig-kast-slappt" cx="${f(q[0])}" cy="${f(q[1])}" r="9"/>`;
+      s += rakt(C, q, b, R * 0.95, 'snöret släpps');
+      H = Math.max(H, Math.ceil(nedersta));
+      beskr = d.beskrivning || 'En boll som snurras runt i ett snöre, sedd uppifrån. Snöret drar bollen in mot mitten: kraftpilen pekar mot cirkelns mitt. Där snöret släpps fortsätter bollen rakt fram längs en tangent, inte utåt från mitten.';
+    } else if (lage === 'bil') {
+      const R = d.radie || 150, a = d.vinkel != null ? d.vinkel : 62, w = 40, C = [210, 46 + R + w / 2 + 26];
+      H = Math.ceil(C[1] + KT + 16);
+      const a0 = 12, a1 = 168, arc = (r) => { const p0 = P(C, r, a0), p1 = P(C, r, a1); return `M${f(p0[0])} ${f(p0[1])} A${r} ${r} 0 0 0 ${f(p1[0])} ${f(p1[1])}`; };
+      s += `<path class="fig-vag" d="${arc(R + w / 2)} L${f(P(C, R - w / 2, a1)[0])} ${f(P(C, R - w / 2, a1)[1])} A${R - w / 2} ${R - w / 2} 0 0 1 ${f(P(C, R - w / 2, a0)[0])} ${f(P(C, R - w / 2, a0)[1])} Z"/>`;
+      s += `<path class="fig-vag-mitt" d="${arc(R)}"/>`;
+      s += `<path class="fig-cirkel-mittkors" d="M${C[0] - 6} ${f(C[1])} L${C[0] + 6} ${f(C[1])} M${C[0]} ${f(C[1] - 6)} L${C[0]} ${f(C[1] + 6)}"/>` + kastText(C[0], C[1] + KT + 6, 'kurvans mitt', 'fig-mitt');
+      const p = P(C, R, a), t = tangent(a), ang = Math.atan2(t[1], t[0]) * 180 / Math.PI;
+      s += kraft(C, p, R * 0.42, 'friktion från vägen', [C[0], C[1] - R * 0.3], 'fig-mitt');
+      s += rakt(C, p, a, R * 0.8, 'utan friktion: rakt fram');
+      s += `<g class="fig-bil" transform="translate(${f(p[0])} ${f(p[1])}) rotate(${f(ang)})"><rect x="-17" y="-9" width="34" height="18" rx="4"/><rect class="fig-bil-ruta" x="2" y="-6" width="9" height="12" rx="2"/></g>`;
+      H = Math.max(H, Math.ceil(nedersta));
+      beskr = d.beskrivning || 'En bil i en kurva, sedd uppifrån. Friktionen från vägen drar bilen in mot kurvans mitt. Om friktionen inte räcker fortsätter bilen rakt fram längs tangenten, den streckade linjen.';
+    } else fel('cirkelrorelse: okänt läge ”' + lage + '”');
+    return { svg: svg(B, H, s).replace('<svg ', `<svg data-cirkelrorelse="${lage}" `), beskrivning: d.beskrivning || beskr };
+  });
 })();

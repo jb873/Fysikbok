@@ -39,12 +39,14 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Den släppta bollen landar precis vid husväggen. Den kastade bollen landar långt ut från huset. Men de landar på samma gång. Det kan låta konstigt, men det stämmer.' },
         { typ: 'text', text: 'Förklaringen är att båda bollarna faller på exakt samma sätt. Båda börjar utan någon fart nedåt. Tyngdkraften drar lika i båda. Efter en sekund har båda fallit lika långt. Efter två sekunder har båda fallit lika långt igen. Att den ena bollen samtidigt åker framåt gör ingen skillnad för fallet.' },
         // [BILD K1: höghus – en släppt boll och en kastad boll, bollarnas lägen varje halv sekund; de ligger på samma höjd vid varje tidpunkt]
+        { id: 'bild-k1', typ: 'figur', namn: 'kastbana', lage: 'hoghus', hojd: 20, fart: 10, steg: 0.5, bildtext: 'Två bollar startar samtidigt från taket. Den släppta och den kastade bollen ligger på samma höjd vid varje tidpunkt, och båda når marken samtidigt.' },
         { typ: 'text', text: 'Titta på bilden. Bollarna är ritade varje halv sekund. Vid varje tidpunkt ligger de på samma höjd. Den kastade bollen är bara längre fram.' },
         { typ: 'rubrik', text: 'Framåt går det lika fort, nedåt går det fortare och fortare' },
         { typ: 'text', text: 'Man kan följa den kastade bollen sekund för sekund. Framåt kommer den lika långt varje sekund. Ingen kraft bromsar den framåt, så farten framåt ändras inte.' },
         { typ: 'text', text: 'Nedåt är det annorlunda. Där drar tyngdkraften hela tiden. Därför går det fortare och fortare nedåt, precis som i ett fritt fall. Farten nedåt ökar med ungefär 10 m/s varje sekund.' },
         { typ: 'text', text: 'När man lägger ihop de två rörelserna blir banan en böjd linje. Den blir brantare och brantare. Den böjda linjen kallas *kastbana|kastbana*.' },
         // [BILD K2: kastbanan med bollens läge varje sekund – vågräta pilar lika långa hela vägen, lodräta pilar som växer]
+        { id: 'bild-k2', typ: 'figur', namn: 'kastbana', lage: 'komposanter', fart: 10, sekunder: 3, bildtext: 'Farten framåt är lika stor hela vägen. Farten nedåt ökar med 10 m/s varje sekund.' },
         { typ: 'rubrik', text: 'Bollen börjar falla direkt' },
         { typ: 'text', text: 'Har du sett en tecknad film där en figur springer ut över ett stup? Figuren hänger kvar i luften en stund, tittar ner och faller först sedan. Många tror att en kastad boll gör likadant: att den först flyger rakt fram och sedan plötsligt börjar falla.' },
         { typ: 'text', text: 'Men så är det inte. Tyngdkraften drar i bollen från första ögonblicket. Bollen börjar falla direkt när den lämnar handen. Därför är banan böjd hela vägen, redan från början.' },
@@ -57,6 +59,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Kastar du nästan rakt upp stiger bollen högt, men den kommer nästan ingenting framåt. Kastar du nästan rakt fram får bollen mycket fart framåt, men den landar snabbt. Den bästa vinkeln ligger mitt emellan.' },
         { typ: 'text', text: 'Om det inte fanns någon luft skulle bollen komma längst om du kastade i vinkeln 45°. Den är precis mitt emellan rakt fram och rakt upp. Kastar du i 30° eller i 60° kommer bollen exakt lika långt. Den ena bollen flyger lågt och snabbt. Den andra flyger högt och länge.' },
         // [BILD K3: tre kastbanor från samma punkt med samma fart – 30°, 45° och 60°; 45° längst, 30° och 60° landar på samma ställe]
+        { id: 'bild-k3', typ: 'figur', namn: 'kastbana', lage: 'vinklar', fart: 20, vinklar: [30, 45, 60], bildtext: 'Samma fart, tre vinklar. 45° kommer längst. 30° och 60° landar på samma ställe, men 60° går högre.' },
         { typ: 'text', text: 'På riktigt finns det luft. Luften bromsar bollen. Därför kommer den inte lika långt som den skulle utan luft. En fotboll eller en badmintonboll bromsas mycket av luften. En tung kula i kulstötning bromsas nästan inte alls.' }
       ]
     },
@@ -70,6 +73,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Men jorden är inte platt. Den är ett klot. Marken kröker sig nedåt, bort från kulan.' },
         { typ: 'text', text: 'Om kulan skjuts tillräckligt fort händer något speciellt. Marken kröker sig bort under kulan lika fort som kulan faller. Då når kulan aldrig marken. Den faller hela tiden, men den missar jorden och åker runt den. Kulan har hamnat i en *omloppsbana|omloppsbana*.' },
         // [BILD K4: Newtons kanon – kulbanor med ökande fart, den sista går runt jorden]
+        { id: 'bild-k4', typ: 'figur', namn: 'newtons_kanon', bildtext: 'Ju högre fart, desto längre bort landar kulan. Med tillräckligt hög fart faller den runt hela jorden.' },
         { typ: 'rubrik', text: 'En satellit faller hela tiden men missar jorden' },
         { typ: 'text', text: 'Precis så fungerar alla satelliter. Många tror att satelliter stannar uppe för att det inte finns någon tyngdkraft i rymden. Men det stämmer inte. Tyngdkraften drar satelliten mot jorden hela tiden. Satelliten åker bara så fort åt sidan att den faller runt jorden i stället för ner på den.' },
         { typ: 'text', text: 'Det går väldigt fort. Nära jorden behöver en satellit åka ungefär 8 km varje sekund. Det är nästan 30 000 km/h. Rymdstationen ISS åker runt hela jorden på ungefär en och en halv timme. Astronauterna i stationen svävar för att de och stationen faller tillsammans hela tiden.' },
@@ -90,10 +94,12 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'En diskuskastare snurrar runt med diskusen i handen. Handen drar diskusen inåt hela tiden, så att den åker i en cirkel.' },
         { typ: 'text', text: 'När kastaren släpper diskusen försvinner kraften inåt. Vad händer då? Diskusen fortsätter rakt fram, åt det håll den var på väg just när den släpptes. Den flyger alltså inte rakt utåt från kastaren. Den flyger rakt fram, längs en linje som bara nuddar cirkeln.' },
         // [BILD K5: en boll som snurras i ett snöre – kraftpil in mot mitten; när snöret släpps fortsätter bollen rakt fram längs en tangent]
+        { id: 'bild-k5', typ: 'figur', namn: 'cirkelrorelse', lage: 'snore', bildtext: 'Snöret drar bollen in mot mitten. När snöret släpps fortsätter bollen rakt fram, inte utåt.' },
         { typ: 'rubrik', text: 'En bil i en kurva behöver friktion' },
         { typ: 'text', text: 'När en bil kör i en kurva svänger den. Då måste något dra bilen in mot kurvans mitt. Det är friktionen mellan däcken och vägen. Vägen trycker däcken inåt.' },
         { typ: 'text', text: 'På en isig väg är friktionen liten. Då räcker den inte. Bilen klarar inte att svänga, och den fortsätter rakt fram, kanske ut i diket. Kraften inåt behöver också vara större ju fortare bilen kör. Därför ska man sakta ner före en skarp kurva.' },
         // [BILD K6: bil i en kurva sedd uppifrån – friktionskraft från vägen in mot kurvans mitt; på is fortsätter bilen rakt fram]
+        { id: 'bild-k6', typ: 'figur', namn: 'cirkelrorelse', lage: 'bil', bildtext: 'Friktionen från vägen drar bilen in mot kurvans mitt. Utan friktion, till exempel på blankis, fortsätter bilen rakt fram.' },
         { typ: 'rubrik', text: 'Det finns ingen kraft som kastar dig utåt' },
         { typ: 'text', text: 'När du sitter i en bil som svänger kärvt känns det som om du trycks utåt, mot dörren. Många kallar det centrifugalkraft och tror att det är en kraft som trycker utåt. Men det finns ingen sådan kraft.' },
         { typ: 'text', text: 'Det du känner är din tröghet. Din kropp vill fortsätta rakt fram, men bilen svänger. Då är det bildörren eller bältet som trycker dig inåt, så att du följer med i svängen. Det är därför det känns som om du trycks mot dörren. Det är egentligen dörren som trycker på dig.' },

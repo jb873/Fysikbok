@@ -695,6 +695,34 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-yta-1 { fill: rgba(160, 125, 47, .26); }
 .fig-yta-2 { fill: rgba(74, 45, 102, .14); }
 .fig-delta { stroke: var(--accent-2-mork); stroke-width: 1.8; stroke-dasharray: 5 4; }
+/* Kaströrelse och cirkelrörelse (IV C, arbetsorder 16): text 19 enheter som diagrammen, kraftpilarna i kraftpilarnas
+   färg; den kastade bollen i indigo, den släppta i sand; banor och raka banor streckade */
+.fig-kast-text { font-size: 19px; }
+.fig-kast-pil-text { fill: var(--accent-2-mork); font-weight: 600; }
+.fig-kast-vx-text { fill: var(--accent); font-weight: 600; }
+.fig-kast-vy-text { fill: var(--accent-2-mork); font-weight: 600; }
+.fig-hus { fill: #e6dcc6; stroke: var(--dampad); stroke-width: 1.6; }
+.fig-hus-fonster { fill: #cddbe6; stroke: var(--dampad); stroke-width: 1; }
+.fig-kast-boll { stroke: var(--black); stroke-width: 1.2; }
+.fig-kast-kastad { fill: var(--accent); }
+.fig-kast-slappt { fill: #d6c08f; }
+.fig-kast-bana, .fig-kast-bana-v { fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-dasharray: 6 5; opacity: .75; }
+.fig-kast-bana-v { stroke-dasharray: none; stroke-width: 2.4; opacity: 1; }
+.fig-kast-hojd { stroke: var(--dampad); stroke-width: 1.4; stroke-dasharray: 4 4; }
+.fig-kast-landning, .fig-kast-start { fill: var(--accent); }
+.fig-pil.fig-kast-vx { stroke: var(--accent); }
+.fig-pilspets.fig-kast-vx { fill: var(--accent); }
+.fig-cirkel-bana { fill: none; stroke: var(--dampad); stroke-width: 1.6; stroke-dasharray: 6 5; }
+.fig-cirkel-mitt { fill: var(--black); }
+.fig-cirkel-mittkors { stroke: var(--black); stroke-width: 2; }
+.fig-pil.fig-cirkel-riktning { stroke: var(--dampad); stroke-width: 1.8; fill: none; }
+.fig-pilspets.fig-cirkel-riktning { fill: var(--dampad); }
+.fig-pil.fig-tangent { stroke: var(--accent); stroke-dasharray: 7 5; }
+.fig-pilspets.fig-tangent { fill: var(--accent); }
+.fig-vag { fill: #d9d4c7; stroke: var(--dampad); stroke-width: 1.6; }
+.fig-vag-mitt { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 10 8; }
+.fig-bil rect { fill: var(--accent); stroke: var(--black); stroke-width: 1.2; }
+.fig-bil rect.fig-bil-ruta { fill: #cddbe6; }
 .fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala, .fig-yta-namn { font-size: 19px; }
 .fig-yta-namn { font-weight: 600; fill: var(--black); }   /* ytans namn i diagram_graf (arbetsorder 13) */
 .fig-diagram-rubrik { font-weight: 600; }
