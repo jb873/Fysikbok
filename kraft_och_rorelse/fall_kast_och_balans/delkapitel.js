@@ -39,7 +39,7 @@ Bok.delkapitel({
     { id: 'berg-och-dalbanan', titel: 'Berg-och-dalbanan', fil: 'innehall/djupdykningar/berg-och-dalbanan.js',
       ingress: 'Vad kroppen känner i backar, krön och loopar – och hur banorna görs säkra.' },
     { id: 'bilbaltet', titel: 'Bilbältet – en svensk uppfinning', fil: 'innehall/djupdykningar/bilbaltet.js',
-      ingress: 'Hur Nils Bohlins trepunktsbälte från Volvo fick människorna att stanna med bilen.' },
+      ingress: 'Hur Nils Bohlin på Volvo uppfann trepunktsbältet – och varför Volvo lät alla använda det.' },
     { id: 'galileo', titel: 'Galileo mot Aristoteles – hur tröghetslagen upptäcktes', fil: '../rorelse_och_kraft/innehall/djupdykningar/galileo.js',
       ingress: 'Hur experiment med kulor på lutande plan visade att en rörelse inte behöver en kraft för att fortsätta.' }
   ],

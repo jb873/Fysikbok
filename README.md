@@ -1484,3 +1484,13 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     att sidan får en rubrik; det är det enda tillägget. Styckena före första `##` är Inledningen, utan rubrik (som
     kapitel 1:s djupdykningar). `[BILD …]` står som kommentar på sin plats.
   - **Korten** på IV: de fyra i orderns ordning med en ingress var, och Galileo (III:s bok) femte.
+- **2026-11-12, efter arbetsorder 19:** Bilbältets ingress ny (Joachim). Punkten sist i IV-DD-1 (Joachim lade till den i
+  källan), `rymdhoppet.js` ombyggd. Föreläsningen Kraft och friktion (III B) i `texter[].hjalpmedel.forelasning`.
+  - **Prestandaprovet (brytningen under 200 ms med CPU×6):** Nästa steg-textboken låg på 214–243 ms i grinden efter
+    order 19. Koden var inte orsaken. Fristående mättes textboken till 130–140 ms med dagens motor, lika som efter
+    order 13 (139 ms), och alla commits sedan dess låg inom bruset. Orsaken är datorns två sorters kärnor (Intel Core
+    Ultra 5 226V): låst till kärnorna 0–3 tar textboken ≈ 315 ms, låst till 4–7 ≈ 100 ms, och olåst hamnar Chrome än
+    här, än där. I en olåst hel grind blev även oförändrade böcker 3–10 gånger långsammare sent i körningen (stödboken
+    808 ms). Grinden körs därför låst till kärnorna 4–7, så att tidsproven mäter motorn och inte schemaläggningen:
+    `cmd /c "start /affinity F0 /wait /b node verktyg\bok-grind.js"`. Så körd: textboken 28–64 ms (median) på alla
+    sidor och i alla lägen, och bladvändningen grön.

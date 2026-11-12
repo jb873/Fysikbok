@@ -21,7 +21,8 @@ Bok.delkapitel({
     { id: 'rorelse', titel: 'Rörelse',
       hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/2-9WMlqhLdQ' } } },    // youtu.be/2-9WMlqhLdQ (Rörelse och tröghetslagen)
     { id: 'kraft-och-friktion', titel: 'Kraft och friktion',
-      hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/Ym4e-c0AKj8' } } },   // youtu.be/Ym4e-c0AKj8 (Friktion)
+      hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/Xj8Vcmmm0n0' },      // youtu.be/Xj8Vcmmm0n0 (Kraft och friktion)
+                    musikvideo: { href: 'https://www.youtube-nocookie.com/embed/Ym4e-c0AKj8' } } },   // youtu.be/Ym4e-c0AKj8 (Friktion)
     { id: 'kraft-och-motkraft', titel: 'Kraft och motkraft' },
     { id: 'tyngdkraften', titel: 'Tyngdkraften',
       hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/ZVu1O_0pF2s' } } }    // youtu.be/ZVu1O_0pF2s (Massa och tyngd)
