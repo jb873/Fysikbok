@@ -15,10 +15,11 @@ Bok.delkapitel({
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
   // sparat – byt det aldrig.
-  // Musikvideor per text (2026-11-12): hjalpmedel i texten går före avsnittssidans. YouTube med inbäddningsadressen
+  // Föreläsningar och musikvideor per text (2026-11-12): hjalpmedel i texten går före avsnittssidans. YouTube med inbäddningsadressen
   // (youtube-nocookie.com/embed/<id>), som i IV.
   texter: [
-    { id: 'rorelse', titel: 'Rörelse' },
+    { id: 'rorelse', titel: 'Rörelse',
+      hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/2-9WMlqhLdQ' } } },    // youtu.be/2-9WMlqhLdQ (Rörelse och tröghetslagen)
     { id: 'kraft-och-friktion', titel: 'Kraft och friktion',
       hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/Ym4e-c0AKj8' } } },   // youtu.be/Ym4e-c0AKj8 (Friktion)
     { id: 'kraft-och-motkraft', titel: 'Kraft och motkraft' },

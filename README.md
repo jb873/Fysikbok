@@ -1471,3 +1471,4 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
 - **2026-11-12, musikvideor:** Friktion (III B Kraft och friktion), Massa och tyngd (III D Tyngdkraften) och Fritt fall
   (IV B) – i `texter[].hjalpmedel.musikvideo` i `delkapitel.js`, YouTube med inbäddningsadressen. III har fått
   `musikvideo: { href: null }` på avsnittssidan, som IV.
+- **2026-11-12, föreläsning:** Rörelse och tröghetslagen (III A Rörelse) – `texter[].hjalpmedel.forelasning`.
