@@ -78,7 +78,11 @@ const FEL = {
   // avsnittssidan – kontrolläget och grindens prov av textlänkarna ska ge rött
   'textlänk till en bok som inte finns': { adress: '&prova=textlank-fel', dk: 'fall_kast_och_balans', regel: /textlänk|finns inte på avsnittssidan/i },
   // En punktlista får delas bara om den inte ryms (arbetsorder 16): motorns provkrok delar en lista som ryms på mitten
-  'punktlista delad fast den ryms': { adress: '&prova=punktlista-delad', dk: 'provbok', regel: /punktlista/i }
+  'punktlista delad fast den ryms': { adress: '&prova=punktlista-delad', dk: 'provbok', regel: /punktlista/i },
+  // Rader i följd får delas enligt 40 %-regeln, aldrig mitt i ett mellanled (arbetsorder 21): motorns provkrok delar
+  // rader före en uträkning – i V A Fördjupning, där rader står i avsnitt över flera sidor (provbokens rader står sist
+  // i ett avsnitt på en sida och kan inte flyttas)
+  'rader delade i ett mellanled': { adress: '&prova=rader-mellanled', dk: 'tryck_arbete_och_maskiner', regel: /mellanled/ }
 };
 // --negativ=<del av namnet>: bara de negativa proven vars namn innehåller texten
 const NEGATIV_BARA = (process.argv.find(a => a.startsWith('--negativ=')) || '').slice(10);
@@ -2081,7 +2085,7 @@ async function bild(c, dk, lage, vad) {
 const KAPITEL = [
   { mapp: 'materia_och_universum', nr: 'I', titel: 'Materia och universum', avsnitt: ['solsystemet_och_jorden'],
     alla: 'I II III IV V' },
-  { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft', 'fall_kast_och_balans'],
+  { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft', 'fall_kast_och_balans', 'tryck_arbete_och_maskiner'],
     alla: 'I II III IV V VI' }
 ];
 const STARTSIDANS_KAPITEL = 'I Materia och universum · II Ljud och ljus · III Kraft och rörelse';

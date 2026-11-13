@@ -126,12 +126,14 @@ Fysik/
     fall_kast_och_balans/       avsnittssida IV. Fall, kast och balans (arbetsorder 12): text A resulterande-kraft/
                                 B fritt-fall/ (2026-11-11), C kastrorelse/ (arbetsorder 16) och D tyngdpunkt-och-balans/
                                 ("Tyngdpunkt, balans och kroppen", arbetsorder 17), tre nivåer var
+    tryck_arbete_och_maskiner/  avsnittssida V. Tryck, arbete och maskiner (arbetsorder 21): text A tryck/, tre nivåer;
+                                B–D (arbete-och-effekt/, mekanisk-energi/, havstangen-och-enkla-maskiner/) tomma: "kommer"
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   nasta_steg/                   Nästa steg (arbetsorder 11)
     matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
   kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (IV:s texter och djupdykningar),
                                 nasta-steg/ (textboken, övningsboken, Matematiken i fysiken); kap3/ också IV A (order 12)
-                                och IV B (Fritt fall v2, skriven av Claude 2026-11-11)
+                                och IV B (Fritt fall v2, skriven av Claude 2026-11-11); V A (Tryck v2, arbetsorder 21)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
     kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlarna)
@@ -1494,3 +1496,23 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     808 ms). Grinden körs därför låst till kärnorna 4–7, så att tidsproven mäter motorn och inte schemaläggningen:
     `cmd /c "start /affinity F0 /wait /b node verktyg\bok-grind.js"`. Så körd: textboken 28–64 ms (median) på alla
     sidor och i alla lägen, och bladvändningen grön.
+- **2026-11-12, arbetsorder 21, steg 1: avsnitt V Tryck, arbete och maskiner, text A Tryck:**
+  - **Avsnittssidan** `kraft_och_rorelse/tryck_arbete_och_maskiner/` (nummer 5) med fyra textkort: A Tryck, B Arbete och
+    effekt, C Mekanisk energi och D Hävstången och enkla maskiner. B–D är tomma böcker, alltså "kommer" (som IV i order
+    12). Inga djupdykningar än, så rubriken "Vill du veta mer?" står inte (motorns norm). Nästa steg-böckerna finns här
+    utan kort, som på IV.
+  - **Kapitelindexet, kort V:** det tonade "Arbete och energi" är nu en länk: "Tryck, arbete och maskiner" – "Tryck,
+    arbete och effekt, mekanisk energi, hävstången och enkla maskiner." VI (Repetition: Ljud och ljus) står kvar efter.
+    Startsidan listar bara kapitlen och är oförändrad. Grinden (`KAPITEL`) har V bland avsnitten.
+  - **Källan** `kallor/kap3/V-A-Tryck-alla-nivaer-v2.md` (oförändrad kopia), omvandlad av `kap3-omvandlare.js --text va`.
+    Exemplen är märkta `[EXEMPEL: rubrik] … [/EXEMPEL]` med tomma rader i rutan: de blir exempel i stycken, som i Nästa
+    steg (Givet, Sökt, Lösning och Svar i fetstil, brytbara mellan raderna). `ordagrant.js` prövar V A rad för rad.
+  - **"Vill du gå vidare?"** sist i Fördjupningen: 9. Tryck · 10. Lyftkraft (`vidare-rutor.js`).
+  - **Bildmarkeringarna** [BILD V1–V4] står som kommentarer tills figurerna finns (steg 2).
+  - **Motorn: rader i följd får delas enligt 40 %-regeln.** Fördjupningens stycke om klacken och elefanten är fem rader
+    i följd (text och uträkningar utan tom rad), ett block som aldrig delades. I Chromebookens fönstermått blev sidan
+    före bara 34 % fylld. Nu är rader i följd en post per rad (`raddel`, samma utseende och höjd som hela blocket) och
+    delas som ett exempel: bara när sidan före annars blir tunn, och aldrig före en uträkning (`bundenRad`).
+    Kontrolläget prövar det som för exemplen, och grindens negativa prov "rader delade i ett mellanled" ska ge rött.
+    `brytning-jamfor.js` före och efter: alla 684 böcker × mått lika, utom V A Fördjupning i 1366×633-måttet (16 → 15
+    sidor, sida 4 har nu de första raderna).

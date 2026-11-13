@@ -524,6 +524,8 @@ sub, sup { font-size: .7em; line-height: 0; }
 .ex-ord { font-weight: 620; }
 /* Rader i följd (mellanled): var och en på sin rad, mellanrummen står kvar */
 .b-rader { margin: 0 0 .55em; }
+/* en rad ur rader i följd som får delas (arbetsorder 21): ingen marginal mellan raderna, blockets under den sista */
+.b-raddel:not(.rd-sista) { margin-bottom: 0; }
 .b-rad { white-space: pre-wrap; }
 .b-numrerad { margin: 0 0 .6em; padding-left: 1.6em; }
 .b-numrerad li { margin-bottom: .28em; padding-left: .2em; }

@@ -10,7 +10,7 @@ const ROT = path.join(__dirname, '..');
 const TEXTBOK = 'nasta-kraft-och-rorelse';
 const TEXTBOK_FIL = 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/textbok.js';
 // Kopplingen efter textens innehåll (ordern): Fördjupningsboken → avsnitten i Nästa steg, i ordningen de står i rutan.
-// Avsnitt 9 och 10 (tryck och lyftkraft) får inga länkar nu – de kopplas till kapitlet Vatten, luft och värme.
+// Avsnitt 9 och 10 (tryck och lyftkraft) länkas från V A Tryck (arbetsorder 21, 2026-11-12).
 const TABELL = [
   { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/rorelse/fordjupning.js', text: 'III A Rörelse',
     avsnitt: ['storheter-med-riktning', 'medelhastighet', 'rorelsen-i-diagram', 'acceleration'] },
@@ -30,7 +30,10 @@ const TABELL = [
     avsnitt: ['storheter-med-riktning', 'tyngden-och-fritt-fall'] },
   // IV D (arbetsorder 17): G-kraften ur accelerationen (avsnitt 4), a = F / m (5) och impulsen i krocken (8)
   { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/tyngdpunkt-och-balans/fordjupning.js', text: 'IV D Tyngdpunkt, balans och kroppen',
-    avsnitt: ['acceleration', 'newtons-andra-lag', 'rorelsemangd'] }
+    avsnitt: ['acceleration', 'newtons-andra-lag', 'rorelsemangd'] },
+  // V A (arbetsorder 21): tryck (avsnitt 9) och lyftkraft (10), enligt ordern
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/tryck/fordjupning.js', text: 'V A Tryck',
+    avsnitt: ['tryck', 'lyftkraft'] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };

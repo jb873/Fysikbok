@@ -32,12 +32,18 @@ const TEXTER = {
        titel: 'C: Kaströrelse', order: 'Arbetsorder 16 (2026-11-11)' },
   // D Tyngdpunkt, balans och kroppen (arbetsorder 17, 2026-11-12): node verktyg/kap3-omvandlare.js --text d
   d: { kalla: 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', mapp: 'tyngdpunkt-och-balans', figurer: './kap3-figurer-d.js',
-       titel: 'D: Tyngdpunkt, balans och kroppen', order: 'Arbetsorder 17 (2026-11-12)' }
+       titel: 'D: Tyngdpunkt, balans och kroppen', order: 'Arbetsorder 17 (2026-11-12)' },
+  // Avsnitt V Tryck, arbete och maskiner, text A Tryck (arbetsorder 21, 2026-11-12): node verktyg/kap3-omvandlare.js --text va.
+  // Källan märker exemplen [EXEMPEL: rubrik] … [/EXEMPEL], med tomma rader inne i rutan: de blir exempel i stycken, som i
+  // Nästa steg (Givet, Sökt, Lösning och Svar i fetstil, brytbart mellan raderna).
+  va: { kalla: 'V-A-Tryck-alla-nivaer-v2.md', mapp: 'tryck', figurer: './kap3-figurer-va.js', titel: 'A: Tryck',
+        order: 'Arbetsorder 21 (2026-11-12)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' }
 };
-if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c eller d)'); process.exit(1); }
+if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c, d eller va)'); process.exit(1); }
 const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);
 const UT = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--text');
-const MAPP = 'kraft_och_rorelse/fall_kast_och_balans/innehall/' + TEXTER[TEXT].mapp;
+const MAPP = (TEXTER[TEXT].sidmapp || 'kraft_och_rorelse/fall_kast_och_balans') + '/innehall/' + TEXTER[TEXT].mapp;
+const SIDA = TEXTER[TEXT].sida || 'IV. Fall, kast och balans';
 const NIVAER = [['STANDARD', 'standard', '📘'], ['ENKEL', 'enkel', '📗'], ['FÖRDJUPNING', 'fordjupning', '📕']];
 const RUTA = { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: ['Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
   'Klicka i innehållet för att gå till en sida.', 'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'] };
@@ -73,6 +79,15 @@ function las(rad, niva) {
     if (l === 'Det här lär du dig:') { slut(); a.block.push({ typ: 'underrubrik', text: 'Det här lär du dig' }); continue; }
     if ((m = /^\[FORMEL: (.+?) – (.+)\]$/.exec(l))) { slut(); a.block.push({ typ: 'formel', uttryck: m[1], forklaring: m[2] }); continue; }
     if (/^\[BILD/.test(l)) { slut(); a.block.push({ kommentar: l }); continue; }
+    // (V A) [EXEMPEL: rubrik] … [/EXEMPEL]: stycken (tomma rader emellan), var och en med sina rader
+    if ((m = /^\[EXEMPEL: (.+)\]$/.exec(l)) && rad.slice(i + 1).findIndex(x => x === '[/EXEMPEL]') >= 0 &&
+        rad.slice(i + 1).findIndex(x => x === '[/EXEMPEL]') < (rad.slice(i + 1).findIndex(x => /^##? |^\[EXEMPEL/.test(x)) + 1 || Infinity)) {
+      slut(); const st = [[]];
+      while (rad[++i] !== '[/EXEMPEL]') { if (rad[i].trim()) st[st.length - 1].push(rad[i]); else if (st[st.length - 1].length) st.push([]); }
+      if (!st[st.length - 1].length) st.pop();
+      if (!st.length) fel.push(`${niva}: exemplet ”${m[1]}” har inga rader`);
+      if (!/^Svar:/.test(st[st.length - 1][st[st.length - 1].length - 1] || '')) fel.push(`${niva}: exemplet ”${m[1]}” slutar inte med Svar:`);
+      a.block.push({ typ: 'exempel', rubrik: m[1], stycken: st }); continue; }
     // (B) [EXEMPEL: rubrik] + raderna under, [RUTA: rubrik] + punkterna under
     if ((m = /^\[EXEMPEL: (.+)\]$/.exec(l))) { slut(); const rr = [];
       while (i + 1 < rad.length && rad[i + 1].trim()) rr.push(rad[++i]);
@@ -122,6 +137,8 @@ function blockText(b) {
   if (['punkter', 'numrerad'].includes(b.typ)) return `        { typ: '${b.typ}', punkter: [\n` + b.punkter.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'ruta') return `        { typ: 'ruta', rubrik: ${q(b.rubrik)}, punkter: [\n` + b.punkter.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'rader') return `        { typ: 'rader', rader: [\n` + b.rader.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
+  if (b.typ === 'exempel' && b.stycken) return `        { typ: 'exempel', rubrik: ${q(b.rubrik)}, stycken: [\n` +
+    b.stycken.map(st => '          [' + st.map((x, k) => (k ? '           ' : '') + q(x)).join(',\n') + ']').join(',\n') + '\n        ] }';
   if (b.typ === 'exempel') return `        { typ: 'exempel', rubrik: ${q(b.rubrik)}, rader: [\n` + b.rader.map(x => '          ' + q(x)).join(',\n') + '\n        ] }';
   if (b.typ === 'vidare') return VIDARE.blockRad(b);
   return '        ' + js(b);
@@ -133,7 +150,7 @@ for (const [kod, n, ikon] of NIVAER) {
     ' * strömformatet av verktyg/kap3-omvandlare.js: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du',
     ' * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och',
     ' * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.', ' */');
-  else if (TEXTER[TEXT].order) ut.push(`/* Avsnittssida IV. Fall, kast och balans, text ${TEXTER[TEXT].titel} – nivån ${n} (${ikon}).`,
+  else if (TEXTER[TEXT].order) ut.push(`/* Avsnittssida ${SIDA}, text ${TEXTER[TEXT].titel} – nivån ${n} (${ikon}).`,
     ` * ${TEXTER[TEXT].order}: kallor/kap3/${TEXTER[TEXT].kalla} (# ${ikon} ${kod}), införd ordagrant i`,
     ` * strömformatet av verktyg/kap3-omvandlare.js --text ${TEXT}: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,`,
     ' * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i',
