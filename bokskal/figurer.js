@@ -41,6 +41,7 @@
  *   cirkelrorelse       lage: 'snore' | 'bil' – kraften in mot mitten och den raka banan längs tangenten (IV C)
  *   stabilitet          lage: 'lada' | 'fordon' | 'hojdhopp' – tyngdpunkt, lodlinje och stödyta (IV D)
  *   krock               stopp?: [styv, deformationszon] (m) – två bilar mot en vägg, stoppsträckan och kupén (IV D)
+ *   tryck               lage: 'sno' | 'hydraulik' | 'lyftkraft' | 'hydraulik-vag' – tryck, hydraulik och lyftkraft (V A)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -1733,6 +1734,130 @@
     const beskr = `Två bilar har krockat rakt in i en vägg, sedda från sidan. Streckat: bilen när fronten nuddade väggen. Den styva bilen stannar på ${tal(Math.round(s1 * 100))} cm: kort tid och stor kraft. ` +
       `Bilen med deformationszon stannar på ${tal(Math.round(s2 * 100))} cm, fronten trycks ihop men kupén är hel: längre tid och mindre kraft.`;
     return { svg: svg(B, H, s).replace('<svg ', '<svg data-krock="1" '), beskrivning: d.beskrivning || beskr };
+  });
+
+  /* Tryck (Kraft och rörelse V A, arbetsorder 21, 2026-11-12). Text 19 enheter (minst 14 px i mobilens spalt), krafterna
+   * i kraftpilarnas guld, tryckpilarna i vattnet i indigo. Varje läge skriver sina mått i elementen (data-*), och grinden
+   * mäter det figuren påstår i elementen själva (verktyg/bok-grind.js, figurKoll: tr).
+   *   lage 'sno':           tyngd?: 600 (N), skor?: [{namn, langd (m)}, {namn, langd}] – samma person i djup snö, en panel
+   *                         per sko. Hur djupt foten sjunker räknas ur trycket (kortare sula: högre tryck); tyngdpilen är
+   *                         lika lång i båda
+   *   lage 'hydraulik':     areor?: [2, 100] (cm²) – två cylindrar med olja, sammankopplade; en smal och en bred kolv på
+   *                         samma höjd, en kort pil ned på den lilla och en längre pil upp under bilen på den stora (pilen
+   *                         har ett tak: skala 1:50 går inte), och samma tryck p i båda cylindrarna
+   *   lage 'lyftkraft':     djup?: 0.7 (klossens överkant under ytan, i klossens sidor) – en kloss helt under vatten,
+   *                         tryckpilar mot alla fyra sidor, långa i proportion till djupet, och lyftkraften uppåt =
+   *                         undersidans pil − ovansidans
+   *   lage 'hydraulik-vag': areor?: [2, 100] (cm²), krafter?: [200, 10000] (N), vag?: 0.5 (m) – samma lyft med sträckorna:
+   *                         den lilla kolven pressas ned vag, den stora stiger vag · A₁/A₂ (samma oljevolym); krafterna,
+   *                         areorna och sträckorna utskrivna */
+  const cmText = m => tal(Math.round(m * 1000) / 10) + ' cm';
+  Bok.figur('tryck', d => {
+    const lage = d.lage || fel('tryck behöver lage: sno, hydraulik, lyftkraft eller hydraulik-vag'), B = 440;
+    let s = '', H, beskr;
+    if (lage === 'sno') {
+      const tyngd = d.tyngd || 600, skor = d.skor || [{ namn: 'kängor', langd: 0.3 }, { namn: 'snöskor', langd: 0.8 }];
+      if (skor.length !== 2 || !(skor[0].langd > 0 && skor[1].langd > 0) || skor[0].langd === skor[1].langd) fel('tryck sno: två skor med olika sullängd (m)');
+      const k = 70, sjunk = l => Math.min(0.45, 0.03 / (l * l)) * k;          // px: kortare sula – högre tryck – djupare
+      const pb = B / 2, S = KT + 16 + 123 - Math.min(...skor.map(x => sjunk(x.langd))), botten = S + Math.max(...skor.map(x => sjunk(x.langd))) + 34;
+      H = Math.ceil(botten + KT + 14);
+      const kort = Math.min(...skor.map(x => x.langd)), PL = 55;
+      skor.forEach((x, i) => {
+        const cx = pb * (i + 0.5) - 14, yF = S + sjunk(x.langd), L = x.langd * k, liten = x.langd === kort;
+        let g = `<rect class="fig-sno" x="${f(pb * i + 8)}" y="${f(S)}" width="${f(pb - 16)}" height="${f(botten - S)}"/>`;
+        g += `<line class="fig-sno-yta" x1="${f(pb * i + 8)}" y1="${f(S)}" x2="${f(pb * (i + 1) - 8)}" y2="${f(S)}"/>`;
+        // personen från sidan: ben, bål, armar och huvud; sulan under foten
+        g += `<path class="fig-hopp-lem" d="M${f(cx)} ${f(yF - 60)} L${f(cx - 3)} ${f(yF - 6)} M${f(cx)} ${f(yF - 60)} L${f(cx + 3)} ${f(yF - 6)}"/>`;
+        g += `<path class="fig-hopp-kropp" d="M${f(cx)} ${f(yF - 60)} L${f(cx)} ${f(yF - 100)}"/>`;
+        g += `<path class="fig-hopp-lem" d="M${f(cx)} ${f(yF - 98)} L${f(cx - 7)} ${f(yF - 62)} M${f(cx)} ${f(yF - 98)} L${f(cx + 7)} ${f(yF - 62)}"/>`;
+        g += `<circle class="fig-hopp-huvud" cx="${f(cx)}" cy="${f(yF - 112)}" r="11"/>`;
+        g += `<rect class="fig-tryck-sula${liten ? '' : ' fig-tryck-snosko'}" x="${f(cx - L / 2)}" y="${f(yF - 6)}" width="${f(L)}" height="6" rx="${liten ? 1.5 : 3}" data-langd="${x.langd}"/>`;
+        // snön som täcker det som har sjunkit ned
+        if (yF - S > 1) g += `<rect class="fig-sno-tacke" x="${f(cx - L / 2 - 5)}" y="${f(S)}" width="${f(L + 10)}" height="${f(yF - S + 1)}"/>`;
+        g += `<g class="fig-tryck-tyngd" data-tyngd="${tyngd}">${pil(cx + 32, yF - 80, cx + 32, yF - 80 + PL, 8)}</g>`;
+        g += kastText(cx + 40, yF - 46, 'tyngd', 'fig-vanster fig-kast-pil-text');
+        g += kastText(pb * (i + 0.5), KT + 4, `${x.namn} – ${liten ? 'liten' : 'stor'} yta`, 'fig-mitt');
+        g += kastText(pb * (i + 0.5), botten + KT + 4, yF - S > 0.1 * k ? 'sjunker ned' : 'står kvar ovanpå', 'fig-mitt');
+        s += `<g class="fig-tryck-panel" data-sko="${esc(x.namn)}" data-langd="${x.langd}" data-yta="${f(S)}">${g}</g>`;
+      });
+      const [a, b] = skor[0].langd < skor[1].langd ? skor : [skor[1], skor[0]];
+      beskr = `Samma person, med tyngden ${tal(tyngd)} N, i djup snö två gånger. Med ${a.namn} är ytan mot snön liten, trycket blir högt och personen sjunker ned. ` +
+        `Med ${b.namn} är ytan stor, trycket blir lågt och personen står kvar ovanpå. Tyngdpilen är lika lång i båda.`;
+    } else if (lage === 'hydraulik' || lage === 'hydraulik-vag') {
+      const vagL = lage === 'hydraulik-vag', [A1, A2] = d.areor || [2, 100];
+      if (!(A2 > A1 && A1 > 0)) fel('tryck hydraulik: areor [liten, stor] (cm²), den stora störst');
+      const [F1, F2] = d.krafter || [200, 200 * A2 / A1], vag = d.vag || 0.5, upp = vag * A1 / A2;
+      if (vagL && Math.abs(F1 * vag - F2 * upp) > 1e-9 * F2) fel('tryck hydraulik-vag: krafterna ska ha samma kvot som areorna');
+      const c = Math.min(24 / Math.sqrt(A1), 156 / Math.sqrt(A2)), w1 = c * Math.sqrt(A1), w2 = c * Math.sqrt(A2);
+      const x1 = 95, x2 = 300, L1 = 38, L2 = Math.min(L1 * A2 / A1, 116), ph = 22;
+      const sPx = vagL ? 100 : 0, uPx = sPx * A1 / A2, yP0 = KT + 62, yB = yP0 + 145;
+      const yL = yP0 + sPx, yR = yP0 - uPx;                 // kolvarnas undersidor (oljans yta) efter
+      const v1 = [x1 - w1 / 2, x1 + w1 / 2], v2 = [x2 - w2 / 2, x2 + w2 / 2];
+      // oljan: den lilla cylindern, röret längst ned och den stora cylindern, en yta
+      const olja = [[v1[0], yL], [v1[0], yB], [v2[1], yB], [v2[1], yR], [v2[0], yR], [v2[0], yB - ph], [v1[1], yB - ph], [v1[1], yL]];
+      s += `<polygon class="fig-olja" points="${hornP(olja)}"/>`;
+      s += `<polyline class="fig-cylinder" points="${hornP([[v1[0], yP0 - 30], [v1[0], yB], [v2[1], yB], [v2[1], yP0 - 30]])}"/>`;
+      s += `<polyline class="fig-cylinder" points="${hornP([[v1[1], yP0 - 30], [v1[1], yB - ph], [v2[0], yB - ph], [v2[0], yP0 - 30]])}"/>`;
+      // kolvarna (före: streckade, på samma höjd)
+      const kolv = (v, y, sida, A, F, vg) => `<g class="fig-tryck-kolv" data-sida="${sida}" data-area="${A}" data-kraft="${F}"${vagL ? ` data-vag="${vg}"` : ''}>` +
+        (vagL ? `<rect class="fig-kolv-fore" x="${f(v[0] + 1)}" y="${f(yP0 - 10)}" width="${f(v[1] - v[0] - 2)}" height="10"/>` : '') +
+        `<rect class="fig-kolv" x="${f(v[0] + 1)}" y="${f(y - 10)}" width="${f(v[1] - v[0] - 2)}" height="10"/></g>`;
+      s += kolv(v1, yL, 'liten', A1, F1, vag) + kolv(v2, yR, 'stor', A2, F2, upp);
+      // bilen på den stora kolven
+      const cw = Math.min(w2 - 16, 128), bx = x2 - cw / 2, by = yR - 10, Y = h => by - h;
+      s += `<polygon class="fig-krock-bil" points="${hornP([[bx, Y(9)], [bx, Y(26)], [bx + cw * 0.22, Y(28)], [bx + cw * 0.32, Y(46)], [bx + cw * 0.72, Y(46)], [bx + cw * 0.84, Y(28)], [bx + cw, Y(25)], [bx + cw, Y(9)]])}"/>`;
+      s += `<polygon class="fig-kupe" points="${hornP([[bx + cw * 0.35, Y(29)], [bx + cw * 0.40, Y(42)], [bx + cw * 0.68, Y(42)], [bx + cw * 0.76, Y(29)]])}"/>`;
+      [bx + cw * 0.2, bx + cw * 0.8].forEach(hx => { s += `<circle class="fig-krock-hjul" cx="${f(hx)}" cy="${f(Y(9))}" r="9"/>`; });
+      // krafterna: ned på den lilla kolven, upp på den stora (i oljan, under kolven)
+      s += `<g class="fig-tryck-kraft" data-sida="liten">${pil(x1, yL - 12 - L1, x1, yL - 12, 8)}</g>`;
+      s += `<g class="fig-tryck-kraft" data-sida="stor">${pil(x2, yR + 3 + L2, x2, yR + 3, 9)}</g>`;
+      // samma tryck p i båda cylindrarna
+      const pY = (yL + yB - ph) / 2 + 7;
+      s += `<text class="fig-text fig-kast-text fig-tryck-p fig-mitt" x="${f(x1)}" y="${f(Math.max(pY, yL + 22))}" data-sida="liten">p</text>`;
+      s += `<text class="fig-text fig-kast-text fig-tryck-p fig-mitt" x="${f(v2[1] - 18)}" y="${f(yR + 50)}" data-sida="stor">p</text>`;
+      if (!vagL) {
+        s += kastText(x1, yL - 12 - L1 - 8, 'liten kraft', 'fig-mitt fig-kast-pil-text');
+        s += kastText((v1[1] + v2[0]) / 2, yR + 3 + L2 / 2 + 6, 'stor kraft', 'fig-mitt fig-kast-pil-text');
+        s += kastText(B / 2, yB + 12 + KT, 'p: samma tryck i hela oljan', 'fig-mitt');
+        H = Math.ceil(yB + 12 + KT + 10);
+        beskr = `En hydraulisk lyft: två cylindrar med olja, sammankopplade med ett rör längst ned. Den lilla kolven och den stora kolven står på samma höjd. ` +
+          `En kort pil trycker ned den lilla kolven, och en längre pil lyfter den stora kolven med en bil på. Trycket p är lika stort i hela oljan, ` +
+          `och den stora kolven har ${tal(A2 / A1)} gånger så stor yta – därför blir kraften på den ${tal(A2 / A1)} gånger så stor.`;
+      } else {
+        s += kastText(v1[1] + 8, yL - 12 - L1 / 2 + 6, tal(F1) + ' N', 'fig-vanster fig-kast-pil-text');
+        s += kastText(v2[0] - 6, yP0 + 40, tal(F2) + ' N', 'fig-hoger fig-kast-pil-text');
+        // sträckorna: den lilla kolven ned, den stora upp
+        const matt = (x, ya, yb, sida, m) => `<g class="fig-tryck-matt" data-sida="${sida}" data-vag="${m}">` +
+          `<line class="fig-krock-matt" x1="${f(x)}" y1="${f(ya)}" x2="${f(x)}" y2="${f(yb)}"/>` +
+          `<line class="fig-krock-matt" x1="${f(x - 5)}" y1="${f(ya)}" x2="${f(x + 5)}" y2="${f(ya)}"/><line class="fig-krock-matt" x1="${f(x - 5)}" y1="${f(yb)}" x2="${f(x + 5)}" y2="${f(yb)}"/></g>`;
+        s += matt(v1[0] - 14, yP0, yL, 'liten', vag) + kastText(v1[0] - 20, (yP0 + yL) / 2 + 6, cmText(vag), 'fig-hoger');
+        s += matt(v2[1] + 8, yR, yP0, 'stor', upp) + kastText(v2[1] + 14, yP0 + 6, cmText(upp), 'fig-vanster');
+        s += kastText(x1, yB + 8 + KT, tal(A1) + ' cm²', 'fig-mitt') + kastText(x2, yB + 8 + KT, tal(A2) + ' cm²', 'fig-mitt');
+        H = Math.ceil(yB + 8 + KT + 10);
+        beskr = `Samma hydrauliska lyft med sträckorna utmärkta. Den lilla kolven (${tal(A1)} cm²) pressas ned ${cmText(vag)} med kraften ${tal(F1)} N, ` +
+          `och den stora kolven (${tal(A2)} cm²) stiger ${cmText(upp)} med kraften ${tal(F2)} N. Lika mycket olja flyttas: ${tal(A1)} · ${tal(vag * 100)} = ${tal(A2)} · ${tal(Math.round(upp * 1000) / 10)} cm³. ` +
+          `Kraft gånger väg är lika stort på båda sidor: ${tal(F1)} · ${tal(vag)} = ${tal(F2)} · ${tal(upp)}.`;
+      }
+      s = s.replace('<polygon class="fig-olja"', `<polygon class="fig-olja" data-v1="${f(v1[0])},${f(v1[1])}" data-v2="${f(v2[0])},${f(v2[1])}"`);
+    } else if (lage === 'lyftkraft') {
+      const kl = 100, yta = KT + 16, dTop = (d.djup != null ? d.djup : 0.7) * kl, c = 0.42, cx = 150, top = yta + dTop, bot = top + kl;
+      if (!(dTop > 0)) fel('tryck lyftkraft: djup > 0');
+      const Lp = y => c * (y - yta), botten = bot + Lp(bot) + 18;
+      H = Math.ceil(botten + 8);
+      s += `<rect class="fig-vatten" x="8" y="${f(yta)}" width="${B - 16}" height="${f(botten - yta)}"/>`;
+      s += `<line class="fig-vatten-yta" x1="8" y1="${f(yta)}" x2="${B - 8}" y2="${f(yta)}"/>`;
+      s += `<rect class="fig-kloss" x="${f(cx - kl / 2)}" y="${f(top)}" width="${kl}" height="${kl}"/>`;
+      const tp = (sida, x1, y1, x2, y2) => `<g class="fig-tryck-tryckpil" data-sida="${sida}">${pil(x1, y1, x2, y2, 7, 'fig-tryck-pil')}</g>`;
+      s += tp('over', cx, top - Lp(top), cx, top) + tp('under', cx, bot + Lp(bot), cx, bot);
+      for (const y of [top + kl / 4, top + 3 * kl / 4]) s += tp('vanster', cx - kl / 2 - Lp(y), y, cx - kl / 2, y) + tp('hoger', cx + kl / 2 + Lp(y), y, cx + kl / 2, y);
+      const lyft = Lp(bot) - Lp(top), m = top + kl / 2;
+      s += `<g class="fig-tryck-lyftkraft">${pil(cx, m + lyft / 2, cx, m - lyft / 2, 9, 'fig-tryck-lyft')}</g>`;
+      s += kastText(cx + 12, top - 10, 'lägre tryck', 'fig-vanster') + kastText(cx + 12, bot + Lp(bot) / 2 + 8, 'högre tryck', 'fig-vanster');
+      s += kastText(cx + kl / 2 + Lp(top + 3 * kl / 4) + 16, m + 6, 'lyftkraft', 'fig-vanster fig-tryck-lyft-text');
+      beskr = 'En kloss helt under vatten. Vattnet trycker på klossen från alla håll, och pilarna är längre ju djupare de sitter. ' +
+        'Pilarna mot sidorna är lika långa parvis och tar ut varandra. Pilen mot undersidan är längre än pilen mot ovansidan, och skillnaden är lyftkraften, som pekar uppåt.';
+    } else fel('tryck: okänt läge ”' + lage + '”');
+    return { svg: svg(B, H, s).replace('<svg ', `<svg data-tryck="${lage}" `), beskrivning: d.beskrivning || beskr };
   });
 
 })();

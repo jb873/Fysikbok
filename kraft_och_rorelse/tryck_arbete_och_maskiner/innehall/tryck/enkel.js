@@ -44,6 +44,7 @@ Bok.niva('enkel', {
         ] },
         { typ: 'text', text: 'Tänk på snön igen. Du väger lika mycket med skor som med skidor. Kraften mot snön är alltså lika stor. Men skorna är små, så kraften samlas på en liten yta. Trycket blir högt, och snön ger efter. Skidorna är långa och breda. Samma kraft sprids ut över en mycket större yta. Trycket blir lågt, och snön håller.' },
         // [BILD V1: samma person i djup snö två gånger – med kängor (liten yta, sjunker ned) och med snöskor (stor yta, står kvar ovanpå); tyngden lika stor i båda, utritad som lika långa pilar]
+        { id: 'bild-v1', typ: 'figur', namn: 'tryck', lage: 'sno', tyngd: 600, skor: [{ namn: 'kängor', langd: 0.3 }, { namn: 'snöskor', langd: 0.8 }], bildtext: 'Tyngden är lika stor i båda bilderna. Med kängor samlas den på en liten yta, och trycket blir högt. Med snöskor fördelas den på en stor yta, och trycket blir lågt.' },
         { typ: 'rubrik', text: 'Tryck mäts i pascal' },
         { typ: 'text', text: 'Tryck är kraft på en yta. Kraft mäter vi i newton och yta i kvadratmeter. Därför mäts tryck i newton per kvadratmeter. Den enheten har fått ett eget namn: *pascal*. Den skrivs Pa och har fått sitt namn efter en fransk forskare som hette Blaise Pascal.' },
         { typ: 'text', text: '1 Pa betyder att en kraft på 1 newton sprids ut över en hel kvadratmeter. Det är ett väldigt litet tryck. Ett papper som ligger på ett bord trycker ungefär så mycket på bordet. Därför använder man oftast en större enhet, *kilopascal*, som skrivs kPa. 1 kPa är 1 000 Pa. Luften omkring oss trycker på oss med ungefär 100 kPa, utan att vi märker det.' },
@@ -100,6 +101,7 @@ Bok.niva('enkel', {
         ] },
         { typ: 'text', text: 'Om den stora kolven är 50 gånger så stor som den lilla blir kraften 50 gånger så stor. Då kan du lyfta en bil med en kraft som du klarar med armarna.' },
         // [BILD V2: hydraulisk lyft – liten kolv med en kort pil nedåt (liten kraft), stor kolv med en lång pil uppåt (stor kraft) under en bil, oljan emellan; samma tryck markerat i båda cylindrarna]
+        { id: 'bild-v2', typ: 'figur', namn: 'tryck', lage: 'hydraulik', areor: [2, 100], bildtext: 'Trycket är lika stort i hela oljan. Den stora kolven har mycket större yta, och därför blir kraften på den mycket större.' },
         { typ: 'rubrik', text: 'Hydraulik finns i många maskiner' },
         { typ: 'text', text: 'På en bilverkstad lyfts bilar upp med hydrauliska lyftar. Om en bil får punktering kan föraren lyfta den med en domkraft, och många domkrafter är hydrauliska. En grävmaskin har hydraulcylindrar som rör armen och skopan, och därför kan den lyfta flera ton jord.' },
         { typ: 'text', text: 'Bilens bromsar är också hydrauliska. När föraren trampar på bromspedalen trycker pedalen på en liten kolv. Trycket sprids genom en vätska, bromsvätska, i tunna rör ut till hjulen. Där finns större kolvar som trycker bromsarna hårt mot hjulen. På så sätt kan en fot stoppa en bil som väger över ett ton.' },
@@ -124,6 +126,7 @@ Bok.niva('enkel', {
         ] },
         { typ: 'text', text: 'Vattnet trycker alltså hårdare uppåt på undersidan än nedåt på ovansidan. Skillnaden blir en kraft som pekar uppåt. Den kraften kallas *lyftkraft*.' },
         // [BILD V3: kloss nedsänkt i vatten – tryckpilar mot alla sidor, längre pilar mot undersidan än mot ovansidan, och den resulterande lyftkraften uppåt]
+        { id: 'bild-v3', typ: 'figur', namn: 'tryck', lage: 'lyftkraft', djup: 0.7, bildtext: 'Vattnet trycker hårdare ju djupare det är. Trycket mot undersidan är större än mot ovansidan, och skillnaden är lyftkraften.' },
         { typ: 'text', text: 'Du har säkert känt lyftkraften. Under vattnet kan du lyfta en kompis som du inte orkar lyfta på land. En sten på botten av en sjö känns lättare än samma sten på stranden. Stenen väger lika mycket, men vattnet hjälper till att lyfta den.' },
         { typ: 'rubrik', text: 'Lyftkraften är lika stor som tyngden av vattnet som trycks undan' },
         { typ: 'text', text: 'När du kliver ned i ett badkar stiger vattnet. Din kropp tar plats, och vattnet måste flytta på sig. Man säger att kroppen tränger undan vatten.' },

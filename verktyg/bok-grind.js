@@ -181,7 +181,7 @@ async function chrome() {
  *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map(), kc = new Map(), tb = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map(), kc = new Map(), tb = new Map(), tr = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -577,6 +577,85 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         tb.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
       });
+      // Tryck (V A, arbetsorder 21), mätt i figurernas egna element:
+      //  - sno: tyngdpilarna exakt lika långa och rakt nedåt; den större sulan minst dubbelt så lång som den mindre; den
+      //    mindre sulan sjunker minst 5 px djupare under snöytan;
+      //  - hydraulik: den stora kolven minst dubbelt så bred och pilen vid den längre, ned på den lilla och upp på den
+      //    stora; oljan en yta från den lilla cylinderns yttervägg till den storas; kolvarna på samma höjd (före
+      //    förflyttningen); samma p i båda cylindrarna;
+      //  - lyftkraft: varje tryckpil lika lång i förhållande till sitt djup (jämn ökning), sidopilarna parvis lika
+      //    långa, undersidans pil längre än ovansidans och lyftkraftens pil uppåt = undersidans − ovansidans;
+      //  - hydraulik-vag (dessutom): sträckorna utskrivna (ur data-vag), samma oljevolym A₁·s₁ = A₂·s₂, samma kraft gånger
+      //    väg F₁·s₁ = F₂·s₂, och de ritade förflyttningarna i areornas kvot;
+      //  - alla: ingen text under 14 px, utanför figuren eller över en annan text.
+      $$('.scen svg[data-tryck]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (tr.has(id)) return;
+        const f_ = [], N = 0.6, nara = (a, b, t = N) => Math.abs(a - b) <= t, sk = s.getBoundingClientRect().width / s.viewBox.baseVal.width;
+        const lage = s.dataset.tryck, typ = 'tryck ' + lage;
+        const pilL = g => { const l = g.querySelector('line.fig-pil'), p = g.querySelector('polygon.fig-pilspets').points[0], x1 = l.x1.baseVal.value, y1 = l.y1.baseVal.value;
+          return { x1, y1, x2: p.x, y2: p.y, L: Math.hypot(p.x - x1, p.y - y1) }; };
+        if (lage === 'sno') {
+          const P = [...s.querySelectorAll('g.fig-tryck-panel')].map(g => { const r = g.querySelector('rect.fig-tryck-sula');
+            return { namn: g.dataset.sko, yta: +g.dataset.yta, bredd: r.width.baseVal.value, botten: r.y.baseVal.value + r.height.baseVal.value, pil: pilL(g.querySelector('g.fig-tryck-tyngd')) }; });
+          if (P.length !== 2) f_.push(P.length + ' paneler');
+          else {
+            const [a, b] = P[0].bredd < P[1].bredd ? P : [P[1], P[0]];
+            if (!nara(a.pil.L, b.pil.L)) f_.push('tyngdpilarna är inte lika långa (' + a.pil.L.toFixed(1) + ' / ' + b.pil.L.toFixed(1) + ')');
+            if (!(a.pil.y2 > a.pil.y1 && b.pil.y2 > b.pil.y1 && nara(a.pil.x1, a.pil.x2) && nara(b.pil.x1, b.pil.x2))) f_.push('tyngdpilarna pekar inte rakt nedåt');
+            if (!(b.bredd >= 2 * a.bredd)) f_.push(b.namn + ': ytan mot snön är inte tydligt större än med ' + a.namn + ' (' + b.bredd.toFixed(1) + ' / ' + a.bredd.toFixed(1) + ')');
+            if (!(a.botten - a.yta >= b.botten - b.yta + 5)) f_.push(a.namn + ' sjunker inte djupare än ' + b.namn + ' (' + (a.botten - a.yta).toFixed(1) + ' / ' + (b.botten - b.yta).toFixed(1) + ' px)');
+          }
+        } else if (lage === 'hydraulik' || lage === 'hydraulik-vag') {
+          const K = {}, Fp = {};
+          s.querySelectorAll('g.fig-tryck-kolv').forEach(g => { const r = g.querySelector('rect.fig-kolv'), fo = g.querySelector('rect.fig-kolv-fore');
+            K[g.dataset.sida] = { x: r.x.baseVal.value, b: r.width.baseVal.value, y: r.y.baseVal.value, fore: fo ? fo.y.baseVal.value : null, A: +g.dataset.area, F: +g.dataset.kraft, s: +g.dataset.vag }; });
+          s.querySelectorAll('g.fig-tryck-kraft').forEach(g => { Fp[g.dataset.sida] = pilL(g); });
+          const k1 = K.liten, k2 = K.stor, o = s.querySelector('polygon.fig-olja');
+          if (!k1 || !k2 || !Fp.liten || !Fp.stor || !o) f_.push('kolvar, pilar eller olja saknas');
+          else {
+            if (!(k2.b >= 2 * k1.b)) f_.push('den stora kolven är inte tydligt bredare (' + k2.b.toFixed(1) + ' / ' + k1.b.toFixed(1) + ')');
+            if (!(Fp.stor.L > Fp.liten.L + 5)) f_.push('pilen vid den stora kolven är inte längre (' + Fp.stor.L.toFixed(1) + ' / ' + Fp.liten.L.toFixed(1) + ')');
+            if (!(Fp.liten.y2 > Fp.liten.y1) || !(Fp.stor.y2 < Fp.stor.y1)) f_.push('pilarna pekar inte ned på den lilla kolven och upp på den stora');
+            const xs = [...o.points].map(p => p.x);
+            if (o.points.length !== 8 || !(Math.min(...xs) <= k1.x + 1.5 && Math.max(...xs) >= k2.x + k2.b - 1.5)) f_.push('oljan förbinder inte cylindrarna');
+            const hojd = q => q.fore != null ? q.fore : q.y;
+            if (!nara(hojd(k1), hojd(k2))) f_.push('kolvarna står inte på samma höjd (' + hojd(k1).toFixed(1) + ' / ' + hojd(k2).toFixed(1) + ')');
+            const pp = [...s.querySelectorAll('text.fig-tryck-p')];
+            if (pp.length !== 2 || pp[0].textContent !== pp[1].textContent || !pp.every(t => { const q = K[t.dataset.sida], bb = t.getBBox(); return q && bb.x >= q.x - 0.5 && bb.x + bb.width <= q.x + q.b + 0.5; }))
+              f_.push('samma tryck är inte markerat i båda cylindrarna');
+            if (lage === 'hydraulik-vag') {
+              const cm = m => (Math.round(m * 1000) / 10).toLocaleString('sv-SE') + ' cm', texter = [...s.querySelectorAll('text')].map(t => t.textContent);
+              [k1.s, k2.s].forEach(m => { if (!texter.includes(cm(m))) f_.push('sträckan ' + cm(m) + ' står inte utskriven'); });
+              if (!nara(k1.A * k1.s, k2.A * k2.s, 1e-9 * k2.A)) f_.push('oljevolymen är inte lika: ' + k1.A + ' · ' + k1.s + ' / ' + k2.A + ' · ' + k2.s);
+              if (!nara(k1.F * k1.s, k2.F * k2.s, 1e-9 * k2.F)) f_.push('kraft gånger väg är inte lika: ' + k1.F + ' · ' + k1.s + ' / ' + k2.F + ' · ' + k2.s);
+              const d1 = k1.y - k1.fore, d2 = k2.fore - k2.y;
+              if (!(d1 > 0) || !(d2 > 0) || !nara(d2, d1 * k1.A / k2.A, 0.3)) f_.push('de ritade sträckorna har inte areornas kvot (' + d1.toFixed(1) + ' ned / ' + d2.toFixed(1) + ' upp)');
+            }
+          }
+        } else if (lage === 'lyftkraft') {
+          const yl = s.querySelector('line.fig-vatten-yta'), y0 = yl ? yl.y1.baseVal.value : NaN, P = {};
+          s.querySelectorAll('g.fig-tryck-tryckpil').forEach(g => (P[g.dataset.sida] = P[g.dataset.sida] || []).push(pilL(g)));
+          const lyftG = s.querySelector('g.fig-tryck-lyftkraft');
+          if (!P.over || !P.under || !P.vanster || !P.hoger || !lyftG) f_.push('pilar saknas');
+          else {
+            const alla = [].concat(P.over, P.under, P.vanster, P.hoger), c = P.over[0].L / (P.over[0].y2 - y0);
+            alla.forEach(p => { if (!nara(p.L, c * (p.y2 - y0))) f_.push('pilen på djupet ' + (p.y2 - y0).toFixed(1) + ' är ' + p.L.toFixed(1) + ', inte ' + (c * (p.y2 - y0)).toFixed(1) + ' (jämn ökning med djupet)'); });
+            P.vanster.forEach(v => { const h = P.hoger.find(q => nara(q.y2, v.y2)); if (!h || !nara(h.L, v.L)) f_.push('sidopilarna på djupet ' + (v.y2 - y0).toFixed(1) + ' är inte parvis lika långa'); });
+            if (P.vanster.length !== P.hoger.length) f_.push('olika många pilar på sidorna');
+            if (!(P.under[0].L > P.over[0].L)) f_.push('pilen mot undersidan är inte längre än pilen mot ovansidan');
+            const L = pilL(lyftG);
+            if (!(L.y2 < L.y1) || !nara(L.L, P.under[0].L - P.over[0].L)) f_.push('lyftkraften (' + L.L.toFixed(1) + ') är inte skillnaden mellan undersidans och ovansidans pil (' + (P.under[0].L - P.over[0].L).toFixed(1) + ')');
+          }
+        } else f_.push('okänt läge');
+        const vb = s.viewBox.baseVal, tx = [...s.querySelectorAll('text')].filter(t => t.textContent.trim()).map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * sk]);
+        tx.forEach(([a, p, px], j) => {
+          if (px < 13.95) f_.push('”' + a + '” är ' + px.toFixed(1) + ' px');
+          if (p.x < -0.5 || p.y < -0.5 || p.x + p.width > vb.width + 0.5 || p.y + p.height > vb.height + 0.5) f_.push('”' + a + '” står utanför figuren');
+          tx.slice(j + 1).forEach(([b, q]) => { if (p.x < q.x + q.width - 0.5 && q.x < p.x + p.width - 0.5 && p.y < q.y + q.height - 0.5 && q.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
+        });
+        tr.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
+      });
       // Resulterande kraft (Kraft och rörelse IV A, arbetsorder 12), mätt i figurernas egna element:
       //  - resultant_rutor steg: varje pil börjar och slutar i ett rutnätshörn; den flyttade F₂ har samma komposanter som
       //    F₂ i det första steget; resultanten går från startpunkten till den flyttade pilens spets;
@@ -775,6 +854,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       rk: { antal: rk.size, typer: [...new Set([...rk.values()].map(x => x.typ))], fel: [...rk].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       ng: { antal: ng.size, typer: [...new Set([...ng.values()].map(x => x.typ))], minPx: Math.min(...[...ng.values()].map(x => x.minPx)), fel: [...ng].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       tb: { antal: tb.size, typer: [...new Set([...tb.values()].map(x => x.typ))], minPx: Math.min(...[...tb.values()].map(x => x.minPx)), fel: [...tb].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
+      tr: { antal: tr.size, typer: [...new Set([...tr.values()].map(x => x.typ))], minPx: Math.min(...[...tr.values()].map(x => x.minPx)), fel: [...tr].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       kc: { antal: kc.size, typer: [...new Set([...kc.values()].map(x => x.typ))], minPx: Math.min(...[...kc.values()].map(x => x.minPx)), fel: [...kc].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
@@ -787,7 +867,9 @@ const NG_PROV = String.raw`if (spar.some(x => x.rk && x.rk.antal)) prova('figur:
   if (spar.some(x => x.kc && x.kc.antal)) prova('figur: kaströrelse och cirkelrörelse – bollarna på samma höjd vid varje tidpunkt, den släppta rakt ned och den kastade lika långt framåt varje steg, de vågräta pilarna lika långa och de lodräta lika mycket längre varje sekund, 45° längst, 30° och 60° på samma ställe (±1 px) och 60° högst, hoppets tyngdpunkter på en kastbana, kraftpilen mot mitten och den raka banan längs tangenten, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.kc.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.kc.typer))].join(', ') + ')',
     spar.every(x => !x.kc.fel.length), spar.flatMap(x => x.kc.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.kc.antal).map(x => x.kc.minPx)).toFixed(1) + ' px');
   if (spar.some(x => x.tb && x.tb.antal)) prova('figur: tyngdpunkt, balans och krock – lodlinjen lodrät från tyngdpunkten, stödytan under lådan eller mellan hjulen, lådans tyngdpunkt i mitten, texten (välter eller inte) som lodlinjen och fysiken säger, höjdhopparens tyngdpunkt under ribban och kroppen över, deformationszonens sträcka minst dubbelt så lång och kupén lika lång, ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.tb.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.tb.typer))].join(', ') + ')',
-    spar.every(x => !x.tb.fel.length), spar.flatMap(x => x.tb.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tb.antal).map(x => x.tb.minPx)).toFixed(1) + ' px');`;
+    spar.every(x => !x.tb.fel.length), spar.flatMap(x => x.tb.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tb.antal).map(x => x.tb.minPx)).toFixed(1) + ' px');
+  if (spar.some(x => x.tr && x.tr.antal)) prova('figur: tryck – tyngdpilarna lika långa, den större sulan minst dubbelt så lång och den mindre sjunker djupare; den stora kolven minst dubbelt så bred och pilen vid den längre, oljan förbinder cylindrarna, kolvarna på samma höjd och samma p i båda; tryckpilarna i proportion till djupet, sidopilarna parvis lika, lyftkraften = undersidans − ovansidans pil; sträckorna utskrivna, samma oljevolym och samma kraft gånger väg, de ritade sträckorna i areornas kvot; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.tr.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.tr.typer))].join(', ') + ')',
+    spar.every(x => !x.tr.fel.length), spar.flatMap(x => x.tr.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tr.antal).map(x => x.tr.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------
  * Klistras in i scenarierna (behöver v, $, $$, synlig, prova, gest, klicka, oppen, stangd, figurKoll, spar, harOmslag).

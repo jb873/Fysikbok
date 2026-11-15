@@ -134,6 +134,15 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'stab-hojdhopp-prov', namn: 'stabilitet', lage: 'hojdhopp', ribba: 1.6 },
         { typ: 'text', text: 'Provtext: två provbilar mot en provvägg.' },
         { typ: 'figur', id: 'krock-prov', namn: 'krock', stopp: [0.1, 0.7], langd: 4.8, front: 1.2 },
+        // Tryck (arbetsorder 21): varje läge av tryck, med andra data än i V A
+        { typ: 'text', text: 'Provtext: en lättare provperson med gympaskor och med skidor.' },
+        { typ: 'figur', id: 'tryck-sno-prov', namn: 'tryck', lage: 'sno', tyngd: 450, skor: [{ namn: 'gympaskor', langd: 0.26 }, { namn: 'skidor', langd: 1.0 }] },
+        { typ: 'text', text: 'Provtext: en provlyft med andra areor.' },
+        { typ: 'figur', id: 'tryck-hydraulik-prov', namn: 'tryck', lage: 'hydraulik', areor: [3, 60] },
+        { typ: 'text', text: 'Provtext: en provkloss djupare ned.' },
+        { typ: 'figur', id: 'tryck-lyftkraft-prov', namn: 'tryck', lage: 'lyftkraft', djup: 1.2 },
+        { typ: 'text', text: 'Provtext: provlyften med sträckor.' },
+        { typ: 'figur', id: 'tryck-vag-prov', namn: 'tryck', lage: 'hydraulik-vag', areor: [4, 80], krafter: [150, 3000], vag: 0.4 },
 
         { typ: 'text', text: 'Provtext: Jupiter och de fyra stora månarna i samma skala.' },
         { typ: 'figur', id: 'jupiter-prov', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Jupiter', diameter: 139800 }, { namn: 'Io', diameter: 3640 }, { namn: 'Europa', diameter: 3120 }, { namn: 'Ganymedes', diameter: 5270 }, { namn: 'Kallisto', diameter: 4820 }], bildtext: 'Provbildtext under Jupiter och månarna.' },
