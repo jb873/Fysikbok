@@ -1,2 +1,2 @@
-/* Avsnittssida V, text D Hävstången och enkla maskiner – nivån enkel. Tom: "kommer" (arbetsorder 21). */
+/* Avsnittssida V, text D Maskiner och effekt – nivån enkel. Tom: "kommer" (arbetsorder 21; titeln: arbetsorder 28). */
 Bok.niva('enkel', { avsnitt: [] });

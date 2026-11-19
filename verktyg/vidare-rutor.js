@@ -33,7 +33,11 @@ const TABELL = [
     avsnitt: ['acceleration', 'newtons-andra-lag', 'rorelsemangd'] },
   // V A (arbetsorder 21): tryck (avsnitt 9) och lyftkraft (10), enligt ordern
   { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/tryck/fordjupning.js', text: 'V A Tryck',
-    avsnitt: ['tryck', 'lyftkraft'] }
+    avsnitt: ['tryck', 'lyftkraft'] },
+  // V B (arbetsorder 28): ingen ruta – Nästa steg har inget avsnitt om energi och arbete (ordern). En rad utan avsnitt
+  // betyder "ingen ruta här, med avsikt"; en fil som saknas i tabellen är fortfarande ett fel.
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/arbete-och-effekt/fordjupning.js', text: 'V B Energi och arbete',
+    avsnitt: [] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };
@@ -50,6 +54,7 @@ function avsnittsnamn() {
 function block(fil) {
   const rad = TABELL.find(r => r.fil === fil.split(path.sep).join('/'));
   if (!rad) return null;
+  if (!rad.avsnitt.length) return false;      // ingen ruta, med avsikt (V B)
   const namn = avsnittsnamn();
   return { typ: 'vidare', lankar: rad.avsnitt.map(id => {
     if (!namn[id]) throw new Error(`${rad.text}: avsnittet ”${id}” finns inte i Nästa steg-textboken`);
@@ -61,7 +66,7 @@ const blockRad = b => `        { typ: 'vidare', lankar: [\n` + b.lankar.map(l =>
 module.exports = { TABELL, TEXTBOK, block, blockRad };
 
 if (require.main === module) {
-  for (const rad of TABELL) {
+  for (const rad of TABELL.filter(r => r.avsnitt.length)) {
     const fil = path.join(ROT, rad.fil);
     const t0 = fs.readFileSync(fil, 'utf8'), crlf = t0.includes('\r\n'), rader = t0.replace(/\r\n/g, '\n').split('\n');
     // ett block som redan står där tas bort (det skrivs om)

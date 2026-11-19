@@ -222,11 +222,14 @@ for (const B of NS) {
 // under) och [RUTA: rubrik] (punkterna under): de hör till källan och ska stå på sin plats i boken.
 // V A Tryck (arbetsorder 21) prövas likadant mot kallor/kap3/V-A-Tryck-alla-nivaer-v2.md. Exemplen där är märkta
 // [EXEMPEL: rubrik] … [/EXEMPEL] med tomma rader i rutan: de prövas rad för rad, med styckena, som i Nästa steg.
+// V B Energi och arbete (arbetsorder 28) likadant mot kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v2.md, utan rutan
+// "Vill du gå vidare?" (kopplingen i vidare-rutor.js har en rad utan avsnitt).
 for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', 'resulterande-kraft'],
                             ['IV B', 'IV-B-Fritt-fall-alla-nivaer-v2.md', 'fritt-fall'],
                             ['IV C', 'IV-C-Kastrorelse-alla-nivaer-v1.md', 'kastrorelse'],      // (arbetsorder 16)
                             ['IV D', 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', 'tyngdpunkt-och-balans'],   // (arbetsorder 17)
-                            ['V A', 'V-A-Tryck-alla-nivaer-v2.md', 'tryck', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 21)
+                            ['V A', 'V-A-Tryck-alla-nivaer-v2.md', 'tryck', 'tryck_arbete_och_maskiner'],   // (arbetsorder 21)
+                            ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v2.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 28)
   const r = las(path.join(__dirname, '..', 'kallor', 'kap3', KF)), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);
@@ -280,8 +283,10 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
     if (seq[iSam - 1] === 'LANK ova,sjalvskattning') seq.splice(iSam - 1, 1); else tFel.push('länkblocket står inte sist i det sista numrerade avsnittet');
     // Fördjupning (arbetsorder 13, del 2): rutan "Vill du gå vidare?" sist i Sammanfattningen, med kopplingens länkar
     // (verktyg/vidare-rutor.js) – och ingen annanstans
-    if (niva === 'fordjupning') {
-      const vb = VIDARE.block(`kraft_och_rorelse/${SM}/innehall/${MP}/fordjupning.js`);
+    // V B (arbetsorder 28): kopplingen säger "ingen ruta" (false) – då får ingen ruta stå någonstans
+    const vb = niva === 'fordjupning' && VIDARE.block(`kraft_och_rorelse/${SM}/innehall/${MP}/fordjupning.js`);
+    if (niva === 'fordjupning' && vb === null) tFel.push('Fördjupningen saknas i verktyg/vidare-rutor.js');
+    if (vb) {
       const vant = 'VIDARE ' + vb.lankar.map(l => `${l.text} → ${l.bok}/${l.ankare}`).join(' · ');
       if (seq[seq.length - 1] === vant) seq.pop(); else tFel.push('rutan "Vill du gå vidare?" står inte sist i Sammanfattningen med länkarna ' + vant.slice(7));
     }
@@ -302,5 +307,6 @@ console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källor
   '\nIV:s fyra djupdykningar ordagrant mot källorna, med påståenderubriken överst i varje avsnitt och inget annat; korten heter som böckerna och Galileo (III:s bok) är femte.' +
   '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.' +
   '\nKraft och rörelse IV A (Resulterande kraft), IV B (Fritt fall), IV C (Kaströrelse) och IV D (Tyngdpunkt, balans och kroppen), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.' +
-  '\nKraft och rörelse V A (Tryck), tre nivåer, likadant (arbetsorder 21), med exemplen rad för rad.');
+  '\nKraft och rörelse V A (Tryck), tre nivåer, likadant (arbetsorder 21), med exemplen rad för rad.' +
+  '\nKraft och rörelse V B (Energi och arbete), tre nivåer, likadant (arbetsorder 28), men utan rutan "Vill du gå vidare?".');
 process.exitCode = fel ? 1 : 0;

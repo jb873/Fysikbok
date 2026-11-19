@@ -1,7 +1,8 @@
-/* Avsnittssida V. Tryck, arbete och maskiner (Fysik · Kraft och rörelse), med texterna A Tryck, B Arbete och effekt,
- * C Mekanisk energi och D Hävstången och enkla maskiner, en bok per text och nivå (arbetsorder 21, 2026-11-12). Bara A
- * har innehåll; B–D är "kommer" (tomma filer, som IV i arbetsorder 12). Inga djupdykningar än: rubriken "Vill du veta
- * mer?" står inte förrän det finns kort (motorns norm). Bara data; motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
+/* Avsnittssida V. Tryck, arbete och maskiner (Fysik · Kraft och rörelse), med texterna A Tryck, B Energi och arbete,
+ * C Mekanisk energi och D Maskiner och effekt, en bok per text och nivå (arbetsorder 21, 2026-11-12; den nya indelningen
+ * av B och D: arbetsorder 28, 2026-11-19). A och B har innehåll; C och D är "kommer" (tomma filer, som IV i arbetsorder
+ * 12). Inga djupdykningar än: rubriken "Vill du veta mer?" står inte förrän det finns kort (motorns norm). Bara data;
+ * motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
 Bok.delkapitel({
   id: 'fysik-tryck-arbete-och-maskiner',      // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
   amne: 'Fysik',
@@ -9,19 +10,20 @@ Bok.delkapitel({
            { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
   nummer: 5,                                 // brödsmulan "5. Tryck, arbete och maskiner" och etiketten "Avsnitt V"
   titel: 'Tryck, arbete och maskiner',
-  undertitel: 'tryck, arbete och effekt, mekanisk energi, hävstången och enkla maskiner',  // bannerns rad: kapitelindexets beskrivning av V
+  undertitel: 'tryck, energi och arbete, mekanisk energi, maskiner och effekt',  // bannerns rad: kapitelindexets beskrivning av V
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
   upphov: { namn: 'Joachim Björkman', ar: 2026 },
   kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
   // sparat – byt det aldrig. Källan till A: kallor/kap3/V-A-Tryck-alla-nivaer-v2.md, omvandlad av
-  // verktyg/kap3-omvandlare.js --text va.
+  // verktyg/kap3-omvandlare.js --text va; till B: kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v2.md, --text vb.
+  // B och D bytte titel i arbetsorder 28 men behöll id och mapp (arbete-och-effekt, havstangen-och-enkla-maskiner).
   texter: [
     { id: 'tryck', titel: 'Tryck' },
-    { id: 'arbete-och-effekt', titel: 'Arbete och effekt' },
+    { id: 'arbete-och-effekt', titel: 'Energi och arbete' },
     { id: 'mekanisk-energi', titel: 'Mekanisk energi' },
-    { id: 'havstangen-och-enkla-maskiner', titel: 'Hävstången och enkla maskiner' }
+    { id: 'havstangen-och-enkla-maskiner', titel: 'Maskiner och effekt' }
   ],
 
   // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning).

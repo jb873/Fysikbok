@@ -126,14 +126,16 @@ Fysik/
     fall_kast_och_balans/       avsnittssida IV. Fall, kast och balans (arbetsorder 12): text A resulterande-kraft/
                                 B fritt-fall/ (2026-11-11), C kastrorelse/ (arbetsorder 16) och D tyngdpunkt-och-balans/
                                 ("Tyngdpunkt, balans och kroppen", arbetsorder 17), tre nivåer var
-    tryck_arbete_och_maskiner/  avsnittssida V. Tryck, arbete och maskiner (arbetsorder 21): text A tryck/, tre nivåer;
-                                B–D (arbete-och-effekt/, mekanisk-energi/, havstangen-och-enkla-maskiner/) tomma: "kommer"
+    tryck_arbete_och_maskiner/  avsnittssida V. Tryck, arbete och maskiner (arbetsorder 21): text A tryck/ och B
+                                arbete-och-effekt/ ("Energi och arbete", arbetsorder 28), tre nivåer var; C och D
+                                (mekanisk-energi/, havstangen-och-enkla-maskiner/ = "Maskiner och effekt") tomma: "kommer"
   Arkiv/                        gamla versioner (materia_repetition: utkastet från 2026-10-29)
   nasta_steg/                   Nästa steg (arbetsorder 11)
     matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
   kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (IV:s texter och djupdykningar),
                                 nasta-steg/ (textboken, övningsboken, Matematiken i fysiken); kap3/ också IV A (order 12)
                                 och IV B (Fritt fall v2, skriven av Claude 2026-11-11); V A (Tryck v2, arbetsorder 21)
+                                och V B (Energi och arbete v2, arbetsorder 28)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
     kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlarna)
@@ -1523,3 +1525,14 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   ett fall av varje läge med andra data. Negativa prov, ett fel per läge i figurkoden: tyngdpilen 10 % kortare med
   snöskor, den stora kolven 8 enheter högre, lyftkraften räknad med halva ovansidans pil, den stora kolvens sträcka
   tre gånger för lång.
+- **2026-11-19, arbetsorder 28, steg 1: ny indelning av V och text B Energi och arbete:**
+  - **Korten på avsnittssidan V:** A Tryck · B Energi och arbete (länk) · C Mekanisk energi ("kommer") · D Maskiner och
+    effekt ("kommer"). B och D bytte bara titel; id och mapp är kvar (`arbete-och-effekt`,
+    `havstangen-och-enkla-maskiner`), eftersom id är nyckeln för det eleven sparat.
+  - **Kapitelindexets beskrivning av V och bannerns rad:** "Tryck, energi och arbete, mekanisk energi, maskiner och effekt."
+  - **Källan** `kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v2.md` (oförändrad kopia), omvandlad av
+    `kap3-omvandlare.js --text vb`; `ordagrant.js` prövar V B som V A.
+  - **Ingen ruta "Vill du gå vidare?"** (Nästa steg har inget avsnitt om energi): `vidare-rutor.js` har en rad för V B
+    utan avsnitt, som betyder "ingen ruta, med avsikt". En Fördjupning som saknas i tabellen är fortfarande ett fel i
+    omvandlaren och i ordagrant-kontrollen.
+  - **Bildmarkeringarna** [BILD B1–B3] står som kommentarer tills figurerna finns (steg 2).
