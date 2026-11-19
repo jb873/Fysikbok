@@ -1,5 +1,5 @@
 /* Avsnittssida V. Tryck, arbete och maskiner, text B: Energi och arbete – nivån enkel (📗).
- * Arbetsorder 28 (2026-11-19): kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v2.md (# 📗 ENKEL), införd ordagrant i
+ * Arbetsorder 28 (2026-11-19): kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md (# 📗 ENKEL), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text vb: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
@@ -40,10 +40,10 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'Energi finns i olika former' },
         { typ: 'text', text: 'Energi kan finnas i många olika former. Här är fyra viktiga:' },
         { typ: 'punkter', punkter: [
-          '*Rörelseenergi.* Allt som rör sig har rörelseenergi. En rullande boll, en bil som kör och en löpare som springer har alla rörelseenergi.',
-          '*Lägesenergi.* Allt som är högt upp har lägesenergi. En sten på toppen av en klippa har lägesenergi. Om den faller ner blir lägesenergin rörelseenergi.',
-          '*Elastisk energi.* Det som är hoptryckt eller uttänjt har elastisk energi. Ett spänt gummiband och en hoptryckt fjäder har elastisk energi. När du släpper dem far de iväg.',
-          '*Kemisk energi.* Energi kan finnas lagrad i ämnen. Mat, bensin och batterier innehåller kemisk energi.'
+          '*Rörelseenergi|rörelseenergi*. Allt som rör sig har rörelseenergi. En rullande boll, en bil som kör och en löpare som springer har alla rörelseenergi.',
+          '*Lägesenergi|lägesenergi*. Allt som är högt upp har lägesenergi. En sten på toppen av en klippa har lägesenergi. Om den faller ner blir lägesenergin rörelseenergi.',
+          '*Elastisk energi|elastisk energi*. Det som är hoptryckt eller uttänjt har elastisk energi. Ett spänt gummiband och en hoptryckt fjäder har elastisk energi. När du släpper dem far de iväg.',
+          '*Kemisk energi|kemisk energi*. Energi kan finnas lagrad i ämnen. Mat, bensin och batterier innehåller kemisk energi.'
         ] },
         { typ: 'text', text: 'Det finns fler former också, till exempel värme, ljus och el. Rörelseenergi, lägesenergi och elastisk energi har ett gemensamt namn: mekanisk energi. Den får du läsa mer om i nästa text.' }
       ]

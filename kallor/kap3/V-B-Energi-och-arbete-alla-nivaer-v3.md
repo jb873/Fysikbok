@@ -1,4 +1,5 @@
-# V. Tryck, arbete och maskiner · Text B Energi och arbete · alla nivåer · v2 · 2026-11-19
+# V. Tryck, arbete och maskiner · Text B Energi och arbete · alla nivåer · v3 · 2026-11-19
+# v3: i Enkel står punkten efter begreppsmarkeringen (*Rörelseenergi|rörelseenergi*.), inte inne i den.
 # v2 efter granskning: energi definieras som det som gör förändringar möjliga ("förmågan att utföra arbete" kommer
 # först när arbete är förklarat), utspridd värme är svår – inte omöjlig – att använda, arbete = kraft längs
 # förflyttningen (med eller mot rörelsen), lägesenergin ökar (inte "lagras i klotet"), klotet lyfts med jämn fart,
@@ -33,7 +34,7 @@ Det här lär du dig:
 ## Vad är energi? (numrerad, id: energi)
 
 ### Energi är förmågan att få något att hända
-Allt som händer kräver energi. För att en bil ska rulla, en låda ska lyftas eller vatten ska värmas behövs energi. Energin syns inte, men den märks på vad den kan åstadkomma. *Energi* är det som gör förändringar möjliga: att något sätts i rörelse, värms upp eller börjar lysa. Energi kan föras över från ett föremål till ett annat och omvandlas från en form till en annan.
+Allt som händer kräver energi. För att en bil ska rulla, en låda ska lyftas eller vatten ska värmas behövs energi. Energin syns inte, men den märks på vad den kan åstadkomma. *Energi|energi* är det som gör förändringar möjliga: att något sätts i rörelse, värms upp eller börjar lysa. Energi kan föras över från ett föremål till ett annat och omvandlas från en form till en annan.
 
 Energi mäts i *joule*, som skrivs J. Det är en liten enhet. Att lyfta ett äpple en meter kräver ungefär 1 joule. Därför anges energi ofta i kilojoule, kJ, där 1 kJ = 1 000 J. På matförpackningar står det hur många kilojoule maten innehåller.
 
@@ -148,10 +149,10 @@ Därför använder man ofta en större enhet, kilojoule. Den skrivs kJ. 1 kJ är
 ### Energi finns i olika former
 Energi kan finnas i många olika former. Här är fyra viktiga:
 
-- *Rörelseenergi.* Allt som rör sig har rörelseenergi. En rullande boll, en bil som kör och en löpare som springer har alla rörelseenergi.
-- *Lägesenergi.* Allt som är högt upp har lägesenergi. En sten på toppen av en klippa har lägesenergi. Om den faller ner blir lägesenergin rörelseenergi.
-- *Elastisk energi.* Det som är hoptryckt eller uttänjt har elastisk energi. Ett spänt gummiband och en hoptryckt fjäder har elastisk energi. När du släpper dem far de iväg.
-- *Kemisk energi.* Energi kan finnas lagrad i ämnen. Mat, bensin och batterier innehåller kemisk energi.
+- *Rörelseenergi|rörelseenergi*. Allt som rör sig har rörelseenergi. En rullande boll, en bil som kör och en löpare som springer har alla rörelseenergi.
+- *Lägesenergi|lägesenergi*. Allt som är högt upp har lägesenergi. En sten på toppen av en klippa har lägesenergi. Om den faller ner blir lägesenergin rörelseenergi.
+- *Elastisk energi|elastisk energi*. Det som är hoptryckt eller uttänjt har elastisk energi. Ett spänt gummiband och en hoptryckt fjäder har elastisk energi. När du släpper dem far de iväg.
+- *Kemisk energi|kemisk energi*. Energi kan finnas lagrad i ämnen. Mat, bensin och batterier innehåller kemisk energi.
 
 Det finns fler former också, till exempel värme, ljus och el. Rörelseenergi, lägesenergi och elastisk energi har ett gemensamt namn: mekanisk energi. Den får du läsa mer om i nästa text.
 

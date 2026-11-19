@@ -1,5 +1,5 @@
 /* Avsnittssida V. Tryck, arbete och maskiner, text B: Energi och arbete – nivån standard (📘).
- * Arbetsorder 28 (2026-11-19): kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v2.md (# 📘 STANDARD), införd ordagrant i
+ * Arbetsorder 28 (2026-11-19): kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md (# 📘 STANDARD), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text vb: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
@@ -31,7 +31,7 @@ Bok.niva('standard', {
       id: 'energi', titel: 'Vad är energi?',
       block: [
         { typ: 'rubrik', text: 'Energi är förmågan att få något att hända' },
-        { typ: 'text', text: 'Allt som händer kräver energi. För att en bil ska rulla, en låda ska lyftas eller vatten ska värmas behövs energi. Energin syns inte, men den märks på vad den kan åstadkomma. *Energi* är det som gör förändringar möjliga: att något sätts i rörelse, värms upp eller börjar lysa. Energi kan föras över från ett föremål till ett annat och omvandlas från en form till en annan.' },
+        { typ: 'text', text: 'Allt som händer kräver energi. För att en bil ska rulla, en låda ska lyftas eller vatten ska värmas behövs energi. Energin syns inte, men den märks på vad den kan åstadkomma. *Energi|energi* är det som gör förändringar möjliga: att något sätts i rörelse, värms upp eller börjar lysa. Energi kan föras över från ett föremål till ett annat och omvandlas från en form till en annan.' },
         { typ: 'text', text: 'Energi mäts i *joule*, som skrivs J. Det är en liten enhet. Att lyfta ett äpple en meter kräver ungefär 1 joule. Därför anges energi ofta i kilojoule, kJ, där 1 kJ = 1 000 J. På matförpackningar står det hur många kilojoule maten innehåller.' },
         { typ: 'rubrik', text: 'Energin finns i olika former' },
         { typ: 'text', text: 'Energi kan finnas i många former. Några av de viktigaste är:' },

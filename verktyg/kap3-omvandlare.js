@@ -33,14 +33,14 @@ const TEXTER = {
   // D Tyngdpunkt, balans och kroppen (arbetsorder 17, 2026-11-12): node verktyg/kap3-omvandlare.js --text d
   d: { kalla: 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', mapp: 'tyngdpunkt-och-balans', figurer: './kap3-figurer-d.js',
        titel: 'D: Tyngdpunkt, balans och kroppen', order: 'Arbetsorder 17 (2026-11-12)' },
-  // Avsnitt V Tryck, arbete och maskiner, text A Tryck (arbetsorder 21, 2026-11-12): node verktyg/kap3-omvandlare.js --text va.
+  // Avsnitt V Tryck, arbete och maskiner, text A Tryck (arbetsorder 21, 2026-11-12; källan v3: arbetsorder 29): node verktyg/kap3-omvandlare.js --text va.
   // Källan märker exemplen [EXEMPEL: rubrik] … [/EXEMPEL], med tomma rader inne i rutan: de blir exempel i stycken, som i
   // Nästa steg (Givet, Sökt, Lösning och Svar i fetstil, brytbart mellan raderna).
-  va: { kalla: 'V-A-Tryck-alla-nivaer-v2.md', mapp: 'tryck', figurer: './kap3-figurer-va.js', titel: 'A: Tryck',
+  va: { kalla: 'V-A-Tryck-alla-nivaer-v3.md', mapp: 'tryck', figurer: './kap3-figurer-va.js', titel: 'A: Tryck',
         order: 'Arbetsorder 21 (2026-11-12)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' },
-  // V B Energi och arbete (arbetsorder 28, 2026-11-19): node verktyg/kap3-omvandlare.js --text vb. Mappen behåller sitt
+  // V B Energi och arbete (arbetsorder 28, 2026-11-19; källan v3: arbetsorder 29): node verktyg/kap3-omvandlare.js --text vb. Mappen behåller sitt
   // namn från arbetsorder 21 (arbete-och-effekt). Ingen ruta "Vill du gå vidare?" (raden i vidare-rutor.js saknar avsnitt).
-  vb: { kalla: 'V-B-Energi-och-arbete-alla-nivaer-v2.md', mapp: 'arbete-och-effekt', figurer: './kap3-figurer-vb.js', titel: 'B: Energi och arbete',
+  vb: { kalla: 'V-B-Energi-och-arbete-alla-nivaer-v3.md', mapp: 'arbete-och-effekt', figurer: './kap3-figurer-vb.js', titel: 'B: Energi och arbete',
         order: 'Arbetsorder 28 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' }
 };
 if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c, d, va eller vb)'); process.exit(1); }

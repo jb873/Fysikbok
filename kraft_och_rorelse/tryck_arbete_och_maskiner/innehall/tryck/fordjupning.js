@@ -1,5 +1,5 @@
 /* Avsnittssida V. Tryck, arbete och maskiner, text A: Tryck – nivån fordjupning (📕).
- * Arbetsorder 21 (2026-11-12): kallor/kap3/V-A-Tryck-alla-nivaer-v2.md (# 📕 FÖRDJUPNING), införd ordagrant i
+ * Arbetsorder 21 (2026-11-12): kallor/kap3/V-A-Tryck-alla-nivaer-v3.md (# 📕 FÖRDJUPNING), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text va: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill
@@ -57,7 +57,7 @@ Bok.niva('fordjupning', {
       block: [
         { typ: 'rubrik', text: 'Kraften växer lika mycket som arean' },
         { typ: 'rader', rader: [
-          'I en hydraulisk lyft är trycket lika stort vid båda kolvarna. Om den lilla kolven har arean 2 cm² och du trycker med 200 N, blir trycket i oljan',
+          'I en hydraulisk lyft där kolvarna står på samma höjd är trycket lika stort vid båda kolvarna. Om den lilla kolven har arean 2 cm² och du trycker med 200 N, blir trycket i oljan',
           'p = 200 N / 0,0002 m² = 1 000 000 Pa = 1 000 kPa.',
           'Om den stora kolven har arean 100 cm², alltså 0,01 m², blir kraften på den',
           'F = p · A = 1 000 000 Pa · 0,01 m² = 10 000 N.',

@@ -1,10 +1,13 @@
-# V. Tryck, arbete och maskiner · Text A Tryck · alla nivåer · v1 · 2026-11-12
+# V. Tryck, arbete och maskiner · Text A Tryck · alla nivåer · v3 · 2026-11-19
+# v3: hänvisningen till text D heter nu "maskiner och effekt" (ny indelning 2026-11-19).
+# v2: efter granskning – pennan är jämvikt, inte kraft och motkraft; tryckökningen (inte trycket) sprids lika överallt;
+# massiv sten i stället för "en sten kan aldrig"; kraften vinkelrätt mot ytan; trä- och metallkloss med samma volym.
 # Ram: Joachims lista ur referenslitteraturen (2026-11-12): 1. tryck är kraft fördelad på yta, att mäta tryck,
 # högt tryck kan vara bra och dåligt, fordon och tryck i naturen · 2. tryck kan lyfta tungt med hydraulik ·
 # 3. tryckskillnader i vatten ger lyftkraft.
 # Bygger på III (kraft, newton, tyngd), III C (kraft och motkraft) och II (densitet, repetition).
 # Inte här: lufttryck och väder (kapitlet om vatten, luft och värme), ρ·g·h och Arkimedes med formel (Nästa steg 9–10).
-# Hydraulikens "vinna kraft – förlora väg" antyds här och knyts ihop i text D (hävstången och enkla maskiner).
+# Hydraulikens "vinna kraft – förlora väg" antyds här och knyts ihop i text D (maskiner och effekt).
 # Skriven av Claude. g ≈ 10 N/kg genomgående, så 1 kg ≈ 10 N.
 # Strömformat: ## = avsnitt, ### = rubrik (påstående), stycke = textblock. *ord|grundform* = begrepp.
 # [FORMEL: …], [EXEMPEL: rubrik] … [/EXEMPEL], [BILD …] som tidigare.
@@ -30,7 +33,7 @@ Det här lär du dig:
 ## Tryck är kraft fördelad på en yta (numrerad, id: tryck)
 
 ### Samma kraft kan ge helt olika verkan
-Håll en vässad blyertspenna mellan tummen och pekfingret, med spetsen mot pekfingret och den trubbiga änden mot tummen. Tryck lätt. Det gör ont i pekfingret, men inte i tummen. Ändå är krafterna lika stora. Det är kraft och motkraft: pennan trycker lika hårt på båda fingrarna. Skillnaden är ytan. Mot pekfingret samlas hela kraften på den lilla spetsen. Mot tummen fördelas den på en mycket större yta.
+Håll en vässad blyertspenna mellan tummen och pekfingret, med spetsen mot pekfingret och den trubbiga änden mot tummen. Tryck lätt. Det gör ont i pekfingret, men inte i tummen. Ändå är krafterna lika stora. Pennan står still, och då måste fingrarna trycka lika hårt på den från båda hållen. Pennan trycker alltså lika hårt mot båda fingrarna. Skillnaden är ytan. Mot pekfingret samlas hela kraften på den lilla spetsen. Mot tummen fördelas den på en mycket större yta.
 
 Det är det som kallas *tryck*. Tryck är hur stor kraft som verkar på varje del av en yta. Stor kraft på liten yta ger högt tryck. Samma kraft på stor yta ger lågt tryck.
 
@@ -66,7 +69,7 @@ Naturen är full av samma lösningar. En kamel har breda, mjuka fötter som inte
 Andra djur behöver högt tryck. Rovdjurens hörntänder och rovfåglarnas klor är spetsiga, så att de lätt tränger in. En mygga sticker med en snabel som är tunnare än ett hårstrå, och därför räcker en mycket liten kraft för att den ska komma genom huden. Rosens taggar och kaktusens taggar skyddar växterna med samma knep.
 
 ### Trycket räknas ut som kraft delat med area
-Tryck kan räknas ut med en formel. Man delar kraften med arean som kraften fördelas på.
+Tryck kan räknas ut med en formel. Man delar kraften med arean som kraften fördelas på. Det är kraften som trycker rakt mot ytan, vinkelrätt, som räknas. En kraft som drar längs ytan trycker inte mot den.
 
 [FORMEL: p = F / A – p trycket (Pa), F kraften (N), A arean (m²)]
 
@@ -89,19 +92,19 @@ Arean måste vara i kvadratmeter. Kom ihåg att 1 m² är 10 000 cm², eftersom 
 ### Ett tryck i en vätska sprids åt alla håll
 Fyll en plastpåse med vatten, knyt ihop den och stick några hål i den med en nål. Kläm sedan på påsen. Vattnet sprutar ut genom alla hål, åt alla håll, inte bara åt det håll du klämmer. Trycket du skapar på ett ställe sprids genom hela vätskan.
 
-Det beror på att en vätska nästan inte går att trycka ihop. Molekylerna ligger redan tätt intill varandra. När du trycker på vätskan på ett ställe trycker molekylerna på varandra hela vägen genom vätskan. Trycket blir lika stort överallt i en sluten behållare.
+Det beror på att en vätska nästan inte går att trycka ihop. Molekylerna ligger redan tätt intill varandra. När du trycker på vätskan på ett ställe trycker molekylerna på varandra hela vägen genom vätskan. I en sluten behållare ökar trycket därför lika mycket överallt. Trycket är fortfarande högre längre ned, eftersom vätskan själv väger något, men det du lägger till sprids lika till varje del av vätskan.
 
 ### En liten kolv kan ge en stor kraft
 Det används i *hydraulik*. I en hydraulisk lyft finns två cylindrar fyllda med olja och sammankopplade med ett rör. I varje cylinder finns en rörlig platta som kallas *kolv*. Den ena kolven är liten och den andra är stor.
 
-När du trycker på den lilla kolven skapar du ett tryck i oljan. Eftersom trycket är lika stort överallt trycker oljan lika mycket på varje kvadratcentimeter av den stora kolven. Men den stora kolven har mycket större yta. Därför blir kraften på den mycket större. Om den stora kolven har 50 gånger så stor yta blir kraften 50 gånger så stor.
+När du trycker på den lilla kolven ökar du trycket i oljan. Eftersom tryckökningen sprids lika mycket överallt trycker oljan lika mycket på varje kvadratcentimeter av den stora kolven. Men den stora kolven har mycket större yta. Därför blir kraften på den mycket större. Om den stora kolven har 50 gånger så stor yta blir kraften 50 gånger så stor.
 
 [BILD V2: hydraulisk lyft – liten kolv med en kort pil nedåt (liten kraft), stor kolv med en lång pil uppåt (stor kraft) under en bil, oljan emellan; samma tryck markerat i båda cylindrarna]
 
 ### Hydraulik finns i bromsar, grävmaskiner och lyftar
 En bilverkstad lyfter bilar med hydrauliska lyftar, och en domkraft lyfter en bil med hjälp av en liten pump. En grävmaskin rör skopan och armen med hydraulcylindrar, och därför kan den lyfta flera ton. Även bilens bromsar är hydrauliska. När du trampar på bromspedalen trycker du på en liten kolv. Trycket sprids genom bromsvätskan ut till alla fyra hjulen, där större kolvar trycker bromsbeläggen hårt mot bromsskivorna.
 
-Men hydrauliken ger ingenting gratis. Den lilla kolven måste röras mycket längre än den stora. Ska bilen lyftas en centimeter måste du pressa ned den lilla kolven 50 centimeter, eller pumpa många gånger. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och det kommer du att se mer av i texten om hävstången och enkla maskiner.
+Men hydrauliken ger ingenting gratis. Den lilla kolven måste röras mycket längre än den stora. Ska bilen lyftas en centimeter måste du pressa ned den lilla kolven 50 centimeter, eller pumpa många gånger. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och det kommer du att se mer av i texten om maskiner och effekt.
 
 ## Tryckskillnader i vatten ger lyftkraft (numrerad, id: lyftkraft)
 
@@ -120,12 +123,14 @@ Skillnaden blir en resulterande kraft uppåt. Den kallas *lyftkraft*. Det är d�
 ### Lyftkraften är lika stor som tyngden av vattnet som trycks undan
 När ett föremål sänks ned i vatten måste vattnet flytta på sig. Föremålet tränger undan vatten. Lyftkraften är exakt lika stor som tyngden av det vatten som trängs undan. Det kallas *Arkimedes princip*, efter den grekiske forskaren Arkimedes som levde för över 2 000 år sedan.
 
-En liter vatten väger ungefär 1 kg. Om en sten tränger undan en liter vatten blir lyftkraften därför ungefär 10 N. Väger stenen mer än 1 kg sjunker den, eftersom tyngden är större än lyftkraften. Men den känns lättare under vattnet.
+En liter vatten väger ungefär 1 kg. Om en sten är helt under vattnet och tränger undan en liter vatten blir lyftkraften därför ungefär 10 N. Är stenen större tränger den undan mer vatten och får större lyftkraft. Väger stenen som tränger undan en liter mer än 1 kg sjunker den, eftersom tyngden är större än lyftkraften. Men den känns lättare under vattnet.
 
 ### Ett föremål flyter när lyftkraften kan bli lika stor som tyngden
 När du lägger en bit trä i vatten sjunker den ned en bit. Ju djupare den sjunker, desto mer vatten tränger den undan, och desto större blir lyftkraften. När lyftkraften har blivit lika stor som träbitens tyngd slutar den att sjunka. Då flyter den. Krafterna är i jämvikt.
 
-En sten kan aldrig tränga undan tillräckligt mycket vatten. Även när den är helt under vattnet är lyftkraften mindre än tyngden, och därför sjunker den. Om något flyter eller sjunker beror alltså på om det kan tränga undan så mycket vatten att vattnet väger lika mycket som föremålet. För ett massivt föremål avgörs det av densiteten. Ett föremål med lägre densitet än vatten flyter, och ett föremål med högre densitet sjunker.
+En vanlig massiv sten har högre densitet än vatten. Även när den är helt under vattnet, och tränger undan så mycket vatten den kan, är lyftkraften mindre än tyngden. Därför sjunker den. Men det finns undantag. Pimpsten, som bildas vid vulkanutbrott, är full av små gasbubblor och kan flyta. Om något flyter eller sjunker beror alltså på om det kan tränga undan så mycket vatten att vattnet väger lika mycket som föremålet. För ett massivt föremål avgörs det av densiteten. Ett föremål med lägre densitet än vatten flyter, och ett föremål med högre densitet sjunker.
+
+Jämför en träkloss och en metallkloss som är exakt lika stora. Håller du båda helt under vattnet tränger de undan lika mycket vatten och får lika stor lyftkraft. Ändå stiger träklossen när du släpper den, medan metallklossen sjunker. Lyftkraften är densamma. Det är tyngden som skiljer, och därför blir den resulterande kraften uppåt för träet och nedåt för metallen.
 
 ### Många tror att tunga saker sjunker och lätta saker flyter
 Ett gem väger nästan ingenting, men det sjunker. Ett stort fartyg av stål väger tiotusentals ton, men det flyter. Det är alltså inte vikten som avgör. Det är hur mycket vatten föremålet tränger undan jämfört med hur mycket det väger.
@@ -139,7 +144,7 @@ Ett fartyg är ihåligt. Skrovet är fullt av luft, och därför tränger fartyg
 - Tryck mäts i pascal, Pa. 1 Pa är 1 N per kvadratmeter, och 1 kPa är 1 000 Pa. Trycket räknas ut med p = F / A.
 - Högt tryck är bra när något ska skära, sticka eller få fäste. Det kan skada när det trycker sönder ett underlag.
 - Breda däck, band, snöskor och breda tassar fördelar tyngden så att trycket blir lågt.
-- Ett tryck i en vätska sprids lika mycket åt alla håll. Med hydraulik kan en liten kraft på en liten kolv bli en stor kraft på en stor kolv, men den lilla kolven måste röras längre.
+- En tryckökning i en instängd vätska sprids lika mycket till hela vätskan. Med hydraulik kan en liten kraft på en liten kolv bli en stor kraft på en stor kolv, men den lilla kolven måste röras längre.
 - Trycket i vatten ökar med djupet, ungefär 10 kPa per meter.
 - Vattnet trycker hårdare underifrån än ovanifrån. Skillnaden är lyftkraften.
 - Lyftkraften är lika stor som tyngden av det undanträngda vattnet. Ett föremål flyter när lyftkraften kan bli lika stor som tyngden.
@@ -168,7 +173,7 @@ Det här lär du dig:
 ### Samma kraft kan kännas helt olika
 Ta en vässad blyertspenna. Håll den mellan tummen och pekfingret, så att spetsen är mot pekfingret och den trubbiga änden mot tummen. Tryck ihop fingrarna lätt.
 
-Du märker att det gör ont i pekfingret, där spetsen är. Men det gör inte ont i tummen. Det konstiga är att pennan trycker lika hårt på båda fingrarna. Det känner du igen från kraft och motkraft: när du trycker på pennan trycker pennan lika hårt tillbaka, åt båda hållen.
+Du märker att det gör ont i pekfingret, där spetsen är. Men det gör inte ont i tummen. Det konstiga är att pennan trycker lika hårt på båda fingrarna. Det beror på att pennan står still. Om tummen tryckte hårdare än pekfingret skulle pennan röra sig mot pekfingret. När den står still trycker fingrarna lika hårt från båda hållen, och då trycker pennan lika hårt tillbaka mot båda.
 
 Så varför gör det bara ont i det ena fingret? Det beror på ytan. Spetsen är mycket liten. Där samlas hela kraften på en pytteliten plats på huden. Den trubbiga änden är större. Där sprids samma kraft ut över en större yta, så varje liten del av tummen får bara lite av kraften.
 
@@ -221,7 +226,7 @@ Naturen använder samma knep. En kamel går i mjuk sand hela dagarna. Den har br
 Andra djur behöver högt tryck. Rovdjurs hörntänder och rovfåglars klor är spetsiga, så att de lätt tränger in i bytet. En mygga har en snabel som är tunnare än ett hårstrå. Därför behöver myggan bara en mycket liten kraft för att sticka genom huden. Även växter använder högt tryck. Rosor och kaktusar har vassa taggar som skyddar dem mot djur som vill äta dem.
 
 ### Man räknar ut tryck genom att dela kraften med arean
-Tryck kan räknas ut. Man tar kraften och delar med arean, alltså med hur stor ytan är.
+Tryck kan räknas ut. Man tar kraften och delar med arean, alltså med hur stor ytan är. Det är kraften som trycker rakt mot ytan som räknas. En kraft som bara drar längs ytan trycker inte mot den.
 
 [FORMEL: p = F / A – p trycket (Pa), F kraften (N), A arean (m²)]
 
@@ -250,14 +255,14 @@ Gör så här: fyll en plastpåse med vatten och knyt ihop den. Stick några sm�
 
 Vattnet sprutar ut ur alla hålen. Det sprutar åt sidorna, nedåt och snett uppåt, inte bara åt det håll du klämmer. Trycket du gör på ett ställe sprids alltså till hela vattnet.
 
-Det beror på att vatten nästan inte går att trycka ihop. Vattnets molekyler ligger redan tätt intill varandra. När du trycker på dem på ett ställe finns det ingen plats att trycka ihop dem på. I stället trycker de på molekylerna bredvid, som trycker på nästa, och så vidare genom hela vätskan. I en sluten behållare blir trycket därför lika stort överallt.
+Det beror på att vatten nästan inte går att trycka ihop. Vattnets molekyler ligger redan tätt intill varandra. När du trycker på dem på ett ställe finns det ingen plats att trycka ihop dem på. I stället trycker de på molekylerna bredvid, som trycker på nästa, och så vidare genom hela vätskan. I en sluten behållare ökar trycket därför lika mycket överallt. Längre ned är trycket alltid lite högre, eftersom vätskan själv väger något. Men det extra tryck som du skapar sprids lika mycket till alla delar av vätskan.
 
 ### Två kolvar kan förvandla en liten kraft till en stor
 Det här används i *hydraulik*. En hydraulisk lyft består av två rör, eller cylindrar, fyllda med olja. Cylindrarna är kopplade till varandra. I varje cylinder finns en platta som kan glida upp och ned. Plattan kallas *kolv*. Den ena kolven är liten och den andra är stor.
 
 Så här fungerar det, steg för steg:
 - Du trycker på den lilla kolven. Den har liten yta, så även en liten kraft ger ett ganska högt tryck i oljan.
-- Trycket sprids genom oljan och blir lika stort överallt, också under den stora kolven.
+- Tryckökningen sprids genom oljan och blir lika stor överallt, också under den stora kolven.
 - Den stora kolven har mycket större yta. Varje liten del av den får lika mycket tryck. Därför blir den totala kraften på den stora kolven mycket stor.
 
 Om den stora kolven är 50 gånger så stor som den lilla blir kraften 50 gånger så stor. Då kan du lyfta en bil med en kraft som du klarar med armarna.
@@ -272,7 +277,7 @@ Bilens bromsar är också hydrauliska. När föraren trampar på bromspedalen tr
 ### Hydrauliken ger inget gratis
 Det låter nästan för bra för att vara sant. Men det finns ett pris. När den lilla kolven trycks ned flyttar den lite olja. Den oljan ska fördelas under den stora kolven, som är mycket bredare. Därför rör sig den stora kolven bara en liten bit.
 
-Om den stora kolven är 50 gånger så stor måste du alltså trycka ned den lilla kolven 50 centimeter för att den stora ska lyftas en centimeter. Det är därför man pumpar många gånger med en domkraft. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och mer om det kommer i texten om hävstången och enkla maskiner.
+Om den stora kolven är 50 gånger så stor måste du alltså trycka ned den lilla kolven 50 centimeter för att den stora ska lyftas en centimeter. Det är därför man pumpar många gånger med en domkraft. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och mer om det kommer i texten om maskiner och effekt.
 
 ## Tryckskillnader i vatten ger lyftkraft (numrerad, id: lyftkraft)
 
@@ -301,16 +306,18 @@ När du kliver ned i ett badkar stiger vattnet. Din kropp tar plats, och vattnet
 
 Lyftkraften är precis lika stor som tyngden av det vatten som trängs undan. Den regeln kallas *Arkimedes princip*. Den har fått sitt namn efter Arkimedes, en grekisk forskare som levde för mer än 2 000 år sedan.
 
-En liter vatten väger ungefär 1 kg. Om en sten tränger undan en liter vatten blir lyftkraften därför ungefär 10 N. Det är lika mycket som tyngden av en liter vatten. Väger stenen mer än 1 kg är dess tyngd större än lyftkraften, och då sjunker den. Men den känns lättare än på land.
+En liter vatten väger ungefär 1 kg. Om en sten är helt under vattnet och tränger undan en liter vatten blir lyftkraften därför ungefär 10 N. Det är lika mycket som tyngden av en liter vatten. En större sten tränger undan mer vatten och får större lyftkraft. Om stenen som tränger undan en liter väger mer än 1 kg är dess tyngd större än lyftkraften, och då sjunker den. Men den känns lättare än på land.
 
 ### Något flyter när lyftkraften blir lika stor som tyngden
 Lägg en träbit i vatten. Först sjunker den ned en bit. Ju längre ned den sjunker, desto mer vatten tränger den undan. Och ju mer vatten den tränger undan, desto större blir lyftkraften.
 
 Till slut blir lyftkraften lika stor som träbitens tyngd. Då tar krafterna ut varandra, och träbiten slutar sjunka. Den flyter.
 
-En sten kan inte göra så. Även när hela stenen är under vattnet tränger den inte undan tillräckligt mycket vatten. Lyftkraften blir mindre än tyngden, och stenen sjunker till botten.
+En vanlig sten kan inte göra så. Även när hela stenen är under vattnet tränger den inte undan tillräckligt mycket vatten. Lyftkraften blir mindre än tyngden, och stenen sjunker till botten. Det finns dock en sten som flyter: pimpsten. Den bildas vid vulkanutbrott och är full av små hål med gas.
 
 För ett föremål som är massivt, alltså helt fyllt med samma material, handlar det om densitet. Om föremålet har lägre densitet än vatten flyter det. Om det har högre densitet än vatten sjunker det. Trä har lägre densitet än vatten. Sten och järn har högre.
+
+Tänk dig en träkloss och en metallkloss som är precis lika stora. Du håller ned båda under vattnet. De tar lika stor plats, så de tränger undan lika mycket vatten. Då får de lika stor lyftkraft. Men när du släpper dem stiger träklossen, och metallklossen sjunker. Det beror inte på lyftkraften, för den är lika stor. Det beror på tyngden. Träklossens tyngd är mindre än lyftkraften, så den åker upp. Metallklossens tyngd är större än lyftkraften, så den åker ned.
 
 ### Många tror att tunga saker sjunker och lätta saker flyter
 Ett gem väger nästan ingenting, men det sjunker. Ett stort fartyg av stål väger tiotusentals ton, men det flyter. Det är alltså inte bara vikten som avgör.
@@ -329,7 +336,7 @@ Lyftkraft finns inte bara i vatten. Den finns i alla vätskor och gaser, också 
 - Tryck mäts i pascal, Pa. 1 kPa är 1 000 Pa. Man räknar ut tryck med p = F / A.
 - Högt tryck är bra för att skära, sticka och få fäste, men det kan också förstöra till exempel golv.
 - Breda däck, band, skidor och breda tassar sprider ut tyngden så att trycket blir lågt.
-- I en vätska sprids trycket lika mycket åt alla håll. Hydraulik gör en liten kraft till en stor kraft, men den lilla kolven måste röras mycket längre.
+- Om du ökar trycket i en instängd vätska sprids ökningen lika mycket till hela vätskan. Hydraulik gör en liten kraft till en stor kraft, men den lilla kolven måste röras mycket längre.
 - Trycket i vatten ökar med djupet, ungefär 10 kPa för varje meter.
 - Vattnet trycker hårdare på undersidan av ett föremål än på ovansidan. Skillnaden är lyftkraften.
 - Lyftkraften är lika stor som tyngden av vattnet som trängs undan. Ett föremål flyter när lyftkraften blir lika stor som dess tyngd.
@@ -382,7 +389,7 @@ Uträkningen visar också varför man släpper ut luft ur däcken i sand. Halver
 ## Hydraulik i siffror (numrerad, id: hydraulik-i-siffror)
 
 ### Kraften växer lika mycket som arean
-I en hydraulisk lyft är trycket lika stort vid båda kolvarna. Om den lilla kolven har arean 2 cm² och du trycker med 200 N, blir trycket i oljan
+I en hydraulisk lyft där kolvarna står på samma höjd är trycket lika stort vid båda kolvarna. Om den lilla kolven har arean 2 cm² och du trycker med 200 N, blir trycket i oljan
 p = 200 N / 0,0002 m² = 1 000 000 Pa = 1 000 kPa.
 Om den stora kolven har arean 100 cm², alltså 0,01 m², blir kraften på den
 F = p · A = 1 000 000 Pa · 0,01 m² = 10 000 N.

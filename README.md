@@ -134,8 +134,8 @@ Fysik/
     matematiken_i_fysiken/      Matematiken i fysiken: en sida med bara boken (startsidan länkar dit)
   kallor/                       Joachims källor, oförändrade: kap1/ (texterna och djupdykningarna), kap3/ (IV:s texter och djupdykningar),
                                 nasta-steg/ (textboken, övningsboken, Matematiken i fysiken); kap3/ också IV A (order 12)
-                                och IV B (Fritt fall v2, skriven av Claude 2026-11-11); V A (Tryck v2, arbetsorder 21)
-                                och V B (Energi och arbete v2, arbetsorder 28)
+                                och IV B (Fritt fall v2, skriven av Claude 2026-11-11); V A (Tryck v3, arbetsorder 21 och 29)
+                                och V B (Energi och arbete v3, arbetsorder 28 och 29)
   verktyg/
     bok-grind.js                verifieringen (se nedan)
     kap1-omvandlare.js          kapitel 1: källorna → innehall/ (se Kontrollera: Källorna och omvandlarna)
@@ -1543,3 +1543,7 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   med bildtexter skrivna där. Provboken (Provtryck) har ett fall av varje läge med andra data (fyra studsar och hälften
   kvar, en väska, 150 N i 40°). Negativa prov, ett fel per läge i figurkoden: den andra studsen lika hög som den första,
   en rörelsepil i den mittersta panelen, delen framåt skriven 5 N för stor.
+- **2026-11-19, arbetsorder 29, steg 1: källorna V A v3 och V B v3.** A v3: hänvisningen heter "texten om maskiner och
+  effekt", och v3 har också granskningens ändringar (pennan i jämvikt, tryckökningen sprids lika, pimpsten, trä- och
+  metallklossen; filen som hette v2 i order 21 var v1 i sitt huvud). B v3: punkten efter begreppsmarkeringen i Enkel och
+  grundform på *Energi|energi* i Standard. A och B omvandlade på nytt; v2-filerna är borttagna ur `kallor/kap3/`.

@@ -16,8 +16,8 @@ Bok.delkapitel({
   kapitel: '../kapitel.js',                  // kapitlets gemensamma data: omslaget (överrad, titel, illustration)
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
-  // sparat – byt det aldrig. Källan till A: kallor/kap3/V-A-Tryck-alla-nivaer-v2.md, omvandlad av
-  // verktyg/kap3-omvandlare.js --text va; till B: kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v2.md, --text vb.
+  // sparat – byt det aldrig. Källan till A: kallor/kap3/V-A-Tryck-alla-nivaer-v3.md, omvandlad av
+  // verktyg/kap3-omvandlare.js --text va; till B: kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md, --text vb.
   // B och D bytte titel i arbetsorder 28 men behöll id och mapp (arbete-och-effekt, havstangen-och-enkla-maskiner).
   texter: [
     { id: 'tryck', titel: 'Tryck' },

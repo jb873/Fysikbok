@@ -220,16 +220,16 @@ for (const B of NS) {
 // sista numrerade avsnittet och sist i Sammanfattningen – på just de platserna, och inget annat.
 // IV B Fritt fall (2026-11-11) prövas likadant mot kallor/kap3/IV-B-…-v2.md. Där finns också [EXEMPEL: rubrik] (raderna
 // under) och [RUTA: rubrik] (punkterna under): de hör till källan och ska stå på sin plats i boken.
-// V A Tryck (arbetsorder 21) prövas likadant mot kallor/kap3/V-A-Tryck-alla-nivaer-v2.md. Exemplen där är märkta
+// V A Tryck (arbetsorder 21) prövas likadant mot kallor/kap3/V-A-Tryck-alla-nivaer-v3.md (v3: arbetsorder 29). Exemplen där är märkta
 // [EXEMPEL: rubrik] … [/EXEMPEL] med tomma rader i rutan: de prövas rad för rad, med styckena, som i Nästa steg.
-// V B Energi och arbete (arbetsorder 28) likadant mot kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v2.md, utan rutan
+// V B Energi och arbete (arbetsorder 28) likadant mot kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md, utan rutan
 // "Vill du gå vidare?" (kopplingen i vidare-rutor.js har en rad utan avsnitt).
 for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', 'resulterande-kraft'],
                             ['IV B', 'IV-B-Fritt-fall-alla-nivaer-v2.md', 'fritt-fall'],
                             ['IV C', 'IV-C-Kastrorelse-alla-nivaer-v1.md', 'kastrorelse'],      // (arbetsorder 16)
                             ['IV D', 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', 'tyngdpunkt-och-balans'],   // (arbetsorder 17)
-                            ['V A', 'V-A-Tryck-alla-nivaer-v2.md', 'tryck', 'tryck_arbete_och_maskiner'],   // (arbetsorder 21)
-                            ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v2.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 28)
+                            ['V A', 'V-A-Tryck-alla-nivaer-v3.md', 'tryck', 'tryck_arbete_och_maskiner'],   // (arbetsorder 21)
+                            ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v3.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 28)
   const r = las(path.join(__dirname, '..', 'kallor', 'kap3', KF)), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);

@@ -1,5 +1,5 @@
 /* Avsnittssida V. Tryck, arbete och maskiner, text A: Tryck – nivån enkel (📗).
- * Arbetsorder 21 (2026-11-12): kallor/kap3/V-A-Tryck-alla-nivaer-v2.md (# 📗 ENKEL), införd ordagrant i
+ * Arbetsorder 21 (2026-11-12): kallor/kap3/V-A-Tryck-alla-nivaer-v3.md (# 📗 ENKEL), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text va: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill
@@ -33,7 +33,7 @@ Bok.niva('enkel', {
       block: [
         { typ: 'rubrik', text: 'Samma kraft kan kännas helt olika' },
         { typ: 'text', text: 'Ta en vässad blyertspenna. Håll den mellan tummen och pekfingret, så att spetsen är mot pekfingret och den trubbiga änden mot tummen. Tryck ihop fingrarna lätt.' },
-        { typ: 'text', text: 'Du märker att det gör ont i pekfingret, där spetsen är. Men det gör inte ont i tummen. Det konstiga är att pennan trycker lika hårt på båda fingrarna. Det känner du igen från kraft och motkraft: när du trycker på pennan trycker pennan lika hårt tillbaka, åt båda hållen.' },
+        { typ: 'text', text: 'Du märker att det gör ont i pekfingret, där spetsen är. Men det gör inte ont i tummen. Det konstiga är att pennan trycker lika hårt på båda fingrarna. Det beror på att pennan står still. Om tummen tryckte hårdare än pekfingret skulle pennan röra sig mot pekfingret. När den står still trycker fingrarna lika hårt från båda hållen, och då trycker pennan lika hårt tillbaka mot båda.' },
         { typ: 'text', text: 'Så varför gör det bara ont i det ena fingret? Det beror på ytan. Spetsen är mycket liten. Där samlas hela kraften på en pytteliten plats på huden. Den trubbiga änden är större. Där sprids samma kraft ut över en större yta, så varje liten del av tummen får bara lite av kraften.' },
         { typ: 'rubrik', text: 'Tryck är hur mycket kraft varje del av ytan får' },
         { typ: 'text', text: 'Det här är vad *tryck* betyder. Tryck är hur mycket kraft som trycker på varje liten del av en yta.' },
@@ -67,7 +67,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Naturen använder samma knep. En kamel går i mjuk sand hela dagarna. Den har breda, mjuka fötter, så att den inte sjunker ned. Ett lodjur har stora tassar med mycket päls. De fungerar som snöskor, och därför kan lodjuret springa i djup snö.' },
         { typ: 'text', text: 'Andra djur behöver högt tryck. Rovdjurs hörntänder och rovfåglars klor är spetsiga, så att de lätt tränger in i bytet. En mygga har en snabel som är tunnare än ett hårstrå. Därför behöver myggan bara en mycket liten kraft för att sticka genom huden. Även växter använder högt tryck. Rosor och kaktusar har vassa taggar som skyddar dem mot djur som vill äta dem.' },
         { typ: 'rubrik', text: 'Man räknar ut tryck genom att dela kraften med arean' },
-        { typ: 'text', text: 'Tryck kan räknas ut. Man tar kraften och delar med arean, alltså med hur stor ytan är.' },
+        { typ: 'text', text: 'Tryck kan räknas ut. Man tar kraften och delar med arean, alltså med hur stor ytan är. Det är kraften som trycker rakt mot ytan som räknas. En kraft som bara drar längs ytan trycker inte mot den.' },
         { typ: 'formel', uttryck: 'p = F / A', forklaring: 'p trycket (Pa), F kraften (N), A arean (m²)' },
         { typ: 'text', text: 'Bokstaven p står för tryck, F står för kraft och A står för area. Kraften ska vara i newton och arean i kvadratmeter. Då blir trycket i pascal.' },
         { typ: 'exempel', rubrik: 'Kängor eller skidor', stycken: [
@@ -90,13 +90,13 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'Vatten sprider trycket åt alla håll' },
         { typ: 'text', text: 'Gör så här: fyll en plastpåse med vatten och knyt ihop den. Stick några små hål runt om i påsen med en nål. Kläm sedan på påsen ovanifrån.' },
         { typ: 'text', text: 'Vattnet sprutar ut ur alla hålen. Det sprutar åt sidorna, nedåt och snett uppåt, inte bara åt det håll du klämmer. Trycket du gör på ett ställe sprids alltså till hela vattnet.' },
-        { typ: 'text', text: 'Det beror på att vatten nästan inte går att trycka ihop. Vattnets molekyler ligger redan tätt intill varandra. När du trycker på dem på ett ställe finns det ingen plats att trycka ihop dem på. I stället trycker de på molekylerna bredvid, som trycker på nästa, och så vidare genom hela vätskan. I en sluten behållare blir trycket därför lika stort överallt.' },
+        { typ: 'text', text: 'Det beror på att vatten nästan inte går att trycka ihop. Vattnets molekyler ligger redan tätt intill varandra. När du trycker på dem på ett ställe finns det ingen plats att trycka ihop dem på. I stället trycker de på molekylerna bredvid, som trycker på nästa, och så vidare genom hela vätskan. I en sluten behållare ökar trycket därför lika mycket överallt. Längre ned är trycket alltid lite högre, eftersom vätskan själv väger något. Men det extra tryck som du skapar sprids lika mycket till alla delar av vätskan.' },
         { typ: 'rubrik', text: 'Två kolvar kan förvandla en liten kraft till en stor' },
         { typ: 'text', text: 'Det här används i *hydraulik*. En hydraulisk lyft består av två rör, eller cylindrar, fyllda med olja. Cylindrarna är kopplade till varandra. I varje cylinder finns en platta som kan glida upp och ned. Plattan kallas *kolv*. Den ena kolven är liten och den andra är stor.' },
         { typ: 'text', text: 'Så här fungerar det, steg för steg:' },
         { typ: 'punkter', punkter: [
           'Du trycker på den lilla kolven. Den har liten yta, så även en liten kraft ger ett ganska högt tryck i oljan.',
-          'Trycket sprids genom oljan och blir lika stort överallt, också under den stora kolven.',
+          'Tryckökningen sprids genom oljan och blir lika stor överallt, också under den stora kolven.',
           'Den stora kolven har mycket större yta. Varje liten del av den får lika mycket tryck. Därför blir den totala kraften på den stora kolven mycket stor.'
         ] },
         { typ: 'text', text: 'Om den stora kolven är 50 gånger så stor som den lilla blir kraften 50 gånger så stor. Då kan du lyfta en bil med en kraft som du klarar med armarna.' },
@@ -107,7 +107,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Bilens bromsar är också hydrauliska. När föraren trampar på bromspedalen trycker pedalen på en liten kolv. Trycket sprids genom en vätska, bromsvätska, i tunna rör ut till hjulen. Där finns större kolvar som trycker bromsarna hårt mot hjulen. På så sätt kan en fot stoppa en bil som väger över ett ton.' },
         { typ: 'rubrik', text: 'Hydrauliken ger inget gratis' },
         { typ: 'text', text: 'Det låter nästan för bra för att vara sant. Men det finns ett pris. När den lilla kolven trycks ned flyttar den lite olja. Den oljan ska fördelas under den stora kolven, som är mycket bredare. Därför rör sig den stora kolven bara en liten bit.' },
-        { typ: 'text', text: 'Om den stora kolven är 50 gånger så stor måste du alltså trycka ned den lilla kolven 50 centimeter för att den stora ska lyftas en centimeter. Det är därför man pumpar många gånger med en domkraft. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och mer om det kommer i texten om hävstången och enkla maskiner.' }
+        { typ: 'text', text: 'Om den stora kolven är 50 gånger så stor måste du alltså trycka ned den lilla kolven 50 centimeter för att den stora ska lyftas en centimeter. Det är därför man pumpar många gånger med en domkraft. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och mer om det kommer i texten om maskiner och effekt.' }
       ]
     },
     {
@@ -131,12 +131,13 @@ Bok.niva('enkel', {
         { typ: 'rubrik', text: 'Lyftkraften är lika stor som tyngden av vattnet som trycks undan' },
         { typ: 'text', text: 'När du kliver ned i ett badkar stiger vattnet. Din kropp tar plats, och vattnet måste flytta på sig. Man säger att kroppen tränger undan vatten.' },
         { typ: 'text', text: 'Lyftkraften är precis lika stor som tyngden av det vatten som trängs undan. Den regeln kallas *Arkimedes princip*. Den har fått sitt namn efter Arkimedes, en grekisk forskare som levde för mer än 2 000 år sedan.' },
-        { typ: 'text', text: 'En liter vatten väger ungefär 1 kg. Om en sten tränger undan en liter vatten blir lyftkraften därför ungefär 10 N. Det är lika mycket som tyngden av en liter vatten. Väger stenen mer än 1 kg är dess tyngd större än lyftkraften, och då sjunker den. Men den känns lättare än på land.' },
+        { typ: 'text', text: 'En liter vatten väger ungefär 1 kg. Om en sten är helt under vattnet och tränger undan en liter vatten blir lyftkraften därför ungefär 10 N. Det är lika mycket som tyngden av en liter vatten. En större sten tränger undan mer vatten och får större lyftkraft. Om stenen som tränger undan en liter väger mer än 1 kg är dess tyngd större än lyftkraften, och då sjunker den. Men den känns lättare än på land.' },
         { typ: 'rubrik', text: 'Något flyter när lyftkraften blir lika stor som tyngden' },
         { typ: 'text', text: 'Lägg en träbit i vatten. Först sjunker den ned en bit. Ju längre ned den sjunker, desto mer vatten tränger den undan. Och ju mer vatten den tränger undan, desto större blir lyftkraften.' },
         { typ: 'text', text: 'Till slut blir lyftkraften lika stor som träbitens tyngd. Då tar krafterna ut varandra, och träbiten slutar sjunka. Den flyter.' },
-        { typ: 'text', text: 'En sten kan inte göra så. Även när hela stenen är under vattnet tränger den inte undan tillräckligt mycket vatten. Lyftkraften blir mindre än tyngden, och stenen sjunker till botten.' },
+        { typ: 'text', text: 'En vanlig sten kan inte göra så. Även när hela stenen är under vattnet tränger den inte undan tillräckligt mycket vatten. Lyftkraften blir mindre än tyngden, och stenen sjunker till botten. Det finns dock en sten som flyter: pimpsten. Den bildas vid vulkanutbrott och är full av små hål med gas.' },
         { typ: 'text', text: 'För ett föremål som är massivt, alltså helt fyllt med samma material, handlar det om densitet. Om föremålet har lägre densitet än vatten flyter det. Om det har högre densitet än vatten sjunker det. Trä har lägre densitet än vatten. Sten och järn har högre.' },
+        { typ: 'text', text: 'Tänk dig en träkloss och en metallkloss som är precis lika stora. Du håller ned båda under vattnet. De tar lika stor plats, så de tränger undan lika mycket vatten. Då får de lika stor lyftkraft. Men när du släpper dem stiger träklossen, och metallklossen sjunker. Det beror inte på lyftkraften, för den är lika stor. Det beror på tyngden. Träklossens tyngd är mindre än lyftkraften, så den åker upp. Metallklossens tyngd är större än lyftkraften, så den åker ned.' },
         { typ: 'rubrik', text: 'Många tror att tunga saker sjunker och lätta saker flyter' },
         { typ: 'text', text: 'Ett gem väger nästan ingenting, men det sjunker. Ett stort fartyg av stål väger tiotusentals ton, men det flyter. Det är alltså inte bara vikten som avgör.' },
         { typ: 'text', text: 'Det som avgör är hur mycket vatten föremålet tränger undan jämfört med hur mycket det väger. Ett fartyg är ihåligt. Inuti skrovet finns mycket luft. Därför tar fartyget stor plats i vattnet och tränger undan en enorm mängd vatten. Det vattnet väger lika mycket som hela fartyget, och då flyter fartyget.' },
@@ -155,7 +156,7 @@ Bok.niva('enkel', {
           'Tryck mäts i pascal, Pa. 1 kPa är 1 000 Pa. Man räknar ut tryck med p = F / A.',
           'Högt tryck är bra för att skära, sticka och få fäste, men det kan också förstöra till exempel golv.',
           'Breda däck, band, skidor och breda tassar sprider ut tyngden så att trycket blir lågt.',
-          'I en vätska sprids trycket lika mycket åt alla håll. Hydraulik gör en liten kraft till en stor kraft, men den lilla kolven måste röras mycket längre.',
+          'Om du ökar trycket i en instängd vätska sprids ökningen lika mycket till hela vätskan. Hydraulik gör en liten kraft till en stor kraft, men den lilla kolven måste röras mycket längre.',
           'Trycket i vatten ökar med djupet, ungefär 10 kPa för varje meter.',
           'Vattnet trycker hårdare på undersidan av ett föremål än på ovansidan. Skillnaden är lyftkraften.',
           'Lyftkraften är lika stor som tyngden av vattnet som trängs undan. Ett föremål flyter när lyftkraften blir lika stor som dess tyngd.'
