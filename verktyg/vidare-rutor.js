@@ -37,7 +37,10 @@ const TABELL = [
   // V B (arbetsorder 28): ingen ruta – Nästa steg har inget avsnitt om energi och arbete (ordern). En rad utan avsnitt
   // betyder "ingen ruta här, med avsikt"; en fil som saknas i tabellen är fortfarande ett fel.
   { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/arbete-och-effekt/fordjupning.js', text: 'V B Energi och arbete',
-    avsnitt: [] }
+    avsnitt: [] },
+  // V C och V D (arbetsorder 29): ingen ruta, som B
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/mekanisk-energi/fordjupning.js', text: 'V C Mekanisk energi', avsnitt: [] },
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/havstangen-och-enkla-maskiner/fordjupning.js', text: 'V D Maskiner och effekt', avsnitt: [] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };

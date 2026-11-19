@@ -1,7 +1,7 @@
 /* Avsnittssida V. Tryck, arbete och maskiner (Fysik · Kraft och rörelse), med texterna A Tryck, B Energi och arbete,
  * C Mekanisk energi och D Maskiner och effekt, en bok per text och nivå (arbetsorder 21, 2026-11-12; den nya indelningen
- * av B och D: arbetsorder 28, 2026-11-19). A och B har innehåll; C och D är "kommer" (tomma filer, som IV i arbetsorder
- * 12). Inga djupdykningar än: rubriken "Vill du veta mer?" står inte förrän det finns kort (motorns norm). Bara data;
+ * av B och D: arbetsorder 28, 2026-11-19). A, B och C har innehåll (C: arbetsorder 29); D är "kommer" (en tom fil, som IV
+ * i arbetsorder 12). Inga djupdykningar än: rubriken "Vill du veta mer?" står inte förrän det finns kort (motorns norm). Bara data;
  * motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
 Bok.delkapitel({
   id: 'fysik-tryck-arbete-och-maskiner',      // nyckeln för det eleven sparat (sida, nivå) – byt det aldrig
@@ -17,7 +17,8 @@ Bok.delkapitel({
 
   // Texterna A–D: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
   // sparat – byt det aldrig. Källan till A: kallor/kap3/V-A-Tryck-alla-nivaer-v3.md, omvandlad av
-  // verktyg/kap3-omvandlare.js --text va; till B: kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md, --text vb.
+  // verktyg/kap3-omvandlare.js --text va; till B: kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md, --text vb; till C:
+  // kallor/kap3/V-C-Mekanisk-energi-alla-nivaer-v2.md, --text vc.
   // B och D bytte titel i arbetsorder 28 men behöll id och mapp (arbete-och-effekt, havstangen-och-enkla-maskiner).
   texter: [
     { id: 'tryck', titel: 'Tryck' },

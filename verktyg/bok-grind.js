@@ -665,6 +665,8 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       //  - snett: repkraftens vinkel mot marken är den utskrivna (±0,5°); delen framåt och delen uppåt streckade från
       //    pilens början till dess spets (som komposanterna i resultant_rutor); talen vid delarna = kraften gånger de
       //    ritade delarnas andel av pilen (±1 N); kraftens tal = kraften; rörelsepilen vågrät framåt;
+      //  - (V C, arbetsorder 29) fall: staplarna tillsammans lika höga, lägesenergins i proportion till höjden; gunga:
+      //    ytterlägena på samma höjd och mitten lägst; stavhopp: staven böjd bara i mittläget, lägena och orden i ordning;
       //  - alla: rörelsepilarna ser inte ut som kraftpilar (annan färg och streckade), ingen text under 14 px, utanför
       //    figuren eller över en annan text.
       $$('.scen svg[data-energi]').forEach(s => {
@@ -679,7 +681,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         // rörelsepilarna mot kraftpilarna: annan färg, och streckade
         const kraftEl = s.querySelector('line.fig-pil'), rorEl = [...s.querySelectorAll('line.fig-rorelse')];
         rorEl.forEach(l => { const a = getComputedStyle(l), b = kraftEl && getComputedStyle(kraftEl);
-          if (!b || a.stroke === b.stroke || a.strokeDasharray === 'none' || a.strokeDasharray === b.strokeDasharray) f_.push('en rörelsepil ser ut som en kraftpil (' + a.stroke + ', ' + a.strokeDasharray + ')'); });
+          if (a.strokeDasharray === 'none' || (b && (a.stroke === b.stroke || a.strokeDasharray === b.strokeDasharray))) f_.push('en rörelsepil ser ut som en kraftpil (' + a.stroke + ', ' + a.strokeDasharray + ')'); });
         if (lage === 'studs') {
           const golv = +s.querySelector('line.fig-bord').dataset.golv;
           const bagar = [...s.querySelectorAll('polyline.fig-energi-bana')].sort((a, b) => +a.dataset.bage - +b.dataset.bage);
@@ -725,6 +727,40 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
             if (tl(T('kraft')) !== F) f_.push('kraften: ”' + T('kraft') + '”, inte ' + F + ' N');
             const r = s.querySelector('g.fig-energi-rorelse'), R = r && rorL(r);
             if (!R || !(nara(R.y1, R.y2) && R.x2 > R.x1 + 10)) f_.push('rörelsepilen är inte vågrät framåt');
+          }
+        } else if (lage === 'fall') {
+          // C1: lägesenergins och rörelseenergins staplar tillsammans lika höga i alla lägen; lägesenergins stapel i
+          // proportion till bollens höjd över marken (noll vid marken)
+          const golv = +s.querySelector('line.fig-bord').dataset.golv, L = [...s.querySelectorAll('g.fig-energi-lage')].map(g => {
+            const b = g.querySelector('circle.fig-energi-fallboll'), h = r => (g.querySelector('rect[data-slag="' + r + '"]') || { height: { baseVal: { value: NaN } } }).height.baseVal.value;
+            return { hm: +g.dataset.hojd, hpx: golv - b.cy.baseVal.value - b.r.baseVal.value - 1, ep: h('lage'), ek: h('rorelse') }; });
+          if (L.length < 2) f_.push(L.length + ' lägen');
+          L.forEach(x => { if (!nara(x.ep + x.ek, L[0].ep + L[0].ek)) f_.push('staplarna vid ' + x.hm + ' m är tillsammans ' + (x.ep + x.ek).toFixed(1) + ', inte ' + (L[0].ep + L[0].ek).toFixed(1)); });
+          const topp = L.reduce((a, x) => x.hpx > a.hpx ? x : a, L[0]), kv = topp.ep / topp.hpx;
+          L.forEach(x => { if (!nara(x.ep, kv * x.hpx, 1)) f_.push('lägesenergins stapel vid ' + x.hm + ' m är ' + x.ep.toFixed(1) + ', inte ' + (kv * x.hpx).toFixed(1) + ' (i proportion till höjden)'); });
+        } else if (lage === 'gunga') {
+          // C2: de två högsta lägena på samma höjd, mitten lägst
+          const P = {};
+          s.querySelectorAll('g.fig-energi-gungplats').forEach(g => { const r = g.querySelector('rect.fig-energi-sits');
+            P[g.dataset.plats] = { y: r.y.baseVal.value + r.height.baseVal.value / 2, ord: [...g.querySelectorAll('text')].map(t => t.textContent).join(' ') }; });
+          if (!P.vanster || !P.mitt || !P.hoger) f_.push('lägena saknas');
+          else {
+            if (!nara(P.vanster.y, P.hoger.y)) f_.push('ytterlägena står inte på samma höjd (' + P.vanster.y.toFixed(1) + ' / ' + P.hoger.y.toFixed(1) + ')');
+            if (!(P.mitt.y > Math.max(P.vanster.y, P.hoger.y) + 5)) f_.push('mitten är inte lägst');
+            if (!/lägesenergi/.test(P.vanster.ord) || !/lägesenergi/.test(P.hoger.ord) || !/rörelseenergi/.test(P.mitt.ord)) f_.push('orden står vid fel läge');
+          }
+        } else if (lage === 'stavhopp') {
+          // C3: staven böjd bara i mittläget (mer än 6 px från den raka linjen), rak i de andra; lägena i ordning från
+          // vänster, med orden rörelseenergi, elastisk energi och lägesenergi
+          const S = [...s.querySelectorAll('g.fig-energi-stavsteg')].map(g => { const p = g.querySelector('path.fig-energi-stav'), n = p.getTotalLength(), a = p.getPointAtLength(0), b = p.getPointAtLength(n);
+            const L = Math.hypot(b.x - a.x, b.y - a.y), dev = Math.max(...Array.from({ length: 41 }, (_, i) => { const q = p.getPointAtLength(n * i / 40); return Math.abs((b.x - a.x) * (a.y - q.y) - (a.x - q.x) * (b.y - a.y)) / L; }));
+            return { steg: +g.dataset.steg, x: Math.min(a.x, b.x), dev, ord: [...g.querySelectorAll('text.fig-energi-ord')].map(t => t.textContent).join(' ') }; });
+          if (S.length !== 3) f_.push(S.length + ' lägen');
+          else {
+            S.forEach(x => { const bojd = x.dev > 6; if (bojd !== (x.steg === 2)) f_.push('läge ' + x.steg + ': staven är ' + (bojd ? 'böjd (' + x.dev.toFixed(1) + ' px)' : 'rak') + (x.steg === 2 ? ', men ska vara böjd' : ', men ska vara rak')); });
+            const ord = S.slice().sort((a, b) => a.x - b.x);
+            if (ord.map(x => x.steg).join() !== '1,2,3') f_.push('lägena står inte i ordning från vänster');
+            if (ord.map(x => x.ord).join(' · ') !== 'rörelseenergi · elastisk energi · lägesenergi') f_.push('orden: ' + ord.map(x => x.ord).join(' · '));
           }
         } else f_.push('okänt läge');
         const vb = s.viewBox.baseVal, tx = [...s.querySelectorAll('text')].filter(t => t.textContent.trim()).map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * sk]);
@@ -950,7 +986,7 @@ const NG_PROV = String.raw`if (spar.some(x => x.rk && x.rk.antal)) prova('figur:
     spar.every(x => !x.tb.fel.length), spar.flatMap(x => x.tb.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tb.antal).map(x => x.tb.minPx)).toFixed(1) + ' px');
   if (spar.some(x => x.tr && x.tr.antal)) prova('figur: tryck – tyngdpilarna lika långa, den större sulan minst dubbelt så lång och den mindre sjunker djupare; den stora kolven minst dubbelt så bred och pilen vid den längre, oljan förbinder cylindrarna, kolvarna på samma höjd och samma p i båda; tryckpilarna i proportion till djupet, sidopilarna parvis lika, lyftkraften = undersidans − ovansidans pil; sträckorna utskrivna, samma oljevolym och samma kraft gånger väg, de ritade sträckorna i areornas kvot; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.tr.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.tr.typer))].join(', ') + ')',
     spar.every(x => !x.tr.fel.length), spar.flatMap(x => x.tr.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tr.antal).map(x => x.tr.minPx)).toFixed(1) + ' px');
-  if (spar.some(x => x.en && x.en.antal)) prova('figur: energi och arbete – varje studs lägre än den förra och bollen hoptryckt bara vid golvet, en våg vid varje studs; kraftpilen uppåt i alla tre panelerna, rörelsepilen uppåt i den första, ingen i den mittersta och vågrät i den tredje, ordet arbete ensamt bara vid den första; repets vinkel som den utskrivna, delarna framåt och uppåt från pilens början till spetsen och talen vid dem = kraften gånger delarnas andel (±1 N); rörelsepilarna i annan färg och streckade; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.en.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.en.typer))].join(', ') + ')',
+  if (spar.some(x => x.en && x.en.antal)) prova('figur: energi och arbete – varje studs lägre än den förra och bollen hoptryckt bara vid golvet, en våg vid varje studs; kraftpilen uppåt i alla tre panelerna, rörelsepilen uppåt i den första, ingen i den mittersta och vågrät i den tredje, ordet arbete ensamt bara vid den första; repets vinkel som den utskrivna, delarna framåt och uppåt från pilens början till spetsen och talen vid dem = kraften gånger delarnas andel (±1 N); staplarna lika höga tillsammans och lägesenergins i proportion till höjden; gungans ytterlägen på samma höjd och mitten lägst; staven böjd bara i stavhoppets mittläge och lägena i ordning; rörelsepilarna i annan färg och streckade; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.en.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.en.typer))].join(', ') + ')',
     spar.every(x => !x.en.fel.length), spar.flatMap(x => x.en.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.en.antal).map(x => x.en.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------

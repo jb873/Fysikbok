@@ -41,9 +41,14 @@ const TEXTER = {
   // V B Energi och arbete (arbetsorder 28, 2026-11-19; källan v3: arbetsorder 29): node verktyg/kap3-omvandlare.js --text vb. Mappen behåller sitt
   // namn från arbetsorder 21 (arbete-och-effekt). Ingen ruta "Vill du gå vidare?" (raden i vidare-rutor.js saknar avsnitt).
   vb: { kalla: 'V-B-Energi-och-arbete-alla-nivaer-v3.md', mapp: 'arbete-och-effekt', figurer: './kap3-figurer-vb.js', titel: 'B: Energi och arbete',
-        order: 'Arbetsorder 28 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' }
+        order: 'Arbetsorder 28 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' },
+  // V C Mekanisk energi (arbetsorder 29, 2026-11-19): node verktyg/kap3-omvandlare.js --text vc. Mappen från arbetsorder 21.
+  // Källan skriver Ep och Ek utan nedsänkning; de skrivs E_p och E_k, som motorn sätter nedsänkt (index, som i Nästa steg),
+  // och ordagrant.js läser dem tillbaka som Ep och Ek.
+  vc: { kalla: 'V-C-Mekanisk-energi-alla-nivaer-v2.md', mapp: 'mekanisk-energi', figurer: './kap3-figurer-vc.js', titel: 'C: Mekanisk energi',
+        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner', index: true }
 };
-if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c, d, va eller vb)'); process.exit(1); }
+if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c, d, va, vb eller vc)'); process.exit(1); }
 const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);
 const UT = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--text');
 const MAPP = (TEXTER[TEXT].sidmapp || 'kraft_och_rorelse/fall_kast_och_balans') + '/innehall/' + TEXTER[TEXT].mapp;
@@ -126,6 +131,9 @@ function las(rad, niva) {
   return avs;
 }
 const bocker = Object.fromEntries(NIVAER.map(([, n]) => [n, las(delar[n] || [], n)]));
+// (V C, arbetsorder 29) Ep och Ek med index: E_p och E_k i alla texter (motorn sätter dem nedsänkta)
+if (TEXTER[TEXT].index) { const ix = s => typeof s === 'string' ? s.replace(/\bE([pk])\b/g, 'E_$1') : Array.isArray(s) ? s.map(ix) : s;
+  for (const avs of Object.values(bocker)) for (const a of avs) for (const b of a.block) for (const k of ['text', 'uttryck', 'forklaring', 'rader', 'punkter', 'stycken']) if (b[k]) b[k] = ix(b[k]); }
 
 // Steg 2 (arbetsorder 12): figurerna efter sina bildmarkeringar – fylls i när figurtyperna finns
 const FIGURER = require(TEXTER[TEXT].figurer);

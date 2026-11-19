@@ -43,6 +43,7 @@
  *   krock               stopp?: [styv, deformationszon] (m) – två bilar mot en vägg, stoppsträckan och kupén (IV D)
  *   tryck               lage: 'sno' | 'hydraulik' | 'lyftkraft' | 'hydraulik-vag' – tryck, hydraulik och lyftkraft (V A)
  *   energi              lage: 'studs' | 'arbete' | 'snett' – energin byter form, när en kraft utför arbete, arbete när kraften drar snett (V B)
+ *                       | 'fall' | 'gunga' | 'stavhopp' – mekanisk energi: staplarna, gungan och stavhoppet (V C)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -1874,7 +1875,12 @@
    *                          den still (kraft upp, ingen rörelse) och bär den framåt (kraft upp, rörelse framåt)
    *   energi, lage 'snett':  kraft?: 100 (N), vinkel?: 30 (°) – en kälke som dras i ett snett rep; kraften i repet och dess
    *                          delar framåt (F · cos v) och uppåt (F · sin v), streckade som komposanterna i resultant_rutor;
-   *                          vinkeln utmärkt, och rörelsen rakt fram */
+   *                          vinkeln utmärkt, och rörelsen rakt fram
+   *   energi, lage 'fall':   hojd?: 5 (m), lagen?: [5, 2.5, 0] (m) – (V C, arbetsorder 29) en boll som faller, och vid varje
+   *                          läge två staplar: lägesenergins andel (i proportion till höjden) och rörelseenergins; tillsammans
+   *                          lika höga i alla lägen
+   *   energi, lage 'gunga':  vinkel?: 45 (°) – en gunga i tre lägen: högst till vänster och höger (samma höjd), lägst i mitten
+   *   energi, lage 'stavhopp': (inga data) – ansatsen (staven rak), staven böjd i lådan, hopparen över ribban (staven rak) */
   const rorelsePil = (x1, y1, x2, y2) => {
     const a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), s = Math.sin(a), l = 12, w = 7;
     return `<line class="fig-rorelse" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2 - 1.5 * c)}" y2="${f(y2 - 1.5 * s)}"/>` +
@@ -1883,7 +1889,7 @@
   const golvLinje = (x1, x2, y) => `<line class="fig-bord" x1="${f(x1)}" y1="${f(y)}" x2="${f(x2)}" y2="${f(y)}"/>` +
     Array.from({ length: Math.floor((x2 - x1) / 20) }, (_, i) => `<line class="fig-skraffer" x1="${f(x1 + 10 + i * 20)}" y1="${f(y + 1)}" x2="${f(x1 + i * 20)}" y2="${f(y + 12)}"/>`).join('');
   Bok.figur('energi', d => {
-    const lage = d.lage || fel('energi behöver lage: studs, arbete eller snett'), B = 440;
+    const lage = d.lage || fel('energi behöver lage: studs, arbete, snett, fall, gunga, stavhopp, ramp, gungbrada eller talja'), B = 440;
     let s = '', H, beskr;
     if (lage === 'studs') {
       const n = d.studsar || 3, kvar = d.kvar != null ? d.kvar : 0.6;
@@ -1994,6 +2000,93 @@
       H = Math.ceil(yG + 16);
       beskr = `En kälke som dras i ett rep. Repet drar med ${tal(F)} N snett uppåt, ${tal(v)}° mot marken. Kraften är delad i en del framåt, ${avr(fram)} N, och en del uppåt, ${avr(upp)} N. ` +
         'Kälken rör sig rakt fram längs marken, så bara delen framåt utför arbete.';
+    } else if (lage === 'fall') {
+      // C1: en boll som faller, i några lägen; vid varje läge lägesenergins och rörelseenergins staplar (andelar av den
+      // mekaniska energin). Lägesenergins stapel är lika hög som bollens höjd över marken (samma skala).
+      const Hm = d.hojd || 5, lagen = d.lagen || [Hm, Hm / 2, 0];
+      if (!lagen.length || lagen.some(x => !(x >= 0 && x <= Hm))) fel('energi fall: lagen mellan 0 och hojd (m)');
+      const n = lagen.length, pw = B / n, r = 11, S = 130, k = S / Hm, yG = KT + 34 + S + 2 * r + 6;
+      // förklaringen överst
+      s += `<g class="fig-energi-forklaring"><rect class="fig-energi-stapel fig-energi-ep" x="${f(B / 2 - 168)}" y="${f(KT - 8)}" width="14" height="14"/>` +
+        kastText(B / 2 - 148, KT + 4, 'lägesenergi', 'fig-vanster') +
+        `<rect class="fig-energi-stapel fig-energi-ek" x="${f(B / 2 + 18)}" y="${f(KT - 8)}" width="14" height="14"/>` + kastText(B / 2 + 38, KT + 4, 'rörelseenergi', 'fig-vanster') + '</g>';
+      s += golvLinje(8, B - 8, yG);
+      lagen.forEach((hm, i) => {
+        const x0 = pw * i, bx = x0 + 30, ep = hm / Hm, ek = 1 - ep, cy = yG - r - 1 - hm * k;
+        let g = '';
+        if (i) g += `<line class="fig-kast-hojd" x1="${f(bx)}" y1="${f(yG - r - 1 - Hm * k)}" x2="${f(bx)}" y2="${f(cy - r - 3)}"/>`;
+        g += `<circle class="fig-energi-boll fig-energi-fallboll" cx="${f(bx)}" cy="${f(cy)}" r="${r}"/>`;
+        const stapel = (x, andel, klass, slag) => { const hh = andel * S;
+          return `<rect class="fig-energi-stapel ${klass}" data-slag="${slag}" data-andel="${f(andel * 1000) / 1000}" x="${f(x)}" y="${f(yG - hh)}" width="24" height="${f(hh)}"/>` +
+            kastText(x + 12, yG - hh - 7, tal(Math.round(andel * 100)) + ' %', 'fig-mitt'); };
+        g += stapel(x0 + 60, ep, 'fig-energi-ep', 'lage') + stapel(x0 + 100, ek, 'fig-energi-ek', 'rorelse');
+        g += kastText(bx + 46, yG + 14 + KT, hm === 0 ? '≈ 0 m' : tal(hm) + ' m', 'fig-mitt');
+        s += `<g class="fig-energi-lage" data-hojd="${hm}">${g}</g>`;
+      });
+      H = Math.ceil(yG + 14 + KT + 8);
+      s = s.replace('<line class="fig-bord"', `<line class="fig-bord" data-golv="${f(yG)}"`);
+      beskr = `En boll som faller från ${tal(Hm)} m, i ${n} lägen: ` + lagen.map(x => `${x === 0 ? 'strax ovanför marken' : tal(x) + ' m'} – lägesenergi ${tal(Math.round(x / Hm * 100))} %, rörelseenergi ${tal(Math.round((1 - x / Hm) * 100))} %`).join('; ') +
+        '. Staplarna är tillsammans lika höga i alla lägen.';
+    } else if (lage === 'gunga') {
+      // C2: en gunga i tre lägen – högst till vänster, lägst i mitten, högst till höger (samma vinkel åt båda hållen). Orden
+      // vid ytterlägena står utanför gungan, vid mitten under den.
+      const v = (d.vinkel || 45) * Math.PI / 180, L = 120, px = B / 2, py = KT + 6;
+      s += `<line class="fig-bord" x1="${f(px - 100)}" y1="${f(py)}" x2="${f(px + 100)}" y2="${f(py)}"/>` +
+        Array.from({ length: 10 }, (_, i) => `<line class="fig-skraffer" x1="${f(px - 100 + i * 20)}" y1="${f(py - 1)}" x2="${f(px - 90 + i * 20)}" y2="${f(py - 12)}"/>`).join('');
+      const plats = [['vanster', -v], ['mitt', 0], ['hoger', v]].map(([id, a]) => ({ id, x: px + L * Math.sin(a), y: py + L * Math.cos(a), a }));
+      const [pv, pm, ph] = plats;
+      s += `<path class="fig-energi-bana" d="M${f(pv.x)} ${f(pv.y)} A${L} ${L} 0 0 0 ${f(ph.x)} ${f(ph.y)}"/>`;
+      plats.forEach(p => {
+        let g = `<line class="fig-snore" x1="${f(px)}" y1="${f(py)}" x2="${f(p.x)}" y2="${f(p.y)}"/>`;
+        // barnet sitter upprätt på sitsen
+        g += `<path class="fig-hopp-kropp" d="M${f(p.x)} ${f(p.y - 3)} L${f(p.x)} ${f(p.y - 30)}"/><circle class="fig-hopp-huvud" cx="${f(p.x)}" cy="${f(p.y - 40)}" r="9"/>`;
+        g += `<path class="fig-hopp-lem" d="M${f(p.x)} ${f(p.y - 2)} L${f(p.x + 12)} ${f(p.y + 2)} L${f(p.x + 14)} ${f(p.y + 18)}"/>`;
+        g += `<rect class="fig-energi-sits" x="${f(p.x - 15)}" y="${f(p.y - 3)}" width="30" height="6"/>`;
+        if (p.id === 'mitt') {
+          ['störst rörelseenergi', 'går fortast'].forEach((t, j) => { g += kastText(p.x, p.y + 44 + j * (KT + 9), t, 'fig-mitt' + (j ? '' : ' fig-energi-ord')); });
+          g += `<g class="fig-energi-rorelse">${rorelsePil(p.x + 24, p.y, p.x + 72, p.y)}</g>`;
+        } else {
+          const ut = p.id === 'vanster' ? -1 : 1, x = p.x + ut * 20, ank = ut < 0 ? 'fig-hoger' : 'fig-vanster';
+          ['störst', 'lägesenergi', 'står stilla'].forEach((t, j) => { g += kastText(x, p.y - 24 + j * (KT + 9), t, ank + (j < 2 ? ' fig-energi-ord' : '')); });
+        }
+        s += `<g class="fig-energi-gungplats" data-plats="${p.id}">${g}</g>`;
+      });
+      H = Math.ceil(pm.y + 44 + KT + 9 + 10);
+      beskr = 'En gunga i tre lägen. Högst till vänster står den stilla ett ögonblick och har störst lägesenergi. Lägst i mitten går den fortast och har störst rörelseenergi. ' +
+        'Högst till höger, på samma höjd som till vänster, står den stilla igen och har störst lägesenergi.';
+    } else if (lage === 'stavhopp') {
+      // C3: stavhoppet i tre lägen – ansatsen (staven rak, framåt), staven böjd i lådan, hopparen över ribban
+      const pw = B / 3, yG = KT + 190;
+      s += golvLinje(8, B - 8, yG);
+      const gubbe = (axl, hoft, huvud, fot1, fot2, hand) => `<path class="fig-hopp-kropp" d="M${f(axl[0])} ${f(axl[1])} L${f(hoft[0])} ${f(hoft[1])}"/>` +
+        `<path class="fig-hopp-lem" d="M${f(hoft[0])} ${f(hoft[1])} L${f(fot1[0])} ${f(fot1[1])} M${f(hoft[0])} ${f(hoft[1])} L${f(fot2[0])} ${f(fot2[1])} M${f(axl[0])} ${f(axl[1])} L${f(hand[0])} ${f(hand[1])}"/>` +
+        `<circle class="fig-hopp-huvud" cx="${f(huvud[0])}" cy="${f(huvud[1])}" r="9"/>`;
+      const steg = [];
+      // 1: ansatsen – hopparen springer med staven rak framför sig
+      { const c = pw * 0.5 - 20;
+        steg.push({ ord: 'rörelseenergi', stav: `M${f(c - 20)} ${f(yG - 104)} L${f(c + 78)} ${f(yG - 74)}`,
+          g: gubbe([c + 4, yG - 88], [c - 4, yG - 48], [c + 8, yG - 102], [c + 14, yG - 4], [c - 24, yG - 10], [c + 22, yG - 91]) +
+            `<g class="fig-energi-rorelse">${rorelsePil(c - 30, yG - 136, c + 40, yG - 136)}</g>` }); }
+      // 2: staven i lådan, böjd – hopparen hänger i den övre änden
+      { const c = pw * 1.5, lx = c + 44, top = [c - 14, yG - 112];
+        steg.push({ ord: 'elastisk energi', stav: `M${f(lx)} ${f(yG)} Q${f(c + 58)} ${f(yG - 104)} ${f(top[0])} ${f(top[1])}`,
+          g: `<rect class="fig-energi-lada" x="${f(lx - 8)}" y="${f(yG - 6)}" width="16" height="6"/>` +
+            gubbe([c - 24, yG - 96], [c - 36, yG - 56], [c - 30, yG - 110], [c - 30, yG - 16], [c - 48, yG - 22], top) });
+      }
+      // 3: över ribban – kroppen vågrät över ribban, staven släppt (rak)
+      { const c = pw * 2.5 + 6, yR = yG - 132;
+        steg.push({ ord: 'lägesenergi', stav: `M${f(c - 62)} ${f(yG)} L${f(c - 74)} ${f(yG - 118)}`,
+          g: `<line class="fig-stang" x1="${f(c - 46)}" y1="${f(yG)}" x2="${f(c - 46)}" y2="${f(yR - 8)}"/><line class="fig-stang" x1="${f(c + 46)}" y1="${f(yG)}" x2="${f(c + 46)}" y2="${f(yR - 8)}"/>` +
+            `<line class="fig-energi-ribba" x1="${f(c - 46)}" y1="${f(yR)}" x2="${f(c + 46)}" y2="${f(yR)}"/>` +
+            gubbe([c + 18, yR - 16], [c - 18, yR - 14], [c + 32, yR - 22], [c - 42, yR - 26], [c - 40, yR - 18], [c + 26, yR - 2]) });
+      }
+      steg.forEach((st, i) => {
+        s += `<g class="fig-energi-stavsteg" data-steg="${i + 1}">${st.g}<path class="fig-energi-stav" d="${st.stav}"/>` +
+          kastText(pw * (i + 0.5), yG + 14 + KT, st.ord, 'fig-mitt fig-energi-ord') + '</g>';
+      });
+      H = Math.ceil(yG + 14 + KT + 8);
+      beskr = 'Stavhoppet i tre lägen. 1: ansatsen – hopparen springer fort med staven rak framför sig: rörelseenergi. 2: staven är satt i lådan och böjd: elastisk energi. ' +
+        '3: staven har rätat ut sig och hopparen är över ribban: lägesenergi.';
     } else fel('energi: okänt läge ”' + lage + '”');
     return { svg: svg(B, H, s).replace('<svg ', `<svg data-energi="${lage}" `), beskrivning: d.beskrivning || beskr };
   });

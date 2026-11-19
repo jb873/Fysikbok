@@ -229,7 +229,8 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
                             ['IV C', 'IV-C-Kastrorelse-alla-nivaer-v1.md', 'kastrorelse'],      // (arbetsorder 16)
                             ['IV D', 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', 'tyngdpunkt-och-balans'],   // (arbetsorder 17)
                             ['V A', 'V-A-Tryck-alla-nivaer-v3.md', 'tryck', 'tryck_arbete_och_maskiner'],   // (arbetsorder 21)
-                            ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v3.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 28)
+                            ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v3.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner'],   // (arbetsorder 28)
+                            ['V C', 'V-C-Mekanisk-energi-alla-nivaer-v2.md', 'mekanisk-energi', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 29)
   const r = las(path.join(__dirname, '..', 'kallor', 'kap3', KF)), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);
@@ -258,7 +259,8 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
   for (const niva of ['standard', 'enkel', 'fordjupning']) {
     const fil = path.join(__dirname, '..', 'kraft_och_rorelse', SM, 'innehall', MP, niva + '.js');
     let data; global.Bok = { niva: (n, d) => { data = d; } };
-    const kod = fs.readFileSync(fil, 'utf8'); eval(kod);
+    // (V C, arbetsorder 29) E_p och E_k (index) läses som källans Ep och Ek
+    const kod = fs.readFileSync(fil, 'utf8').replace(/\bE_([pk])\b/g, 'E$1'); eval(kod);
     const f = [];
     for (const a of data.avsnitt) { f.push(`AVSNITT ${a.titel} ${a.numrerad === false ? 'onumrerad' : 'numrerad'}`);
       for (const b of a.block) {
@@ -308,5 +310,6 @@ console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källor
   '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.' +
   '\nKraft och rörelse IV A (Resulterande kraft), IV B (Fritt fall), IV C (Kaströrelse) och IV D (Tyngdpunkt, balans och kroppen), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.' +
   '\nKraft och rörelse V A (Tryck), tre nivåer, likadant (arbetsorder 21), med exemplen rad för rad.' +
-  '\nKraft och rörelse V B (Energi och arbete), tre nivåer, likadant (arbetsorder 28), men utan rutan "Vill du gå vidare?".');
+  '\nKraft och rörelse V B (Energi och arbete), tre nivåer, likadant (arbetsorder 28), men utan rutan "Vill du gå vidare?".' +
+  '\nKraft och rörelse V C (Mekanisk energi), tre nivåer, likadant (arbetsorder 29), med Ep och Ek skrivna med index.');
 process.exitCode = fel ? 1 : 0;
