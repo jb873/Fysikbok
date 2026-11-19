@@ -773,6 +773,22 @@ a.lank-post:hover { text-decoration: underline; text-underline-offset: .15em; }
 .fig-pil.fig-tryck-pil { stroke: var(--accent); stroke-width: 2.2; } .fig-pilspets.fig-tryck-pil { fill: var(--accent); }
 .fig-pil.fig-tryck-lyft { stroke: #b3261e; stroke-width: 3; } .fig-pilspets.fig-tryck-lyft { fill: #b3261e; }
 .fig-tryck-lyft-text { fill: #b3261e; font-weight: 600; }
+/* Energi och arbete (V B, arbetsorder 28): bollens bana streckad i dämpat bläck, bollen indigo (svag i topparna efter
+   studsarna); värme och ljud små röda vågor. Kraftpilarna i kraftpilarnas guld; rörelsepilarna indigo, streckade och
+   med öppen spets – de ska inte se ut som kraftpilar (grinden mäter det). */
+.fig-energi-bana { fill: none; stroke: var(--dampad); stroke-width: 1.6; stroke-dasharray: 5 5; }
+.fig-energi-boll { fill: var(--accent); stroke: var(--black); stroke-width: 1.2; }
+.fig-energi-boll.fig-energi-skugga { opacity: .3; }
+.fig-energi-vag { fill: none; stroke: #b3261e; stroke-width: 1.6; stroke-linecap: round; }
+.fig-energi-varme { fill: #b3261e; font-weight: 600; }
+.fig-energi-ord { font-weight: 600; }
+.fig-rorelse { stroke: var(--accent); stroke-width: 2.4; stroke-dasharray: 7 5; fill: none; }
+.fig-rorelse-spets { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fig-energi-rorelse-text { fill: var(--accent); font-weight: 600; }
+.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.fig-energi-mede { fill: none; stroke: var(--black); stroke-width: 2.4; stroke-linecap: round; }
+.fig-energi-vinkel { fill: none; stroke: var(--black); stroke-width: 1.4; }
+.fig-energi-vinkel-text { font-weight: 600; }
 .fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala, .fig-yta-namn { font-size: 19px; }
 .fig-yta-namn { font-weight: 600; fill: var(--black); }   /* ytans namn i diagram_graf (arbetsorder 13) */
 .fig-diagram-rubrik { font-weight: 600; }

@@ -69,6 +69,7 @@ Bok.niva('enkel', {
           'På vägen upp blir rörelseenergin lägesenergi igen.'
         ] },
         // [BILD B1: en boll som studsar i flera studsar, varje studs lägre än den förra; vid högsta punkten "lägesenergi", på vägen ned "rörelseenergi", mot golvet "elastisk energi", och små vågor vid golvet för värme och ljud]
+        { id: 'bild-b1', typ: 'figur', namn: 'energi', lage: 'studs', studsar: 3, kvar: 0.6, bildtext: 'Energin byter form i varje studs: lägesenergi blir rörelseenergi, rörelseenergi blir elastisk energi och tillbaka. En del blir värme och ljud, och därför blir varje studs lägre.' },
         { typ: 'text', text: 'Men lägg märke till en sak. Bollen studsar inte lika högt som där du släppte den. Varje studs blir lite lägre. Har energin försvunnit? Nej. En del av energin har blivit värme i bollen och golvet. En del har blivit ljud, studsen du hör. Till slut ligger bollen still. Då har all dess mekaniska energi spridits ut omkring den, mest som värme.' },
         { typ: 'rubrik', text: 'Många tror att energi tar slut' },
         { typ: 'text', text: 'I vardagen säger vi att batteriet tar slut och att vi har gjort av med energin. Det låter som om energin försvinner. Men det gör den inte.' },
@@ -97,6 +98,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Varför blir du då trött? Dina muskler jobbar hela tiden för att hålla väskan uppe. De använder kemisk energi från maten. Men den energin blir värme i kroppen. Den blir inte arbete på väskan.' },
         { typ: 'text', text: 'Tänk dig sedan att du bär väskan rakt fram på en plan väg. Nu flyttas väskan. Men du håller väskan uppåt, och den flyttas framåt. Kraften och förflyttningen pekar åt olika håll. Då utför kraften uppåt inget arbete. Det är bara när kraften och förflyttningen ligger längs samma linje som det blir ett arbete.' },
         // [BILD B2: tre figurer – en person som lyfter en låda (kraft uppåt, rörelse uppåt: arbete), en person som håller lådan stilla (kraft uppåt, ingen rörelse: inget arbete på lådan – musklerna använder ändå energi), en person som bär lådan framåt (kraft uppåt, rörelse framåt: kraften uppåt utför inget arbete på lådan)]
+        { id: 'bild-b2', typ: 'figur', namn: 'energi', lage: 'arbete', bildtext: 'Kraften från armarna pekar uppåt i alla tre bilderna. Bara när lådan flyttas uppåt, längs kraften, utför kraften ett arbete på lådan.' },
         { typ: 'rubrik', text: 'Man räknar ut arbete genom att ta kraften gånger sträckan' },
         { typ: 'text', text: 'När du lyfter något arbetar du mot tyngdkraften. Hur stort ett arbete är beror på två saker:' },
         { typ: 'punkter', punkter: [

@@ -42,6 +42,7 @@
  *   stabilitet          lage: 'lada' | 'fordon' | 'hojdhopp' – tyngdpunkt, lodlinje och stödyta (IV D)
  *   krock               stopp?: [styv, deformationszon] (m) – två bilar mot en vägg, stoppsträckan och kupén (IV D)
  *   tryck               lage: 'sno' | 'hydraulik' | 'lyftkraft' | 'hydraulik-vag' – tryck, hydraulik och lyftkraft (V A)
+ *   energi              lage: 'studs' | 'arbete' | 'snett' – energin byter form, när en kraft utför arbete, arbete när kraften drar snett (V B)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -1858,6 +1859,143 @@
         'Pilarna mot sidorna är lika långa parvis och tar ut varandra. Pilen mot undersidan är längre än pilen mot ovansidan, och skillnaden är lyftkraften, som pekar uppåt.';
     } else fel('tryck: okänt läge ”' + lage + '”');
     return { svg: svg(B, H, s).replace('<svg ', `<svg data-tryck="${lage}" `), beskrivning: d.beskrivning || beskr };
+  });
+
+  /* ---------- Energi och arbete (Kraft och rörelse V B, arbetsorder 28, 2026-11-19) ----------
+   * Text 19 enheter (som kastbanorna), kraftpilarna i kraftpilarnas guld. Rörelsepilarna är indigo, streckade och har
+   * öppen spets: de ska inte kunna förväxlas med kraftpilar. Varje läge skriver sina mått i elementen (data-*), och
+   * grinden mäter det figuren påstår i elementen själva (verktyg/bok-grind.js, figurKoll: en).
+   *   energi, lage 'studs':  studsar?: 3 (1–5), kvar?: 0.6 (den del av höjden som är kvar efter varje studs, 0–1) – en
+   *                          boll som släpps och studsar; banan är parabler (samma fart framåt, tiden ∝ √höjden), varje
+   *                          topp lägre än den förra; bollen är hoptryckt bara vid golvet; "lägesenergi" i toppen,
+   *                          "rörelseenergi" på vägen ned, "elastisk energi" vid golvet och små vågor vid varje studs
+   *                          ("värme och ljud")
+   *   energi, lage 'arbete': foremal?: 'lådan' – tre paneler: en person som lyfter lådan (kraft upp, rörelse upp: arbete), håller
+   *                          den still (kraft upp, ingen rörelse) och bär den framåt (kraft upp, rörelse framåt)
+   *   energi, lage 'snett':  kraft?: 100 (N), vinkel?: 30 (°) – en kälke som dras i ett snett rep; kraften i repet och dess
+   *                          delar framåt (F · cos v) och uppåt (F · sin v), streckade som komposanterna i resultant_rutor;
+   *                          vinkeln utmärkt, och rörelsen rakt fram */
+  const rorelsePil = (x1, y1, x2, y2) => {
+    const a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), s = Math.sin(a), l = 12, w = 7;
+    return `<line class="fig-rorelse" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2 - 1.5 * c)}" y2="${f(y2 - 1.5 * s)}"/>` +
+      `<polyline class="fig-rorelse-spets" points="${f(x2 - l * c - w * s)},${f(y2 - l * s + w * c)} ${f(x2)},${f(y2)} ${f(x2 - l * c + w * s)},${f(y2 - l * s - w * c)}"/>`;
+  };
+  const golvLinje = (x1, x2, y) => `<line class="fig-bord" x1="${f(x1)}" y1="${f(y)}" x2="${f(x2)}" y2="${f(y)}"/>` +
+    Array.from({ length: Math.floor((x2 - x1) / 20) }, (_, i) => `<line class="fig-skraffer" x1="${f(x1 + 10 + i * 20)}" y1="${f(y + 1)}" x2="${f(x1 + i * 20)}" y2="${f(y + 12)}"/>`).join('');
+  Bok.figur('energi', d => {
+    const lage = d.lage || fel('energi behöver lage: studs, arbete eller snett'), B = 440;
+    let s = '', H, beskr;
+    if (lage === 'studs') {
+      const n = d.studsar || 3, kvar = d.kvar != null ? d.kvar : 0.6;
+      if (!(kvar > 0 && kvar < 1) || !(n >= 1 && n <= 5)) fel('energi studs: kvar mellan 0 och 1, studsar 1–5');
+      const r = 13, h0 = 150, x0 = 132, xMax = B - 22, topp0 = r + 8, golvC = topp0 + h0, golv = golvC + r;
+      const h = Array.from({ length: n + 1 }, (_, i) => h0 * Math.pow(kvar, i));
+      // bredden: halva bågen ned från h0, hela bågar för studs 1 … n−1 och halva bågen upp till toppen efter den sista
+      const k = (xMax - x0) / (Math.sqrt(h[0]) + 2 * h.slice(1, n).reduce((a, x) => a + Math.sqrt(x), 0) + Math.sqrt(h[n]));
+      const halv = i => k * Math.sqrt(h[i]);
+      // bågarna (bollens mitt): båge 0 från toppen till den första studsen, båge i från studs i till studs i+1 (den sista
+      // till toppen efter den sista studsen)
+      const studsX = [x0 + halv(0)];
+      for (let i = 1; i < n; i++) studsX.push(studsX[i - 1] + 2 * halv(i));
+      const bage = (xa, i, del) => {          // del: 'ned' (från toppen), 'hel', 'upp' (till toppen)
+        const w = halv(i), pts = [], ty = golvC - h[i];
+        const fran = del === 'ned' ? 0 : -1, till = del === 'upp' ? 0 : 1, xm = del === 'ned' ? xa : xa + w;
+        for (let j = 0; j <= 24; j++) { const u = fran + (till - fran) * j / 24; pts.push([xm + u * w, ty + h[i] * u * u]); }
+        return `<polyline class="fig-energi-bana" data-bage="${i}" points="${pts.map(p => f(p[0]) + ',' + f(p[1])).join(' ')}"/>`;
+      };
+      s += golvLinje(8, B - 8, golv);
+      s += bage(x0, 0, 'ned');
+      for (let i = 1; i <= n; i++) s += bage(studsX[i - 1], i, i === n ? 'upp' : 'hel');
+      // värme och ljud: små vågor åt båda hållen vid varje studs
+      studsX.forEach((x, i) => {
+        let v = '';
+        for (const sida of [-1, 1]) for (const rr of [9, 15]) {
+          const a = x + sida * (r + 6 + rr * 0.35);
+          v += `<path class="fig-energi-vag" d="M${f(a)} ${f(golv - rr)} Q${f(a + sida * rr * 0.55)} ${f(golv - rr / 2)} ${f(a)} ${f(golv - 1)}"/>`;
+        }
+        s += `<g class="fig-energi-vagor" data-studs="${i + 1}">${v}</g>`;
+      });
+      // bollarna: i toppen, på vägen ned, hoptryckt vid den första studsen, och svagt i topparna efter studsarna
+      const boll = (x, y, rx, ry, klass, data) => `<ellipse class="fig-energi-boll ${klass}" ${data} cx="${f(x)}" cy="${f(y)}" rx="${f(rx)}" ry="${f(ry)}"/>`;
+      for (let i = 1; i <= n; i++) s += boll(i === n ? xMax : studsX[i - 1] + halv(i), golvC - h[i], r, r, 'fig-energi-skugga', `data-topp="${i}"`);
+      const uNed = 0.72, xNed = x0 + uNed * halv(0), yNed = topp0 + h0 * uNed * uNed;
+      s += boll(x0, topp0, r, r, '', 'data-topp="0"') + boll(xNed, yNed, r, r, '', 'data-ned=""');
+      const ry = r * 0.6, rx = r * 1.35;
+      s += boll(studsX[0], golv - ry, rx, ry, '', 'data-golv=""');
+      s += kastText(x0 - r - 8, topp0 + 6, 'lägesenergi', 'fig-hoger fig-energi-ord');
+      s += kastText(xNed - r - 8, yNed + 6, 'rörelseenergi', 'fig-hoger fig-energi-ord');
+      // "elastisk energi" till vänster om den första studsen, "värme och ljud" under golvet vid den andra (eller den enda)
+      s += kastText(studsX[0] - rx - 22, golv - 6, 'elastisk energi', 'fig-hoger fig-energi-ord');
+      const yT = golv + 14 + KT;
+      s += kastText(studsX[Math.min(1, n - 1)], yT, 'värme och ljud', 'fig-mitt fig-energi-varme');
+      H = Math.ceil(yT + 8);
+      beskr = `En boll släpps och studsar ${n} ${n === 1 ? 'gång' : 'gånger'} mot ett golv. Varje studs blir lägre än den förra: bollen når ${tal(Math.round(kvar * 100))} % av höjden före. ` +
+        'Högst upp har bollen lägesenergi, på vägen ned rörelseenergi, och mot golvet trycks den ihop: elastisk energi. Små vågor vid golvet visar värme och ljud.';
+      s = s.replace('<line class="fig-bord"', `<line class="fig-bord" data-golv="${f(golv)}"`);
+    } else if (lage === 'arbete') {
+      const pw = B / 3, yG = KT + 40 + 128, lf = d.foremal || 'lådan';
+      // förklaringen överst: kraftpil och rörelsepil
+      s += `<g class="fig-energi-forklaring">${pil(B / 2 - 150, KT, B / 2 - 112, KT, 8)}${kastText(B / 2 - 104, KT + 6, 'kraft', 'fig-vanster fig-kast-pil-text')}` +
+        `${rorelsePil(B / 2 + 18, KT, B / 2 + 56, KT)}${kastText(B / 2 + 64, KT + 6, 'rörelse', 'fig-vanster fig-energi-rorelse-text')}</g>`;
+      const paneler = [
+        { id: 'lyfter', ord: ['arbete'], rorelse: 'upp' },
+        { id: 'haller', ord: ['inget arbete', 'på ' + lf], rorelse: null },
+        { id: 'bar', ord: radbrytFig('kraften uppåt utför inget arbete på ' + lf, pw - 8), rorelse: 'fram' }
+      ];
+      paneler.forEach((p, i) => {
+        const cx = pw * (i + 0.5), px = cx - 24, gang = p.id === 'bar';
+        let g = golvLinje(pw * i + 6, pw * (i + 1) - 6, yG);
+        // personen från sidan (ben, bål, huvud) och armarna fram till lådan
+        g += `<path class="fig-hopp-lem" d="M${f(px)} ${f(yG - 52)} L${f(px - (gang ? 12 : 3))} ${f(yG)} M${f(px)} ${f(yG - 52)} L${f(px + (gang ? 12 : 3))} ${f(yG)}"/>`;
+        g += `<path class="fig-hopp-kropp" d="M${f(px)} ${f(yG - 52)} L${f(px)} ${f(yG - 94)}"/>`;
+        g += `<circle class="fig-hopp-huvud" cx="${f(px)}" cy="${f(yG - 106)}" r="11"/>`;
+        const lx = cx - 6, ly = yG - 86, lb = 36, lh = 28;           // lådan
+        g += `<path class="fig-hopp-lem" d="M${f(px)} ${f(yG - 90)} L${f(lx + 2)} ${f(ly + 10)} M${f(px)} ${f(yG - 86)} L${f(lx + 2)} ${f(ly + 18)}"/>`;
+        if (p.id === 'lyfter') g += `<rect class="fig-energi-fore" x="${f(lx)}" y="${f(yG - lh)}" width="${lb}" height="${lh}"/>`;
+        g += `<rect class="fig-lada fig-energi-lada" x="${f(lx)}" y="${f(ly)}" width="${lb}" height="${lh}"/>`;
+        g += `<g class="fig-energi-kraft">${pil(lx + lb / 2, ly, lx + lb / 2, ly - 46, 8)}</g>`;
+        if (p.rorelse === 'upp') g += `<g class="fig-energi-rorelse">${rorelsePil(lx + lb + 14, yG - 30, lx + lb + 14, ly - 6)}</g>`;
+        if (p.rorelse === 'fram') g += `<g class="fig-energi-rorelse">${rorelsePil(lx - 4, ly + lh + 18, lx + lb + 30, ly + lh + 18)}</g>`;
+        p.ord.forEach((t, j) => { g += kastText(cx, yG + 14 + KT + j * (KT + 9), t, 'fig-mitt fig-energi-ord' + (p.id === 'lyfter' ? ' fig-energi-arbete' : '')); });
+        s += `<g class="fig-energi-panel" data-panel="${p.id}">${g}</g>`;
+      });
+      H = Math.ceil(yG + 14 + KT + (Math.max(...paneler.map(p => p.ord.length)) - 1) * (KT + 9) + 8);
+      beskr = `Tre bilder av en person med ${lf}. Kraften från armarna pekar uppåt i alla tre. 1: personen lyfter ${lf}, som rör sig uppåt – ett arbete. ` +
+        `2: personen håller ${lf} still – ingen rörelse, inget arbete på ${lf}. 3: personen bär ${lf} framåt – rörelsen är framåt, och kraften uppåt utför inget arbete på ${lf}. ` +
+        'Kraftpilarna är guldfärgade, rörelsepilarna blå och streckade.';
+    } else if (lage === 'snett') {
+      const F = d.kraft || 100, v = d.vinkel != null ? d.vinkel : 30;
+      if (!(v > 0 && v < 90) || !(F > 0)) fel('energi snett: kraft > 0 och vinkel mellan 0 och 90°');
+      const rad = v * Math.PI / 180, L = 170, ax = 178, yG = KT + 34 + Math.max(L * Math.sin(rad) + 40, 120) + 36, ay = yG - 34;
+      const tx = ax + L * Math.cos(rad), ty = ay - L * Math.sin(rad), fram = F * Math.cos(rad), upp = F * Math.sin(rad);
+      s += golvLinje(8, B - 8, yG);
+      // kälken: medarna och flaket; repet från flakets framkant snett uppåt, förbi kraftpilens spets
+      s += `<path class="fig-energi-mede" d="M${f(ax - 122)} ${f(yG - 2)} L${f(ax - 6)} ${f(yG - 2)} Q${f(ax + 8)} ${f(yG - 2)} ${f(ax + 6)} ${f(yG - 14)}"/>`;
+      s += `<rect class="fig-lada fig-energi-kalke" x="${f(ax - 116)}" y="${f(ay - 4)}" width="116" height="${f(yG - 10 - ay + 4)}"/>`;
+      const rl = Math.min((B - 14 - ax) / Math.cos(rad), (ay - 6) / Math.sin(rad));
+      s += `<line class="fig-snore" x1="${f(ax)}" y1="${f(ay)}" x2="${f(ax + rl * Math.cos(rad))}" y2="${f(ay - rl * Math.sin(rad))}"/>`;
+      // delarna, streckade: först framåt längs marken, sedan uppåt till kraftpilens spets
+      s += `<line class="fig-komposant" data-komposant="x" x1="${f(ax)}" y1="${f(ay)}" x2="${f(tx)}" y2="${f(ay)}"/>` +
+        `<line class="fig-komposant" data-komposant="y" x1="${f(tx)}" y1="${f(ay)}" x2="${f(tx)}" y2="${f(ty)}"/>`;
+      s += `<g class="fig-energi-repkraft" data-kraft="${F}" data-vinkel="${v}">${pil(ax, ay, tx, ty, 9)}</g>`;
+      // vinkeln mellan marken och repet
+      const vr = 46;
+      s += `<path class="fig-energi-vinkel" d="M${f(ax + vr)} ${f(ay)} A${vr} ${vr} 0 0 0 ${f(ax + vr * Math.cos(rad))} ${f(ay - vr * Math.sin(rad))}"/>`;
+      s += kastText(ax + (vr + 10) * Math.cos(rad / 2), ay - (vr + 10) * Math.sin(rad / 2) + 7, tal(v) + '°', 'fig-vanster fig-energi-vinkel-text');
+      // talen: kraften vid pilens mitt (ovanför), delen framåt under den streckade linjen, delen uppåt bredvid
+      const avr = x => Math.abs(x - Math.round(x)) > 0.05 ? '≈ ' + tal(Math.round(x)) : tal(Math.round(x));
+      const del = (x, y, t, k, namn) => `<text x="${f(x)}" y="${f(y)}" class="fig-text fig-kast-text fig-energi-del ${k}" data-del="${namn}">${esc(t)}</text>`;
+      s += del(ax + L * 0.5 * Math.cos(rad) - 14 * Math.sin(rad), ay - L * 0.5 * Math.sin(rad) - 14 * Math.cos(rad), tal(F) + ' N', 'fig-hoger fig-kast-pil-text fig-halo', 'kraft');
+      s += del((ax + tx) / 2 + 18, ay + KT + 2, avr(fram) + ' N framåt', 'fig-mitt', 'fram');
+      s += del(tx + 10, (ay + ty) / 2 + 7, avr(upp) + ' N uppåt', 'fig-vanster fig-halo', 'upp');
+      // rörelsen: rakt fram, ovanför kälken
+      const ry = ay - 30;
+      s += `<g class="fig-energi-rorelse">${rorelsePil(ax - 112, ry, ax - 24, ry)}</g>` + kastText(ax - 68, ry - 12, 'rörelse', 'fig-mitt fig-energi-rorelse-text');
+      H = Math.ceil(yG + 16);
+      beskr = `En kälke som dras i ett rep. Repet drar med ${tal(F)} N snett uppåt, ${tal(v)}° mot marken. Kraften är delad i en del framåt, ${avr(fram)} N, och en del uppåt, ${avr(upp)} N. ` +
+        'Kälken rör sig rakt fram längs marken, så bara delen framåt utför arbete.';
+    } else fel('energi: okänt läge ”' + lage + '”');
+    return { svg: svg(B, H, s).replace('<svg ', `<svg data-energi="${lage}" `), beskrivning: d.beskrivning || beskr };
   });
 
 })();

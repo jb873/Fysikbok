@@ -53,6 +53,7 @@ Bok.niva('fordjupning', {
           'inte 1 000 J. Ju brantare du drar, desto mindre blir delen framåt och desto mer av din kraft går åt till att dra uppåt.'
         ] },
         // [BILD B3: kälke som dras med ett snett rep; kraften i repet delad i en del framåt (87 N) och en del uppåt; rörelsen rakt framåt längs marken]
+        { id: 'bild-b3', typ: 'figur', namn: 'energi', lage: 'snett', kraft: 100, vinkel: 30, bildtext: 'Repet drar med 100 N snett uppåt. Kälken rör sig rakt fram, så bara delen framåt, ungefär 87 N, utför arbete på kälken.' },
         { typ: 'rubrik', text: 'Friktionen tar alltid energi från rörelsen' },
         { typ: 'text', text: 'En kraft som verkar mot rörelsen utför också ett arbete, men åt andra hållet. Den tar energi från föremålet i stället för att ge det energi. Ett sådant arbete kallas negativt arbete. Friktionen verkar alltid mot rörelsen. Därför tar den alltid rörelseenergi från föremålet och omvandlar den till värme.' },
         { typ: 'text', text: 'Om du skjuter en låda framåt med 200 N över ett golv och friktionen är 200 N bakåt, rör sig lådan med jämn fart. Ditt arbete ger lådan energi, och friktionens arbete tar lika mycket energi från den. Lådan får alltså ingen ny rörelseenergi. Hela ditt arbete blir värme i golvet och lådans undersida. Det är därför händerna blir varma när du gnider dem mot varandra.' },
