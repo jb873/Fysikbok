@@ -46,7 +46,9 @@ const TEXTER = {
   // Källan skriver Ep och Ek utan nedsänkning; de skrivs E_p och E_k, som motorn sätter nedsänkt (index, som i Nästa steg),
   // och ordagrant.js läser dem tillbaka som Ep och Ek.
   vc: { kalla: 'V-C-Mekanisk-energi-alla-nivaer-v2.md', mapp: 'mekanisk-energi', figurer: './kap3-figurer-vc.js', titel: 'C: Mekanisk energi',
-        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner', index: true }
+        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner', index: true },
+  vd: { kalla: 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', mapp: 'havstangen-och-enkla-maskiner', figurer: './kap3-figurer-vd.js', titel: 'D: Maskiner och effekt',
+        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' }
 };
 if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c, d, va, vb eller vc)'); process.exit(1); }
 const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);

@@ -44,6 +44,7 @@
  *   tryck               lage: 'sno' | 'hydraulik' | 'lyftkraft' | 'hydraulik-vag' – tryck, hydraulik och lyftkraft (V A)
  *   energi              lage: 'studs' | 'arbete' | 'snett' – energin byter form, när en kraft utför arbete, arbete när kraften drar snett (V B)
  *                       | 'fall' | 'gunga' | 'stavhopp' – mekanisk energi: staplarna, gungan och stavhoppet (V C)
+ *                       | 'ramp' | 'gungbrada' | 'talja' – maskiner: två vägar upp, moment i balans, taljan (V D)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -1880,7 +1881,13 @@
    *                          läge två staplar: lägesenergins andel (i proportion till höjden) och rörelseenergins; tillsammans
    *                          lika höga i alla lägen
    *   energi, lage 'gunga':  vinkel?: 45 (°) – en gunga i tre lägen: högst till vänster och höger (samma höjd), lägst i mitten
-   *   energi, lage 'stavhopp': (inga data) – ansatsen (staven rak), staven böjd i lådan, hopparen över ribban (staven rak) */
+   *   energi, lage 'stavhopp': (inga data) – ansatsen (staven rak), staven böjd i lådan, hopparen över ribban (staven rak)
+   *   energi, lage 'ramp':   massa?: 50 (kg), hojd?: 1 (m), ramp?: 2 (m) – (V D) klotet upp på bordet rakt upp och i en vagn
+   *                          längs rampen; krafterna, sträckorna och kraft gånger sträcka under båda
+   *   energi, lage 'gungbrada': vanster?: {kraft: 800, arm: 1}, hoger?: {kraft: 400, arm: 2} – gungbrädan i balans, avstånden
+   *                          i skala, tyngdpilarna i proportion och två lika stora motriktade vridpilar
+   *   energi, lage 'talja':  lyft?: 1 (m) – ett fast och ett rörligt block, två repdelar; startläge och slutläge: lasten lyft
+   *                          lyft m och 2 · lyft m rep indraget; dragkraftens pil halva tyngdpilen */
   const rorelsePil = (x1, y1, x2, y2) => {
     const a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), s = Math.sin(a), l = 12, w = 7;
     return `<line class="fig-rorelse" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2 - 1.5 * c)}" y2="${f(y2 - 1.5 * s)}"/>` +
@@ -2087,6 +2094,114 @@
       H = Math.ceil(yG + 14 + KT + 8);
       beskr = 'Stavhoppet i tre lägen. 1: ansatsen – hopparen springer fort med staven rak framför sig: rörelseenergi. 2: staven är satt i lådan och böjd: elastisk energi. ' +
         '3: staven har rätat ut sig och hopparen är över ribban: lägesenergi.';
+    } else if (lage === 'ramp') {
+      // D1: klotet upp på bordet två vägar – rakt upp och i en vagn längs en ramp; kraft gånger sträcka lika i båda
+      const m = d.massa || 50, h = d.hojd || 1, l = d.ramp || 2, T = m * 10, Fr = T * h / l;
+      if (!(l > h && h > 0)) fel('energi ramp: rampen längre än höjden');
+      const run = Math.sqrt(l * l - h * h), k = Math.min(70, 120 / run, 90 / h), yG = KT + 40 + h * k + 34, top = yG - h * k, r = 11;
+      const sin = h / l, cos = run / l, nx = -sin, ny = -cos;   // rampens riktning (cos, −sin) och normalen uppåt-vänster
+      const matt = (x1, y1, x2, y2, t, tx, ty, ank) => `<g class="fig-energi-matt"><line class="fig-krock-matt" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/></g>` + kastText(tx, ty, t, ank);
+      s += golvLinje(8, B - 8, yG);
+      // vänster: rakt upp
+      { const tx = 112, tb = 64, bx = 58;
+        let g = `<rect class="fig-lada fig-energi-bord" x="${f(tx)}" y="${f(top)}" width="${tb}" height="${f(h * k)}"/>`;
+        g += `<circle class="fig-energi-fore" cx="${f(bx)}" cy="${f(yG - r)}" r="${r}"/>`;
+        g += `<circle class="fig-energi-boll fig-energi-klot" cx="${f(tx + tb / 2)}" cy="${f(top - r)}" r="${r}"/>`;
+        const Lf = 56;
+        g += `<g class="fig-energi-kraftpil" data-kraft="${T}">${pil(bx, yG - 2 * r - 4, bx, yG - 2 * r - 4 - Lf, 8)}</g>` + kastText(bx, yG - 2 * r - 4 - Lf - 8, tal(T) + ' N', 'fig-mitt fig-kast-pil-text');
+        g += matt(tx - 10, yG, tx - 10, top, tal(h) + ' m', tx - 16, (yG + top) / 2 + 7, 'fig-hoger');
+        g += kastText(110, yG + 14 + KT, `${tal(T)} N · ${tal(h)} m = ${tal(T * h)} J`, 'fig-mitt fig-energi-ord');
+        s += `<g class="fig-energi-vag" data-vag="rakt" data-kraft="${T}" data-stracka="${h}" data-mpx="${f(k)}" data-topp="${f(top)}">${g}</g>`;
+      }
+      // höger: vagnen längs rampen
+      { const x0 = 236, x1 = x0 + run * k, tb = Math.min(56, B - 12 - x1);
+        let g = `<polygon class="fig-energi-ramp" points="${f(x0)},${f(yG)} ${f(x1)},${f(top)} ${f(x1)},${f(yG)}"/>`;
+        g += `<rect class="fig-lada fig-energi-bord" x="${f(x1)}" y="${f(top)}" width="${f(tb)}" height="${f(h * k)}"/>`;
+        g += `<circle class="fig-energi-boll fig-energi-skugga" cx="${f(x1 + tb / 2)}" cy="${f(top - r)}" r="${r}"/>`;
+        const t = 0.3, p = [x0 + t * run * k, yG - t * h * k], a = -Math.atan2(h, run) * 180 / Math.PI;
+        g += `<g transform="rotate(${f(a)} ${f(p[0])} ${f(p[1])})"><rect class="fig-energi-vagn" x="${f(p[0] - 16)}" y="${f(p[1] - 15)}" width="32" height="10"/>` +
+          `<circle class="fig-krock-hjul" cx="${f(p[0] - 9)}" cy="${f(p[1] - 3)}" r="3"/><circle class="fig-krock-hjul" cx="${f(p[0] + 9)}" cy="${f(p[1] - 3)}" r="3"/>` +
+          `<circle class="fig-energi-boll fig-energi-klot" cx="${f(p[0])}" cy="${f(p[1] - 15 - r + 3)}" r="${r}"/></g>`;
+        const Lf = 56 * Fr / T, q = [p[0] + 18 * cos + 10 * nx, p[1] - 18 * sin + 10 * ny];
+        g += `<g class="fig-energi-kraftpil" data-kraft="${Fr}">${pil(q[0], q[1], q[0] + Lf * cos, q[1] - Lf * sin, 8)}</g>` +
+          kastText(q[0] + Lf * cos + 4, q[1] - Lf * sin - 8, tal(Fr) + ' N', 'fig-vanster fig-kast-pil-text fig-halo');
+        const o = 46, a1 = [x0 + o * nx, yG + o * ny], a2 = [x1 + o * nx, top + o * ny];
+        g += matt(a1[0], a1[1], a2[0], a2[1], tal(l) + ' m', (a1[0] + a2[0]) / 2 + 14 * nx, (a1[1] + a2[1]) / 2 + 14 * ny, 'fig-hoger');
+        g += kastText(330, yG + 14 + KT, `${tal(Fr)} N · ${tal(l)} m = ${tal(Fr * l)} J`, 'fig-mitt fig-energi-ord');
+        s += `<g class="fig-energi-vag" data-vag="ramp" data-kraft="${Fr}" data-stracka="${l}" data-mpx="${f(k)}" data-topp="${f(top)}">${g}</g>`;
+      }
+      H = Math.ceil(yG + 14 + KT + 8);
+      beskr = `Ett klot på ${tal(m)} kg ska upp på ett bord som är ${tal(h)} m högt. Till vänster lyfts det rakt upp med ${tal(T)} N längs ${tal(h)} m. Till höger dras det i en vagn uppför en ramp som är ${tal(l)} m lång, med ${tal(Fr)} N. ` +
+        `Arbetet blir ${tal(T * h)} J i båda fallen, och klotet hamnar på samma höjd.`;
+    } else if (lage === 'gungbrada') {
+      // D2: en gungbräda i balans – kraft gånger hävarm lika på båda sidor, avstånden i skala, två lika stora motriktade vridpilar
+      const V = d.vanster || { kraft: 800, arm: 1 }, Hh = d.hoger || { kraft: 400, arm: 2 };
+      if (Math.abs(V.kraft * V.arm - Hh.kraft * Hh.arm) > 1e-9 * V.kraft) fel('energi gungbrada: momenten ska vara lika stora');
+      const cx = B / 2, k = Math.min(85, 150 / Math.max(V.arm, Hh.arm)), yP = KT + 112, Fmax = Math.max(V.kraft, Hh.kraft), M = V.kraft * V.arm;
+      s += `<rect class="fig-energi-planka" x="${f(cx - 205)}" y="${f(yP)}" width="410" height="8"/>`;
+      s += `<polygon class="fig-energi-vridpunkt" points="${f(cx)},${f(yP + 8)} ${f(cx - 17)},${f(yP + 44)} ${f(cx + 17)},${f(yP + 44)}"/>`;
+      s += golvLinje(8, B - 8, yP + 44);
+      [['vanster', V, -1, 12, 52], ['hoger', Hh, 1, 9, 36]].forEach(([sida, P, tecken, rh, kropp]) => {
+        const x = cx + tecken * P.arm * k, Lw = 64 * P.kraft / Fmax;
+        let g = `<circle class="fig-energi-sittpunkt" cx="${f(x)}" cy="${f(yP)}" r="2.5"/>`;
+        g += `<path class="fig-hopp-kropp" d="M${f(x)} ${f(yP - 2)} L${f(x)} ${f(yP - 2 - kropp)}"/><circle class="fig-hopp-huvud" cx="${f(x)}" cy="${f(yP - 2 - kropp - rh)}" r="${rh}"/>`;
+        const ax = x + tecken * 20;
+        g += `<g class="fig-energi-tyngdpil" data-kraft="${P.kraft}">${pil(ax, yP - Lw, ax, yP - 1, 8)}</g>` + kastText(ax + tecken * 20, yP - Lw - 8, tal(P.kraft) + ' N', 'fig-mitt fig-kast-pil-text');   // utåt, fritt från huvudet
+        // avståndet till vridningspunkten under plankan
+        const my = yP + 16;
+        g += `<g class="fig-energi-matt"><line class="fig-krock-matt" x1="${f(cx + tecken * 10)}" y1="${f(my)}" x2="${f(x)}" y2="${f(my)}"/><line class="fig-krock-matt" x1="${f(x)}" y1="${f(my - 5)}" x2="${f(x)}" y2="${f(my + 5)}"/></g>` +
+          kastText((cx + tecken * 10 + x) / 2, my + 21, tal(P.arm) + ' m', 'fig-mitt');
+        s += `<g class="fig-energi-sits" data-sida="${sida}" data-kraft="${P.kraft}" data-arm="${P.arm}">${g}</g>`;
+      });
+      // vridpilarna: lika stora bågar kring vridningspunkten, åt var sitt håll
+      const R = 70, bage =(sida, fran, till) => { const p1 = [cx + R * Math.cos(fran), yP - R * Math.sin(fran)], p2 = [cx + R * Math.cos(till), yP - R * Math.sin(till)];
+        const tang = till > fran ? [-Math.sin(till), -Math.cos(till)] : [Math.sin(till), Math.cos(till)];   // spetsens riktning (skärmens y nedåt)
+        const sp = 9, b = [p2[0] - tang[0] * sp * 1.3, p2[1] - tang[1] * sp * 1.3], w = sp * 0.7;
+        return `<g class="fig-energi-vrid" data-sida="${sida}"><path class="fig-energi-vridbage" d="M${f(p1[0])} ${f(p1[1])} A${R} ${R} 0 0 ${till > fran ? 0 : 1} ${f(b[0])} ${f(b[1])}"/>` +
+          `<polygon class="fig-energi-vridspets" points="${f(p2[0])},${f(p2[1])} ${f(b[0] - w * tang[1])},${f(b[1] + w * tang[0])} ${f(b[0] + w * tang[1])},${f(b[1] - w * tang[0])}"/></g>`; };
+      const gr = Math.PI / 180;
+      s += bage('vanster', 100 * gr, 150 * gr) + bage('hoger', 80 * gr, 30 * gr);
+      // talen ovanför bågarna, högre än den vuxnas huvud bredvid
+      s += kastText(cx - 4, yP - R - 8, tal(M) + ' Nm', 'fig-hoger fig-energi-vrid-text') + kastText(cx + 4, yP - R - 8, tal(M) + ' Nm', 'fig-vanster fig-energi-vrid-text');
+      s = s.replace('<rect class="fig-energi-planka"', `<rect class="fig-energi-planka" data-vridpunkt="${f(cx)},${f(yP)}" data-mpx="${f(k)}"`);
+      H = Math.ceil(yP + 44 + 16);
+      beskr = `En gungbräda i balans med vridningspunkten i mitten. ${tal(V.kraft)} N sitter ${tal(V.arm)} m ut på ena sidan och ${tal(Hh.kraft)} N sitter ${tal(Hh.arm)} m ut på den andra. ` +
+        `Momenten är lika stora, ${tal(V.kraft)} · ${tal(V.arm)} = ${tal(Hh.kraft)} · ${tal(Hh.arm)} = ${tal(M)} Nm. Två lika stora vridpilar åt var sitt håll visar att de tar ut varandra.`;
+    } else if (lage === 'talja') {
+      // D3: en talja med ett fast block i taket och ett rörligt block med lasten; två repdelar bär lasten. Startläge och
+      // slutläge: lasten lyft lyft m och 2 · lyft m rep indraget; dragkraften halva tyngden.
+      const lyft = d.lyft || 1, k = Math.min(40, 80 / lyft), pw = B / 2, yT = KT + 34, Lw = 56, rb = 14;
+      [['start', 0], ['slut', 1]].forEach(([id, i]) => {
+        const cx = pw * i + 100, Fy = yT + 26, yM0 = yT + 150, yM = yM0 - i * lyft * k, yH0 = yT + 90, yH = yH0 + i * 2 * lyft * k;
+        let g = `<line class="fig-bord" x1="${f(cx - 70)}" y1="${f(yT)}" x2="${f(cx + 70)}" y2="${f(yT)}"/>` +
+          Array.from({ length: 7 }, (_, j) => `<line class="fig-skraffer" x1="${f(cx - 70 + j * 20)}" y1="${f(yT - 1)}" x2="${f(cx - 60 + j * 20)}" y2="${f(yT - 12)}"/>`).join('');
+        g += kastText(cx, KT + 4, id === 'start' ? 'startläge' : 'slutläge', 'fig-mitt fig-energi-ord');
+        g += `<line class="fig-snore" x1="${f(cx)}" y1="${f(yT)}" x2="${f(cx)}" y2="${f(Fy)}"/>`;
+        // repet: fäst i taket, ned och runt det rörliga blocket, upp och över det fasta, ned till handen
+        g += `<line class="fig-energi-rep fig-energi-repdel" data-bar="" x1="${f(cx - 42)}" y1="${f(yT)}" x2="${f(cx - 42)}" y2="${f(yM)}"/>`;
+        g += `<path class="fig-energi-rep" d="M${f(cx - 42)} ${f(yM)} A${rb} ${rb} 0 0 0 ${f(cx - 14)} ${f(yM)}"/>`;
+        g += `<line class="fig-energi-rep fig-energi-repdel" data-bar="" x1="${f(cx - 14)}" y1="${f(Fy)}" x2="${f(cx - 14)}" y2="${f(yM)}"/>`;
+        g += `<path class="fig-energi-rep" d="M${f(cx - 14)} ${f(Fy)} A${rb} ${rb} 0 0 1 ${f(cx + 14)} ${f(Fy)}"/>`;
+        g += `<line class="fig-energi-rep fig-energi-repdel" data-drag="" x1="${f(cx + 14)}" y1="${f(Fy)}" x2="${f(cx + 14)}" y2="${f(yH)}"/>`;
+        g += `<circle class="fig-energi-block" cx="${f(cx)}" cy="${f(Fy)}" r="${rb}"/><circle class="fig-energi-block fig-energi-rorligt" cx="${f(cx - 28)}" cy="${f(yM)}" r="${rb}"/>`;
+        g += `<line class="fig-snore" x1="${f(cx - 28)}" y1="${f(yM)}" x2="${f(cx - 28)}" y2="${f(yM + 26)}"/>`;
+        g += `<rect class="fig-lada fig-energi-last" x="${f(cx - 48)}" y="${f(yM + 26)}" width="40" height="30"/>`;
+        g += `<g class="fig-energi-tyngdpil">${pil(cx - 28, yM + 56, cx - 28, yM + 56 + Lw, 8)}</g>` + kastText(cx - 38, Math.max(yM + 56 + Lw / 2 + 12, i ? yM0 + 74 : 0), 'tyngd', 'fig-hoger fig-kast-pil-text');   // i slutläget under den streckade lasten
+        g += `<circle class="fig-energi-hand" cx="${f(cx + 14)}" cy="${f(yH)}" r="5"/>`;
+        g += `<g class="fig-energi-dragpil">${pil(cx + 14, yH + 6, cx + 14, yH + 6 + Lw / 2, 8)}</g>` + kastText(cx + 22, yH + 6 + Lw / 4 + 12, 'dragkraft', 'fig-vanster fig-kast-pil-text');
+        if (i) {
+          // före: lasten och handen streckade; sträckorna utmärkta
+          g += `<rect class="fig-energi-fore" x="${f(cx - 48)}" y="${f(yM0 + 26)}" width="40" height="30"/><circle class="fig-energi-fore" cx="${f(cx + 14)}" cy="${f(yH0)}" r="5"/>`;
+          const matt = (x, y1, y2, data) => `<g class="fig-energi-matt" ${data}><line class="fig-krock-matt" x1="${f(x)}" y1="${f(y1)}" x2="${f(x)}" y2="${f(y2)}"/>` +
+            `<line class="fig-krock-matt" x1="${f(x - 5)}" y1="${f(y1)}" x2="${f(x + 5)}" y2="${f(y1)}"/><line class="fig-krock-matt" x1="${f(x - 5)}" y1="${f(y2)}" x2="${f(x + 5)}" y2="${f(y2)}"/></g>`;
+          g += matt(cx - 62, yM0 + 26, yM + 26, 'data-matt="lyft"') + kastText(cx - 68, (yM0 + yM) / 2 + 33, tal(lyft) + ' m', 'fig-hoger');
+          g += matt(cx + 32, yH0, yH, 'data-matt="rep"') + kastText(cx + 38, (yH0 + yH) / 2 + 7, tal(2 * lyft) + ' m', 'fig-vanster');
+        }
+        s += `<g class="fig-energi-taljlage" data-lage="${id}" data-mpx="${f(k)}" data-lyft="${lyft}">${g}</g>`;
+      });
+      H = Math.ceil(yT + 150 + 56 + Lw + 14);
+      beskr = `En talja med ett fast block i taket och ett rörligt block med lasten. Lasten bärs av två repdelar, och dragkraften är halva tyngden. ` +
+        `Till vänster startläget, till höger slutläget: lasten har lyfts ${tal(lyft)} m, och ${tal(2 * lyft)} m rep har dragits in.`;
     } else fel('energi: okänt läge ”' + lage + '”');
     return { svg: svg(B, H, s).replace('<svg ', `<svg data-energi="${lage}" `), beskrivning: d.beskrivning || beskr };
   });

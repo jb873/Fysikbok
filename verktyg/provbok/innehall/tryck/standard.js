@@ -157,6 +157,13 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'energi-gunga-prov', namn: 'energi', lage: 'gunga', vinkel: 35 },
         { typ: 'text', text: 'Provtext: ett provstavhopp.' },
         { typ: 'figur', id: 'energi-stavhopp-prov', namn: 'energi', lage: 'stavhopp' },
+        // (arbetsorder 29, steg 3) maskinerna med andra data än V D
+        { typ: 'text', text: 'Provtext: ett provklot på 40 kg upp 1,5 m, rakt upp och längs en 3 m lång ramp.' },
+        { typ: 'figur', id: 'energi-ramp-prov', namn: 'energi', lage: 'ramp', massa: 40, hojd: 1.5, ramp: 3 },
+        { typ: 'text', text: 'Provtext: en provgungbräda med 600 N på 1,5 m och 450 N på 2 m.' },
+        { typ: 'figur', id: 'energi-gungbrada-prov', namn: 'energi', lage: 'gungbrada', vanster: { kraft: 600, arm: 1.5 }, hoger: { kraft: 450, arm: 2 } },
+        { typ: 'text', text: 'Provtext: en provtalja som lyfter 1,5 m.' },
+        { typ: 'figur', id: 'energi-talja-prov', namn: 'energi', lage: 'talja', lyft: 1.5 },
 
         { typ: 'text', text: 'Provtext: Jupiter och de fyra stora månarna i samma skala.' },
         { typ: 'figur', id: 'jupiter-prov', namn: 'himlakroppar_i_skala', kroppar: [{ namn: 'Jupiter', diameter: 139800 }, { namn: 'Io', diameter: 3640 }, { namn: 'Europa', diameter: 3120 }, { namn: 'Ganymedes', diameter: 5270 }, { namn: 'Kallisto', diameter: 4820 }], bildtext: 'Provbildtext under Jupiter och månarna.' },

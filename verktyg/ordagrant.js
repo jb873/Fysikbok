@@ -230,7 +230,8 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
                             ['IV D', 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', 'tyngdpunkt-och-balans'],   // (arbetsorder 17)
                             ['V A', 'V-A-Tryck-alla-nivaer-v3.md', 'tryck', 'tryck_arbete_och_maskiner'],   // (arbetsorder 21)
                             ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v3.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner'],   // (arbetsorder 28)
-                            ['V C', 'V-C-Mekanisk-energi-alla-nivaer-v2.md', 'mekanisk-energi', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 29)
+                            ['V C', 'V-C-Mekanisk-energi-alla-nivaer-v2.md', 'mekanisk-energi', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
+                            ['V D', 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', 'havstangen-och-enkla-maskiner', 'tryck_arbete_och_maskiner']]) {   // (arbetsorder 29)
   const r = las(path.join(__dirname, '..', 'kallor', 'kap3', KF)), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);
@@ -311,5 +312,6 @@ console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källor
   '\nKraft och rörelse IV A (Resulterande kraft), IV B (Fritt fall), IV C (Kaströrelse) och IV D (Tyngdpunkt, balans och kroppen), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.' +
   '\nKraft och rörelse V A (Tryck), tre nivåer, likadant (arbetsorder 21), med exemplen rad för rad.' +
   '\nKraft och rörelse V B (Energi och arbete), tre nivåer, likadant (arbetsorder 28), men utan rutan "Vill du gå vidare?".' +
-  '\nKraft och rörelse V C (Mekanisk energi), tre nivåer, likadant (arbetsorder 29), med Ep och Ek skrivna med index.');
+  '\nKraft och rörelse V C (Mekanisk energi), tre nivåer, likadant (arbetsorder 29), med Ep och Ek skrivna med index.' +
+  '\nKraft och rörelse V D (Maskiner och effekt), tre nivåer, likadant (arbetsorder 29).');
 process.exitCode = fel ? 1 : 0;
