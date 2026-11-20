@@ -557,6 +557,13 @@ Det som fanns förut ritas som förut.
 - **En ny sorts figur** (inte en ny figur av en befintlig sort) är en ny funktion i `bokskal/figurer.js`. Det är
   utbyggnad av motorn, inte innehåll.
 
+### Figurer som visar ett förlopp får numrerade steg
+- En figur som visar ett förlopp (något som händer i ordning, t.ex. ljud som bildas, ljus som bryts, ett ekolod, ögat som skapar en bild) ritas med numrerade steg 1, 2, 3 … med en tydlig startpunkt ("börja här").
+- Varje steg får en kort mening bredvid den del av figuren som steget gäller.
+- Figurer som visar en struktur (t.ex. örats delar, en lins, en spegel) får bara namn på delarna – inga nummer.
+- I textfilerna markeras detta i BILD-raden med "numrerade steg: 1 … · 2 … · 3 …".
+- Befintliga färgkonventioner gäller oförändrade (kraftpilar guld, rörelsepilar indigo/streckade).
+
 ## Hjälpmedel: plattformens, länkade, aldrig byggda här
 
 Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga egna quiz- eller ordlisteverktyg.
