@@ -2130,6 +2130,7 @@
         g += kastText(330, yG + 14 + KT, `${tal(Fr)} N · ${tal(l)} m = ${tal(Fr * l)} J`, 'fig-mitt fig-energi-ord');
         s += `<g class="fig-energi-vag" data-vag="ramp" data-kraft="${Fr}" data-stracka="${l}" data-mpx="${f(k)}" data-topp="${f(top)}">${g}</g>`;
       }
+      s = s.replace('<line class="fig-bord"', `<line class="fig-bord" data-golv="${f(yG)}"`);
       H = Math.ceil(yG + 14 + KT + 8);
       beskr = `Ett klot på ${tal(m)} kg ska upp på ett bord som är ${tal(h)} m högt. Till vänster lyfts det rakt upp med ${tal(T)} N längs ${tal(h)} m. Till höger dras det i en vagn uppför en ramp som är ${tal(l)} m lång, med ${tal(Fr)} N. ` +
         `Arbetet blir ${tal(T * h)} J i båda fallen, och klotet hamnar på samma höjd.`;
