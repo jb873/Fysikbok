@@ -2111,7 +2111,7 @@
         g += `<g class="fig-energi-kraftpil" data-kraft="${T}">${pil(bx, yG - 2 * r - 4, bx, yG - 2 * r - 4 - Lf, 8)}</g>` + kastText(bx, yG - 2 * r - 4 - Lf - 8, tal(T) + ' N', 'fig-mitt fig-kast-pil-text');
         g += matt(tx - 10, yG, tx - 10, top, tal(h) + ' m', tx - 16, (yG + top) / 2 + 7, 'fig-hoger');
         g += kastText(110, yG + 14 + KT, `${tal(T)} N · ${tal(h)} m = ${tal(T * h)} J`, 'fig-mitt fig-energi-ord');
-        s += `<g class="fig-energi-vag" data-vag="rakt" data-kraft="${T}" data-stracka="${h}" data-mpx="${f(k)}" data-topp="${f(top)}">${g}</g>`;
+        s += `<g class="fig-energi-vagen" data-vag="rakt" data-kraft="${T}" data-stracka="${h}" data-mpx="${f(k)}" data-topp="${f(top)}">${g}</g>`;
       }
       // höger: vagnen längs rampen
       { const x0 = 236, x1 = x0 + run * k, tb = Math.min(56, B - 12 - x1);
@@ -2128,7 +2128,7 @@
         const o = 46, a1 = [x0 + o * nx, yG + o * ny], a2 = [x1 + o * nx, top + o * ny];
         g += matt(a1[0], a1[1], a2[0], a2[1], tal(l) + ' m', (a1[0] + a2[0]) / 2 + 14 * nx, (a1[1] + a2[1]) / 2 + 14 * ny, 'fig-hoger');
         g += kastText(330, yG + 14 + KT, `${tal(Fr)} N · ${tal(l)} m = ${tal(Fr * l)} J`, 'fig-mitt fig-energi-ord');
-        s += `<g class="fig-energi-vag" data-vag="ramp" data-kraft="${Fr}" data-stracka="${l}" data-mpx="${f(k)}" data-topp="${f(top)}">${g}</g>`;
+        s += `<g class="fig-energi-vagen" data-vag="ramp" data-kraft="${Fr}" data-stracka="${l}" data-mpx="${f(k)}" data-topp="${f(top)}">${g}</g>`;
       }
       s = s.replace('<line class="fig-bord"', `<line class="fig-bord" data-golv="${f(yG)}"`);
       H = Math.ceil(yG + 14 + KT + 8);
@@ -2152,7 +2152,7 @@
         const my = yP + 16;
         g += `<g class="fig-energi-matt"><line class="fig-krock-matt" x1="${f(cx + tecken * 10)}" y1="${f(my)}" x2="${f(x)}" y2="${f(my)}"/><line class="fig-krock-matt" x1="${f(x)}" y1="${f(my - 5)}" x2="${f(x)}" y2="${f(my + 5)}"/></g>` +
           kastText((cx + tecken * 10 + x) / 2, my + 21, tal(P.arm) + ' m', 'fig-mitt');
-        s += `<g class="fig-energi-sits" data-sida="${sida}" data-kraft="${P.kraft}" data-arm="${P.arm}">${g}</g>`;
+        s += `<g class="fig-energi-person" data-sida="${sida}" data-kraft="${P.kraft}" data-arm="${P.arm}">${g}</g>`;
       });
       // vridpilarna: lika stora bågar kring vridningspunkten, åt var sitt håll
       const R = 70, bage =(sida, fran, till) => { const p1 = [cx + R * Math.cos(fran), yP - R * Math.sin(fran)], p2 = [cx + R * Math.cos(till), yP - R * Math.sin(till)];

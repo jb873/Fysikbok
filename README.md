@@ -1566,3 +1566,8 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   `kap3-omvandlare.js --text vd`), tre nivåer; kortet D är nu en länk, och alla fyra texterna i V finns. Figurerna
   D1–D3 är nya lägen av `energi` (ramp, gungbrada, talja), med fall i provboken och negativa prov: rampen ritad en och
   en halv gång för lång, barnet ritat 1,8 m ut i stället för 2 m, dragkraftens pil lika lång som tyngdpilen.
+- **2026-11-20, arbetsorder 29, rättelse: D1 och D2 i guld.** Rampens två vägar låg i en grupp med klassen
+  `fig-energi-vag`, som redan är B:s röda studsvågor, så pilarna och talen i D1 blev röda. Gruppen heter nu
+  `fig-energi-vagen`. Personerna på gungbrädan (D2) låg i en grupp med klassen `fig-energi-sits` (gungans sits i C2,
+  svart kant), så talen fick svart kant; gruppen heter nu `fig-energi-person`. Grinden mäter nu att kraftpilarna och deras tal i energifigurerna är guld (`--accent-2-mork`)
+  och att talen inte har någon färgad kant; negativt prov: den gamla klassen tillbaka.

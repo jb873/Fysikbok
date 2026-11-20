@@ -685,6 +685,11 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         const kraftEl = s.querySelector('line.fig-pil'), rorEl = [...s.querySelectorAll('line.fig-rorelse')];
         rorEl.forEach(l => { const a = getComputedStyle(l), b = kraftEl && getComputedStyle(kraftEl);
           if (a.strokeDasharray === 'none' || (b && (a.stroke === b.stroke || a.strokeDasharray === b.strokeDasharray))) f_.push('en rörelsepil ser ut som en kraftpil (' + a.stroke + ', ' + a.strokeDasharray + ')'); });
+        // (arbetsorder 29) kraftpilarna och deras tal är guld, och talen har ingen färgad kant (bara vit halo)
+        const guld = (() => { const t = document.createElementNS('http://www.w3.org/2000/svg', 'line'); t.style.stroke = 'var(--accent-2-mork)'; s.appendChild(t); const v = getComputedStyle(t).stroke; t.remove(); return v; })();
+        s.querySelectorAll('line.fig-pil').forEach(l => { const c = getComputedStyle(l).stroke; if (c !== guld) f_.push('en kraftpil är inte guld (' + c + ')'); });
+        s.querySelectorAll('text.fig-kast-pil-text').forEach(t => { const c = getComputedStyle(t);
+          if (c.fill !== guld || (c.stroke !== 'none' && !t.classList.contains('fig-halo'))) f_.push('talet ' + t.textContent + ' är inte guld (' + c.fill + ', kant ' + c.stroke + ')'); });
         if (lage === 'studs') {
           const golv = +s.querySelector('line.fig-bord').dataset.golv;
           const bagar = [...s.querySelectorAll('polyline.fig-energi-bana')].sort((a, b) => +a.dataset.bage - +b.dataset.bage);
@@ -769,7 +774,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           // D1: båda vägarna slutar på samma höjd; rampen ritad lika lång som utskrivet, och lika hög som bordet;
           // kraft gånger sträcka lika för båda, och det står under båda
           const V = {};
-          s.querySelectorAll('g.fig-energi-vag').forEach(g => { V[g.dataset.vag] = { F: +g.dataset.kraft, s: +g.dataset.stracka, k: +g.dataset.mpx, topp: +g.dataset.topp, g,
+          s.querySelectorAll('g.fig-energi-vagen').forEach(g => { V[g.dataset.vag] = { F: +g.dataset.kraft, s: +g.dataset.stracka, k: +g.dataset.mpx, topp: +g.dataset.topp, g,
             bord: g.querySelector('rect.fig-energi-bord'), text: [...g.querySelectorAll('text.fig-energi-ord')].map(t => t.textContent).join(' ') }; });
           const { rakt: a, ramp: b } = V, golv = +s.querySelector('line.fig-bord').dataset.golv;
           if (!a || !b) f_.push('vägarna saknas');
@@ -788,7 +793,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           // lika stora vridpilar åt motsatt håll kring vridningspunkten
           const pl = s.querySelector('rect.fig-energi-planka'), [vx, vy] = pl.dataset.vridpunkt.split(',').map(Number), k = +pl.dataset.mpx;
           if (pl.getAttribute('transform')) f_.push('plankan är vriden');
-          const P = [...s.querySelectorAll('g.fig-energi-sits')].map(g => ({ sida: g.dataset.sida, F: +g.dataset.kraft, l: +g.dataset.arm, x: g.querySelector('circle.fig-energi-sittpunkt').cx.baseVal.value, y: g.querySelector('circle.fig-energi-sittpunkt').cy.baseVal.value }));
+          const P = [...s.querySelectorAll('g.fig-energi-person')].map(g => ({ sida: g.dataset.sida, F: +g.dataset.kraft, l: +g.dataset.arm, x: g.querySelector('circle.fig-energi-sittpunkt').cx.baseVal.value, y: g.querySelector('circle.fig-energi-sittpunkt').cy.baseVal.value }));
           if (P.length !== 2) f_.push(P.length + ' personer');
           else {
             if (!nara(P[0].y, P[1].y) || !nara(P[0].y, pl.y.baseVal.value)) f_.push('de sitter inte på samma vågräta planka');
@@ -1048,7 +1053,7 @@ const NG_PROV = String.raw`if (spar.some(x => x.rk && x.rk.antal)) prova('figur:
     spar.every(x => !x.tb.fel.length), spar.flatMap(x => x.tb.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tb.antal).map(x => x.tb.minPx)).toFixed(1) + ' px');
   if (spar.some(x => x.tr && x.tr.antal)) prova('figur: tryck – tyngdpilarna lika långa, den större sulan minst dubbelt så lång och den mindre sjunker djupare; den stora kolven minst dubbelt så bred och pilen vid den längre, oljan förbinder cylindrarna, kolvarna på samma höjd och samma p i båda; tryckpilarna i proportion till djupet, sidopilarna parvis lika, lyftkraften = undersidans − ovansidans pil; sträckorna utskrivna, samma oljevolym och samma kraft gånger väg, de ritade sträckorna i areornas kvot; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.tr.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.tr.typer))].join(', ') + ')',
     spar.every(x => !x.tr.fel.length), spar.flatMap(x => x.tr.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tr.antal).map(x => x.tr.minPx)).toFixed(1) + ' px');
-  if (spar.some(x => x.en && x.en.antal)) prova('figur: energi och arbete – varje studs lägre än den förra och bollen hoptryckt bara vid golvet, en våg vid varje studs; kraftpilen uppåt i alla tre panelerna, rörelsepilen uppåt i den första, ingen i den mittersta och vågrät i den tredje, ordet arbete ensamt bara vid den första; repets vinkel som den utskrivna, delarna framåt och uppåt från pilens början till spetsen och talen vid dem = kraften gånger delarnas andel (±1 N); staplarna lika höga tillsammans och lägesenergins i proportion till höjden; gungans ytterlägen på samma höjd och mitten lägst; staven böjd bara i stavhoppets mittläge och lägena i ordning; rampens och bordets höjd lika, rampens längd och kraft gånger sträcka; gungbrädan vågrät, momenten lika, avstånden i skala och vridpilarna lika stora och motriktade; taljans två bärande repdelar, lyftet och det indragna repet, dragkraften halva tyngden; rörelsepilarna i annan färg och streckade; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.en.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.en.typer))].join(', ') + ')',
+  if (spar.some(x => x.en && x.en.antal)) prova('figur: energi och arbete – varje studs lägre än den förra och bollen hoptryckt bara vid golvet, en våg vid varje studs; kraftpilen uppåt i alla tre panelerna, rörelsepilen uppåt i den första, ingen i den mittersta och vågrät i den tredje, ordet arbete ensamt bara vid den första; repets vinkel som den utskrivna, delarna framåt och uppåt från pilens början till spetsen och talen vid dem = kraften gånger delarnas andel (±1 N); staplarna lika höga tillsammans och lägesenergins i proportion till höjden; gungans ytterlägen på samma höjd och mitten lägst; staven böjd bara i stavhoppets mittläge och lägena i ordning; rampens och bordets höjd lika, rampens längd och kraft gånger sträcka; gungbrädan vågrät, momenten lika, avstånden i skala och vridpilarna lika stora och motriktade; taljans två bärande repdelar, lyftet och det indragna repet, dragkraften halva tyngden; kraftpilarna och deras tal guld; rörelsepilarna i annan färg och streckade; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.en.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.en.typer))].join(', ') + ')',
     spar.every(x => !x.en.fel.length), spar.flatMap(x => x.en.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.en.antal).map(x => x.en.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------
