@@ -40,7 +40,11 @@ const TABELL = [
     avsnitt: [] },
   // V C och V D (arbetsorder 29): ingen ruta, som B
   { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/mekanisk-energi/fordjupning.js', text: 'V C Mekanisk energi', avsnitt: [] },
-  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/havstangen-och-enkla-maskiner/fordjupning.js', text: 'V D Maskiner och effekt', avsnitt: [] }
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/havstangen-och-enkla-maskiner/fordjupning.js', text: 'V D Maskiner och effekt', avsnitt: [] },
+  // VI A och VI B (arbetsorder 30): ingen ruta än – de fullständiga kapitlen om ljud och ljus finns inte; rutorna läggs
+  // till när kapitlen finns
+  { fil: 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud/fordjupning.js', text: 'VI A Ljud', avsnitt: [] },
+  { fil: 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljus/fordjupning.js', text: 'VI B Ljus', avsnitt: [] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };

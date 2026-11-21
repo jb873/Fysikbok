@@ -78,7 +78,12 @@ const FEL = {
   // avsnittssidan – kontrolläget och grindens prov av textlänkarna ska ge rött
   'textlänk till en bok som inte finns': { adress: '&prova=textlank-fel', dk: 'fall_kast_och_balans', regel: /textlänk|finns inte på avsnittssidan/i },
   // En punktlista får delas bara om den inte ryms (arbetsorder 16): motorns provkrok delar en lista som ryms på mitten
-  'punktlista delad fast den ryms': { adress: '&prova=punktlista-delad', dk: 'provbok', regel: /punktlista/i },
+  'punktlista delad fast den ryms': { adress: '&prova=punktlista-delad', dk: 'provbok', regel: /punktlistan är delad, fast den ryms/ },
+  // Exempelregeln för punktlistor (arbetsorder 31): listan delas bara mellan två punkter och med minst två punkter på
+  // varje sida – motorns provkrok flyttar den sista punkten ensam till nästa sida; och utan regeln (listan hålls hel)
+  // blir sidan före listan i provbokens avsnitt "Provpunktlista efter ett kort stycke" tunn
+  'punktlista med en punkt ensam på en sida': { adress: '&prova=punkt-ensam', dk: 'provbok', regel: /bara en punkt på sidan/ },
+  'punktlista hel fast sidan blir tunn': { adress: '&prova=punktlista-hel', dk: 'provbok', regel: /fylld/ },
   // Rader i följd får delas enligt 40 %-regeln, aldrig mitt i ett mellanled (arbetsorder 21): motorns provkrok delar
   // rader före en uträkning – i V A Fördjupning, där rader står i avsnitt över flera sidor (provbokens rader står sist
   // i ett avsnitt på en sida och kan inte flyttas)
@@ -108,6 +113,71 @@ function delkapitel() {
   const utan = path.join(__dirname, 'provbok-utan-texter');
   if (fs.existsSync(path.join(utan, 'delkapitel.js'))) ut.push({ namn: 'verktyg/provbok-utan-texter (provdata)', mapp: utan, prov: false });
   return BARA ? ut.filter(d => d.namn.includes(BARA)) : ut;
+}
+
+/* ---------- Strömformatet i innehållet (arbetsorder 30) ----------
+ * Innehållsfilerna i V och VI, lästa på disken (ingen webbläsare): varje begrepp *ord|grundform* med skiljetecken utanför
+ * markeringen, ett begrepp med stor bokstav har en grundform, varje figur ritas av motorn (namn och läge finns), avsnittens
+ * och figurernas id är rätt skrivna och unika – och i VI samma som i källans huvud ("Avsnittens id"), i ordning. Negativt
+ * prov (--negativ): felen i STROM_FEL läggs in ett i taget i en kopia i minnet, och kontrollen ska ge rött för just det. */
+const STROM_MAPPAR = ['kraft_och_rorelse/tryck_arbete_och_maskiner/innehall', 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall'];
+const STROM_KALLOR = { 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud': 'VI-A-Repetition-Ljud-alla-nivaer-v3.md',
+  'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljus': 'VI-B-Repetition-Ljus-alla-nivaer-v3.md' };
+const VI_IN = 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/';
+const STROM_FEL = [
+  { namn: 'saknad grundform (VI)', fil: VI_IN + 'ljud/standard.js', fran: '*Tinnitus|tinnitus*', till: '*Tinnitus*', regel: /grundform/ },
+  { namn: 'skiljetecken innanför markering (VI)', fil: VI_IN + 'ljud/standard.js', fran: 'kallas *eko*.', till: 'kallas *eko.*', regel: /skiljetecken/ },
+  { namn: 'okänd figur (VI)', fil: VI_IN + 'ljus/standard.js', fran: "lage: 'prisma'", till: "lage: 'regnbage'", regel: /figur/ },
+  { namn: 'felaktig id (VI)', fil: VI_IN + 'ljud/enkel.js', fran: "id: 'doppler'", till: "id: 'dopler'", regel: /\bid\b/ }
+];
+function stromFiler() {
+  const ut = [];
+  for (const m of STROM_MAPPAR) { const abs = path.join(ROT, m); if (!fs.existsSync(abs)) continue;
+    for (const t of fs.readdirSync(abs)) for (const n of ['standard', 'enkel', 'fordjupning']) {
+      const fil = path.join(abs, t, n + '.js'); if (fs.existsSync(fil)) ut.push({ fil: `${m}/${t}/${n}.js`, mapp: `${m}/${t}`, niva: n, kod: fs.readFileSync(fil, 'utf8') }); } }
+  return ut;
+}
+// källans huvud: "# Avsnittens id: Standard och Enkel: a · b · … # Fördjupning: a · …" → { standard, enkel, fordjupning }
+function kallansId(kalla) {
+  const r = fs.readFileSync(path.join(ROT, 'kallor', 'kap3', kalla), 'utf8').replace(/\r/g, '').split('\n');
+  const i = r.findIndex(l => /^# Avsnittens id:/.test(l)); if (i < 0) return null;
+  let s = ''; for (let j = i; j < r.length && /^#/.test(r[j]) && !/^# ?=|^#\s*$/.test(r[j]); j++) s += ' ' + r[j].replace(/^#\s?/, '');
+  const lista = t => (t || '').split('·').map(x => x.trim().replace(/\.$/, '')).filter(Boolean);
+  const se = /Standard och Enkel:(.*?)Fördjupning:/.exec(s), fd = /Fördjupning:(.*)$/.exec(s);
+  return se && fd ? { standard: lista(se[1]), enkel: lista(se[1]), fordjupning: lista(fd[1]) } : null;
+}
+function stromKoll(filer) {
+  const F = {}, B0 = global.Bok, W0 = global.window;
+  global.window = W0 || {}; global.Bok = { figur: (n, fn) => { F[n] = fn; }, illustration: () => {} };
+  const fig = path.join(ROT, 'bokskal', 'figurer.js'); delete require.cache[require.resolve(fig)]; require(fig);
+  const fel = [];
+  try {
+    for (const x of filer) {
+      let data; global.Bok = { niva: (n, d) => { data = d; } };
+      try { eval(x.kod); } catch (e) { fel.push(`${x.fil}: läses inte (${e.message})`); continue; }
+      const f_ = m => fel.push(`${x.fil}: ${m}`), strangar = [], figurer = [], avsId = [];
+      const samla = o => { if (typeof o === 'string') strangar.push(o); else if (Array.isArray(o)) o.forEach(samla); };
+      for (const a of data.avsnitt) { avsId.push(a.id);
+        for (const b of a.block) { ['text', 'rader', 'punkter', 'stycken'].forEach(k => samla(b[k])); if (b.typ === 'figur') figurer.push(b); } }
+      for (const s of strangar) {
+        if ((s.match(/\*/g) || []).length % 2) f_(`udda antal * i ”${s.slice(0, 60)}…”`);
+        for (const m of s.matchAll(/\*([^*]+)\*/g)) { const [ord, gf] = m[1].split('|');
+          if (/^[.,;:!?]|[.,;:!?]$/.test(ord) || (gf && /[.,;:!?]$/.test(gf))) f_(`skiljetecken innanför markeringen: *${m[1]}*`);
+          if (!gf && /^[A-ZÅÄÖ]/.test(ord) && x.mapp.startsWith(VI_IN)) f_(`begreppet *${ord}* har stor bokstav men ingen grundform`); } }   // (bara VI: ordern; V A har namnet *Arkimedes princip*)
+      for (const b of figurer) {
+        if (!F[b.namn]) { f_(`okänd figur ”${b.namn}” (${b.id})`); continue; }
+        try { const r = F[b.namn](b); if (!r || !/<svg/.test(typeof r === 'string' ? r : r.svg)) f_(`figuren ${b.id} (${b.namn}${b.lage ? ' ' + b.lage : ''}) ritar ingen svg`); }
+        catch (e) { f_(`figuren ${b.id} (${b.namn}${b.lage ? ' ' + b.lage : ''}) ritas inte: ${e.message}`); }
+      }
+      const idFel = (lista, re, slag) => { lista.forEach(i => { if (!re.test(String(i))) f_(`${slag} id ”${i}” är felskrivet`); });
+        lista.filter((i, k) => lista.indexOf(i) !== k).forEach(i => f_(`${slag} id ”${i}” finns två gånger`)); };
+      idFel(avsId, /^[a-z0-9]+(-[a-z0-9]+)*$/, 'avsnittets'); idFel(figurer.map(b => b.id), /^bild-[a-z]+\d+$/, 'figurens');
+      const k = STROM_KALLOR[x.mapp] && kallansId(STROM_KALLOR[x.mapp]);
+      if (STROM_KALLOR[x.mapp] && !k) f_('källans huvud saknar "Avsnittens id"');
+      if (k && avsId.join(' · ') !== k[x.niva].join(' · ')) f_(`avsnittens id ${avsId.join(' · ')} är inte källans ${k[x.niva].join(' · ')}`);
+    }
+  } finally { global.Bok = B0; global.window = W0; }
+  return fel;
 }
 
 /* ---------- Chrome via DevTools-protokollet ---------- */
@@ -181,7 +251,7 @@ async function chrome() {
  *  - jorden och månen: pilarna i tyngdernas förhållande (±1 px), personerna lika stora, samma massa i båda.
  * Klistras in i scenarierna (behöver v och $$). */
 const FIGURKOLL = String.raw`const figurKoll = async () => {
-    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map(), kc = new Map(), tb = new Map(), tr = new Map(), en = new Map();
+    const sett = new Map(), par = new Map(), fr = new Map(), bp = new Map(), tal = new Set(), st = new Map(), fp = new Map(), hs = new Map(), pn = new Map(), jm = new Map(), ry = new Map(), ng = new Map(), rk = new Map(), kc = new Map(), tb = new Map(), tr = new Map(), en = new Map(), lj = new Map();
     // g och N/kg i rubriker, innehållet, sidhuvudet och tabellhuvuden: i vanlig stil med rätt skiftläge (span.sym i
     // EB Garamond, inte kapitäler – där blir g ett G och kg KG)
     const SYMKOLL = /(?<![\p{L}\p{N}\/])(?:N\/kg|g)(?![\p{L}\p{N}\/²³])/gu, symSett = new Set(), symFel = [];
@@ -838,6 +908,236 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         en.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
       });
+      // Ljud och ljus (Kraft och rörelse VI, arbetsorder 30), mätt i figurernas egna element:
+      //  - förlopp (README: "Figurer som visar ett förlopp får numrerade steg"): ringarna 1 … N en gång var, N som
+      //    figuren ska ha, en mening intill varje ring och "börja här" vid steg 1; strukturer och övriga: inga nummer;
+      //  - normalen streckad och vinkelrät mot ytan, och varje vinkelbåge börjar på normalen (vinklarna mäts mot den);
+      //  - ljud: A1 molekylen nära sitt viloläge, membranet fram–bak–fram, förtätningarna tätare och den första längre bort i
+      //    det tredje ögonblicket; A2 axeln märkt "tryck", vågtopparna under förtätningarna, topp och dal märkta åt rätt håll;
+      //    A3 fronterna tätare framför än bakom och orden på rätt sida; A5 tonhöjden: olika våglängd, samma amplitud,
+      //    ljudstyrkan: samma våglängd (också mellan förtätningarna i prickarna), olika amplitud; A6 samma våglängd och större
+      //    amplitud; A7 signalen ned och ekot upp; A8 svagare våg ut med samma våglängd;
+      //  - ljus: reflektionslagen (B1, B2, B3), spegelbilden lika långt bakom (B3), brännpunkterna (B4, B8), Snells lag med
+      //    n = 1,33 och vågfronterna tätare i vattnet (B5), pennan (B6), totalreflektionen (B7), bilden upp och ned (B9),
+      //    synfelen (B10), prismats ordning (B11), bara det röda ljuset till ögat (B12), spektrumets ordning (B13), två
+      //    kolumner utan pilar (B14);
+      //  - rörelsepilarna indigo och streckade; ingen text under 14 px, utanför figuren eller över en annan.
+      $$('.scen svg[data-ljud], .scen svg[data-ljus]').forEach(s => {
+        const id = s.closest('[data-post]').dataset.post;
+        if (lj.has(id)) return;
+        const bb = s.getBoundingClientRect(), vb = s.viewBox.baseVal, sk = Math.min(bb.width / vb.width, bb.height / vb.height);
+        const namn = s.dataset.ljud ? 'ljud' : 'ljus', lage = s.dataset.ljud || s.dataset.ljus, typ = namn + ' ' + lage, f_ = [];
+        const nara = (a, b, t) => Math.abs(a - b) <= (t == null ? 0.6 : t);
+        const L_ = el => [el.x1.baseVal.value, el.y1.baseVal.value, el.x2.baseVal.value, el.y2.baseVal.value];
+        const P_ = el => [...el.points].map(p => [p.x, p.y]);
+        const ak = (a, b) => { const d = Math.abs(a[0] * b[0] + a[1] * b[1]) / Math.hypot(...a) / Math.hypot(...b); return Math.acos(Math.min(1, d)) * 180 / Math.PI; };   // spetsig vinkel mellan två linjer
+        const rikt = l => [l[2] - l[0], l[3] - l[1]];
+        const avst = (x, y, l) => Math.abs((l[2] - l[0]) * (l[1] - y) - (l[0] - x) * (l[3] - l[1])) / Math.hypot(l[2] - l[0], l[3] - l[1]);
+        const q = (sel, r) => (r || s).querySelector(sel), qa = (sel, r) => [...(r || s).querySelectorAll(sel)];
+        const txt = r => qa('text', r).map(t => t.textContent).join(' ');
+        // vågen i en polyline: våglängden (medianen mellan topparna) och amplituden
+        const vag = el => { const p = P_(el), ys = p.map(x => x[1]), mx = Math.max(...ys), mn = Math.min(...ys), amp = (mx - mn) / 2, t = [];
+          for (let i = 1; i < p.length - 1; i++) if (ys[i] <= ys[i - 1] && ys[i] < ys[i + 1] && ys[i] < mn + amp * 0.2) t.push(p[i][0]);
+          const dx = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b); return { lam: dx.length ? dx[Math.floor(dx.length / 2)] : NaN, amp, toppar: t }; };
+        // förtätningarna i prickarna: tätheten (utjämnad) och dess toppar
+        const tathet = (g, lam) => { const xs = qa('circle.fig-ljud-prick', g).map(c => c.cx.baseVal.value), x0 = Math.min(...xs), x1 = Math.max(...xs), sg = lam / 7, d = [];
+          for (let x = x0; x <= x1; x++) d.push(xs.reduce((a, xi) => a + Math.exp(-((x - xi) * (x - xi)) / (2 * sg * sg)), 0));
+          const m = d.reduce((a, b) => a + b, 0) / d.length, w = Math.round(lam / 3), t = [];
+          for (let i = w; i < d.length - w; i++) if (d[i] > m * 1.04 && d.slice(i - w, i + w + 1).every(v => v <= d[i])) t.push(x0 + i);
+          const dx = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b); return { toppar: t, lam: dx.length ? dx[Math.floor(dx.length / 2)] : NaN }; };
+        // stegen
+        const FORLOPP = { 'ljud membran': 5, 'ljud resonans': 4, 'ljud ekolod': 5, 'ljus spegelbild': 4, 'ljus brytning': 3, 'ljus penna': 4, 'ljus totalreflektion': 3, 'ljus ogat': 4, 'ljus farg': 3 };
+        const STRUKTUR = ['ljud orat', 'ljus speglar', 'ljus linser', 'ljus spektrum'];
+        const ringar = qa('g.fig-steg'), N = FORLOPP[typ];
+        if (N) {
+          if (+s.dataset.stegAntal !== N) f_.push('förloppet ska ha ' + N + ' steg, figuren säger ' + s.dataset.stegAntal);
+          const nr = ringar.map(g => +g.dataset.steg).sort((a, b) => a - b);
+          if (nr.join() !== Array.from({ length: N }, (_, i) => i + 1).join()) f_.push('stegen är ' + nr.join(', ') + ', inte 1–' + N);
+          ringar.forEach(g => { const c = q('circle', g), cx = c.cx.baseVal.value, cy = c.cy.baseVal.value, tt = qa('text[data-steg-text="' + g.dataset.steg + '"]');
+            const d = Math.min(...tt.map(t => { const b = t.getBBox(); return Math.hypot(Math.max(b.x - cx, 0, cx - b.x - b.width), Math.max(b.y - cy, 0, cy - b.y - b.height)); }));
+            if (!tt.length) f_.push('steg ' + g.dataset.steg + ' har ingen mening'); else if (d > 40) f_.push('meningen till steg ' + g.dataset.steg + ' står ' + d.toFixed(0) + ' från ringen'); });
+          const bh = qa('text.fig-steg-start'), r1 = ringar.find(g => g.dataset.steg === '1');
+          if (bh.length !== 1 || !r1) f_.push('"börja här" står ' + bh.length + ' gånger');
+          else { const b = bh[0].getBBox(), c = q('circle', r1), cx = c.cx.baseVal.value, cy = c.cy.baseVal.value, d = Math.hypot(Math.max(b.x - cx, 0, cx - b.x - b.width), Math.max(b.y - cy, 0, cy - b.y - b.height));
+            if (d > 40) f_.push('"börja här" står ' + d.toFixed(0) + ' från steg 1'); }
+        } else {
+          if (ringar.length || qa('text.fig-steg-start').length) f_.push((STRUKTUR.includes(typ) ? 'en struktur' : 'figuren') + ' har numrerade steg');
+          if (STRUKTUR.includes(typ) && s.dataset.struktur == null) f_.push('strukturen är inte märkt som struktur');
+        }
+        // normalen och vinklarna
+        const normaler = qa('line.fig-normal');
+        if (['ljus reflektion', 'ljus brytning', 'ljus penna', 'ljus totalreflektion'].includes(typ) && !normaler.length) f_.push('normalen saknas');
+        normaler.forEach(n => { const l = L_(n), y = +n.dataset.yta;
+          if (getComputedStyle(n).strokeDasharray === 'none') f_.push('normalen är inte streckad');
+          if (y === 0 && !nara(l[0], l[2])) f_.push('normalen är inte lodrät (ytan är vågrät)');
+          if (y === 90 && !nara(l[1], l[3])) f_.push('normalen är inte vågrät (ytan är lodrät)'); });
+        qa('path.fig-vinkel').forEach(p => { const a = p.getPointAtLength(0), cx = +p.dataset.cx, cy = +p.dataset.cy;
+          if (!normaler.some(n => avst(a.x, a.y, L_(n)) <= 0.6 && avst(cx, cy, L_(n)) <= 0.6)) f_.push('vinkeln ' + (p.dataset.vinkel || '') + ' mäts inte mot normalen'); });
+        // rörelsepilarna: indigo och streckade
+        const ind = (() => { const t = document.createElementNS('http://www.w3.org/2000/svg', 'line'); t.style.stroke = 'var(--accent)'; s.appendChild(t); const v = getComputedStyle(t).stroke; t.remove(); return v; })();
+        qa('line.fig-rorelse').forEach(l => { const c = getComputedStyle(l); if (c.stroke !== ind || c.strokeDasharray === 'none') f_.push('en rörelsepil är inte indigo och streckad'); });
+        const st = r => { const l = L_(q('line.fig-ljus-strale[data-roll="' + r + '"]') || { x1: { baseVal: { value: NaN } }, y1: { baseVal: { value: NaN } }, x2: { baseVal: { value: NaN } }, y2: { baseVal: { value: NaN } } }); return l; };
+        const nV = +((q('.fig-ljus-data') || { dataset: {} }).dataset.n || 1.33);
+        if (lage === 'membran') {
+          const R = qa('g.fig-ljud-ogonblick').sort((a, b) => +a.dataset.rad - +b.dataset.rad);
+          if (R.length !== 3) f_.push(R.length + ' ögonblick');
+          else {
+            const lam = +q('g.fig-ljud-prickar', R[0]).dataset.vaglangd;
+            const ut = R.map(g => +q('line.fig-ljud-membran', g).dataset.utslag);
+            if (!(ut[0] > 1 && ut[1] < -1 && ut[2] > 1)) f_.push('membranet går inte fram, bak, fram (' + ut.map(x => x.toFixed(1)).join(' / ') + ')');
+            R.forEach((g, i) => { const m = q('circle.fig-ljud-markerad', g); if (!m || !nara(m.cx.baseVal.value, +m.dataset.vila, lam * 0.2)) f_.push('ögonblick ' + (i + 1) + ': den markerade molekylen är långt från sin plats');
+              const xs = qa('circle.fig-ljud-prick', g).map(c => c.cx.baseVal.value), tat = qa('rect.fig-ljud-tat', g);
+              tat.forEach(r => { const a = r.x.baseVal.value, w = r.width.baseVal.value, inne = xs.filter(x => x >= a && x <= a + w).length / Math.max(w, 1), alla = xs.length / (Math.max(...xs) - Math.min(...xs));
+                if (!(inne > alla * 1.3)) f_.push('ögonblick ' + (i + 1) + ': förtätningen vid ' + a.toFixed(0) + ' är inte tätare (' + (inne / alla).toFixed(2) + ' gånger)'); }); });
+            const tat = R.map(g => qa('rect.fig-ljud-tat', g).map(r => r.x.baseVal.value + r.width.baseVal.value / 2));
+            if (tat[0].length !== 1 || tat[2].length !== 2) f_.push('förtätningarna: ' + tat.map(t => t.length).join(', ') + ' (ska vara 1, 1, 2)');
+            else if (!(Math.max(...tat[2]) > tat[0][0] + 0.8 * lam)) f_.push('den första förtätningen har inte vandrat bort');
+          }
+        } else if (lage === 'modeller') {
+          const ax = q('g.fig-ljud-axel[data-axel="tryck"]'), tt = qa('text').find(t => t.textContent === 'tryck');
+          if (!ax || !tt) f_.push('den lodräta axeln är inte märkt "tryck"');
+          else { const p = q('polygon', ax).points[0], b = tt.getBBox(); if (Math.hypot(Math.max(b.x - p.x, 0, p.x - b.x - b.width), Math.max(b.y - p.y, 0, p.y - b.y - b.height)) > 30) f_.push('"tryck" står inte vid axelns topp'); }
+          const v = vag(q('polyline.fig-ljud-vag')), g = q('g.fig-ljud-prickar'), lam = +g.dataset.vaglangd, d = tathet(g, lam);
+          if (!nara(v.lam, lam, 1)) f_.push('vågen har våglängden ' + v.lam.toFixed(1) + ', inte ' + lam);
+          v.toppar.filter(x => x > Math.min(...d.toppar) - lam / 3 && x < Math.max(...d.toppar) + lam / 3).forEach(x => { if (!d.toppar.some(t => nara(t, x, lam / 10))) f_.push('vågtoppen vid ' + x.toFixed(0) + ' står inte under en förtätning (' + d.toppar.map(t => t.toFixed(0)).join(', ') + ')'); });
+          if (!d.toppar.length) f_.push('inga förtätningar i prickarna');
+          const yv = P_(q('polyline.fig-ljud-vag')).map(p => p[1]), top = q('g[data-del="topp"]'), dal = q('g[data-del="dal"]');
+          if (!top || !/högre tryck/.test(txt(top)) || top.getBBox().y + top.getBBox().height > Math.min(...yv)) f_.push('vågtoppen är inte märkt "högre tryck" ovanför');
+          if (!dal || !/lägre tryck/.test(txt(dal)) || dal.getBBox().y < Math.max(...yv)) f_.push('vågdalen är inte märkt "lägre tryck" nedanför');
+        } else if (lage === 'doppler') {
+          const c = qa('circle.fig-ljud-front').map(e => [e.cx.baseVal.value, e.r.baseVal.value]).sort((a, b) => a[1] - b[1]);
+          const h = c.map(x => x[0] + x[1]), v = c.map(x => x[0] - x[1]), m = a => a.slice(1).reduce((s_, x, i) => s_ + Math.abs(x - a[i]), 0) / (a.length - 1);
+          const r = q('g[data-rorelse="bilen"]'), R_ = r && L_(q('line.fig-rorelse', r));
+          if (!R_ || !(R_[2] > R_[0] + 10)) f_.push('ambulansen kör inte åt höger');
+          if (!(m(h) < m(v) - 2)) f_.push('fronterna framför (' + m(h).toFixed(1) + ') ligger inte tätare än bakom (' + m(v).toFixed(1) + ')');
+          const fr = q('g[data-sida="framfor"]'), bk = q('g[data-sida="bakom"]');
+          if (!fr || !bk || !/kort/.test(txt(fr)) || !/ljusare/.test(txt(fr)) || !/lång/.test(txt(bk)) || !/mörkare/.test(txt(bk)) || !(fr.getBBox().x > bk.getBBox().x)) f_.push('orden står på fel sida');
+        } else if (lage === 'jamforelse' && namn === 'ljud') {
+          const J = {}; qa('g.fig-ljud-ljud').forEach(g => { const v = vag(q('polyline.fig-ljud-vag', g)), pk = q('g.fig-ljud-prickar', g); J[g.dataset.ljud] = { v, d: tathet(pk, +pk.dataset.vaglangd) }; });
+          const { ljust: a, morkt: b, starkt: c, svagt: e } = J;
+          if (!a || !b || !c || !e) f_.push('ljuden saknas');
+          else {
+            if (!(a.v.lam < b.v.lam - 5)) f_.push('det ljusa ljudet har inte kortare våglängd än det mörka');
+            if (!nara(a.v.amp, b.v.amp)) f_.push('tonhöjden: amplituderna skiljer (' + a.v.amp.toFixed(1) + ' / ' + b.v.amp.toFixed(1) + ')');
+            if (!nara(c.v.lam, e.v.lam, 1)) f_.push('ljudstyrkan: våglängderna skiljer (' + c.v.lam.toFixed(1) + ' / ' + e.v.lam.toFixed(1) + ')');
+            if (!(c.v.amp > e.v.amp + 5)) f_.push('det starka ljudet har inte större amplitud');
+            [['ljust', a], ['mörkt', b], ['starkt', c], ['svagt', e]].forEach(([n, x]) => { if (!nara(x.d.lam, x.v.lam, x.v.lam * 0.15)) f_.push(n + ': förtätningarna ligger ' + x.d.lam.toFixed(1) + ' isär, vågen ' + x.v.lam.toFixed(1)); });
+            if (!nara(c.d.lam, e.d.lam, c.v.lam * 0.15)) f_.push('starkt och svagt ljud har olika avstånd mellan förtätningarna (' + c.d.lam.toFixed(1) + ' / ' + e.d.lam.toFixed(1) + ')');
+          }
+        } else if (lage === 'resonans') {
+          const a = q('g[data-ljud="svagt"] polyline'), b = q('g[data-ljud="starkt"] polyline'), va = a && vag(a), vb_ = b && vag(b);
+          if (!a || !b) f_.push('vågorna saknas');
+          else { if (!nara(va.lam, vb_.lam, 1)) f_.push('lådan ändrar våglängden (' + va.lam.toFixed(1) + ' / ' + vb_.lam.toFixed(1) + ')'); if (!(vb_.amp > va.amp * 1.5)) f_.push('lådan ger inte större amplitud'); }
+        } else if (lage === 'ekolod') {
+          const pil = g => g && { l: L_(q('line', g)), p: q('polygon', g).points[0] };
+          const ned = pil(q('g[data-vag="ned"]')), upp = pil(q('g[data-vag="upp"]'));
+          if (!ned || !(ned.p.y > ned.l[1] + 20)) f_.push('signalen går inte ned');
+          if (!upp || !(upp.p.y < upp.l[1] - 20)) f_.push('ekot går inte upp');
+        } else if (lage === 'isolering') {
+          qa('g.fig-ljud-isolering').forEach(g => { const i = vag(q('g[data-ljud="in"] polyline', g)), u = vag(q('g[data-ljud="ut"] polyline', g));
+            if (!(u.amp < i.amp - 2)) f_.push(g.dataset.satt + ': vågen ut är inte svagare'); if (!nara(u.lam, i.lam, 1)) f_.push(g.dataset.satt + ': våglängden ändras'); });
+        } else if (lage === 'orat') {
+          ['ytteröra', 'hörselgång', 'trumhinna', 'hörselben', 'hörselsnäcka', 'hörselnerv'].forEach(n => { if (!qa('text').some(t => t.textContent === n)) f_.push('"' + n + '" saknas'); });
+        } else if (lage === 'foremal') {
+          const pA = q('g[data-panel="absorberar"]'), pR = q('g[data-panel="reflekterar"]'), pG = q('g[data-panel="genom"]');
+          const ia = L_(q('line[data-roll="in"]', pA)), box = q('rect.fig-ljus-svart', pA), bx = box.x.baseVal.value, by = box.y.baseVal.value;
+          if (!(ia[2] >= bx - 1 && ia[2] <= bx + box.width.baseVal.value + 1 && ia[3] >= by - 1 && ia[3] <= by + box.height.baseVal.value + 1) || q('line[data-roll="ut"]', pA)) f_.push('ljuset tar inte slut på det svarta föremålet');
+          const ir = L_(q('line[data-roll="in"]', pR)), ur = L_(q('line[data-roll="ut"]', pR));
+          if (!nara(ak(rikt(ir), [0, 1]), ak(rikt(ur), [0, 1]), 0.5) || !nara(ir[2], ur[0]) || !nara(ir[3], ur[1])) f_.push('spegeln: vinklarna är inte lika');
+          const ig = L_(q('line[data-roll="in"]', pG)), ug = L_(q('line[data-roll="ut"]', pG));
+          if (ak(rikt(ig), rikt(ug)) > 0.5 || !nara(ig[2], ug[0]) || !nara(ig[3], ug[1])) f_.push('ljuset genom glaset fortsätter inte rakt');
+          if (!q('polygon.fig-ljus-skugga', pA)) f_.push('skuggan saknas');
+        } else if (lage === 'reflektion') {
+          const i = st('in'), u = st('ut'), n = L_(normaler[0]), vi = ak(rikt(i), rikt(n)), vu = ak(rikt(u), rikt(n));
+          if (!nara(vi, vu, 0.5)) f_.push('infallsvinkeln ' + vi.toFixed(1) + '° och reflektionsvinkeln ' + vu.toFixed(1) + '° är inte lika');
+          if (!nara(i[2], n[0]) || !nara(u[0], n[0])) f_.push('strålen träffar inte spegeln vid normalen');
+          qa('path.fig-vinkel').forEach(p => { if (!nara(+p.dataset.grader, vi, 0.5)) f_.push('vinkeln ' + p.dataset.grader + '° är ritad ' + vi.toFixed(1) + '°'); });
+          if (qa('text').filter(t => t.textContent === Math.round(vi) + '°').length !== 2) f_.push('vinklarna står inte utskrivna (' + Math.round(vi) + '°)');
+        } else if (lage === 'spegelbild') {
+          const xm = L_(q('line.fig-ljus-spegel'))[0], bl = qa('g.fig-ljus-blomma'), x = bl.map(g => +g.dataset.x).sort((a, b) => a - b);
+          if (bl.length !== 2 || !nara(xm - x[0], x[1] - xm, 1)) f_.push('spegelbilden står inte lika långt bakom spegeln (' + (xm - x[0]).toFixed(1) + ' / ' + (x[1] - xm).toFixed(1) + ')');
+          ['topp', 'fot'].forEach(n => { const a = L_(q('line[data-roll="till-spegeln"][data-punkt="' + n + '"]')), b = L_(q('line[data-roll="till-ogat"][data-punkt="' + n + '"]')), c = L_(q('line.fig-ljus-skenbar[data-punkt="' + n + '"]'));
+            if (!nara(a[2], xm) || !nara(b[0], xm) || !nara(c[0], xm) || !nara(a[3], b[1]) || !nara(a[3], c[1])) f_.push(n + ': strålarna möts inte i spegeln');
+            if (!nara(ak(rikt(a), [1, 0]), ak(rikt(b), [1, 0]), 0.5)) f_.push(n + ': vinklarna i spegeln är inte lika');
+            if (!nara(c[2], x[1], 1) || !nara(c[3], a[1], 1)) f_.push(n + ': ögat följer inte strålen bakåt till spegelbilden'); });
+        } else if (lage === 'speglar' || lage === 'linser') {
+          qa(lage === 'speglar' ? 'g.fig-ljus-spegeltyp' : 'g.fig-ljus-linstyp').forEach(g => { const [fx, fy] = g.dataset.f.split(',').map(Number);
+            qa('line.fig-ljus-strale[data-roll="ut"]', g).forEach(l => { if (avst(fx, fy, L_(l)) > 1) f_.push(g.dataset.typ + ': en stråle ' + (g.dataset.typ === 'konkav' && lage === 'speglar' || g.dataset.typ === 'konvex' && lage === 'linser' ? 'går inte genom' : 'kommer inte från') + ' brännpunkten (' + avst(fx, fy, L_(l)).toFixed(1) + ')'); });
+            if (lage === 'linser' && g.dataset.typ === 'konvex') { const m = q('g[data-matt="brannvidd"] line', g), l = L_(m); if (!nara(Math.abs(l[2] - l[0]), Math.abs(fx - +g.dataset.lins), 1)) f_.push('brännvidden är inte avståndet till brännpunkten'); }
+            if (lage === 'linser' && g.dataset.typ === 'konkav') qa('line.fig-ljus-skenbar', g).forEach(l => { const b = L_(l); if (!nara(b[2], fx) || !nara(b[3], fy)) f_.push('konkav: de streckade linjerna går inte till punkten framför linsen'); }); });
+        } else if (lage === 'brytning' || lage === 'penna') {
+          const n = L_(normaler[0]), i = st(lage === 'brytning' ? 'in' : 'i-vattnet'), b = st(lage === 'brytning' ? 'bruten' : 'i-luften');
+          const v1 = ak(rikt(i), rikt(n)), v2 = ak(rikt(b), rikt(n));
+          const [vu, vn] = lage === 'brytning' ? [v1, v2] : [v2, v1];   // vinkeln i luften och i vattnet
+          if (!nara(Math.sin(vu * Math.PI / 180) / Math.sin(vn * Math.PI / 180), nV, 0.02)) f_.push('brytningen följer inte n = ' + nV + ' (' + vu.toFixed(1) + '° i luften, ' + vn.toFixed(1) + '° i vattnet)');
+          if (!(vn < vu)) f_.push('strålen bryts inte ' + (lage === 'brytning' ? 'mot' : 'från') + ' normalen');
+          if (!nara(i[2], n[0]) || !nara(b[0], n[0])) f_.push('strålen bryts inte vid normalen');
+          qa('path.fig-vinkel').forEach(p => { const v = p.dataset.vinkel, m = v === 'in' || v === 'vatten' ? v1 : v2; if (!nara(+p.dataset.grader, m, 0.5)) f_.push('vinkeln ' + v + ' är ' + p.dataset.grader + '°, ritad ' + m.toFixed(1) + '°'); });
+          if (lage === 'brytning') {
+            const yY = n[1] + 82, d1 = rikt(i), d2 = rikt(b), L1 = Math.hypot(...d1), L2 = Math.hypot(...d2), F = qa('polyline.fig-ljus-front').map(P_);
+            const luft = F.filter(p => p.every(x => x[1] < yY - 0.6)), vatten = F.filter(p => p.every(x => x[1] > yY + 0.6)), over = F.filter(p => p.some(x => x[1] < yY - 0.6) && p.some(x => x[1] > yY + 0.6));
+            const steg_ = (A, d, L) => { const pr = A.map(p => (p[0][0] * d[0] + p[0][1] * d[1]) / L).sort((a, b) => a - b); return pr.slice(1).map((x, k) => x - pr[k]); };
+            const sa = steg_(luft, d1, L1), sv = steg_(vatten, d2, L2), m = a => a.reduce((x, y) => x + y, 0) / a.length;
+            if (!sa.length || !sv.length) f_.push('vågfronterna saknas i luften eller vattnet');
+            else if (!nara(m(sv) / m(sa), 1 / nV, 0.03)) f_.push('vågfronterna i vattnet ligger ' + m(sv).toFixed(1) + ' isär, i luften ' + m(sa).toFixed(1) + ' (ska vara 1/' + nV + ')');
+            luft.concat(vatten).forEach(p => { const d = luft.includes(p) ? d1 : d2; if (Math.abs(90 - ak([p[p.length - 1][0] - p[0][0], p[p.length - 1][1] - p[0][1]], d)) > 1) f_.push('en vågfront står inte vinkelrätt mot strålen'); });
+            if (!over.length || over.some(p => p.length !== 3 || !nara(p[1][1], yY))) f_.push('vågfronterna knäcks inte vid ytan');
+          } else {
+            const T = q('circle[data-spets="verklig"]'), S = q('circle[data-spets="skenbar"]'), ty = T.cy.baseVal.value, sy = S.cy.baseVal.value;
+            if (!(sy < ty - 10)) f_.push('spetsen ser inte ut att ligga högre');
+            if (avst(S.cx.baseVal.value, sy, b) > 1) f_.push('den skenbara spetsen ligger inte på strålen bakåt');
+          }
+        } else if (lage === 'totalreflektion') {
+          const vk = Math.asin(1 / nV) * 180 / Math.PI, P = qa('g.fig-ljus-panel').sort((a, b) => +a.dataset.panel - +b.dataset.panel);
+          const vin = P.map(g => { const n = L_(q('line.fig-normal', g)); return ak(rikt(L_(q('line[data-roll="in"]', g))), rikt(n)); });
+          if (P.length !== 3 || !(vin[0] < vin[1] && vin[1] < vin[2])) f_.push('strålarna blir inte allt snettare (' + vin.map(v => v.toFixed(1)).join(', ') + ')');
+          else {
+            const n0 = L_(q('line.fig-normal', P[0])), u = q('line[data-roll="ut"]', P[0]), vu = u && ak(rikt(L_(u)), rikt(n0));
+            if (!u || !nara(Math.sin(vu * Math.PI / 180), nV * Math.sin(vin[0] * Math.PI / 180), 0.01)) f_.push('steg 1: strålen ut bryts inte enligt n = ' + nV);
+            const l = q('line[data-roll="langs"]', P[1]); if (!l || !nara(L_(l)[1], L_(l)[3]) || !nara(vin[1], vk, 0.5)) f_.push('steg 2: strålen går inte längs ytan vid gränsvinkeln ' + vk.toFixed(1) + '°');
+            const r = q('line[data-roll="reflekterad"]', P[2]), n2 = L_(q('line.fig-normal', P[2]));
+            if (!r || !nara(ak(rikt(L_(r)), rikt(n2)), vin[2], 0.5) || q('line[data-roll="ut"]', P[2]) || !(vin[2] > vk)) f_.push('steg 3: allt ljus reflekteras inte tillbaka');
+          }
+        } else if (lage === 'ogat') {
+          const [it, ifo] = q('g[data-bild]').dataset.bild.split(',').map(Number);
+          if (!(it > ifo)) f_.push('bilden på näthinnan är inte upp och ned');
+          qa('line.fig-ljus-strale[data-till]').forEach(l => { const b = L_(l), y = l.dataset.till === 'topp' ? it : ifo; if (!nara(b[3], y, 1)) f_.push('en stråle från ' + l.dataset.till + ' når inte bildens ' + l.dataset.till); });
+        } else if (lage === 'synfel') {
+          qa('g.fig-ljus-synfel').forEach(g => { const m = +g.dataset.mot, n = +g.dataset.nathinna, gl = g.dataset.glas === '1', t = g.dataset.typ;
+            if (gl && !nara(m, n, 1)) f_.push(t + ' med lins: strålarna möts inte på näthinnan');
+            if (!gl && t === 'nar' && !(m < n - 5)) f_.push('närsynt: strålarna möts inte framför näthinnan');
+            if (!gl && t === 'over' && !(m > n + 5)) f_.push('översynt: strålarna möts inte bakom näthinnan');
+            const cy = q('circle.fig-ljus-motpunkt', g).cy.baseVal.value;
+            qa('line[data-roll="i-ogat"]', g).forEach(l => { if (avst(m, cy, L_(l)) > 1) f_.push(t + ': en stråle går inte mot mötespunkten'); }); });
+        } else if (lage === 'prisma') {
+          const A = ['rott', 'orange', 'gult', 'gront', 'blatt', 'violett'].map(c => { const l = q('line[data-farg="' + c + '"][data-ut]'); return l ? Math.abs(+l.dataset.avvikelse) : NaN; });
+          if (!A.every((x, i) => i === 0 || x > A[i - 1])) f_.push('färgerna bryts inte allt mer från rött till violett (' + A.map(x => x.toFixed(1)).join(', ') + ')');
+        } else if (lage === 'farg') {
+          const ut = qa('line[data-roll="ut"]');
+          if (ut.length !== 1 || ut[0].dataset.farg !== 'rott') f_.push('det är inte bara det röda ljuset som reflekteras');
+          else { const o = q('g.fig-oga'), l = L_(ut[0]); if (Math.hypot(l[2] - +o.dataset.x, l[3] - +o.dataset.y) > 20) f_.push('det röda ljuset når inte ögat'); }
+        } else if (lage === 'spektrum') {
+          const n = qa('text[data-rad]').sort((a, b) => a.getBBox().y - b.getBBox().y).map(t => t.textContent.split(':')[0]);
+          const R = ['radiovågor', 'mikrovågor', 'infrarött ljus', 'synligt ljus', 'ultraviolett ljus', 'röntgenstrålning', 'gammastrålning'];
+          if (n.join() !== R.join()) f_.push('spektrumets ordning: ' + n.join(', '));
+          const p = P_(q('polyline.fig-ljus-bandvag')), xc = p.reduce((a, x) => a + x[0], 0) / p.length, k = [];
+          for (let i = 1; i < p.length; i++) if ((p[i - 1][0] - xc) * (p[i][0] - xc) < 0) k.push(p[i][1]);
+          const d = k.slice(1).map((y, i) => y - k[i]), h = Math.floor(d.length / 2), m = a => a.reduce((x, y) => x + y, 0) / a.length;
+          if (!(m(d.slice(h)) < m(d.slice(0, h)))) f_.push('vågen i bandet får inte kortare våglängd nedåt');
+        } else if (lage === 'jamforelse') {
+          if (qa('polygon, line.fig-pil, .fig-ljud-riktning').length) f_.push('jämförelsen har pilar');
+          const ka = qa('text.fig-ljus-kolumn'), l = ka.find(t => t.textContent === 'ljud'), r = ka.find(t => t.textContent === 'ljus');
+          if (!l || !r || !(l.getBBox().x < r.getBBox().x)) f_.push('kolumnerna ljud och ljus saknas');
+          qa('text[data-kolumn]').forEach(t => { const b = t.getBBox(), v = t.dataset.kolumn === 'ljud'; if (v ? b.x + b.width > vb.width / 2 : b.x < vb.width / 2) f_.push('"' + t.textContent + '" står i fel kolumn'); });
+        } else if (!(lage === 'jamforelse')) f_.push('okänt läge');
+        const tx = qa('text').filter(t => t.textContent.trim()).map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * sk]);
+        tx.forEach(([a, p, px], j) => {
+          if (px < 13.95) f_.push('”' + a + '” är ' + px.toFixed(1) + ' px');
+          if (p.x < -0.5 || p.y < -0.5 || p.x + p.width > vb.width + 0.5 || p.y + p.height > vb.height + 0.5) f_.push('”' + a + '” står utanför figuren');
+          tx.slice(j + 1).forEach(([b, q2]) => { if (p.x < q2.x + q2.width - 0.5 && q2.x < p.x + p.width - 0.5 && p.y < q2.y + q2.height - 0.5 && q2.y < p.y + p.height - 0.5) f_.push('”' + a + '” och ”' + b + '” överlappar'); });
+        });
+        lj.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
+      });
       // Resulterande kraft (Kraft och rörelse IV A, arbetsorder 12), mätt i figurernas egna element:
       //  - resultant_rutor steg: varje pil börjar och slutar i ett rutnätshörn; den flyttade F₂ har samma komposanter som
       //    F₂ i det första steget; resultanten går från startpunkten till den flyttade pilens spets;
@@ -1038,6 +1338,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       tb: { antal: tb.size, typer: [...new Set([...tb.values()].map(x => x.typ))], minPx: Math.min(...[...tb.values()].map(x => x.minPx)), fel: [...tb].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       tr: { antal: tr.size, typer: [...new Set([...tr.values()].map(x => x.typ))], minPx: Math.min(...[...tr.values()].map(x => x.minPx)), fel: [...tr].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       en: { antal: en.size, typer: [...new Set([...en.values()].map(x => x.typ))], minPx: Math.min(...[...en.values()].map(x => x.minPx)), fel: [...en].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
+      lj: { antal: lj.size, typer: [...new Set([...lj.values()].map(x => x.typ))], minPx: Math.min(...[...lj.values()].map(x => x.minPx)), fel: [...lj].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       kc: { antal: kc.size, typer: [...new Set([...kc.values()].map(x => x.typ))], minPx: Math.min(...[...kc.values()].map(x => x.minPx)), fel: [...kc].flatMap(([id, x]) => x.fel.map(e => id + ' (' + x.typ + '): ' + e)) },
       fr: { antal: fr.size, ytor: [...new Set([...fr.values()].map(x => x.ytor))], pilar: [...fr.values()].map(x => x.pilar.length), monster, fel: frFel }, tal: [...tal] };
   };`;
@@ -1054,7 +1355,9 @@ const NG_PROV = String.raw`if (spar.some(x => x.rk && x.rk.antal)) prova('figur:
   if (spar.some(x => x.tr && x.tr.antal)) prova('figur: tryck – tyngdpilarna lika långa, den större sulan minst dubbelt så lång och den mindre sjunker djupare; den stora kolven minst dubbelt så bred och pilen vid den längre, oljan förbinder cylindrarna, kolvarna på samma höjd och samma p i båda; tryckpilarna i proportion till djupet, sidopilarna parvis lika, lyftkraften = undersidans − ovansidans pil; sträckorna utskrivna, samma oljevolym och samma kraft gånger väg, de ritade sträckorna i areornas kvot; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.tr.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.tr.typer))].join(', ') + ')',
     spar.every(x => !x.tr.fel.length), spar.flatMap(x => x.tr.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.tr.antal).map(x => x.tr.minPx)).toFixed(1) + ' px');
   if (spar.some(x => x.en && x.en.antal)) prova('figur: energi och arbete – varje studs lägre än den förra och bollen hoptryckt bara vid golvet, en våg vid varje studs; kraftpilen uppåt i alla tre panelerna, rörelsepilen uppåt i den första, ingen i den mittersta och vågrät i den tredje, ordet arbete ensamt bara vid den första; repets vinkel som den utskrivna, delarna framåt och uppåt från pilens början till spetsen och talen vid dem = kraften gånger delarnas andel (±1 N); staplarna lika höga tillsammans och lägesenergins i proportion till höjden; gungans ytterlägen på samma höjd och mitten lägst; staven böjd bara i stavhoppets mittläge och lägena i ordning; rampens och bordets höjd lika, rampens längd och kraft gånger sträcka; gungbrädan vågrät, momenten lika, avstånden i skala och vridpilarna lika stora och motriktade; taljans två bärande repdelar, lyftet och det indragna repet, dragkraften halva tyngden; kraftpilarna och deras tal guld; rörelsepilarna i annan färg och streckade; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.en.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.en.typer))].join(', ') + ')',
-    spar.every(x => !x.en.fel.length), spar.flatMap(x => x.en.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.en.antal).map(x => x.en.minPx)).toFixed(1) + ' px');`;
+    spar.every(x => !x.en.fel.length), spar.flatMap(x => x.en.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.en.antal).map(x => x.en.minPx)).toFixed(1) + ' px');
+  if (spar.some(x => x.lj && x.lj.antal)) prova('figur: ljud och ljus – förloppen med stegen 1 … N, en mening intill varje ring och "börja här" vid steg 1, strukturerna utan nummer; normalen streckad och vinkelrät mot ytan och vinklarna mätta mot den; membranet fram–bak–fram, molekylen på sin plats och förtätningarna som vandrar bort; axeln märkt "tryck" och vågtopparna under förtätningarna; dopplerns fronter tätare framför; tonhöjden olika våglängd och samma amplitud, ljudstyrkan samma våglängd (också i prickarna) och olika amplitud; resonanslådan samma våglängd och större amplitud; ekolodets signal ned och eko upp; isoleringen svagare våg ut; reflektionslagen, spegelbilden lika långt bakom, brännpunkterna och brännvidden, Snells lag med n = 1,33 och vågfronterna tätare i vattnet, pennans spets högre, totalreflektionen vid gränsvinkeln, bilden upp och ned, synfelen, prismats och spektrumets ordning, bara det röda ljuset till ögat, två kolumner utan pilar; rörelsepilarna indigo och streckade; ingen text under 14 px, utanför eller överlappande (' + spar.map(x => x.lj.antal).join(' + ') + ' figurer: ' + [...new Set(spar.flatMap(x => x.lj.typer))].join(', ') + ')',
+    spar.every(x => !x.lj.fel.length), spar.flatMap(x => x.lj.fel).join(' | ') || 'minsta texten ' + Math.min(...spar.filter(x => x.lj.antal).map(x => x.lj.minPx)).toFixed(1) + ' px');`;
 
 /* ---------- Fristående böcker (arbetsorder 11): Nästa steg, övningsböcker, stödböcker och länkarna mellan dem ----------
  * Klistras in i scenarierna (behöver v, $, $$, synlig, prova, gest, klicka, oppen, stangd, figurKoll, spar, harOmslag).
@@ -2352,7 +2655,7 @@ async function bild(c, dk, lage, vad) {
 const KAPITEL = [
   { mapp: 'materia_och_universum', nr: 'I', titel: 'Materia och universum', avsnitt: ['solsystemet_och_jorden'],
     alla: 'I II III IV V' },
-  { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft', 'fall_kast_och_balans', 'tryck_arbete_och_maskiner'],
+  { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft', 'fall_kast_och_balans', 'tryck_arbete_och_maskiner', 'ljud_och_ljus_repetition'],
     alla: 'I II III IV V VI' }
 ];
 const STARTSIDANS_KAPITEL = 'I Materia och universum · II Ljud och ljus · III Kraft och rörelse';
@@ -2439,7 +2742,7 @@ async function provaSidorna(lage) {
       prova(`kapitelindex ${K.nr}: avsnittssidorna ${alla[0]}–${alla[alla.length - 1]}`, av.map(x => x.nr).join(' ') === K.alla, av.map(x => x.nr + ' ' + x.titel).join(' · '));
       prova(`kapitelindex ${K.nr}: ${ROMERSKA[0]}–${ROMERSKA[n - 1]} länkar till avsnittssidorna`,
         avsnitt.every((u, i) => av[i] && av[i].tag === 'A' && av[i].href === u && !av[i].kommer), av.slice(0, n).map(x => x.href).join(' | '));
-      prova(`kapitelindex ${K.nr}: ${alla[n]}–${alla[alla.length - 1]} tonade, aria-disabled, "Kommer" och inga länkar`,
+      if (n < alla.length) prova(`kapitelindex ${K.nr}: ${alla[n]}–${alla[alla.length - 1]} tonade, aria-disabled, "Kommer" och inga länkar`,
         av.slice(n).length === alla.length - n && av.slice(n).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
       const res = await kort('.resurser-rad .resurs-kort');
       prova(`kapitelindex ${K.nr}: resurserna Begreppsbank och Självskattning, tonade "Kommer"`,
@@ -2730,6 +3033,30 @@ async function jamforWebben(lista) {
     gront = gront && lika;
   }
   console.log('');
+
+  // 1 b. Strömformatet i V och VI (arbetsorder 30), och texterna ordagrant mot källorna (verktyg/ordagrant.js)
+  if (!BARA || STROM_MAPPAR.some(m => m.includes(BARA))) {
+    const filer = stromFiler();
+    if (!NEGATIV) {
+      const fel = stromKoll(filer);
+      gront = gront && !fel.length;
+      console.log(`${fel.length ? 'RÖTT ' : 'GRÖNT'}  strömformatet i V och VI: ${filer.length} böcker – begreppen med skiljetecken utanför och grundform vid stor bokstav, figurerna ritas, id:n rätt skrivna, unika och (VI) som i källans huvud`);
+      fel.forEach(f => console.log(`       ✗ ${f}`));
+      const og = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'ordagrant.js')], { encoding: 'utf8' });
+      const ogFel = og.stdout.split('\n').filter(l => /^FEL|^   /.test(l));
+      gront = gront && og.status === 0;
+      console.log(`${og.status === 0 ? 'GRÖNT' : 'RÖTT '}  texterna ordagrant mot källorna (verktyg/ordagrant.js): ${og.stdout.split('\n').filter(l => /^ORDAGRANT/.test(l)).length} böcker`);
+      ogFel.slice(0, 12).forEach(f => console.log(`       ✗ ${f.trim()}`));
+    } else for (const x of STROM_FEL.filter(x => !NEGATIV_BARA || x.namn.includes(NEGATIV_BARA))) {
+      const ny = filer.map(y => y.fil === x.fil ? Object.assign({}, y, { kod: y.kod.split(x.fran).join(x.till) }) : y);
+      const insatt = filer.some(y => y.fil === x.fil && y.kod.includes(x.fran));
+      const fel = insatt ? stromKoll(ny).filter(f => f.startsWith(x.fil) && x.regel.test(f)) : [];
+      gront = gront && fel.length > 0;
+      console.log(`${fel.length ? 'GRÖNT' : 'RÖTT '}  negativ "${x.namn}": ${!insatt ? 'FELET GICK INTE ATT LÄGGA IN (' + x.fran + ' saknas)' : fel.length ? 'strömformatet blev rött, som det ska' : 'GRÖNT – fångar inte felet'}`);
+      fel.slice(0, 2).forEach(f => console.log(`       fångat: ${f}`));
+    }
+    console.log('');
+  }
 
   if (!NEGATIV) {
     // 2. Startsidan och kapitelindexet: vägen mellan sidorna, på dator och mobil

@@ -432,6 +432,17 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
     `exempel delat i ett mellanled` (`?kontroll&prova=exempel-mellanled`) och `exempel helt fast sidan blir tunn`
     (`?kontroll&prova=exempel-helt`, regeln avstängd).
   - Exemplet följer inte med stycket före.
+- **Punktlistor** (arbetsorder 16 och 31): en lista som ryms står hel på en sida. En lista som är högre än sidan delas
+  mellan punkterna. **Exempelregeln gäller också punktlistor (arbetsorder 31, 2026-11-21):** står en sida kvar tunn
+  efter balansen och börjar nästa sida med en hel lista, packas avsnittet om och listan delas – bara mellan två punkter
+  (en punkt delas aldrig) och med minst två punkter på varje sida. Finns ingen sådan plats står listan hel på nästa
+  sida. En lista som är högre än sidan har också minst två punkter på varje sida (de två första och de två sista hålls
+  ihop). `?kontroll` och grinden godtar en delad lista som ryms bara när det som står före den på sidan är under 40 %
+  och listan inte ryms hel efter det, och säger till om en sida har bara en punkt av en lista. Fallet: VI A Enkel,
+  "Örat och hörseln", där avsnittets första sida var 29 % och listan med sex punkter stod hel på nästa. Provboken har
+  avsnittet *Provpunktlista efter ett kort stycke*. Negativa prov: `punktlista med en punkt ensam på en sida`
+  (`?kontroll&prova=punkt-ensam`) och `punktlista hel fast sidan blir tunn` (`?kontroll&prova=punktlista-hel`, regeln
+  avstängd för listor).
 - **PROVA-rutan** delas aldrig.
 - **Kontrollen:** `?kontroll` (brytningsreglerna) och grindens mätning på skärmen säger till om en regel bryts.
 
@@ -470,7 +481,7 @@ räkningen tror (fyllnaden skiljer cirka 1 %). Det ändrar inget här, men räkn
 |---|---|
 | `rubrik` | `text` |
 | `text` | `text` (brödtext) |
-| `punkter` | `punkter: [...]`. En lista med flera punkter blir en post per punkt (`punktdel`), som hålls ihop som en grupp: den står hel på en sida om den ryms och delas bara mellan två punkter om den inte gör det (arbetsorder 16). Marginalerna är desamma som i en hel lista. Den första punkten har listans id. |
+| `punkter` | `punkter: [...]`. En lista med flera punkter blir en post per punkt (`punktdel`), som hålls ihop som en grupp: den står hel på en sida om den ryms och delas bara mellan två punkter om den inte gör det (arbetsorder 16) eller enligt exempelregeln (arbetsorder 31), med minst två punkter på varje sida. Marginalerna är desamma som i en hel lista. Den första punkten har listans id. |
 | `figur` | `namn`, figurens data, `bildtext?`, `beskrivning?` (se *Figurer*) |
 | `lank` | `till: ['ova', 'sjalvskattning', …]`: länk till plattformens hjälpmedel (se *Hjälpmedel*) |
 | `ruta` | `rubrik?`, `text` eller `punkter`, `stil: 'definition'` för en större definitionsruta |
@@ -527,6 +538,8 @@ specificeras i data och ritas av motorn, som räknar ut lägen och riktningar:
 | `krock` | `stopp?: [0.05, 0.5]` (m: den styva bilen, deformationszonen), `langd?: 4.4`, `front?: 1.1`, `bildtext?`, `beskrivning?` | IV D (arbetsorder 17): två bilar från sidan mot en vägg när de har stannat. Streckat: bilen när fronten nuddade väggen; den heldragna har rört sig stoppsträckan framåt och fronten är hoptryckt lika mycket (sicksack). Kupén är lika lång i båda. Pilar från väggen med "kort tid – stor kraft" och "längre tid – mindre kraft". Grinden mäter att deformationszonens sträcka är minst dubbelt så lång som den styva bilens, att kupén är lika lång och att bilarna står an mot väggen. |`kraftpilar` har sedan arbetsorder 12 också:
 | `tryck` | `lage`: `'sno'` (`tyngd?: 600`, `skor?: [{namn, langd (m)}, {namn, langd}]`), `'hydraulik'` (`areor?: [2, 100]` cm²), `'lyftkraft'` (`djup?: 0.7`, klossens överkant under ytan i klossens sidor), `'hydraulik-vag'` (`areor`, `krafter?: [200, 10000]` N, `vag?: 0.5` m); `bildtext?`, `beskrivning?` | V A (arbetsorder 21). **sno:** samma person i djup snö, en panel per sko; hur djupt sulan sjunker räknas ur trycket, tyngdpilen lika lång i båda. **hydraulik:** två cylindrar med olja förbundna längst ned, kolvarnas bredd efter areans rot, på samma höjd; en kort pil ned på den lilla och en längre pil upp under bilen (med tak, 1:50 går inte), samma *p* i båda cylindrarna. **lyftkraft:** en kloss under vatten, tryckpilar mot alla sidor i proportion till djupet, lyftkraften (röd) = undersidans pil − ovansidans. **hydraulik-vag:** samma lyft med den lilla kolven ned `vag` och den stora upp `vag · A₁/A₂` (före streckat), krafter, areor och sträckor utskrivna. Grinden (`figurKoll`: `tr`) mäter allt detta i elementen, och ingen text under 14 px, utanför eller överlappande. |
 | `energi` | `lage`: `'studs'` (`studsar?: 3` (1–5), `kvar?: 0.6`, den del av höjden som är kvar efter varje studs), `'arbete'` (`foremal?: 'lådan'`), `'snett'` (`kraft?: 100` N, `vinkel?: 30`°); `bildtext?`, `beskrivning?`, `'fall'` (`hojd?: 5` m, `lagen?: [5, 2.5, 0]` m), `'gunga'` (`vinkel?: 45`°), `'stavhopp'`, `'ramp'` (`massa?: 50` kg, `hojd?: 1` m, `ramp?: 2` m), `'gungbrada'` (`vanster?`/`hoger?: {kraft, arm}`), `'talja'` (`lyft?: 1` m) | V B (arbetsorder 28). **studs:** en boll som släpps och studsar; banan är parabler (samma fart framåt, tiden ∝ √höjden), varje topp lägre; bollen hoptryckt bara vid golvet, svag i topparna efter studsarna; "lägesenergi", "rörelseenergi", "elastisk energi" och små röda vågor vid varje studs ("värme och ljud"). **arbete:** tre paneler – lyfter (kraft upp, rörelse upp: "arbete"), håller still (kraft upp, ingen rörelse), bär framåt (kraft upp, rörelse framåt). **snett:** en kälke i ett snett rep; kraften och dess delar framåt (F · cos v) och uppåt (F · sin v) streckade som komposanterna i `resultant_rutor`, vinkeln utmärkt och rörelsen rakt fram. Rörelsepilarna är indigo, streckade och har öppen spets, kraftpilarna guld. Grinden (`figurKoll`: `en`) mäter topparna, bollens form, pilarnas riktningar, ordet "arbete", vinkeln och talen vid delarna (±1 N), att rörelsepilarna inte ser ut som kraftpilar, och ingen text under 14 px, utanför eller överlappande. **fall** (V C, arbetsorder 29): en boll i några lägen och vid varje läge två staplar, lägesenergins andel (lika hög som bollens höjd, i samma skala) och rörelseenergins; grinden mäter att staplarna tillsammans är lika höga och lägesenergins i proportion till höjden. **gunga:** tre lägen, ytterlägena på samma höjd och mitten lägst (grinden mäter det), orden vid lägena. **stavhopp:** ansatsen, staven böjd i lådan och hopparen över ribban; grinden mäter att staven är böjd bara i mittläget och att lägena och orden står i ordning. **ramp** (V D): klotet upp på bordet rakt upp och i en vagn längs rampen, krafterna, sträckorna och kraft gånger sträcka under båda; grinden mäter samma sluthöjd, rampens längd och höjd i bilden och att kraft gånger sträcka blir lika. **gungbrada:** plankan vågrät, personerna på avstånd i skala, tyngdpilarna i proportion, två lika stora motriktade vridpilar; grinden mäter allt det och att momenten är lika. **talja:** ett fast och ett rörligt block, två repdelar, start- och slutläge; grinden mäter två bärande repdelar, lyftet och det indragna repet i bilden och att dragkraftens pil är halva tyngdpilen. |
+| `ljud` | `lage`: `'membran'`, `'modeller'`, `'doppler'`, `'orat'`, `'jamforelse'`, `'resonans'`, `'ekolod'` eller `'isolering'`; `bildtext?`, `beskrivning?` | VI A (arbetsorder 30), en figur per läge (A1–A8, inga andra data). Luften ritas som prickar som förskjuts ur fysiken (förtätningar där förskjutningen avtar), och trycket som en linje med topp där luften är tätast. **membran** (A1, steg 1–5): högtalaren i tre ögonblick, förtätningarna skuggade och den markerade molekylen på sin plats. **modeller** (A2): samma våg i båda modellerna med axeln "tryck". **doppler** (A3): fronterna från de platser där ambulansen var. **orat** (A4, struktur). **jamforelse** (A5): tonhöjd (olika våglängd, samma amplitud) och ljudstyrka (samma våglängd, olika amplitud) var för sig. **resonans** (A6, steg 1–4): strängen ensam och på lådan, samma våglängd och större amplitud. **ekolod** (A7, steg 1–5). **isolering** (A8): betongen och den luftiga isoleringen, svagare våg ut. Grinden (`figurKoll`: `lj`) mäter fysiken i elementen, stegen och texterna. |
+| `ljus` | `lage`: `'foremal'`, `'reflektion'`, `'spegelbild'`, `'speglar'`, `'brytning'`, `'penna'`, `'totalreflektion'`, `'linser'`, `'ogat'`, `'synfel'`, `'prisma'`, `'farg'`, `'spektrum'` eller `'jamforelse'`; `bildtext?`, `beskrivning?` | VI B (arbetsorder 30), en figur per läge (B1–B14). Strålarna räknas ur fysiken: reflektionslagen, Snells lag med n = 1,33 för vatten (vågfronterna i B5 följer varje del av strålen med farten 1 i luft och 1/n i vatten), brännpunkterna och prismats brytning (förstorade brytningsindex). Normalen är streckad och vinklarna mäts mot den. Förlopp med steg: **spegelbild** (B3), **brytning** (B5), **penna** (B6), **totalreflektion** (B7), **ogat** (B9), **farg** (B12). Strukturer: **speglar** (B4), **linser** (B8), **spektrum** (B13). **jamforelse** (B14) är två kolumner utan pilar. Grinden (`figurKoll`: `lj`) mäter fysiken, stegen och texterna. |
 
 - `kedja: true` – krafterna efter varandra, utan föremål, och resultanten under. En pil som går bakåt har namnet
   under sig.
@@ -563,6 +576,16 @@ Det som fanns förut ritas som förut.
 - Figurer som visar en struktur (t.ex. örats delar, en lins, en spegel) får bara namn på delarna – inga nummer.
 - I textfilerna markeras detta i BILD-raden med "numrerade steg: 1 … · 2 … · 3 …".
 - Befintliga färgkonventioner gäller oförändrade (kraftpilar guld, rörelsepilar indigo/streckade).
+
+### Färger för ljud och ljus – standard för kapitel 2
+Godkända av Joachim 2026-11-21 (arbetsorder 31). Klasserna står i `bokskal/bok.css`, avsnittet VI.
+- Ljusstrålar: orangeröda `#c2410c`, heldragna med pilspets.
+- Ljudvågor och vågfronter: blågröna `#1f6f78`.
+- Luftens molekyler (prickar): bruna `#7a6648`.
+- Den markerade molekylen: indigo.
+- Normaler: streckade (dämpade). Vinklarna mäts mot normalen.
+- Skenbara strålar (det ögat tror, bakåt förlängt): streckade i strålens färg.
+- Kraftpilar guld och rörelsepilar indigo/streckade gäller som förut.
 
 ## Hjälpmedel: plattformens, länkade, aldrig byggda här
 
@@ -811,7 +834,10 @@ beslut 2026-11-05.
     - formeln står på samma uppslag som stycket före (uppslagsregeln).
   - En sida med bara fristående böcker prövas med ett eget scenario: hubben, bläddra, innehållet, End och Esc.
   - **Negativa prov:** fyra provkrokar (`?kontroll&prova=formel-skild`, `exempel-delat`, `svar-ensam`, `prova-delad`)
-    flyttar en post i provboken först på nästa sida. Grinden ska bli röd av just den regeln.
+    flyttar en post i provboken först på nästa sida. Grinden ska bli röd av just den regeln. Punktlistorna
+    (arbetsorder 31): `punkt-ensam` flyttar den sista punkten i en lista ensam till nästa sida ("bara en punkt på
+    sidan"), och `punktlista-hel` stänger av exempelregeln för listor, så att sidan före listan i *Provpunktlista
+    efter ett kort stycke* blir tunn.
 
 **Källorna och omvandlarna** (sedan 2026-11-07, arbetsorder 10 och 11). Joachims källor ligger oförändrade i
 `kallor/`, en mapp per kapitel (och `nasta-steg/`). Texterna är omvandlade med skript och prövas med ett annat:
@@ -822,6 +848,15 @@ beslut 2026-11-05.
   - kapitel 1, avsnitt I, och dess fyra djupdykningar (`kallor/kap1/`);
   - Nästa steg: textboken, övningsboken och Matematiken i fysiken (`kallor/nasta-steg/`). Varje länk ska gå till
     avsnittet med just det namnet.
+  - Grinden kör det också (sedan arbetsorder 30), som ett eget prov.
+- **Strömformatet** (grinden, arbetsorder 30) läser innehållsfilerna i V och VI på disken:
+  - varje begrepp `*ord|grundform*` med skiljetecken utanför markeringen;
+  - i VI: ett begrepp med stor bokstav har en grundform;
+  - varje figur ritas av motorn (namnet och läget finns);
+  - avsnittens och figurernas id är rätt skrivna och unika, och i VI samma som i källans huvud ("Avsnittens id"), i ordning.
+
+  Negativa prov (`--negativ`): saknad grundform, skiljetecken innanför markeringen, okänd figur och felaktig id läggs in
+  ett i taget i en kopia i minnet, och kontrollen ska bli röd för just den filen och regeln.
 - **`node verktyg/kap1-omvandlare.js [utmapp]`** skriver kapitel 1:s filer i `innehall/` igen ur källorna, och
   befintliga filer skrivs över. Med en tom `utmapp` hamnar de där, så att de kan jämföras med repot först.
 - **`node verktyg/nasta-steg-omvandlare.js [utmapp]`** gör samma sak för Nästa steg och Matematiken i fysiken. Den
@@ -1571,3 +1606,28 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   `fig-energi-vagen`. Personerna på gungbrädan (D2) låg i en grupp med klassen `fig-energi-sits` (gungans sits i C2,
   svart kant), så talen fick svart kant; gruppen heter nu `fig-energi-person`. Grinden mäter nu att kraftpilarna och deras tal i energifigurerna är guld (`--accent-2-mork`)
   och att talen inte har någon färgad kant; negativt prov: den gamla klassen tillbaka.
+- **2026-11-20, arbetsorder 30: avsnitt VI Repetition – ljud och ljus.**
+  - **Avsnittssidan** `kraft_och_rorelse/ljud_och_ljus_repetition/` är byggd som repetitionerna I och II: titeln
+    "Repetition", undertiteln "ljud och ljus" och omslaget "Repetition: {text}". Nivåerna är som i V. Kortet VI i
+    kapitelindexet är nu en länk.
+  - **Texterna** är A Ljud och B Ljus, tre nivåer var. Källorna `kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v3.md`
+    och `VI-B-Repetition-Ljus-alla-nivaer-v3.md` (oförändrade kopior) omvandlas av `kap3-omvandlare.js --text via` och
+    `--text vib`. Avsnittens id kommer ur källornas huvud.
+  - **Omvandlingen:** "Det här repeterar du:" blir en liten rubrik utan kolon, som "Det här lär du dig". Ett begrepp
+    med stor bokstav utan grundform får grundformen med liten bokstav (`*Tinnitus|tinnitus*`, men
+    `*Hörselnerven|hörselnerv*`). `ordagrant.js` godtar just det i VI.
+  - Ingen ruta "Vill du gå vidare?": raderna i `vidare-rutor.js` saknar avsnitt tills kapitlen om ljud och ljus finns.
+  - **Figurerna** A1–A8 och B1–B14 hör till de nya figurslagen `ljud` och `ljus` (tabellen ovan). Förloppen A1, A6, A7,
+    B3, B5, B6, B7, B9 och B12 har numrerade steg. Grinden (`figurKoll`: `lj`) mäter stegen och fysiken.
+  - **Grinden** prövar också strömformatet och kör `ordagrant.js` (se Kontrollera).
+- **2026-11-21, arbetsorder 31 (fortsättning på 30, committad tillsammans med den).**
+  - **Exempelregeln gäller punktlistor** (`bok.js`: packningen, exempelregelns omtag och regelkollen): en lista som
+    ryms men lämnar sidan före tunn delas mellan två punkter, med minst två punkter på varje sida. En lista som är
+    högre än sidan håller nu också ihop de två första punkterna. Fallet var VI A Enkel, "Örat och hörseln" (29 %).
+    Provboken har avsnittet *Provpunktlista efter ett kort stycke*; negativa prov `punktlista med en punkt ensam på
+    en sida` och `punktlista hel fast sidan blir tunn`. Regelkollen för `punktlista delad fast den ryms` godtar en
+    delad lista som ryms bara enligt 40 %-regeln, och bara om listan inte heller ryms hel efter det som står före den.
+  - **Färgerna för ljud och ljus** är godkända och står under *Figurer* som standard för kapitel 2.
+  - **Grundformen** sätts automatiskt vid stor bokstav (godkänt).
+  - Efter granskningen: B5:s "normal" står överst vid normalen (strålen låg över ordet), och i A1 är steg 4 och 5
+    bytta så att de läses uppifrån och ned.

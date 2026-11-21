@@ -48,7 +48,17 @@ const TEXTER = {
   vc: { kalla: 'V-C-Mekanisk-energi-alla-nivaer-v2.md', mapp: 'mekanisk-energi', figurer: './kap3-figurer-vc.js', titel: 'C: Mekanisk energi',
         order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner', index: true },
   vd: { kalla: 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', mapp: 'havstangen-och-enkla-maskiner', figurer: './kap3-figurer-vd.js', titel: 'D: Maskiner och effekt',
-        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' }
+        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' },
+  // Avsnitt VI Repetition: ljud och ljus (arbetsorder 30, 2026-11-20): node verktyg/kap3-omvandlare.js --text via / --text vib.
+  // "Det här repeterar du:" blir en liten rubrik utan kolon, som "Det här lär du dig:". Ett begrepp med stor bokstav utan
+  // grundform (*Tinnitus*) får grundformen med liten bokstav (*Tinnitus|tinnitus*) – texten är densamma; grundform anger
+  // de böjda (Hörselnerven → hörselnerv). ordagrant.js godtar just det tillägget för VI.
+  via: { kalla: 'VI-A-Repetition-Ljud-alla-nivaer-v3.md', mapp: 'ljud', figurer: './kap3-figurer-via.js', titel: 'A: Ljud',
+         order: 'Arbetsorder 30 (2026-11-20)', sidmapp: 'kraft_och_rorelse/ljud_och_ljus_repetition', sida: 'VI. Repetition: ljud och ljus',
+         grundform: { 'Hörselnerven': 'hörselnerv' } },
+  vib: { kalla: 'VI-B-Repetition-Ljus-alla-nivaer-v3.md', mapp: 'ljus', figurer: './kap3-figurer-vib.js', titel: 'B: Ljus',
+         order: 'Arbetsorder 30 (2026-11-20)', sidmapp: 'kraft_och_rorelse/ljud_och_ljus_repetition', sida: 'VI. Repetition: ljud och ljus',
+         grundform: {} }
 };
 if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c, d, va, vb eller vc)'); process.exit(1); }
 const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);
@@ -88,6 +98,7 @@ function las(rad, niva) {
     if (!a) { fel.push(`${niva}: före första avsnittet: ${l}`); continue; }
     if (l.startsWith('### ')) { slut(); a.block.push({ typ: 'rubrik', text: l.slice(4) }); continue; }
     if (l === 'Det här lär du dig:') { slut(); a.block.push({ typ: 'underrubrik', text: 'Det här lär du dig' }); continue; }
+    if (l === 'Det här repeterar du:' && TEXTER[TEXT].grundform) { slut(); a.block.push({ typ: 'underrubrik', text: 'Det här repeterar du' }); continue; }
     if ((m = /^\[FORMEL: (.+?) – (.+)\]$/.exec(l))) { slut(); a.block.push({ typ: 'formel', uttryck: m[1], forklaring: m[2] }); continue; }
     if (/^\[BILD/.test(l)) { slut(); a.block.push({ kommentar: l }); continue; }
     // (V A) [EXEMPEL: rubrik] … [/EXEMPEL]: stycken (tomma rader emellan), var och en med sina rader
@@ -136,6 +147,10 @@ const bocker = Object.fromEntries(NIVAER.map(([, n]) => [n, las(delar[n] || [], 
 // (V C, arbetsorder 29) Ep och Ek med index: E_p och E_k i alla texter (motorn sätter dem nedsänkta)
 if (TEXTER[TEXT].index) { const ix = s => typeof s === 'string' ? s.replace(/\bE([pk])\b/g, 'E_$1') : Array.isArray(s) ? s.map(ix) : s;
   for (const avs of Object.values(bocker)) for (const a of avs) for (const b of a.block) for (const k of ['text', 'uttryck', 'forklaring', 'rader', 'punkter', 'stycken']) if (b[k]) b[k] = ix(b[k]); }
+// (VI, arbetsorder 30) begrepp med stor bokstav utan grundform: grundformen med liten bokstav (eller ur grundform-tabellen)
+if (TEXTER[TEXT].grundform) { const G = TEXTER[TEXT].grundform;
+  const gf = s => typeof s === 'string' ? s.replace(/\*([^*]+)\*/g, (m, o) => /^[A-ZÅÄÖ]/.test(o) && !o.includes('|') ? `*${o}|${G[o] || o[0].toLowerCase() + o.slice(1)}*` : m) : Array.isArray(s) ? s.map(gf) : s;
+  for (const avs of Object.values(bocker)) for (const a of avs) for (const b of a.block) for (const k of ['text', 'rader', 'punkter', 'stycken']) if (b[k]) b[k] = gf(b[k]); }
 
 // Steg 2 (arbetsorder 12): figurerna efter sina bildmarkeringar – fylls i när figurtyperna finns
 const FIGURER = require(TEXTER[TEXT].figurer);

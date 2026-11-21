@@ -76,6 +76,16 @@ Bok.niva('nasta-steg', {
       ]
     },
     {
+      // Exempelregeln för punktlistor (arbetsorder 31): en lista som ryms på en sida men inte efter avsnittets början och
+      // stycket, som då är under 40 % av sidan. Listan delas mellan två punkter, med minst två punkter på varje sida.
+      // Grindens negativa prov stänger av regeln för listor (?prova=punktlista-hel): då blir sidan med stycket tunn.
+      id: 'punktlista-fyrtio', titel: 'Provpunktlista efter ett kort stycke',
+      block: [
+        { typ: 'text', text: 'Provtext före en punktlista som ryms på en sida, men inte efter det här stycket.' },
+        { typ: 'punkter', punkter: Array.from({ length: 12 }, (_, i) => `Provpunkt ${i + 1} i listan som delas enligt 40 %-regeln.`) }
+      ]
+    },
+    {
       // Punktlistor (arbetsorder 16): en kort lista som ryms (grindens negativa prov ?prova=punktlista-delad delar den)
       // och en lång lista som är högre än sidan och delas mellan punkterna
       id: 'punktlistor', titel: 'Provpunktlistor',

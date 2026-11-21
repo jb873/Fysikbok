@@ -45,6 +45,10 @@
  *   energi              lage: 'studs' | 'arbete' | 'snett' – energin byter form, när en kraft utför arbete, arbete när kraften drar snett (V B)
  *                       | 'fall' | 'gunga' | 'stavhopp' – mekanisk energi: staplarna, gungan och stavhoppet (V C)
  *                       | 'ramp' | 'gungbrada' | 'talja' – maskiner: två vägar upp, moment i balans, taljan (V D)
+ *   ljud                lage: 'membran' | 'modeller' | 'doppler' | 'orat' | 'jamforelse' | 'resonans' | 'ekolod' | 'isolering' –
+ *                       ljudvågor i partikel- och vågmodellen (VI A, se nedan)
+ *   ljus                lage: 'foremal' | 'reflektion' | 'spegelbild' | 'speglar' | 'brytning' | 'penna' | 'totalreflektion' |
+ *                       'linser' | 'ogat' | 'synfel' | 'prisma' | 'farg' | 'spektrum' | 'jamforelse' – ljusstrålar (VI B, se nedan)
  *
  * Figurerna ritas ungefär i textspaltens bredd (440 enheter), så att texten i dem blir läsbar (≈ 14–17 px).
  * Hela partiklar ritas i neutral sandfärg, som i filmernas modeller (bok.py: ATOM). En ny sorts figur är en ny
@@ -2205,6 +2209,566 @@
         `Till vänster startläget, till höger slutläget: lasten har lyfts ${tal(lyft)} m, och ${tal(2 * lyft)} m rep har dragits in.`;
     } else fel('energi: okänt läge ”' + lage + '”');
     return { svg: svg(B, H, s).replace('<svg ', `<svg data-energi="${lage}" `), beskrivning: d.beskrivning || beskr };
+  });
+
+
+  /* ---------- Ljud och ljus (Kraft och rörelse VI, arbetsorder 30, 2026-11-20) ----------
+   * Två nya figurslag, ritade som energi: text 19 enheter, och varje figur skriver sina mått i elementen (data-*), så att
+   * grinden mäter det figuren påstår (verktyg/bok-grind.js, figurKoll: lj).
+   *   ljud, lage: 'membran' (A1, steg 1–5) | 'modeller' (A2) | 'doppler' (A3) | 'orat' (A4, struktur) | 'jamforelse' (A5)
+   *               | 'resonans' (A6, steg 1–4) | 'ekolod' (A7, steg 1–5) | 'isolering' (A8)
+   *   ljus, lage: 'foremal' (B1) | 'reflektion' (B2) | 'spegelbild' (B3, steg 1–4) | 'speglar' (B4, struktur)
+   *               | 'brytning' (B5, steg 1–3) | 'penna' (B6, steg 1–4) | 'totalreflektion' (B7, steg 1–3) | 'linser' (B8, struktur)
+   *               | 'ogat' (B9, steg 1–4) | 'synfel' (B10) | 'prisma' (B11) | 'farg' (B12, steg 1–3) | 'spektrum' (B13, struktur)
+   *               | 'jamforelse' (B14: ljud och ljus i två kolumner, inga pilar)
+   *   Data: bara lage, bildtext? och beskrivning?; vinklar och brytningsindex står i figuren (n = 1,33 för vatten).
+   * Förlopp har numrerade steg (README, "Figurer som visar ett förlopp får numrerade steg"): en ring med numret, "börja
+   * här" vid steg 1 och en kort mening intill; svg:n har data-steg-antal. Strukturer får bara namn (data-struktur).
+   * Färgerna (arbetsorder 30, kräver Joachims godkännande): ljusstrålar orangeröda (#c2410c), heldragna, med en liten
+   * spets mitt på; strålar som ögat följer bakåt streckade i samma färg; normalen streckad i dämpat bläck; ljudvågornas
+   * linje och vågfronter blågröna (#1f6f78); luftens molekyler mörkt sandfärgade prickar, den markerade molekylen indigo med
+   * rörelsepilar (indigo, streckade, som förut). Kraftpilarna (guld) används inte här. */
+  const LT = (x, y, s, k = '') => kastText(x, y, s, k);
+  const LRAD = 26;                                   // radavståndet i figurernas text
+  const stegNr = (n, x, y) => `<g class="fig-steg" data-steg="${n}" data-cx="${f(x)}" data-cy="${f(y)}"><circle class="fig-steg-ring" cx="${f(x)}" cy="${f(y)}" r="12"/>` +
+    `<text x="${f(x)}" y="${f(y + 6.5)}" class="fig-text fig-kast-text fig-mitt fig-steg-nr">${n}</text></g>`;
+  const borjaHar = (x, y, ank = 'fig-mitt') => `<text x="${f(x)}" y="${f(y)}" class="fig-text fig-kast-text ${ank} fig-steg-start">börja här</text>`;
+  // ett steg: ringen vid (x, y) och meningen (rader) till höger (sida 1) eller vänster (sida −1) om den, eller under (sida 0)
+  const steg = (n, x, y, rader, sida = 1) => stegNr(n, x, y) + [].concat(rader).map((r, i) => {
+    const tx = sida > 0 ? x + 18 : sida < 0 ? x - 18 : x, ty = sida ? y + 6.5 + i * LRAD : y + 34 + i * LRAD;
+    return `<text x="${f(tx)}" y="${f(ty)}" class="fig-text fig-kast-text ${sida > 0 ? 'fig-vanster' : sida < 0 ? 'fig-hoger' : 'fig-mitt'} fig-steg-text fig-halo" data-steg-text="${n}">${esc(r)}</text>`; }).join('');
+  const rader = (x, y, rr, k = '') => [].concat(rr).map((r, i) => LT(x, y + i * LRAD, r, k)).join('');
+  // ljusstrålar: heldragen linje med en liten spets en bit efter mitten (riktningen); skenbar: streckad, utan spets
+  const stralSpets = (x1, y1, x2, y2, k = '', t = 0.55) => { const a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), s = Math.sin(a), l = 11, w = 5;
+    const px = x1 + (x2 - x1) * t + 5 * c, py = y1 + (y2 - y1) * t + 5 * s;
+    return `<polygon class="fig-ljus-spets ${k}" points="${f(px)},${f(py)} ${f(px - l * c - w * s)},${f(py - l * s + w * c)} ${f(px - l * c + w * s)},${f(py - l * s - w * c)}"/>`; };
+  const strale = (x1, y1, x2, y2, data = '', k = '', spets = true) => `<line class="fig-ljus-strale ${k}" ${data} x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>` +
+    (spets && Math.hypot(x2 - x1, y2 - y1) > 34 ? stralSpets(x1, y1, x2, y2, k) : '');
+  const skenbar = (x1, y1, x2, y2, data = '', k = '') => `<line class="fig-ljus-skenbar ${k}" ${data} x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`;
+  const normalLinje = (x1, y1, x2, y2, data = '') => `<line class="fig-normal" ${data} x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`;
+  // en vinkel: bågen från riktningen a1 till a2 (radianer, skärmens y nedåt), den kortaste vägen
+  const vinkelBage = (cx, cy, r, a1, a2, data = '') => { let dv = a2 - a1; while (dv > Math.PI) dv -= 2 * Math.PI; while (dv < -Math.PI) dv += 2 * Math.PI;
+    const p1 = [cx + r * Math.cos(a1), cy + r * Math.sin(a1)], p2 = [cx + r * Math.cos(a1 + dv), cy + r * Math.sin(a1 + dv)];
+    return `<path class="fig-vinkel" ${data} data-cx="${f(cx)}" data-cy="${f(cy)}" d="M${f(p1[0])} ${f(p1[1])} A${r} ${r} 0 0 ${dv > 0 ? 1 : 0} ${f(p2[0])} ${f(p2[1])}"/>`; };
+  const vinkelText = (cx, cy, r, a1, a2, s, k = 'fig-mitt') => { let dv = a2 - a1; while (dv > Math.PI) dv -= 2 * Math.PI; while (dv < -Math.PI) dv += 2 * Math.PI;
+    const a = a1 + dv / 2; return LT(cx + r * Math.cos(a), cy + r * Math.sin(a) + 7, s, k + ' fig-halo'); };
+  const GR = Math.PI / 180;
+  const snell = (v1, n1, n2) => { const x = n1 / n2 * Math.sin(v1 * GR); return x >= 1 ? null : Math.asin(x) / GR; };
+  // ljudvågen i vågmodellen: trycket som en linje (topp där luften är tätast), med amplitud och våglängd i elementet
+  const vagLinje = (x0, x1, yc, amp, lam, xTopp, data = '') => { const p = [];
+    for (let x = x0; x <= x1 + 0.01; x += 2) p.push(f(x) + ',' + f(yc - amp * Math.cos(2 * Math.PI * (x - xTopp) / lam)));
+    return `<polyline class="fig-ljud-vag" data-amplitud="${amp}" data-vaglangd="${lam}" data-topp="${f(xTopp)}" ${data} points="${p.join(' ')}"/>`; };
+  // luftens molekyler: ett rutnät (avstånd a) med lite oordning, varje molekyl förskjuten s(x) från sitt viloläge –
+  // förtätningar där s avtar. data-vaglangd: förtätningarnas avstånd (det grinden mäter i prickarna).
+  const prickband = (x0, x1, y0, nr, a, sF, fro, data = '', jit = 0.45) => { const r = slump(fro); let p = '';
+    for (let j = 0; j < nr; j++) for (let x = x0 + a / 2 + (j % 2) * a / 2; x < x1 - a / 4; x += a) {
+      const xe = x + r() * a * jit, y = y0 + j * a * 0.9 + r() * a * 0.35, xx = xe + sF(xe);
+      if (xx > x0 - 1 && xx < x1 + 1) p += `<circle class="fig-ljud-prick" cx="${f(xx)}" cy="${f(y)}" r="2.3"/>`; }
+    return `<g class="fig-ljud-prickar" ${data}>${p}</g>`; };
+  // förskjutningen när trycket har topp i xTopp: s(x) = −A · sin(2π(x − xTopp)/λ), A ur den relativa täthetsändringen k·A
+  const forskj = (lam, kA, xTopp) => x => -kA * lam / (2 * Math.PI) * Math.sin(2 * Math.PI * (x - xTopp) / lam);
+  // en tunn riktningspil (ljudets eller vågens väg), inte en kraftpil
+  const riktPil = (x1, y1, x2, y2, k = '', data = '') => { const a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), s = Math.sin(a), l = 10, w = 5;
+    return `<g class="fig-ljud-riktning ${k}" ${data}><line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2 - l * 0.8 * c)}" y2="${f(y2 - l * 0.8 * s)}"/>` +
+      `<polygon points="${f(x2)},${f(y2)} ${f(x2 - l * c - w * s)},${f(y2 - l * s + w * c)} ${f(x2 - l * c + w * s)},${f(y2 - l * s - w * c)}"/></g>`; };
+  const fet = (x, y, s, k = 'fig-vanster') => LT(x, y, s, k + ' fig-energi-ord');
+  const ledare = (x1, y1, x2, y2) => `<line class="fig-ledare" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`;
+  const ogaFig = (x, y, mot = 1) => `<g class="fig-oga" data-x="${f(x)}" data-y="${f(y)}"><path class="fig-oga-vita" d="M${f(x - 14 * mot)} ${f(y)} Q${f(x)} ${f(y - 11)} ${f(x + 14 * mot)} ${f(y)} Q${f(x)} ${f(y + 11)} ${f(x - 14 * mot)} ${f(y)} Z"/>` +
+    `<circle class="fig-oga-iris" cx="${f(x + 4 * mot)}" cy="${f(y)}" r="5"/></g>`;
+  const ljudSvg = (B, H, s, namn, lage, stegAntal, struktur) => svg(B, H, s).replace('<svg ', `<svg data-${namn}="${lage}" ${stegAntal ? `data-steg-antal="${stegAntal}" ` : ''}${struktur ? 'data-struktur="" ' : ''}`);
+
+  Bok.figur('ljud', d => {
+    const lage = d.lage || fel('ljud behöver lage: membran, modeller, doppler, orat, jamforelse, resonans, ekolod eller isolering'), B = 440;
+    let s = '', H, beskr, nSteg = 0, struktur = false;
+    if (lage === 'membran') {
+      // A1: tre ögonblick efter varandra (rader); s(x, t) = A · sin(2π(t − u/λ)) där vågen har hunnit (u ≤ λt)
+      const lam = 100, kA = 0.9, A = kA * lam / (2 * Math.PI), x0 = 58, x1 = 262, top = 40, rh = 64, mark = 44, xm = x0 + mark;
+      const sF = t => x => { const u = x - x0; return u >= 0 && u <= lam * t ? A * Math.sin(2 * Math.PI * (t - u / lam)) : 0; };
+      const T = [0.25, 0.75, 1.25];
+      s += `<line class="fig-ljud-hjalp" x1="${f(xm)}" y1="${f(top + 2)}" x2="${f(xm)}" y2="${f(top + 2 * rh + 56)}"/>`;
+      T.forEach((t, i) => {
+        const yc = top + 26 + i * rh, m = sF(t)(x0 + 0.001), mx = x0 - 8 + m;
+        let g = `<rect class="fig-ljud-hogtalare" x="10" y="${f(yc - 11)}" width="15" height="22"/>` +
+          `<path class="fig-ljud-kon" d="M25 ${f(yc - 11)} L${f(mx)} ${f(yc - 25)} L${f(mx)} ${f(yc + 25)} L25 ${f(yc + 11)} Z"/>` +
+          `<line class="fig-ljud-membran" data-utslag="${f(m)}" x1="${f(mx)}" y1="${f(yc - 25)}" x2="${f(mx)}" y2="${f(yc + 25)}"/>`;
+        // förtätningarna skuggade: där molekylerna ligger tätare än 1,6 gånger vilan (s' < −0,38), i sina förskjutna lägen
+        const ds = x => (sF(t)(x + 0.5) - sF(t)(x - 0.5)); let ii = null;
+        for (let x = x0; x <= x1; x += 1) { const tat = ds(x) < -0.38;
+          if (tat && ii === null) ii = x + sF(t)(x);
+          if ((!tat || x + 1 > x1) && ii !== null) { const xe = x + sF(t)(x); if (ii < x0 + 4) ii = x0 + 4; if (xe - ii > 4) g += `<rect class="fig-ljud-tat" data-tat="" x="${f(ii)}" y="${f(yc - 23)}" width="${f(xe - ii)}" height="46" rx="4"/>`; ii = null; } }
+        g += prickband(x0, x1, yc - 19, 5, 8, sF(t), 11, `data-tid="${t}" data-vaglangd="${lam}"`, 0.12);
+        g += `<circle class="fig-ljud-markerad" data-vila="${f(xm)}" cx="${f(xm + sF(t)(xm))}" cy="${f(yc - 0.5)}" r="4.4"/>`;
+        s += `<g class="fig-ljud-ogonblick" data-rad="${i + 1}">${g}</g>`;
+      });
+      // steg 1–3 till höger om raderna, steg 4 och 5 under (4 vid molekylens kolumn, 5 underst)
+      s += borjaHar(278, top - 12) + steg(1, 278, top + 12, ['membranet framåt:', 'förtätning']);
+      s += steg(2, 278, top + 12 + rh, ['membranet bakåt:', 'förtunning']);
+      s += steg(3, 278, top + 12 + 2 * rh, ['framåt igen:', 'ny förtätning']);
+      const y5 = top + 2 * rh + 68;
+      s += `<g class="fig-energi-rorelse">${rorelsePil(xm - 4, y5, xm - 24, y5)}${rorelsePil(xm + 4, y5, xm + 24, y5)}</g>`;
+      s += steg(4, xm + 44, y5, ['molekylen svänger bara på sin plats']);
+      const y4 = y5 + 34;
+      s += steg(5, 20, y4, ['förtätningarna vandrar bort']) + riktPil(262, y4, 330, y4);
+      H = Math.ceil(y4 + 16); nSteg = 5;
+      beskr = 'En högtalare och luften framför den i tre ögonblick. 1: membranet går framåt och trycker ihop luften: en förtätning. 2: membranet går bakåt, och bakom förtätningen blir luften gles: en förtunning. ' +
+        '3: membranet går framåt igen och gör en ny förtätning. 4: en markerad molekyl svänger bara lite fram och tillbaka på sin plats. 5: förtätningarna och förtunningarna vandrar bort från högtalaren.';
+    } else if (lage === 'modeller') {
+      // A2: samma ljudvåg i partikelmodellen och vågmodellen; vågtopparna där luften är tätast
+      const lam = 150, xa = 70, xb = 430, xT = 110, yc = 200, amp = 40, ax = 62;
+      s += fet(xa, 20, 'partikelmodellen') + prickband(xa, xb, 34, 5, 8, forskj(lam, 0.95, xT), 5, `data-vaglangd="${lam}" data-topp="${xT}"`, 0.12);
+      s += LT(185, 88, 'förtunning', 'fig-mitt') + LT(436, 88, 'förtätning', 'fig-hoger');
+      s += fet(xa, 114, 'vågmodellen');
+      [xT, xT + lam].forEach(x => { s += `<line class="fig-ljud-hjalp" x1="${f(x)}" y1="${f(76)}" x2="${f(x)}" y2="${f(yc - amp - 3)}"/>`; });
+      s += `<line class="fig-ljud-noll" x1="${ax}" y1="${yc}" x2="${xb + 4}" y2="${yc}"/>`;
+      s += `<g class="fig-ljud-axel" data-axel="tryck"><line x1="${ax}" y1="${yc + amp + 22}" x2="${ax}" y2="${yc - amp - 30}"/><polygon points="${ax},${yc - amp - 38} ${ax - 5},${yc - amp - 27} ${ax + 5},${yc - amp - 27}"/></g>`;
+      s += LT(ax - 6, yc - amp - 22, 'tryck', 'fig-hoger fig-ljud-axeltext');
+      s += vagLinje(xa, xb, yc, amp, lam, xT);
+      // våglängden mellan de två första topparna
+      const ym = yc - amp - 10;
+      s += `<g class="fig-ljud-matt" data-matt="vaglangd"><line class="fig-krock-matt" x1="${xT}" y1="${ym}" x2="${xT + lam}" y2="${ym}"/>` +
+        `<line class="fig-krock-matt" x1="${xT}" y1="${ym - 5}" x2="${xT}" y2="${ym + 5}"/><line class="fig-krock-matt" x1="${xT + lam}" y1="${ym - 5}" x2="${xT + lam}" y2="${ym + 5}"/></g>`;
+      s += LT(xT + lam / 2, ym - 8, 'våglängd', 'fig-mitt');
+      s += `<g class="fig-ljud-etikett" data-del="topp">${rader(436, yc - amp - 44, ['vågtopp:', 'högre tryck'], 'fig-hoger')}</g>`;
+      s += `<g class="fig-ljud-etikett" data-del="dal">${LT(xT + 1.5 * lam, yc + amp + 26, 'vågdal: lägre tryck', 'fig-mitt')}</g>`;
+      H = Math.ceil(yc + amp + 36);
+      beskr = 'Samma ljudvåg ritad på två sätt. Överst partikelmodellen: luftens molekyler som prickar, täta i förtätningarna och glesa i förtunningarna. ' +
+        'Under vågmodellen: en linje som visar trycket, med den lodräta axeln märkt tryck. Vågtopparna, högre tryck, står under förtätningarna och vågdalarna, lägre tryck, under förtunningarna. Våglängden är avståndet mellan två vågtoppar.';
+    } else if (lage === 'doppler') {
+      // A3: ambulansen kör åt höger; vågfronterna skickades ut från de platser där den var (centrum bakåt), och de som är
+      // framför ligger tätare än de bakom
+      const xn = 232, yc = 106, c = 20, u = 0.45 * c, n = 5;
+      for (let a = 1; a <= n; a++) s += `<circle class="fig-ljud-front" data-alder="${a}" cx="${f(xn - u * a)}" cy="${yc}" r="${f(c * a)}"/>`;
+      s += `<g class="fig-ljud-ambulans"><rect class="fig-ljud-bil" x="${xn - 20}" y="${yc - 10}" width="40" height="18" rx="3"/><rect class="fig-ljud-bil-fonster" x="${xn + 8}" y="${yc - 7}" width="9" height="7"/>` +
+        `<rect class="fig-ljud-blixt" x="${xn - 6}" y="${yc - 15}" width="10" height="5"/><circle class="fig-ljud-hjul" cx="${xn - 11}" cy="${yc + 9}" r="4"/><circle class="fig-ljud-hjul" cx="${xn + 11}" cy="${yc + 9}" r="4"/></g>`;
+      s += `<g class="fig-energi-rorelse" data-rorelse="bilen">${rorelsePil(xn + 26, yc - 30, xn + 68, yc - 30)}</g>`;
+      const yG = 216, person = (x) => `<g class="fig-ljud-person"><circle class="fig-hopp-huvud" cx="${x}" cy="${yG - 50}" r="8"/><path class="fig-hopp-kropp" d="M${x} ${yG - 42} L${x} ${yG - 18}"/>` +
+        `<path class="fig-hopp-lem" d="M${x} ${yG - 18} L${x - 6} ${yG} M${x} ${yG - 18} L${x + 6} ${yG} M${x} ${yG - 36} L${x - 8} ${yG - 24} M${x} ${yG - 36} L${x + 8} ${yG - 24}"/></g>`;
+      s += `<line class="fig-bord" x1="6" y1="${yG}" x2="${B - 6}" y2="${yG}"/>` + person(24) + person(B - 24);
+      s += `<g class="fig-ljud-etikett" data-sida="bakom">${rader(8, yG + 24, ['lång våglängd:', 'mörkare ton'], 'fig-vanster')}</g>`;
+      s += `<g class="fig-ljud-etikett" data-sida="framfor">${rader(B - 8, yG + 24, ['kort våglängd:', 'ljusare ton'], 'fig-hoger')}</g>`;
+      H = yG + 24 + LRAD + 10;
+      beskr = 'En ambulans som kör åt höger med sirenen på. Ljudvågorna sprids som ringar från de platser där ambulansen var. Framför ambulansen ligger ringarna tätt: kort våglängd och ljusare ton för den som står där. ' +
+        'Bakom den ligger de glest: lång våglängd och mörkare ton.';
+    } else if (lage === 'orat') {
+      // A4: örats delar i genomskärning, bara namn
+      struktur = true;
+      const yc = 118;
+      s += `<path class="fig-ljud-huvud" d="M58 40 L330 40 Q360 40 360 70 L360 180 Q360 200 330 200 L58 200 Z"/>`;
+      [14, 26, 38].forEach((r, i) => { s += `<path class="fig-ljud-front" d="M${f(4 + i * 12)} ${f(yc - 26)} Q${f(16 + i * 12)} ${yc} ${f(4 + i * 12)} ${f(yc + 26)}"/>`; });
+      s += `<path class="fig-ljud-ora" data-del="ytteröra" d="M78 ${yc - 14} C66 ${yc - 40} 70 ${yc - 70} 58 ${yc - 76} C40 ${yc - 84} 26 ${yc - 40} 40 ${yc} C50 ${yc + 30} 56 ${yc + 52} 74 ${yc + 52} C84 ${yc + 52} 84 ${yc + 34} 78 ${yc + 14}"/>`;
+      s += `<path class="fig-ljud-gang" data-del="hörselgång" d="M78 ${yc - 14} L196 ${yc - 12} M78 ${yc + 14} L196 ${yc + 12}"/>`;
+      s += `<line class="fig-ljud-trumhinna" data-del="trumhinna" x1="196" y1="${yc - 16}" x2="202" y2="${yc + 16}"/>`;
+      s += `<g class="fig-ljud-ben" data-del="hörselben"><path d="M203 ${yc - 2} L214 ${yc - 8} L226 ${yc - 2} L238 ${yc - 6} L248 ${yc + 2}"/><circle cx="214" cy="${yc - 8}" r="5"/><circle cx="228" cy="${yc - 3}" r="5"/><rect x="242" y="${yc - 6}" width="9" height="12" rx="2"/></g>`;
+      const sp = []; for (let i = 0; i <= 90; i++) { const v = i / 90 * 2.4 * 2 * Math.PI, r = 4 + 24 * i / 90; sp.push(f(286 + r * Math.cos(v)) + ',' + f(yc + r * Math.sin(v))); }
+      s += `<polyline class="fig-ljud-snacka" data-del="hörselsnäcka" points="${sp.reverse().join(' ')}"/>`;
+      s += `<path class="fig-ljud-nerv" data-del="hörselnerv" d="M312 ${yc - 6} C340 ${yc - 20} 360 ${yc + 4} 390 ${yc - 10} S420 ${yc - 14} 436 ${yc - 8}"/>`;
+      const namn = (t, x, y, px, py) => ledare(x, y + (y < yc ? 6 : -20), px, py) + LT(x, y, t, 'fig-mitt fig-halo fig-ljud-namn');
+      s += namn('ytteröra', 52, 22, 62, yc - 60) + namn('trumhinna', 178, 22, 199, yc - 14) + namn('hörselsnäcka', 312, 22, 290, yc - 26);
+      s += namn('hörselgång', 128, 232, 128, yc + 14) + namn('hörselben', 236, 232, 228, yc + 4) + namn('hörselnerv', 388, 232, 392, yc - 8);
+      H = 244;
+      beskr = 'Örat i genomskärning. Ljudvågor kommer in från vänster till ytterörat och vidare in i hörselgången. Längst in sitter trumhinnan, sedan de tre hörselbenen, hörselsnäckan och hörselnerven som går till hjärnan.';
+    } else if (lage === 'jamforelse') {
+      // A5: tonhöjd (frekvens) överst och ljudstyrka (amplitud) underst, i båda modellerna
+      const kol = [[8, 214], [226, 432]];
+      const panel = (x0, x1, yT, t, lam, kA, amp, typ) => {
+        let g = LT((x0 + x1) / 2, yT, t, 'fig-mitt fig-energi-ord');
+        const xT = x0 + lam / 2;
+        g += prickband(x0, x1, yT + 14, 3, 6.2, forskj(lam, kA, xT), 3, `data-vaglangd="${lam}"`);
+        g += vagLinje(x0, x1, yT + 66, amp, lam, xT);
+        return `<g class="fig-ljud-ljud" data-ljud="${typ}">${g}</g>`;
+      };
+      s += LT(B / 2, 20, 'tonhöjd – frekvensen skiljer', 'fig-mitt');
+      s += panel(...kol[0], 48, 'ljust: hög frekvens', 40, 0.6, 18, 'ljust') + panel(...kol[1], 48, 'mörkt: låg frekvens', 90, 0.6, 18, 'morkt');
+      s += `<line class="fig-ljud-skilje" x1="8" y1="138" x2="432" y2="138"/>`;
+      s += LT(B / 2, 162, 'ljudstyrka – amplituden skiljer', 'fig-mitt');
+      s += panel(...kol[0], 188, 'starkt: stor amplitud', 56, 0.8, 26, 'starkt') + panel(...kol[1], 188, 'svagt: liten amplitud', 56, 0.18, 7, 'svagt');
+      H = 188 + 66 + 26 + 8;
+      beskr = 'Fyra ljud i båda modellerna. Överst tonhöjden: det ljusa ljudet har vågtopparna tätt (hög frekvens), det mörka glest (låg frekvens), med samma amplitud. ' +
+        'Underst ljudstyrkan: det starka ljudet har höga vågtoppar och mycket täta förtätningar, det svaga låga vågtoppar och nästan jämnt fördelade molekyler – men avståndet mellan förtätningarna är detsamma.';
+    } else if (lage === 'resonans') {
+      // A6: strängen ensam ger svaga ljudvågor; på gitarrens resonanslåda starkare, med samma våglängd (samma ton)
+      const lam = 48, yS = 62, yG = 198;
+      s += `<rect class="fig-ljud-fast" x="16" y="${yS - 16}" width="8" height="32"/><rect class="fig-ljud-fast" x="182" y="${yS - 16}" width="8" height="32"/>`;
+      s += `<line class="fig-ljud-strang" x1="24" y1="${yS}" x2="182" y2="${yS}"/><path class="fig-ljud-svang" d="M24 ${yS} Q103 ${yS - 22} 182 ${yS} M24 ${yS} Q103 ${yS + 22} 182 ${yS}"/>`;
+      s += `<g class="fig-ljud-ljud" data-ljud="svagt">${vagLinje(222, 432, yS, 7, lam, 222 + lam / 2)}</g>`;
+      s += borjaHar(84, 32, 'fig-hoger') + steg(1, 100, 26, ['strängen knäpps']);
+      s += steg(2, 236, yS + 38, ['svaga ljudvågor']);
+      // gitarren: kroppen med ljudhål, strängen över den
+      s += `<path class="fig-ljud-gitarr" d="M40 ${yG} C40 ${yG - 46} 92 ${yG - 46} 104 ${yG - 30} C114 ${yG - 50} 176 ${yG - 50} 176 ${yG} C176 ${yG + 50} 114 ${yG + 50} 104 ${yG + 30} C92 ${yG + 46} 40 ${yG + 46} 40 ${yG} Z"/>`;
+      s += `<circle class="fig-ljud-hal" cx="128" cy="${yG}" r="13"/><rect class="fig-ljud-stall" x="58" y="${yG - 9}" width="8" height="18"/>`;
+      s += `<line class="fig-ljud-strang" x1="62" y1="${yG}" x2="196" y2="${yG}"/><rect class="fig-ljud-hals" x="176" y="${yG - 7}" width="26" height="14"/>`;
+      [[34, -1], [182, 1]].forEach(([x, sd]) => { [10, 18].forEach(r => { s += `<path class="fig-ljud-svang" d="M${f(x + sd * r * 0.3)} ${f(yG - r)} Q${f(x + sd * r * 0.75)} ${yG} ${f(x + sd * r * 0.3)} ${f(yG + r)}"/>`; }); });
+      s += `<g class="fig-ljud-ljud" data-ljud="starkt">${vagLinje(222, 432, yG, 24, lam, 222 + lam / 2)}</g>`;
+      s += steg(3, 40, yG - 64, ['lådan svänger med']);
+      s += steg(4, 236, yG + 46, ['starkare ljudvågor,', 'samma ton']);
+      H = yG + 46 + 6.5 + LRAD + 12; nSteg = 4;
+      beskr = 'En gitarrsträng och en akustisk gitarr. 1: strängen knäpps. 2: strängen ensam ger svaga ljudvågor. 3: på gitarren förs svängningarna till lådan, som svänger med. ' +
+        '4: lådan och luften i den sätter mer luft i svängning – ljudvågorna får större amplitud men samma våglängd, så tonen är densamma.';
+    } else if (lage === 'ekolod') {
+      // A7: signalen ned till fiskstimmet och ekot upp igen; sträckan ned och upp delas med 2
+      const yY = 64, yF = 224, xs = 100, xe = 124;
+      s += `<rect class="fig-ljud-vatten" x="0" y="${yY}" width="${B}" height="${yF + 34 - yY}"/><line class="fig-ljud-yta" x1="0" y1="${yY}" x2="${B}" y2="${yY}"/>`;
+      s += `<path class="fig-ljud-bat" d="M50 ${yY - 18} L176 ${yY - 18} L160 ${yY + 4} L66 ${yY + 4} Z"/><rect class="fig-ljud-hytt" x="84" y="${yY - 36}" width="44" height="18"/>`;
+      s += `<g class="fig-ljud-klocka"><circle cx="150" cy="${yY - 32}" r="9"/><line x1="150" y1="${yY - 32}" x2="150" y2="${yY - 38}"/><line x1="150" y1="${yY - 32}" x2="155" y2="${yY - 30}"/><rect x="147" y="${yY - 45}" width="6" height="3"/></g>`;
+      for (let i = 0; i < 9; i++) { const fx = 74 + (i % 3) * 26 + (i % 2) * 6, fy = yF - 10 + Math.floor(i / 3) * 10; s += `<path class="fig-ljud-fisk" d="M${fx} ${fy} q9 -6 16 0 q-7 6 -16 0 Z M${fx + 16} ${fy} l5 -4 l0 8 Z"/>`; }
+      s += riktPil(xs, yY + 8, xs, yF - 18, 'fig-ljud-signal', 'data-vag="ned"') + riktPil(xe, yF - 18, xe, yY + 8, 'fig-ljud-eko', 'data-vag="upp"');
+      [0.3, 0.55].forEach(t => { const y = yY + 8 + t * (yF - 26 - yY); s += `<path class="fig-ljud-front" d="M${xs - 9} ${f(y)} Q${xs} ${f(y + 6)} ${xs + 9} ${f(y)}"/>`; });
+      s += borjaHar(214, 22, 'fig-vanster') + steg(1, 200, 48, ['ljudsignalen skickas ned,', 'klockan startar']);
+      s += steg(4, 200, 104, ['ekolodet hör ekot,', 'klockan stoppar']);
+      s += steg(3, 200, 160, ['ekot studsar tillbaka']);
+      s += steg(2, 200, yF - 4, ['signalen når fiskstimmet']);
+      s += steg(5, 20, yF + 50, ['sträckan ned och upp delas med 2']);
+      H = yF + 50 + 16; nSteg = 5;
+      beskr = 'En båt med ett ekolod. 1: ekolodet skickar ned en ljudsignal, och klockan startar. 2: signalen når ett fiskstim. 3: ekot studsar tillbaka upp. 4: ekolodet hör ekot, och klockan stoppar. ' +
+        '5: ljudet har gått både ned och upp, så sträckan delas med 2 för att få djupet.';
+    } else if (lage === 'isolering') {
+      // A8: samma ljudvåg från vänster mot en tung vägg och mot luftig isolering; svagare våg ut
+      const lam = 40, rad = (yc, ut, amp, namn, vagg) => {
+        let g = `<g class="fig-ljud-ljud" data-ljud="in">${vagLinje(10, 150, yc, 20, lam, 10 + lam / 2)}</g>`;
+        g += vagg;
+        g += `<g class="fig-ljud-ljud" data-ljud="ut">${vagLinje(ut, 432, yc, amp, lam, ut + lam / 2)}</g>`;
+        return `<g class="fig-ljud-isolering" data-satt="${namn}">${g}</g>`; };
+      const y1 = 80, y2 = 208;
+      let vagg = `<rect class="fig-ljud-betong" x="160" y="${y1 - 46}" width="44" height="92"/>`;
+      const r = slump(7); for (let i = 0; i < 26; i++) vagg += `<circle class="fig-ljud-ballast" cx="${f(166 + (r() + 0.5) * 32)}" cy="${f(y1 - 40 + (r() + 0.5) * 80)}" r="${f(1.5 + (r() + 0.5) * 1.5)}"/>`;
+      s += rad(y1, 214, 4, 'vagg', vagg) + LT(182, y1 - 56, 'tung vägg (betong)', 'fig-mitt') + LT(432, y1 + 44, 'svag våg ut', 'fig-hoger');
+      let iso = `<rect class="fig-ljud-isomaterial" x="160" y="${y2 - 46}" width="96" height="92"/>`;
+      for (let i = 0; i < 7; i++) iso += `<path class="fig-ljud-fiber" d="M162 ${y2 - 40 + i * 13} q12 -6 24 0 t24 0 t24 0 t20 0"/>`;
+      iso += `<polyline class="fig-ljud-studs" points="160,${y2} 184,${y2 - 34} 206,${y2 + 30} 226,${y2 - 26} 244,${y2 + 18} 256,${y2}"/>`;
+      [184, 226].forEach(x => { iso += `<path class="fig-ljus-varme" d="M${x - 4} ${y2 + 40} q4 -5 0 -10 t0 -10"/>`; });
+      s += rad(y2, 266, 9, 'isolering', iso) + LT(208, y2 - 56, 'luftig isolering', 'fig-mitt') + LT(208, y2 + 70, 'en del blir värme', 'fig-mitt fig-ljus-varme-text') + LT(432, y2 + 44, 'svagare våg ut', 'fig-hoger');
+      H = y2 + 80;
+      beskr = 'Två sätt att isolera mot ljud. Samma ljudvåg kommer från vänster. Överst en tung betongvägg: bara en svag våg kommer ut på andra sidan. ' +
+        'Underst ett luftigt isoleringsmaterial: vågen studsar runt bland fibrerna, en del av energin blir värme, och en svagare våg kommer ut.';
+    } else fel('ljud: okänt läge ”' + lage + '”');
+    return { svg: ljudSvg(B, H, s, 'ljud', lage, nSteg, struktur), beskrivning: d.beskrivning || beskr };
+  });
+
+  let ljusNr = 0;                                    // unika id:n för färgövergångarna (B13)
+  Bok.figur('ljus', d => {
+    const lage = d.lage || fel('ljus behöver lage: foremal, reflektion, spegelbild, speglar, brytning, penna, totalreflektion, linser, ogat, synfel, prisma, farg, spektrum eller jamforelse'), B = 440, nV = 1.33;
+    let s = '', H, beskr, nSteg = 0, struktur = false;
+    const spegel = (x1, y1, x2, y2, bak) => { const L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L, bx = bak[0], by = bak[1]; let h = '';
+      for (let t = 6; t < L; t += 12) h += `<line class="fig-skraffer" x1="${f(x1 + ux * t)}" y1="${f(y1 + uy * t)}" x2="${f(x1 + ux * (t - 6) + bx * 10)}" y2="${f(y1 + uy * (t - 6) + by * 10)}"/>`;
+      return h + `<line class="fig-ljus-spegel" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`; };
+    if (lage === 'foremal') {
+      // B1: tre föremål i samma ljus – svart (absorberar), spegel (reflekterar), glas (släpper igenom); skugga bakom det svarta
+      const yG = 144, dx = 0.55, dy = 0.835, pw = B / 3;
+      const golv = (x1, x2) => `<line class="fig-bord" x1="${f(x1)}" y1="${yG}" x2="${f(x2)}" y2="${yG}"/>`;
+      // 1: svart låda, strålen tar slut på den; den strålen som snuddar hörnet visar skuggan
+      { const cx = pw / 2 + 12, bx0 = cx - 18, bx1 = cx + 18, by = yG - 46;
+        const yH = by + 16, sx = bx0 - (yH - 14) * dx / dy;
+        s += `<g class="fig-ljus-panel" data-panel="absorberar">${golv(6, pw - 6)}`;
+        s += `<polygon class="fig-ljus-skugga" points="${f(bx1)},${f(by)} ${f(bx1 + (yG - by) * dx / dy)},${yG} ${f(bx1)},${yG}"/>`;
+        s += strale(sx, 14, bx0, yH, 'data-roll="in"') + strale(bx1 - (by - 14) * dx / dy, 14, bx1 + (yG - by) * dx / dy, yG, 'data-roll="snudd"', 'fig-ljus-svag');
+        s += `<rect class="fig-ljus-svart" data-foremal="" x="${bx0}" y="${by}" width="36" height="46"/>`;
+        s += `<path class="fig-ljus-varme" d="M${f(bx0 + 10)} ${f(by - 4)} q-5 -4 0 -9 t0 -9"/><path class="fig-ljus-varme" d="M${f(bx0 + 22)} ${f(by - 4)} q-5 -4 0 -9 t0 -9"/>`;
+        s += LT(bx0 - 6, yG - 8, 'värme', 'fig-hoger fig-ljus-varme-text') + LT(cx + 30, yG - 6, 'skugga', 'fig-vanster fig-ljus-skuggtext');
+        s += LT(cx, yG + 28, 'absorberar', 'fig-mitt fig-energi-ord') + '</g>'; }
+      // 2: spegel på golvet, strålen studsar med samma vinkel
+      { const cx = pw * 1.5, L = Math.min((yG - 14) / dy, (pw / 2 - 10) / dx);
+        s += `<g class="fig-ljus-panel" data-panel="reflekterar">${golv(pw + 6, 2 * pw - 6)}${spegel(cx - 40, yG - 1, cx + 40, yG - 1, [0, 1])}`;
+        s += strale(cx - L * dx, yG - 1 - L * dy, cx, yG - 1, 'data-roll="in"') + strale(cx, yG - 1, cx + L * dx, yG - 1 - L * dy, 'data-roll="ut"');
+        s += LT(cx, yG + 28, 'reflekterar', 'fig-mitt fig-energi-ord') + '</g>'; }
+      // 3: en glasruta, strålen fortsätter rakt
+      { const cx = pw * 2.5, gx = cx - 5, gy = yG - 80, yI = gy + 26, x0 = gx - (yI - 14) * dx / dy, yU = yG - 8;
+        s += `<g class="fig-ljus-panel" data-panel="genom">${golv(2 * pw + 6, B - 6)}`;
+        s += strale(x0, 14, gx, yI, 'data-roll="in"', '', false) + strale(gx, yI, gx + (yU - yI) * dx / dy, yU, 'data-roll="ut"');
+        s += `<rect class="fig-ljus-glas" x="${gx - 4}" y="${gy}" width="10" height="80"/>`;
+        s += LT(cx, yG + 28, 'släpper igenom', 'fig-mitt fig-energi-ord') + '</g>'; }
+      H = yG + 36;
+      beskr = 'Tre föremål i samma ljus. Ett svart föremål tar upp ljuset, som blir värme, och bakom det blir det en skugga med föremålets form. En spegel reflekterar ljuset med samma vinkel. En glasruta släpper igenom ljuset, som fortsätter rakt fram.';
+    } else if (lage === 'reflektion') {
+      // B2: en stråle mot en plan spegel; normalen streckad; infallsvinkeln = reflektionsvinkeln, mätta mot normalen
+      const v = 40, P = [220, 206], L = 182, a = v * GR, Q = [P[0] - L * Math.sin(a), P[1] - L * Math.cos(a)], R = [P[0] + L * Math.sin(a), P[1] - L * Math.cos(a)];
+      s += spegel(50, P[1], 390, P[1], [0, 1]) + LT(392, P[1] + 34, 'spegel', 'fig-hoger');
+      s += normalLinje(P[0], P[1], P[0], 42, 'data-yta="0"') + LT(P[0], 32, 'normal', 'fig-mitt fig-normal-text');
+      s += strale(...Q, ...P, 'data-roll="in"') + strale(...P, ...R, 'data-roll="ut"');
+      const up = -Math.PI / 2;
+      s += vinkelBage(...P, 58, up, up - a, `data-vinkel="in" data-grader="${v}"`) + vinkelBage(...P, 58, up, up + a, `data-vinkel="ut" data-grader="${v}"`);
+      s += vinkelText(...P, 80, up, up - a, tal(v) + '°') + vinkelText(...P, 80, up, up + a, tal(v) + '°');
+      s += LT(P[0] - 22, P[1] - 8, 'infallsvinkel', 'fig-hoger fig-halo') + LT(P[0] + 22, P[1] - 8, 'reflektionsvinkel', 'fig-vanster fig-halo');
+      H = P[1] + 44;
+      beskr = `En ljusstråle mot en plan spegel. Normalen står vinkelrätt mot spegeln där strålen träffar och är streckad. Infallsvinkeln, mellan den inkommande strålen och normalen, är ${tal(v)}°, och reflektionsvinkeln, mellan den reflekterade strålen och normalen, är också ${tal(v)}°.`;
+    } else if (lage === 'spegelbild') {
+      // B3: lampan lyser på blomman; ljuset från blomman reflekteras i spegeln till ögat; ögat följer strålarna bakåt –
+      // spegelbilden står lika långt bakom spegeln som blomman står framför
+      const xM = 240, xB = 150, xV = 2 * xM - xB, yH = 140, yF = 222, E = [58, 204];
+      const blomma = (x, k) => `<g class="fig-ljus-blomma ${k}" data-x="${x}"><path class="fig-ljus-stjalk" d="M${x} ${yF} L${x} ${yH + 10}"/>` +
+        [0, 72, 144, 216, 288].map(g => `<circle class="fig-ljus-kronblad" cx="${f(x + 9 * Math.cos(g * GR))}" cy="${f(yH + 9 * Math.sin(g * GR))}" r="7"/>`).join('') + `<circle class="fig-ljus-mitt" cx="${x}" cy="${yH}" r="5"/></g>`;
+      s += spegel(xM, 58, xM, 240, [1, 0]) + blomma(xB, '') + blomma(xV, 'fig-ljus-bild');
+      s += `<g class="fig-ljus-lampa"><circle cx="44" cy="92" r="11"/><rect x="38" y="103" width="12" height="8"/></g>` + strale(55, 98, xB - 12, yH - 6, 'data-roll="lampa"');
+      const P = y => { const t = (xM - E[0]) / (xV - E[0]); return E[1] + (y - E[1]) * t; };
+      [[yH, 'topp'], [yF, 'fot']].forEach(([y, n]) => { const py = P(y);
+        s += strale(xB, y, xM, py, `data-roll="till-spegeln" data-punkt="${n}"`) + strale(xM, py, E[0] + 12, E[1] + (py - E[1]) * 12 / (xM - E[0]), `data-roll="till-ogat" data-punkt="${n}"`);
+        s += skenbar(xM, py, xV, y, `data-punkt="${n}"`); });
+      s += ogaFig(E[0], E[1]);
+      s += normalLinje(xM - 42, P(yH), xM, P(yH), 'data-yta="90"');
+      // lika långt framför som bakom
+      const ym = 254;
+      [[xB, xM], [xM, xV]].forEach(([a, b], i) => { s += `<g class="fig-ljus-matt" data-matt="${i ? 'bakom' : 'framfor'}"><line class="fig-krock-matt" x1="${a + 2}" y1="${ym}" x2="${b - 2}" y2="${ym}"/>` +
+        `<line class="fig-krock-matt" x1="${a + 2}" y1="${ym - 5}" x2="${a + 2}" y2="${ym + 5}"/><line class="fig-krock-matt" x1="${b - 2}" y1="${ym - 5}" x2="${b - 2}" y2="${ym + 5}"/></g>` + LT((a + b) / 2, ym + 24, 'lika långt', 'fig-mitt'); });
+      s += borjaHar(80, 30, 'fig-hoger') + steg(1, 98, 24, ['lampan lyser på blomman']);
+      s += steg(2, 262, 92, ['reflekteras i', 'spegeln']);
+      s += steg(3, 40, 234, ['strålarna når ögat']);
+      s += steg(4, 262, 172, ['ögat följer', 'strålarna bakåt']);
+      H = ym + 34; nSteg = 4;
+      beskr = 'En blomma framför en spegel. 1: en lampa lyser på blomman. 2: ljuset från blomman reflekteras i spegeln med lika stora vinklar. 3: strålarna når ögat. ' +
+        '4: ögat följer strålarna bakåt i raka linjer (streckade), och spegelbilden ser ut att stå lika långt bakom spegeln som blomman står framför.';
+    } else if (lage === 'speglar') {
+      // B4: konkav spegel samlar parallella strålar i brännpunkten; konvex sprider dem
+      struktur = true;
+      const yc = 118, fv = 80, hh = [-46, -22, 22, 46];
+      // konkav: x = xv − (y − yc)² / (4f), brännpunkten (xv − f, yc)
+      { const xv = 196, F = [xv - fv, yc], xs = y => xv - (y - yc) * (y - yc) / (4 * fv);
+        const p = []; for (let y = yc - 66; y <= yc + 66; y += 3) p.push(f(xs(y)) + ',' + f(y));
+        let h = ''; for (let y = yc - 60; y <= yc + 60; y += 12) h += `<line class="fig-skraffer" x1="${f(xs(y))}" y1="${f(y)}" x2="${f(xs(y) + 10)}" y2="${f(y - 6)}"/>`;
+        s += `<g class="fig-ljus-spegeltyp" data-typ="konkav" data-f="${F.join(',')}">${h}<polyline class="fig-ljus-spegel" points="${p.join(' ')}"/>`;
+        hh.forEach(dh => { const y = yc + dh, x = xs(y), ux = F[0] - x, uy = F[1] - y, L = Math.hypot(ux, uy);
+          s += strale(12, y, x, y, 'data-roll="in"') + strale(x, y, x + ux / L * (L + 34), y + uy / L * (L + 34), 'data-roll="ut"'); });
+        s += `<circle class="fig-ljus-brannpunkt" cx="${F[0]}" cy="${F[1]}" r="4"/>` + ledare(F[0], F[1] + 6, F[0], yc + 80) + LT(F[0], yc + 100, 'brännpunkt', 'fig-mitt fig-halo');
+        s += LT(110, 24, 'konkav spegel', 'fig-mitt fig-energi-ord') + '</g>'; }
+      // konvex: x = xv + (y − yc)² / (4f); de reflekterade strålarna ser ut att komma från (xv + f, yc)
+      { const xv = 330, Fv = [xv + fv, yc], xs = y => xv + (y - yc) * (y - yc) / (4 * fv);
+        const p = []; for (let y = yc - 66; y <= yc + 66; y += 3) p.push(f(xs(y)) + ',' + f(y));
+        let h = ''; for (let y = yc - 60; y <= yc + 60; y += 12) h += `<line class="fig-skraffer" x1="${f(xs(y))}" y1="${f(y)}" x2="${f(xs(y) + 10)}" y2="${f(y - 6)}"/>`;
+        s += `<g class="fig-ljus-spegeltyp" data-typ="konvex" data-f="${Fv.join(',')}">${h}<polyline class="fig-ljus-spegel" points="${p.join(' ')}"/>`;
+        hh.forEach(dh => { const y = yc + dh, x = xs(y), ux = x - Fv[0], uy = y - Fv[1], L = Math.hypot(ux, uy);
+          s += strale(236, y, x, y, 'data-roll="in"') + strale(x, y, x + ux / L * 62, y + uy / L * 62, 'data-roll="ut"'); });
+        s += LT(330, 24, 'konvex spegel', 'fig-mitt fig-energi-ord') + '</g>'; }
+      H = yc + 110;
+      beskr = 'Två böjda speglar. Till vänster en konkav spegel, som buktar inåt: parallella strålar reflekteras så att de samlas i en punkt, brännpunkten. Till höger en konvex spegel, som buktar utåt: parallella strålar sprids ut.';
+    } else if (lage === 'brytning') {
+      // B5: en bred stråle med vågfronter går snett ned i vatten; den sida som når vattnet först saktar in, fronterna
+      // hamnar tätare och strålen viker av mot normalen. Varje del av strålen följs: i luft med farten 1, i vatten 1/n.
+      const yY = 150, C = [250, yY], v1 = 50, v2 = snell(v1, 1, nV), a1 = v1 * GR, a2 = v2 * GR, w = 22, L0 = 168, lam = 22;
+      const d1 = [Math.sin(a1), Math.cos(a1)], d2 = [Math.sin(a2), Math.cos(a2)], bx = w / Math.cos(a1);
+      const E = u => [C[0] + u * bx, yY], Lu = u => L0 + u * bx * Math.sin(a1), S = u => [E(u)[0] - Lu(u) * d1[0], yY - Lu(u) * d1[1]];
+      const pkt = (u, t) => t <= Lu(u) ? [S(u)[0] + t * d1[0], S(u)[1] + t * d1[1]] : [E(u)[0] + (t - Lu(u)) / nV * d2[0], yY + (t - Lu(u)) / nV * d2[1]];
+      const tMax = L0 + bx * Math.sin(a1) + 150 * nV;
+      s += `<rect class="fig-ljus-vatten" x="0" y="${yY}" width="${B}" height="160"/><line class="fig-ljus-yta" x1="0" y1="${yY}" x2="${B}" y2="${yY}"/>`;
+      const kant = u => { const p = [S(u), E(u), pkt(u, tMax)]; return p; };
+      const k0 = kant(-1), k1 = kant(1);
+      s += `<polygon class="fig-ljus-stralyta" points="${[...k0, ...k1.slice().reverse()].map(p => f(p[0]) + ',' + f(p[1])).join(' ')}"/>`;
+      [-1, 1].forEach(u => { const k = kant(u); s += `<polyline class="fig-ljus-kant" data-kant="${u}" points="${k.map(p => f(p[0]) + ',' + f(p[1])).join(' ')}"/>`; });
+      for (let t = 24; t < tMax - 6; t += lam) {
+        const us = (t - L0) / (bx * Math.sin(a1)), p = [pkt(-1, t)];
+        if (us > -1 && us < 1) p.push(pkt(us, t));
+        p.push(pkt(1, t));
+        s += `<polyline class="fig-ljus-front" data-t="${f(t)}" points="${p.map(q => f(q[0]) + ',' + f(q[1])).join(' ')}"/>`;
+      }
+      s += strale(...S(0), ...C, `data-roll="in"`, 'fig-ljus-mittstrale') + strale(...C, C[0] + 150 * d2[0], yY + 150 * d2[1], 'data-roll="bruten"', 'fig-ljus-mittstrale');
+      s += normalLinje(C[0], yY - 82, C[0], yY + 128, 'data-yta="0"') + LT(C[0] + 6, yY - 72, 'normal', 'fig-vanster fig-normal-text');
+      const up = -Math.PI / 2, ned = Math.PI / 2, mitt = (a, b) => [C[0] + 46 * Math.cos((a + b) / 2), C[1] + 46 * Math.sin((a + b) / 2)];
+      s += vinkelBage(...C, 46, up, up - a1, `data-vinkel="in" data-grader="${v1}"`) + vinkelBage(...C, 46, ned, ned - a2, `data-vinkel="bruten" data-grader="${f(v2)}"`);
+      // namnen på den fria sidan om normalen, med en tunn linje till bågen
+      const mi = mitt(up, up - a1), mb = mitt(ned, ned - a2);
+      s += ledare(C[0] + 6, yY - 50, mi[0] + 2, mi[1]) + LT(C[0] + 8, yY - 46, 'infallsvinkel ' + tal(v1) + '°', 'fig-vanster fig-halo');
+      s += ledare(C[0] - 6, yY + 46, mb[0] - 2, mb[1]) + LT(C[0] - 8, yY + 52, 'brytningsvinkel ' + tal(Math.round(v2)) + '°', 'fig-hoger fig-halo');
+      s += LT(B - 6, yY - 10, 'luft', 'fig-hoger') + LT(B - 6, yY + 26, 'vatten', 'fig-hoger');
+      s += `<g data-n="${nV}" class="fig-ljus-data"></g>`;
+      s += borjaHar(214, 24, 'fig-hoger') + steg(1, 232, 18, ['strålen kommer snett', 'mot vattenytan']);
+      s += steg(2, 150, yY - 32, ['ena sidan når', 'vattnet först och', 'saktar in'], -1);
+      s += steg(3, 196, yY + 88, ['strålen viker av', 'mot normalen'], -1);
+      H = yY + 138; nSteg = 3;
+      beskr = `En bred ljusstråle med vågfronter (tvärgående streck) går snett ned mot en vattenyta. 1: strålen kommer snett mot ytan. 2: den ena sidan av vågfronten når vattnet först och saktar in, så vågfronterna hamnar tätare. ` +
+        `3: strålen viker av mot normalen. Infallsvinkeln är ${tal(v1)}° och brytningsvinkeln ${tal(Math.round(v2))}°, båda mätta mot den streckade normalen.`;
+    } else if (lage === 'penna') {
+      // B6: ljuset från pennans spets under vattnet bryts från normalen vid ytan; ögat följer strålen bakåt, så spetsen
+      // ser ut att ligga högre och pennan ser bruten ut
+      const yY = 140, T = [200, 252], E = [404, 46], top = [110, 30];
+      // punkten P på ytan där sin(luft) = n · sin(vatten)
+      const fel_ = x => { const a = Math.atan2(x - T[0], T[1] - yY), b = Math.atan2(E[0] - x, yY - E[1]); return Math.sin(b) - nV * Math.sin(a); };
+      let lo = T[0], hi = E[0]; for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (fel_(m) > 0) lo = m; else hi = m; }
+      const P = [(lo + hi) / 2, yY], va = Math.atan2(P[0] - T[0], T[1] - yY) / GR, vl = Math.atan2(E[0] - P[0], yY - E[1]) / GR;
+      // den skenbara spetsen: strålen från ögat bakåt genom P, där den når lodlinjen genom spetsen
+      const k = (T[0] - P[0]) / (P[0] - E[0]), Sk = [T[0], P[1] + (P[1] - E[1]) * k];
+      const ytaX = top[0] + (yY - top[1]) * (T[0] - top[0]) / (T[1] - top[1]);
+      s += `<rect class="fig-ljus-glaset" x="96" y="70" width="230" height="204" rx="6"/><rect class="fig-ljus-vatten" x="98" y="${yY}" width="226" height="132"/><line class="fig-ljus-yta" x1="98" y1="${yY}" x2="324" y2="${yY}"/>`;
+      s += `<line class="fig-ljus-penna" data-del="verklig" x1="${top[0]}" y1="${top[1]}" x2="${T[0]}" y2="${T[1]}"/><line class="fig-ljus-penna fig-ljus-bild" data-del="skenbar" x1="${f(ytaX)}" y1="${yY}" x2="${f(Sk[0])}" y2="${f(Sk[1])}"/>`;
+      s += `<circle class="fig-ljus-spets-punkt" data-spets="verklig" cx="${T[0]}" cy="${T[1]}" r="3.5"/><circle class="fig-ljus-spets-punkt fig-ljus-bild" data-spets="skenbar" cx="${f(Sk[0])}" cy="${f(Sk[1])}" r="3.5"/>`;
+      s += strale(...T, ...P, 'data-roll="i-vattnet"') + strale(...P, E[0] - 10, E[1] + 10 * (P[1] - E[1]) / (E[0] - P[0]), 'data-roll="i-luften"');
+      s += skenbar(...P, ...Sk, 'data-roll="bakat"');
+      s += normalLinje(P[0], yY - 70, P[0], yY + 70, 'data-yta="0"');
+      s += vinkelBage(...P, 40, Math.PI / 2, Math.PI / 2 + va * GR, `data-vinkel="vatten" data-grader="${f(va)}"`) + vinkelBage(...P, 40, -Math.PI / 2, -Math.PI / 2 + vl * GR, `data-vinkel="luft" data-grader="${f(vl)}"`);
+      s += `<g data-n="${nV}" class="fig-ljus-data"></g>` + ogaFig(E[0], E[1], -1);
+      s += borjaHar(T[0] - 8, T[1] + 28, 'fig-hoger') + steg(1, T[0] + 20, T[1] + 4, ['ljuset från spetsen'], 1);
+      s += steg(2, P[0] + 16, yY + 30, ['bryts från', 'normalen'], 1);
+      s += steg(3, 300, 30, ['ögat följer', 'strålen bakåt'], -1);
+      s += steg(4, 150, 172, ['spetsen ser ut', 'att ligga högre'], -1);
+      H = 288; nSteg = 4;
+      beskr = 'En penna står snett i ett glas vatten. 1: ljuset från pennans spets går upp mot vattenytan. 2: vid ytan bryts det bort från normalen. 3: ögat följer strålen bakåt i en rak linje (streckad). ' +
+        '4: spetsen ser ut att ligga högre upp än den gör, och pennan ser bruten ut.';
+    } else if (lage === 'totalreflektion') {
+      // B7: tre strålar mot vattenytan underifrån, allt snettare: bryts ut, går längs ytan, reflekteras tillbaka
+      const yY = 84, pw = B / 3, vk = Math.asin(1 / nV) / GR, V = [30, vk, 65];
+      s += `<rect class="fig-ljus-vatten" x="0" y="${yY}" width="${B}" height="150"/><line class="fig-ljus-yta" x1="0" y1="${yY}" x2="${B}" y2="${yY}"/>`;
+      V.forEach((v, i) => {
+        const cx = pw * (i + 0.5), a = v * GR, Li = [100, 88, 72][i], Q = [cx - Li * Math.sin(a), yY + Li * Math.cos(a)];
+        let g = normalLinje(cx, yY - 62, cx, yY + 92, 'data-yta="0"') + strale(...Q, cx, yY, 'data-roll="in"');
+        if (i === 0) { const b = snell(v, nV, 1) * GR; g += strale(cx, yY, cx + 72 * Math.sin(b), yY - 72 * Math.cos(b), `data-roll="ut" data-grader="${f(b / GR)}"`); }
+        else if (i === 1) g += strale(cx, yY, cx + 62, yY, 'data-roll="langs"');
+        else g += strale(cx, yY, cx + Li * Math.sin(a), yY + Li * Math.cos(a), 'data-roll="reflekterad"');
+        g += vinkelBage(cx, yY, 34, Math.PI / 2, Math.PI / 2 + a, `data-vinkel="in" data-grader="${f(v)}"`) + vinkelText(cx, yY, 52, Math.PI / 2, Math.PI / 2 + a, tal(Math.round(v)) + '°');
+        g += steg(i + 1, cx, yY + 160, [['strålen bryts', 'längs ytan', 'reflekteras ned'][i]], 0);
+        s += `<g class="fig-ljus-panel" data-panel="${i + 1}" data-grader="${f(v)}">${g}</g>`;
+      });
+      s += LT(6, yY - 10, 'luft', 'fig-vanster') + LT(6, yY + 24, 'vatten', 'fig-vanster') + LT(pw * 2.5, yY + 136, 'totalreflektion', 'fig-mitt fig-energi-ord fig-halo');
+      s += borjaHar(pw * 0.5, yY + 140, 'fig-mitt') + `<g data-n="${nV}" class="fig-ljus-data"></g>`;
+      H = yY + 160 + 34 + 8; nSteg = 3;
+      beskr = `Tre strålar från vattnet mot ytan, allt snettare. 1: vid 30° går strålen ut i luften och bryts bort från normalen. 2: vid ungefär ${tal(Math.round(vk))}° går den längs ytan. ` +
+        '3: vid 65° kommer inget ljus ut – allt reflekteras tillbaka ned i vattnet: totalreflektion. Vinklarna är mätta mot den streckade normalen.';
+    } else if (lage === 'linser') {
+      // B8: konvex lins samlar parallella strålar i brännpunkten (brännvidden utmärkt); konkav lins sprider dem, och de ser
+      // ut att komma från en punkt framför linsen (streckat)
+      struktur = true;
+      const yc = 110, fv = 74, hh = [-40, -18, 18, 40];
+      { const xL = 96, F = [xL + fv, yc];
+        s += `<g class="fig-ljus-linstyp" data-typ="konvex" data-lins="${xL}" data-f="${F.join(',')}"><path class="fig-ljus-lins" d="M${xL} ${yc - 58} Q${xL + 18} ${yc} ${xL} ${yc + 58} Q${xL - 18} ${yc} ${xL} ${yc - 58} Z"/>`;
+        s += `<line class="fig-ljus-axel" x1="8" y1="${yc}" x2="212" y2="${yc}"/>`;
+        hh.forEach(dh => { const y = yc + dh, ux = F[0] - xL, uy = F[1] - y, L = Math.hypot(ux, uy); s += strale(10, y, xL, y, 'data-roll="in"') + strale(xL, y, xL + ux / L * (L + 30), y + uy / L * (L + 30), 'data-roll="ut"'); });
+        s += `<circle class="fig-ljus-brannpunkt" cx="${F[0]}" cy="${yc}" r="4"/>` + LT(F[0] + 4, yc - 52, 'brännpunkt', 'fig-mitt fig-halo') + ledare(F[0], yc - 48, F[0], yc - 6);
+        const ym = yc + 78;
+        s += `<g class="fig-ljus-matt" data-matt="brannvidd"><line class="fig-krock-matt" x1="${xL}" y1="${ym}" x2="${F[0]}" y2="${ym}"/><line class="fig-krock-matt" x1="${xL}" y1="${ym - 5}" x2="${xL}" y2="${ym + 5}"/><line class="fig-krock-matt" x1="${F[0]}" y1="${ym - 5}" x2="${F[0]}" y2="${ym + 5}"/></g>`;
+        s += LT((xL + F[0]) / 2, ym + 24, 'brännvidd', 'fig-mitt') + LT(110, 24, 'konvex lins', 'fig-mitt fig-energi-ord') + '</g>'; }
+      { const xL = 322, Fv = [xL - fv, yc];
+        s += `<g class="fig-ljus-linstyp" data-typ="konkav" data-lins="${xL}" data-f="${Fv.join(',')}"><path class="fig-ljus-lins" d="M${xL - 11} ${yc - 58} L${xL + 11} ${yc - 58} Q${xL + 2} ${yc} ${xL + 11} ${yc + 58} L${xL - 11} ${yc + 58} Q${xL - 2} ${yc} ${xL - 11} ${yc - 58} Z"/>`;
+        s += `<line class="fig-ljus-axel" x1="228" y1="${yc}" x2="432" y2="${yc}"/>`;
+        hh.forEach(dh => { const y = yc + dh, ux = xL - Fv[0], uy = y - Fv[1], L = Math.hypot(ux, uy), t = (432 - xL) / ux;
+          s += strale(232, y, xL, y, 'data-roll="in"') + strale(xL, y, xL + ux * t, y + uy * t, 'data-roll="ut"') + skenbar(xL, y, ...Fv, 'data-roll="bakat"'); });
+        s += `<circle class="fig-ljus-brannpunkt" cx="${Fv[0]}" cy="${yc}" r="4"/>` + LT(330, 24, 'konkav lins', 'fig-mitt fig-energi-ord') + '</g>'; }
+      H = yc + 112;
+      beskr = 'Två linser. Till vänster en konvex lins, tjockast på mitten: parallella strålar bryts så att de samlas i brännpunkten, och avståndet från linsen dit är brännvidden. ' +
+        'Till höger en konkav lins, tunnast på mitten: strålarna sprids ut och ser ut att komma från en punkt framför linsen (streckat).';
+    } else if (lage === 'ogat') {
+      // B9: ljus från ett träd bryts i hornhinnan och linsen och samlas på näthinnan – bilden blir upp och ned
+      const O = [196, 150], R = 74, xT = 30, yTopp = 104, yFot = 196, xC = O[0] - R + 2, xLi = O[0] - R + 30, xN = O[0] + R - 4;
+      const bild = { topp: [xN, O[1] + 34], fot: [xN, O[1] - 30] };
+      s += `<circle class="fig-ljus-ogat" cx="${O[0]}" cy="${O[1]}" r="${R}"/>`;
+      s += `<path class="fig-ljus-nathinna" d="M${f(O[0] + R * Math.cos(-55 * GR))} ${f(O[1] + R * Math.sin(-55 * GR))} A${R} ${R} 0 0 1 ${f(O[0] + R * Math.cos(55 * GR))} ${f(O[1] + R * Math.sin(55 * GR))}"/>`;
+      s += `<path class="fig-ljus-hornhinna" d="M${f(xC + 8)} ${O[1] - 40} Q${f(xC - 18)} ${O[1]} ${f(xC + 8)} ${O[1] + 40}"/>`;
+      s += `<line class="fig-ljus-iris" x1="${xC + 16}" y1="${O[1] - 36}" x2="${xC + 16}" y2="${O[1] - 16}"/><line class="fig-ljus-iris" x1="${xC + 16}" y1="${O[1] + 16}" x2="${xC + 16}" y2="${O[1] + 36}"/>`;
+      s += `<ellipse class="fig-ljus-ogonlins" cx="${xLi}" cy="${O[1]}" rx="10" ry="24"/>`;
+      s += `<path class="fig-ljus-synnerv" d="M${O[0] + R - 2} ${O[1] - 9} L${B - 4} ${O[1] - 9} M${O[0] + R - 2} ${O[1] + 9} L${B - 4} ${O[1] + 9}"/>`;
+      const trad = (x, yt, yf, k = '') => { const h = yf - yt, sg = Math.sign(h); return `<g class="fig-ljus-trad ${k}"><line class="fig-ljus-stam" x1="${x}" y1="${f(yf)}" x2="${x}" y2="${f(yt + h * 0.45)}"/>` +
+        `<path class="fig-ljus-krona" d="M${x} ${f(yt)} L${f(x + Math.abs(h) * 0.28)} ${f(yt + h * 0.62)} L${f(x - Math.abs(h) * 0.28)} ${f(yt + h * 0.62)} Z"/></g>`; };
+      s += trad(xT, yTopp, yFot) + `<g data-bild="${f(bild.topp[1])},${f(bild.fot[1])}">${trad(xN - 8, bild.topp[1], bild.fot[1], 'fig-ljus-liten')}</g>`;
+      // två strålar från toppen och två från foten: in genom hornhinnan, genom linsen, till bildpunkten
+      [['topp', yTopp, [O[1] - 26, O[1] - 2], [O[1] - 14, O[1] + 2]], ['fot', yFot, [O[1] + 2, O[1] + 26], [O[1] - 2, O[1] + 14]]].forEach(([n, y0, yc_, yl]) => {
+        yc_.forEach((yy, j) => { const yL = yl[j], mal = bild[n];
+          s += strale(xT, y0, xC, yy, `data-fran="${n}"`, '', j === 0) + strale(xC, yy, xLi, yL, `data-fran="${n}"`, '', false) + strale(xLi, yL, ...mal, `data-fran="${n}" data-till="${n}"`, '', j === 0); }); });
+      s += borjaHar(98, 24.5, 'fig-hoger') + steg(1, 116, 18, ['ljuset bryts i hornhinnan', 'och går in genom pupillen']);
+      s += ledare(xLi, O[1] + R + 22, xLi, O[1] + 26) + steg(2, xLi, O[1] + R + 36, ['linsen bryter ljuset mer'], 1);
+      s += steg(3, 294, 70, ['bilden på', 'näthinnan blir', 'upp och ned']);
+      s += steg(4, 294, 178, ['synnerven till', 'hjärnan: vi ser', 'rättvänt']);
+      H = O[1] + R + 36 + 20; nSteg = 4;
+      beskr = 'Ett öga i genomskärning och ett träd framför det. 1: ljuset från trädet bryts i hornhinnan och går in genom pupillen. 2: linsen bryter ljuset mer. 3: strålarna samlas på näthinnan, där bilden blir upp och ned. ' +
+        '4: synnerven leder signalerna till hjärnan, och vi uppfattar omgivningen rättvänd.';
+    } else if (lage === 'synfel') {
+      // B10: närsynt (strålarna möts framför näthinnan) och översynt (bakom); med en konkav respektive konvex lins möts de
+      // på näthinnan
+      const R = 34, cell = (x0, y0, typ, glas) => {
+        const O = [x0 + 136, y0], xC = O[0] - R + 2, xN = O[0] + R - 2, h = 15, xG = x0 + 56;
+        const mot = typ === 'nar' ? (glas ? xN : xN - 22) : (glas ? xN : xN + 26);
+        let g = `<circle class="fig-ljus-ogat" cx="${O[0]}" cy="${O[1]}" r="${R}"/><path class="fig-ljus-nathinna" d="M${f(O[0] + R * Math.cos(-50 * GR))} ${f(O[1] + R * Math.sin(-50 * GR))} A${R} ${R} 0 0 1 ${f(O[0] + R * Math.cos(50 * GR))} ${f(O[1] + R * Math.sin(50 * GR))}"/>`;
+        g += `<ellipse class="fig-ljus-ogonlins" cx="${xC + 12}" cy="${O[1]}" rx="6" ry="15"/>`;
+        [-h, h].forEach(dh => {
+          let x = x0 + 6, y = O[1] + dh;
+          if (glas) { const yg = y, dy = typ === 'nar' ? dh * 0.18 : -dh * 0.22; g += strale(x, y, xG, yg, 'data-roll="in"', '', false); x = xG; y = yg; const yC = yg + dy; g += strale(xG, yg, xC + 12, yC, 'data-roll="glas"'); x = xC + 12; y = yC; }
+          else { g += strale(x, y, xC + 12, y, 'data-roll="in"'); x = xC + 12; }
+          const ux = mot - x, uy = O[1] - y;
+          if (mot <= xN + 0.5) { g += strale(x, y, mot, O[1], 'data-roll="i-ogat"', '', false); const t = (xN - mot) / ux; if (t > 0) g += strale(mot, O[1], mot + ux * t, O[1] + uy * t, 'data-roll="efter"', '', false); }
+          else { const t = (xN - 2 - x) / ux; g += strale(x, y, x + ux * t, y + uy * t, 'data-roll="i-ogat"', '', false) + skenbar(x + ux * t, y + uy * t, mot, O[1], 'data-roll="bakom"'); }
+        });
+        if (glas) g += typ === 'nar' ? `<path class="fig-ljus-lins" d="M${xG - 7} ${y0 - 30} L${xG + 7} ${y0 - 30} Q${xG + 1} ${y0} ${xG + 7} ${y0 + 30} L${xG - 7} ${y0 + 30} Q${xG - 1} ${y0} ${xG - 7} ${y0 - 30} Z"/>`
+          : `<path class="fig-ljus-lins" d="M${xG} ${y0 - 30} Q${xG + 12} ${y0} ${xG} ${y0 + 30} Q${xG - 12} ${y0} ${xG} ${y0 - 30} Z"/>`;
+        g += `<circle class="fig-ljus-motpunkt" cx="${f(mot)}" cy="${O[1]}" r="3"/>`;
+        return `<g class="fig-ljus-synfel" data-typ="${typ}" data-glas="${glas ? 1 : 0}" data-nathinna="${f(xN)}" data-mot="${f(mot)}">${g}</g>`; };
+      s += fet(8, 22, 'närsynt') + cell(0, 66, 'nar', false) + cell(220, 66, 'nar', true);
+      s += LT(136, 126, 'möts framför näthinnan', 'fig-mitt') + LT(356, 126, 'med konkav lins', 'fig-mitt');
+      s += `<line class="fig-ljud-skilje" x1="8" y1="142" x2="432" y2="142"/>`;
+      s += fet(8, 166, 'översynt') + cell(0, 214, 'over', false) + cell(220, 214, 'over', true);
+      s += LT(136, 274, 'möts bakom näthinnan', 'fig-mitt') + LT(356, 274, 'med konvex lins', 'fig-mitt');
+      H = 286;
+      beskr = 'Två synfel. Närsynt: strålarna möts framför näthinnan, och med en konkav lins framför ögat möts de på näthinnan. Översynt: strålarna skulle mötas bakom näthinnan (streckat), och med en konvex lins möts de på näthinnan.';
+    } else if (lage === 'prisma') {
+      // B11: vitt ljus in i ett prisma, ett spektrum ut; rött bryts minst och violett mest (brytningsindexen förstorade, så
+      // att skillnaden syns)
+      const A = [216, 34], Bv = [140, 196], Cv = [292, 196], N = { rott: 1.48, orange: 1.505, gult: 1.53, gront: 1.555, blatt: 1.585, violett: 1.62 };
+      const sub = (p, q) => [p[0] - q[0], p[1] - q[1]], nrm = v => { const L = Math.hypot(...v); return [v[0] / L, v[1] / L]; };
+      const bryt = (d, n_, r) => { const c = -(d[0] * n_[0] + d[1] * n_[1]), k = 1 - r * r * (1 - c * c); return k < 0 ? null : nrm([r * d[0] + (r * c - Math.sqrt(k)) * n_[0], r * d[1] + (r * c - Math.sqrt(k)) * n_[1]]); };
+      const skar = (p, d, a, b) => { const e = sub(b, a), den = d[0] * e[1] - d[1] * e[0], t = ((a[0] - p[0]) * e[1] - (a[1] - p[1]) * e[0]) / den; return [p[0] + t * d[0], p[1] + t * d[1]]; };
+      const nV1 = nrm([A[1] - Bv[1], -(A[0] - Bv[0])]), nV2 = nrm([Cv[1] - A[1], -(Cv[0] - A[0])]);   // utåtriktade normaler
+      const S0 = [14, 150], P1 = [A[0] + (Bv[0] - A[0]) * 0.58, A[1] + (Bv[1] - A[1]) * 0.58], d0 = nrm(sub(P1, S0));
+      s += `<polygon class="fig-ljus-prisma" points="${A.join(',')} ${Bv.join(',')} ${Cv.join(',')}"/>`;
+      s += `<line class="fig-ljus-vitt-kant" x1="${S0[0]}" y1="${S0[1]}" x2="${f(P1[0])}" y2="${f(P1[1])}"/><line class="fig-ljus-vitt" x1="${S0[0]}" y1="${S0[1]}" x2="${f(P1[0])}" y2="${f(P1[1])}"/>`;
+      const slut = {};
+      Object.entries(N).forEach(([farg, n]) => {
+        const d1 = bryt(d0, [-nV1[0], -nV1[1]].map(x => -x), 1 / n) || d0, P2 = skar(P1, d1, A, Cv), d2 = bryt(d1, [-nV2[0], -nV2[1]], n) || d1;
+        const t = (B - 8 - P2[0]) / d2[0], P3 = [P2[0] + d2[0] * t, P2[1] + d2[1] * t]; slut[farg] = P3; slut[farg].y = x => P2[1] + (x - P2[0]) * d2[1] / d2[0];
+        s += `<line class="fig-ljus-farg fig-farg-${farg}" data-farg="${farg}" x1="${f(P1[0])}" y1="${f(P1[1])}" x2="${f(P2[0])}" y2="${f(P2[1])}"/>` +
+          `<line class="fig-ljus-farg fig-farg-${farg}" data-farg="${farg}" data-ut="" data-avvikelse="${f(Math.atan2(d2[1], d2[0]) / GR - Math.atan2(d0[1], d0[0]) / GR)}" x1="${f(P2[0])}" y1="${f(P2[1])}" x2="${f(P3[0])}" y2="${f(P3[1])}"/>`;
+      });
+      s += LT(20, 138, 'vitt ljus', 'fig-vanster fig-halo');
+      s += LT(B - 8, slut.rott.y(B - 8 - 150) - 9, 'rött bryts minst', 'fig-hoger fig-halo fig-farg-text-rott') + LT(B - 8, slut.violett[1] + 24, 'violett bryts mest', 'fig-hoger fig-halo fig-farg-text-violett');
+      H = Math.ceil(Math.max(226, slut.violett[1] + 34));
+      beskr = 'Vitt ljus går in i ett prisma och delas upp i ett spektrum: rött, orange, gult, grönt, blått och violett. Rött ljus bryts minst och violett mest.';
+    } else if (lage === 'farg') {
+      // B12: vitt ljus träffar ett rött äpple; det röda reflekteras till ögat, de andra färgerna absorberas och blir värme
+      const Ap = [222, 168], r = 40, E = [408, 58];
+      const traff = [Ap[0] - r * Math.cos(50 * GR), Ap[1] - r * Math.sin(50 * GR)];
+      [['rott', -6], ['gront', 0], ['blatt', 6]].forEach(([farg, o]) => { const x1 = 54 + o, y1 = 70 - o, x2 = traff[0] + o * 0.6, y2 = traff[1] - o * 0.6;
+        s += `<line class="fig-ljus-farg fig-farg-${farg}" data-farg="${farg}" data-roll="in" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`; });
+      s += stralSpets(54, 70, traff[0], traff[1], 'fig-farg-gront') + LT(104, 68, 'vitt ljus', 'fig-vanster fig-energi-ord');
+      s += `<line class="fig-ljus-farg fig-farg-rott" data-farg="rott" data-roll="ut" x1="${f(traff[0])}" y1="${f(traff[1])}" x2="${E[0] - 14}" y2="${E[1] + 4}"/>` + stralSpets(traff[0], traff[1], E[0] - 14, E[1] + 4, 'fig-farg-rott');
+      s += `<circle class="fig-ljus-apple" cx="${Ap[0]}" cy="${Ap[1]}" r="${r}"/><path class="fig-ljus-stjalk" d="M${Ap[0]} ${Ap[1] - r + 2} q2 -10 6 -14"/><path class="fig-ljus-blad" d="M${Ap[0] + 4} ${Ap[1] - r - 6} q14 -10 22 -2 q-12 8 -22 2 Z"/>`;
+      s += ogaFig(E[0], E[1], -1);
+      [[-30, 20], [-14, 34]].forEach(([dx, dy]) => { s += `<path class="fig-ljus-varme" d="M${Ap[0] + dx - 18} ${Ap[1] + dy} q-5 -4 0 -9 t0 -9"/>`; });
+      s += borjaHar(92, 30, 'fig-hoger') + steg(1, 110, 24, ['vitt ljus träffar äpplet']);
+      s += steg(2, 300, 128, ['det röda ljuset', 'reflekteras till', 'ögat']);
+      s += steg(3, 64, Ap[1] + r + 22, ['de andra färgerna absorberas', 'och blir värme']);
+      H = Ap[1] + r + 22 + LRAD + 16; nSteg = 3;
+      beskr = 'Vitt ljus, med alla färger, träffar ett rött äpple. 1: det vita ljuset träffar äpplet. 2: det röda ljuset reflekteras till ögat. 3: de flesta andra färgerna absorberas och blir värme.';
+    } else if (lage === 'spektrum') {
+      // B13: hela spektrumet från lång till kort våglängd, med exempel; pilen "mer energi per foton" mot kort våglängd
+      struktur = true;
+      const id = 'fig-spektrum-' + (++ljusNr), x0 = 24, bw = 36, y0 = 40, rh = 30;
+      const R = [['radiovågor', 'radio och mobil'], ['mikrovågor', 'mikrovågsugn'], ['infrarött ljus', 'element, fjärrkontroll'], ['synligt ljus', 'regnbågens färger'],
+        ['ultraviolett ljus', 'solen'], ['röntgenstrålning', 'röntgenbild'], ['gammastrålning', '']];
+      s += `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c62828"/><stop offset=".2" stop-color="#ef6c00"/><stop offset=".4" stop-color="#f2c12e"/>` +
+        `<stop offset=".6" stop-color="#2e7d32"/><stop offset=".8" stop-color="#1565c0"/><stop offset="1" stop-color="#6a1b9a"/></linearGradient></defs>`;
+      R.forEach(([n, ex], i) => { const y = y0 + i * rh;
+        s += `<rect class="fig-ljus-band ${i === 3 ? '' : 'fig-ljus-band-osynligt'}" data-rad="${i}" x="${x0}" y="${y}" width="${bw}" height="${rh}" ${i === 3 ? `style="fill: url(#${id})"` : ''}/>`;
+        s += `<text x="${x0 + bw + 14}" y="${y + rh / 2 + 7}" class="fig-text fig-kast-text fig-vanster" data-rad="${i}"><tspan class="fig-energi-ord">${esc(n)}</tspan>${ex ? esc(': ' + ex) : ''}</text>`; });
+      // vågen i bandet: våglängden krymper nedåt
+      const p = []; let fas = 0; for (let y = y0 + 2; y <= y0 + 7 * rh - 2; y += 0.5) { const lam = 70 * Math.pow(6 / 70, (y - y0) / (7 * rh)); fas += 0.5 / lam * 2 * Math.PI; p.push(f(x0 + bw / 2 + 11 * Math.sin(fas)) + ',' + f(y)); }
+      s += `<polyline class="fig-ljus-bandvag" points="${p.join(' ')}"/>`;
+      s += riktPil(10, y0 + 6, 10, y0 + 7 * rh - 2, 'fig-ljus-energipil');
+      s += LT(x0 - 18, y0 - 14, 'lång våglängd', 'fig-vanster') + LT(x0 - 18, y0 + 7 * rh + 24, 'kort våglängd – mer energi per foton', 'fig-vanster');
+      H = y0 + 7 * rh + 34;
+      beskr = 'Hela spektrumet som ett band, från lång våglängd överst till kort våglängd underst: radiovågor (radio och mobil), mikrovågor (mikrovågsugn), infrarött ljus (element och fjärrkontroll), synligt ljus (regnbågens färger), ' +
+        'ultraviolett ljus (solen), röntgenstrålning (röntgenbild) och gammastrålning. En pil längs bandet visar att varje foton har mer energi ju kortare våglängden är.';
+    } else if (lage === 'jamforelse') {
+      // B14: ljud och ljus jämförda i två kolumner, med punkter under varandra och inga pilar
+      const pkt = (x, y) => `<circle class="fig-ljus-punkt" cx="${f(x)}" cy="${f(y - 6)}" r="3"/>`;
+      s += LT(B / 2, 20, 'gemensamt', 'fig-mitt fig-energi-ord');
+      // de gemensamma punkterna på två rader, över båda kolumnerna
+      [[12, 46, 'vågor'], [96, 46, 'våglängd och frekvens'], [314, 46, 'absorberas'], [12, 72, 'reflekteras (eko – spegel)'], [262, 72, 'för med sig energi']].forEach(([x, y, t]) => { s += pkt(x, y) + LT(x + 10, y, t, 'fig-vanster fig-ljus-gemensamt'); });
+      s += `<line class="fig-ljud-skilje" x1="8" y1="84" x2="${B - 8}" y2="84"/>`;
+      const yK = 108;
+      s += LT(110, yK, 'ljud', 'fig-mitt fig-energi-ord fig-ljus-kolumn') + LT(330, yK, 'ljus', 'fig-mitt fig-energi-ord fig-ljus-kolumn');
+      s += `<line class="fig-ljud-skilje" x1="${B / 2}" y1="${yK - 18}" x2="${B / 2}" y2="LODRAT_SLUT"/>`;
+      const P = [[['tryckvåg i ett ämne'], ['våg som inte behöver ämne']], [['går inte genom vakuum'], ['går genom vakuum']], [['ca 340 m/s i luft'], ['ca 300 000 km/s']],
+        [['snabbast i fasta ämnen'], ['snabbast i vakuum']], [['frekvensen hörs som', 'tonhöjd'], ['våglängden ses som', 'färg']]];
+      let y = yK + 26;
+      P.forEach(([a, b], i) => { [[a, 12, 'ljud'], [b, 228, 'ljus']].forEach(([rr, x, k]) => { s += pkt(x, y) + rader(x + 10, y, rr, `fig-vanster fig-ljus-skillnad" data-kolumn="${k}" data-rad="${i}`); });
+        y += Math.max(a.length, b.length) * LRAD + 2; });
+      H = Math.ceil(y - LRAD + 12); s = s.replace('LODRAT_SLUT', f(H - 4));
+      beskr = 'Ljud och ljus jämförda. Gemensamt: båda är vågor med våglängd och frekvens, båda kan reflekteras (eko och spegel) och absorberas, och båda för med sig energi. ' +
+        'Skillnader: ljud är en tryckvåg i ett ämne och går inte genom vakuum, ljus är en våg som inte behöver något ämne och går genom vakuum. Ljud går ca 340 m/s i luft, ljus ca 300 000 km/s. ' +
+        'Ljud går snabbast i fasta ämnen, ljus i vakuum. Ljudets frekvens hörs som tonhöjd, ljusets våglängd ses som färg.';
+    } else fel('ljus: okänt läge ”' + lage + '”');
+    return { svg: ljudSvg(B, H, s, 'ljus', lage, nSteg, struktur), beskrivning: d.beskrivning || beskr };
   });
 
 })();
