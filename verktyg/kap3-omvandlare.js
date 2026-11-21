@@ -53,8 +53,8 @@ const TEXTER = {
   // "Det här repeterar du:" blir en liten rubrik utan kolon, som "Det här lär du dig:". Ett begrepp med stor bokstav utan
   // grundform (*Tinnitus*) får grundformen med liten bokstav (*Tinnitus|tinnitus*) – texten är densamma; grundform anger
   // de böjda (Hörselnerven → hörselnerv). ordagrant.js godtar just det tillägget för VI.
-  via: { kalla: 'VI-A-Repetition-Ljud-alla-nivaer-v3.md', mapp: 'ljud', figurer: './kap3-figurer-via.js', titel: 'A: Ljud',
-         order: 'Arbetsorder 30 (2026-11-20)', sidmapp: 'kraft_och_rorelse/ljud_och_ljus_repetition', sida: 'VI. Repetition: ljud och ljus',
+  via: { kalla: 'VI-A-Repetition-Ljud-alla-nivaer-v4.md', mapp: 'ljud', figurer: './kap3-figurer-via.js', titel: 'A: Ljud',
+         order: 'Arbetsorder 30 (2026-11-20; källan v4: arbetsorder 32, 2026-11-21)', sidmapp: 'kraft_och_rorelse/ljud_och_ljus_repetition', sida: 'VI. Repetition: ljud och ljus',
          grundform: { 'Hörselnerven': 'hörselnerv' } },
   vib: { kalla: 'VI-B-Repetition-Ljus-alla-nivaer-v3.md', mapp: 'ljus', figurer: './kap3-figurer-vib.js', titel: 'B: Ljus',
          order: 'Arbetsorder 30 (2026-11-20)', sidmapp: 'kraft_och_rorelse/ljud_och_ljus_repetition', sida: 'VI. Repetition: ljud och ljus',

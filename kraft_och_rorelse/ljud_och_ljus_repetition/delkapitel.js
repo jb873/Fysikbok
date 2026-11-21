@@ -16,7 +16,7 @@ Bok.delkapitel({
   omslag: { undertitel: 'Repetition: {text}' },   // omslagets undertitel; {text} blir textens namn
 
   // Texterna A och B: var och en en egen bok per nivå, i innehall/<text-id>/<nivå>.js. id är nyckeln för det eleven
-  // sparat – byt det aldrig. Källan till A: kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v3.md, omvandlad av
+  // sparat – byt det aldrig. Källan till A: kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v4.md, omvandlad av
   // verktyg/kap3-omvandlare.js --text via; till B: kallor/kap3/VI-B-Repetition-Ljus-alla-nivaer-v3.md, --text vib.
   // Ingen ruta "Vill du gå vidare?": kapitlen om ljud och ljus finns inte än (raderna i verktyg/vidare-rutor.js saknar avsnitt).
   texter: [

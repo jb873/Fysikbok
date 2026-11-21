@@ -1610,8 +1610,8 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Avsnittssidan** `kraft_och_rorelse/ljud_och_ljus_repetition/` är byggd som repetitionerna I och II: titeln
     "Repetition", undertiteln "ljud och ljus" och omslaget "Repetition: {text}". Nivåerna är som i V. Kortet VI i
     kapitelindexet är nu en länk.
-  - **Texterna** är A Ljud och B Ljus, tre nivåer var. Källorna `kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v3.md`
-    och `VI-B-Repetition-Ljus-alla-nivaer-v3.md` (oförändrade kopior) omvandlas av `kap3-omvandlare.js --text via` och
+  - **Texterna** är A Ljud och B Ljus, tre nivåer var. Källorna `kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v4.md`
+    (v4: arbetsorder 32) och `VI-B-Repetition-Ljus-alla-nivaer-v3.md` (oförändrade kopior) omvandlas av `kap3-omvandlare.js --text via` och
     `--text vib`. Avsnittens id kommer ur källornas huvud.
   - **Omvandlingen:** "Det här repeterar du:" blir en liten rubrik utan kolon, som "Det här lär du dig". Ett begrepp
     med stor bokstav utan grundform får grundformen med liten bokstav (`*Tinnitus|tinnitus*`, men
@@ -1631,3 +1631,13 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
   - **Grundformen** sätts automatiskt vid stor bokstav (godkänt).
   - Efter granskningen: B5:s "normal" står överst vid normalen (strålen låg över ordet), och i A1 är steg 4 och 5
     bytta så att de läses uppifrån och ned.
+- **2026-11-21, arbetsorder 32: texträttelse och två bildtexter i VI.**
+  - **Källan A är v4** (`kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v4.md` ersätter v3, oförändrad kopia): luften
+    "svänger inte på sin plats" – molekylerna rör sig hela tiden oordnat, och ljudvågen ger luften en liten extra
+    svängning. Ljud är omvandlad på nytt (tre nivåer); ändrat är stycket efter A1 i Standard och stycket om ljudets
+    energi i Fördjupningen.
+  - **A1** följer källans steg igen: 4 förtätningarna vandrar bort, 5 luften svänger bara lite fram och tillbaka –
+    steg 5 ("luften svänger bara lite", pilarna visar fram och tillbaka) står underst, vid den markerade prickens
+    kolumn, så att stegen läses uppifrån och ned. Ny bildtext:
+    "Förtätningarna vandrar bort, men luften svänger bara lite fram och tillbaka."
+  - **B7**, ny bildtext: "Träffar strålen ytan tillräckligt snett kommer inget ljus ut – det kallas totalreflektion."

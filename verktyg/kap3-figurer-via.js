@@ -3,8 +3,8 @@
 // skrivna här. A1–A8 står efter sin bildmarkering i Standard och Enkel (Fördjupningen har inga figurer).
 const fig = (nr, lage, bildtext) => ({ borjar: `[BILD ${nr}:`, figurer: [{ id: 'bild-' + nr.toLowerCase(), typ: 'figur', namn: 'ljud', lage, bildtext }] });
 module.exports = [
-  // förlopp, steg 1–5: membranet, förtätning och förtunning, molekylen svänger på sin plats, vågen vandrar
-  fig('A1', 'membran', 'Förtätningarna vandrar bort, men varje molekyl svänger bara på sin plats.'),
+  // förlopp, steg 1–5: membranet, förtätning och förtunning, vågen vandrar, luften svänger bara lite (källan v4)
+  fig('A1', 'membran', 'Förtätningarna vandrar bort, men luften svänger bara lite fram och tillbaka.'),
   // samma våg i partikelmodellen och vågmodellen; den lodräta axeln märkt "tryck"
   fig('A2', 'modeller', 'Vågtopparna står där luften är tätast och trycket högst.'),
   fig('A3', 'doppler', 'Framför ambulansen trycks ljudvågorna ihop, bakom den dras de ut.'),

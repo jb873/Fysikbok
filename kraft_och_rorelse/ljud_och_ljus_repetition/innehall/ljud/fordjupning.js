@@ -1,5 +1,5 @@
 /* Avsnittssida VI. Repetition: ljud och ljus, text A: Ljud – nivån fordjupning (📕).
- * Arbetsorder 30 (2026-11-20): kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v3.md (# 📕 FÖRDJUPNING), införd ordagrant i
+ * Arbetsorder 30 (2026-11-20; källan v4: arbetsorder 32, 2026-11-21): kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v4.md (# 📕 FÖRDJUPNING), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text via: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
@@ -61,7 +61,7 @@ Bok.niva('fordjupning', {
       id: 'ljudets-energi', titel: 'Ljudets energi',
       block: [
         { typ: 'rubrik', text: 'Ljudvågen för med sig energi, men inte luft' },
-        { typ: 'text', text: 'I texterna om energi lärde du dig att energi kan föras över utan att föremålet flyttas långt. En ljudvåg är ett sådant exempel. Molekylerna svänger bara fram och tillbaka på sin plats, men energin vandrar vidare genom luften. När ljudvågen når trumhinnan utför den ett arbete på den och får den att svänga.' },
+        { typ: 'text', text: 'I texterna om energi lärde du dig att energi kan föras över utan att föremålet flyttas långt. En ljudvåg är ett sådant exempel. Luften svänger bara lite fram och tillbaka när vågen passerar, men energin vandrar vidare genom luften. När ljudvågen når trumhinnan utför den ett arbete på den och får den att svänga.' },
         { typ: 'rubrik', text: 'Decibelskalan växer i tiopotenser' },
         { typ: 'text', text: 'Hur mycket ljudenergi som passerar en viss yta varje sekund kallas *ljudintensitet|ljudintensitet*. För varje 10 dB blir ljudintensiteten tio gånger så stor. 70 dB är alltså tio gånger så stor intensitet som 60 dB, och 90 dB är tusen gånger så stor som 60 dB. Örat upplever ändå inte 70 dB som tio gånger så starkt. En tumregel är att det låter ungefär dubbelt så starkt. Därför är det lätt att underskatta hur mycket energi som träffar örat vid en hög konsert.' },
         { typ: 'rubrik', text: 'Ljudbangen och hoppet från rymdens kant' },

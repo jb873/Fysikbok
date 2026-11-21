@@ -232,7 +232,7 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
                             ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v3.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner'],   // (arbetsorder 28)
                             ['V C', 'V-C-Mekanisk-energi-alla-nivaer-v2.md', 'mekanisk-energi', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
                             ['V D', 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', 'havstangen-och-enkla-maskiner', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
-                            ['VI A', 'VI-A-Repetition-Ljud-alla-nivaer-v3.md', 'ljud', 'ljud_och_ljus_repetition'],   // (arbetsorder 30)
+                            ['VI A', 'VI-A-Repetition-Ljud-alla-nivaer-v4.md', 'ljud', 'ljud_och_ljus_repetition'],   // (arbetsorder 30; v4: 32)
                             ['VI B', 'VI-B-Repetition-Ljus-alla-nivaer-v3.md', 'ljus', 'ljud_och_ljus_repetition']]) {   // (arbetsorder 30)
   // (VI, arbetsorder 30) "Det här repeterar du:" är en liten rubrik, och ett begrepp med stor bokstav har fått sin
   // grundform (*Tinnitus|tinnitus*, *Hörselnerven|hörselnerv*): på båda sidor läses *Ord|grundform* som *Ord* när Ord

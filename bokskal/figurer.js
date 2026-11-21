@@ -2285,7 +2285,7 @@
       const lam = 100, kA = 0.9, A = kA * lam / (2 * Math.PI), x0 = 58, x1 = 262, top = 40, rh = 64, mark = 44, xm = x0 + mark;
       const sF = t => x => { const u = x - x0; return u >= 0 && u <= lam * t ? A * Math.sin(2 * Math.PI * (t - u / lam)) : 0; };
       const T = [0.25, 0.75, 1.25];
-      s += `<line class="fig-ljud-hjalp" x1="${f(xm)}" y1="${f(top + 2)}" x2="${f(xm)}" y2="${f(top + 2 * rh + 56)}"/>`;
+      s += `<line class="fig-ljud-hjalp" x1="${f(xm)}" y1="${f(top + 2)}" x2="${f(xm)}" y2="${f(top + 2 * rh + 92)}"/>`;
       T.forEach((t, i) => {
         const yc = top + 26 + i * rh, m = sF(t)(x0 + 0.001), mx = x0 - 8 + m;
         let g = `<rect class="fig-ljud-hogtalare" x="10" y="${f(yc - 11)}" width="15" height="22"/>` +
@@ -2300,18 +2300,20 @@
         g += `<circle class="fig-ljud-markerad" data-vila="${f(xm)}" cx="${f(xm + sF(t)(xm))}" cy="${f(yc - 0.5)}" r="4.4"/>`;
         s += `<g class="fig-ljud-ogonblick" data-rad="${i + 1}">${g}</g>`;
       });
-      // steg 1–3 till höger om raderna, steg 4 och 5 under (4 vid molekylens kolumn, 5 underst)
+      // steg 1–3 till höger om raderna, steg 4 och 5 under (arbetsorder 32, källan v4: 4 vågen vandrar bort, 5 den
+      // markerade biten luft svänger bara lite (pilarna visar fram och tillbaka; en rad, så att texten håller 14 px på
+      // mobilen) – underst, vid sin kolumn, så att stegen läses uppifrån)
       s += borjaHar(278, top - 12) + steg(1, 278, top + 12, ['membranet framåt:', 'förtätning']);
       s += steg(2, 278, top + 12 + rh, ['membranet bakåt:', 'förtunning']);
       s += steg(3, 278, top + 12 + 2 * rh, ['framåt igen:', 'ny förtätning']);
-      const y5 = top + 2 * rh + 68;
+      const y4 = top + 2 * rh + 68;
+      s += steg(4, 132, y4, ['förtätningarna vandrar bort']) + riktPil(366, y4, 434, y4);
+      const y5 = y4 + 34;
       s += `<g class="fig-energi-rorelse">${rorelsePil(xm - 4, y5, xm - 24, y5)}${rorelsePil(xm + 4, y5, xm + 24, y5)}</g>`;
-      s += steg(4, xm + 44, y5, ['molekylen svänger bara på sin plats']);
-      const y4 = y5 + 34;
-      s += steg(5, 20, y4, ['förtätningarna vandrar bort']) + riktPil(262, y4, 330, y4);
-      H = Math.ceil(y4 + 16); nSteg = 5;
+      s += steg(5, xm + 44, y5, ['luften svänger bara lite']);
+      H = Math.ceil(y5 + 16); nSteg = 5;
       beskr = 'En högtalare och luften framför den i tre ögonblick. 1: membranet går framåt och trycker ihop luften: en förtätning. 2: membranet går bakåt, och bakom förtätningen blir luften gles: en förtunning. ' +
-        '3: membranet går framåt igen och gör en ny förtätning. 4: en markerad molekyl svänger bara lite fram och tillbaka på sin plats. 5: förtätningarna och förtunningarna vandrar bort från högtalaren.';
+        '3: membranet går framåt igen och gör en ny förtätning. 4: förtätningarna och förtunningarna vandrar bort från högtalaren. 5: en markerad bit luft svänger bara lite fram och tillbaka medan vågen vandrar vidare.';
     } else if (lage === 'modeller') {
       // A2: samma ljudvåg i partikelmodellen och vågmodellen; vågtopparna där luften är tätast
       const lam = 150, xa = 70, xb = 430, xT = 110, yc = 200, amp = 40, ax = 62;

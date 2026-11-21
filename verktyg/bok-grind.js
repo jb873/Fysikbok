@@ -121,7 +121,7 @@ function delkapitel() {
  * och figurernas id är rätt skrivna och unika – och i VI samma som i källans huvud ("Avsnittens id"), i ordning. Negativt
  * prov (--negativ): felen i STROM_FEL läggs in ett i taget i en kopia i minnet, och kontrollen ska ge rött för just det. */
 const STROM_MAPPAR = ['kraft_och_rorelse/tryck_arbete_och_maskiner/innehall', 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall'];
-const STROM_KALLOR = { 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud': 'VI-A-Repetition-Ljud-alla-nivaer-v3.md',
+const STROM_KALLOR = { 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud': 'VI-A-Repetition-Ljud-alla-nivaer-v4.md',
   'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljus': 'VI-B-Repetition-Ljus-alla-nivaer-v3.md' };
 const VI_IN = 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/';
 const STROM_FEL = [

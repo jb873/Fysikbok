@@ -1,5 +1,5 @@
 /* Avsnittssida VI. Repetition: ljud och ljus, text A: Ljud – nivån enkel (📗).
- * Arbetsorder 30 (2026-11-20): kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v3.md (# 📗 ENKEL), införd ordagrant i
+ * Arbetsorder 30 (2026-11-20; källan v4: arbetsorder 32, 2026-11-21): kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v4.md (# 📗 ENKEL), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text via: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
@@ -49,8 +49,8 @@ Bok.niva('enkel', {
           'Membranet svänger fram och tillbaka hela tiden. Därför blir det förtätningar och förtunningar om och om igen.',
           'Förtätningarna och förtunningarna sprids ut åt alla håll. Det är en *ljudvåg*.'
         ] },
-        // [BILD A1: numrerade steg 1–5 ("börja här"), partikelmodell: 1 högtalarens membran rör sig framåt och trycker ihop luften framför sig – förtätning · 2 membranet rör sig bakåt – bakom förtätningen blir det glest, förtunning · 3 membranet rör sig framåt igen – ny förtätning · 4 förtätningar och förtunningar vandrar bort från högtalaren · 5 en markerad molekyl svänger bara lite fram och tillbaka på sin plats]
-        { id: 'bild-a1', typ: 'figur', namn: 'ljud', lage: 'membran', bildtext: 'Förtätningarna vandrar bort, men varje molekyl svänger bara på sin plats.' },
+        // [BILD A1: numrerade steg 1–5 ("börja här"), partikelmodell: 1 högtalarens membran rör sig framåt och trycker ihop luften framför sig – förtätning · 2 membranet rör sig bakåt – bakom förtätningen blir det glest, förtunning · 3 membranet rör sig framåt igen – ny förtätning · 4 förtätningar och förtunningar vandrar bort från högtalaren · 5 en markerad bit luft svänger bara lite fram och tillbaka medan vågen vandrar vidare]
+        { id: 'bild-a1', typ: 'figur', namn: 'ljud', lage: 'membran', bildtext: 'Förtätningarna vandrar bort, men luften svänger bara lite fram och tillbaka.' },
         { typ: 'text', text: 'Luften flyttar inte med ljudet. Varje molekyl knuffar bara på molekylen bredvid och åker lite fram och tillbaka. Det är knuffen som går vidare. Det är som när du knuffar till ena änden av en lång spiralfjäder. Varje varv rör sig bara lite fram och tillbaka, men knuffen går hela vägen till andra änden.' },
         { typ: 'rubrik', text: 'Ljud kan inte gå genom vakuum' },
         { typ: 'text', text: 'Ljudet sprids genom att molekyler knuffar på varandra. Då måste det finnas molekyler. Ljud kan gå genom luft, genom vatten och genom fasta saker som trä och metall.' },

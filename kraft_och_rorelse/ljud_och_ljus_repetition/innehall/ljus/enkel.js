@@ -118,7 +118,7 @@ Bok.niva('enkel', {
         ] },
         { typ: 'text', text: 'Det sista kallas *totalreflektion*.' },
         // [BILD B7: numrerade steg under en vattenyta: 1 strålen går ut och bryts · 2 snettare: strålen går längs ytan · 3 ännu snettare: allt ljus reflekteras tillbaka ned – totalreflektion]
-        { id: 'bild-b7', typ: 'figur', namn: 'ljus', lage: 'totalreflektion', bildtext: 'Ju snettare strålen träffar ytan, desto mer bryts den.' },
+        { id: 'bild-b7', typ: 'figur', namn: 'ljus', lage: 'totalreflektion', bildtext: 'Träffar strålen ytan tillräckligt snett kommer inget ljus ut – det kallas totalreflektion.' },
         { typ: 'text', text: 'Totalreflektion används i *fiberoptik*. En glasfiber är en tunn tråd av glas. Ljuset studsar fram och tillbaka inuti tråden och kan inte komma ut. Därför kan ljuset gå långt genom tråden. Internet fungerar till stor del med sådana fiberkablar. Informationen skickas som blinkande ljus.' }
       ]
     },

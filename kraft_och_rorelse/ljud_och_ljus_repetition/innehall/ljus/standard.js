@@ -80,7 +80,7 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Totalreflektion håller kvar ljuset' },
         { typ: 'text', text: 'När ljus går från vatten eller glas ut i luft bryts det bort från normalen. Om strålen träffar ytan allt snettare kommer den till slut att brytas så mycket att den går längs ytan. Lutar den ännu mer kommer inget ljus ut alls. Allt reflekteras tillbaka, som i en perfekt spegel. Det kallas *totalreflektion*.' },
         // [BILD B7: numrerade steg under en vattenyta: 1 strålen går ut och bryts · 2 snettare: strålen går längs ytan · 3 ännu snettare: allt ljus reflekteras tillbaka ned – totalreflektion]
-        { id: 'bild-b7', typ: 'figur', namn: 'ljus', lage: 'totalreflektion', bildtext: 'Ju snettare strålen träffar ytan, desto mer bryts den.' },
+        { id: 'bild-b7', typ: 'figur', namn: 'ljus', lage: 'totalreflektion', bildtext: 'Träffar strålen ytan tillräckligt snett kommer inget ljus ut – det kallas totalreflektion.' },
         { typ: 'text', text: 'Totalreflektion används i *fiberoptik*. I en tunn glasfiber studsar ljuset hela tiden mot fiberns kant genom totalreflektion och kommer därför inte ut. Ljuset kan på så sätt följa fibern mil efter mil. Internet bygger på fiberkablar där information skickas som ljusblinkningar.' }
       ]
     },

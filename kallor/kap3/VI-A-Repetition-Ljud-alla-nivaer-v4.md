@@ -1,4 +1,6 @@
-# VI. Repetition: Ljud och ljus · Text A Ljud · alla nivåer · v3 · 2026-11-20
+# VI. Repetition: Ljud och ljus · Text A Ljud · alla nivåer · v4 · 2026-11-21
+# v4: samma rättelse som i kapitel 2 I A – molekylerna rör sig hela tiden oordnat; ljudvågen ger luften en liten
+# extra svängning (inte "svänger på sin plats"). Tre ställen + figur A1 steg 5.
 # v3: efter ChatGPT-granskning. A1 högtalare i stället för sträng, A2 tryck på lodräta axeln, A5 och A6 skiljer frekvens
 # och amplitud, resonans definierad, ljudhastighet = styvhet OCH densitet, temperatur, ton/brus, svagare på avstånd,
 # ljudintensitet, stötvåg/ljudbang, spiralfjäder i stället för domino, mindre kategoriska formuleringar.
@@ -44,9 +46,9 @@ Allt ljud börjar med att något svänger fram och tillbaka, alltså vibrerar. E
 ### Ljudet sprids som förtätningar och förtunningar
 När högtalarens membran rör sig framåt trycker det ihop luftmolekylerna framför sig. Där blir luften tätare, en *förtätning*. När membranet rör sig bakåt lämnar det ett område där molekylerna ligger glesare, en *förtunning*. Membranet svänger hela tiden, och därför bildas förtätningar och förtunningar om och om igen. De sprids ut åt alla håll som en *ljudvåg*. En gitarrsträng och dina stämband gör likadant, men hos högtalaren är det lättast att se.
 
-[BILD A1: numrerade steg 1–5 ("börja här"), partikelmodell: 1 högtalarens membran rör sig framåt och trycker ihop luften framför sig – förtätning · 2 membranet rör sig bakåt – bakom förtätningen blir det glest, förtunning · 3 membranet rör sig framåt igen – ny förtätning · 4 förtätningar och förtunningar vandrar bort från högtalaren · 5 en markerad molekyl svänger bara lite fram och tillbaka på sin plats]
+[BILD A1: numrerade steg 1–5 ("börja här"), partikelmodell: 1 högtalarens membran rör sig framåt och trycker ihop luften framför sig – förtätning · 2 membranet rör sig bakåt – bakom förtätningen blir det glest, förtunning · 3 membranet rör sig framåt igen – ny förtätning · 4 förtätningar och förtunningar vandrar bort från högtalaren · 5 en markerad bit luft svänger bara lite fram och tillbaka medan vågen vandrar vidare]
 
-Luften i sig flyttar sig inte med ljudet. Varje molekyl knuffar bara på nästa och svänger lite fram och tillbaka på sin plats. Det är knuffen som vandrar vidare, ungefär som när man knuffar till ena änden av en lång spiralfjäder. Varje varv rör sig bara lite fram och tillbaka, men knuffen går hela vägen till andra änden.
+Luften i sig flyttar sig inte med ljudet. Luftens molekyler rör sig hela tiden oordnat, men ljudvågen ger luften en liten extra svängning fram och tillbaka. Luften knuffar på luften intill och svänger tillbaka. Det är knuffen som vandrar vidare, ungefär som när man knuffar till ena änden av en lång spiralfjäder. Varje varv rör sig bara lite fram och tillbaka, men knuffen går hela vägen till andra änden.
 
 ### Ljud behöver ett ämne att färdas i
 Eftersom ljudet sprids genom att partiklar knuffar på varandra behövs det partiklar. Ljud kan gå genom gaser som luft, genom vätskor som vatten och genom fasta ämnen som trä och metall. Men i vakuum, där det inte finns några partiklar alls, kan ljud inte färdas. Rymden är nästan ett vakuum, så där kan ljud inte färdas. Två astronauter i rymddräkter kan inte höra varandra skrika, de måste använda radio.
@@ -229,7 +231,7 @@ Tänk dig en högtalare som spelar. Den tunna skivan i högtalaren kallas membra
 - Membranet svänger fram och tillbaka hela tiden. Därför blir det förtätningar och förtunningar om och om igen.
 - Förtätningarna och förtunningarna sprids ut åt alla håll. Det är en *ljudvåg*.
 
-[BILD A1: numrerade steg 1–5 ("börja här"), partikelmodell: 1 högtalarens membran rör sig framåt och trycker ihop luften framför sig – förtätning · 2 membranet rör sig bakåt – bakom förtätningen blir det glest, förtunning · 3 membranet rör sig framåt igen – ny förtätning · 4 förtätningar och förtunningar vandrar bort från högtalaren · 5 en markerad molekyl svänger bara lite fram och tillbaka på sin plats]
+[BILD A1: numrerade steg 1–5 ("börja här"), partikelmodell: 1 högtalarens membran rör sig framåt och trycker ihop luften framför sig – förtätning · 2 membranet rör sig bakåt – bakom förtätningen blir det glest, förtunning · 3 membranet rör sig framåt igen – ny förtätning · 4 förtätningar och förtunningar vandrar bort från högtalaren · 5 en markerad bit luft svänger bara lite fram och tillbaka medan vågen vandrar vidare]
 
 Luften flyttar inte med ljudet. Varje molekyl knuffar bara på molekylen bredvid och åker lite fram och tillbaka. Det är knuffen som går vidare. Det är som när du knuffar till ena änden av en lång spiralfjäder. Varje varv rör sig bara lite fram och tillbaka, men knuffen går hela vägen till andra änden.
 
@@ -489,7 +491,7 @@ I fasta ämnen sitter partiklarna mycket hårt ihop, och det väger tyngst. Där
 ## Ljudets energi (numrerad, id: ljudets-energi)
 
 ### Ljudvågen för med sig energi, men inte luft
-I texterna om energi lärde du dig att energi kan föras över utan att föremålet flyttas långt. En ljudvåg är ett sådant exempel. Molekylerna svänger bara fram och tillbaka på sin plats, men energin vandrar vidare genom luften. När ljudvågen når trumhinnan utför den ett arbete på den och får den att svänga.
+I texterna om energi lärde du dig att energi kan föras över utan att föremålet flyttas långt. En ljudvåg är ett sådant exempel. Luften svänger bara lite fram och tillbaka när vågen passerar, men energin vandrar vidare genom luften. När ljudvågen når trumhinnan utför den ett arbete på den och får den att svänga.
 
 ### Decibelskalan växer i tiopotenser
 Hur mycket ljudenergi som passerar en viss yta varje sekund kallas *ljudintensitet|ljudintensitet*. För varje 10 dB blir ljudintensiteten tio gånger så stor. 70 dB är alltså tio gånger så stor intensitet som 60 dB, och 90 dB är tusen gånger så stor som 60 dB. Örat upplever ändå inte 70 dB som tio gånger så starkt. En tumregel är att det låter ungefär dubbelt så starkt. Därför är det lätt att underskatta hur mycket energi som träffar örat vid en hög konsert.

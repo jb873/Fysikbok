@@ -16,7 +16,7 @@ module.exports = [
   // förlopp, steg 1–4
   fig('B6', 'penna', 'Ögat följer strålen bakåt, så spetsen ser ut att ligga högre.'),
   // förlopp, steg 1–3
-  fig('B7', 'totalreflektion', 'Ju snettare strålen träffar ytan, desto mer bryts den.'),
+  fig('B7', 'totalreflektion', 'Träffar strålen ytan tillräckligt snett kommer inget ljus ut – det kallas totalreflektion.'),
   // struktur: bara namn
   fig('B8', 'linser', 'En konvex lins samlar ljuset, en konkav sprider det.'),
   // förlopp, steg 1–4
