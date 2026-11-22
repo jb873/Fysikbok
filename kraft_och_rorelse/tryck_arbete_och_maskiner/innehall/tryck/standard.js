@@ -1,5 +1,5 @@
 /* Avsnittssida V. Tryck, arbete och maskiner, text A: Tryck – nivån standard (📘).
- * Arbetsorder 21 (2026-11-12): kallor/kap3/V-A-Tryck-alla-nivaer-v3.md (# 📘 STANDARD), införd ordagrant i
+ * Arbetsorder 21 (2026-11-12; källan v5: arbetsorder 36, 2026-11-22): kallor/kap3/V-A-Tryck-alla-nivaer-v5.md (# 📘 STANDARD), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text va: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill
@@ -11,7 +11,7 @@ Bok.niva('standard', {
       id: 'inledning', titel: 'Inledning', numrerad: false,
       block: [
         { typ: 'rubrik', text: 'Tryck' },
-        { typ: 'text', text: 'En kniv skär, men baksidan av samma kniv gör det inte. Med kängor sjunker du ner i djup snö, men med skidor glider du ovanpå. En bil kan lyftas av en domkraft som du pumpar med en hand, och ett stålfartyg som väger tusentals ton flyter. Allt detta förklaras med samma begrepp: tryck. Det handlar inte bara om hur stor en kraft är, utan om hur stor yta kraften fördelas på.' },
+        { typ: 'text', text: 'En kniv skär, men baksidan av samma kniv gör det inte. Med kängor sjunker du ned i djup snö, men med skidor glider du ovanpå. En bil kan lyftas av en domkraft som du pumpar med en hand, och ett stålfartyg som väger tusentals ton flyter. Allt detta förklaras med samma begrepp: tryck. Det handlar inte bara om hur stor en kraft är, utan om hur stor yta kraften fördelas på.' },
         { typ: 'underrubrik', text: 'Det här lär du dig' },
         { typ: 'punkter', punkter: [
           'vad *tryck* är, och hur det mäts',
@@ -79,7 +79,7 @@ Bok.niva('standard', {
         // [BILD V2: hydraulisk lyft – liten kolv med en kort pil nedåt (liten kraft), stor kolv med en lång pil uppåt (stor kraft) under en bil, oljan emellan; samma tryck markerat i båda cylindrarna]
         { id: 'bild-v2', typ: 'figur', namn: 'tryck', lage: 'hydraulik', areor: [2, 100], bildtext: 'Trycket är lika stort i hela oljan. Den stora kolven har mycket större yta, och därför blir kraften på den mycket större.' },
         { typ: 'rubrik', text: 'Hydraulik finns i bromsar, grävmaskiner och lyftar' },
-        { typ: 'text', text: 'En bilverkstad lyfter bilar med hydrauliska lyftar, och en domkraft lyfter en bil med hjälp av en liten pump. En grävmaskin rör skopan och armen med hydraulcylindrar, och därför kan den lyfta flera ton. Även bilens bromsar är hydrauliska. När du trampar på bromspedalen trycker du på en liten kolv. Trycket sprids genom bromsvätskan ut till alla fyra hjulen, där större kolvar trycker bromsbeläggen hårt mot bromsskivorna.' },
+        { typ: 'text', text: 'En bilverkstad lyfter bilar med hydrauliska lyftar, och en domkraft lyfter en bil med hjälp av en liten pump. En grävmaskin rör skopan och armen med hydraulcylindrar, och därför kan den lyfta flera ton. Även bilens bromsar är hydrauliska. När du trampar på bromspedalen trycker du på en liten kolv. Trycket sprids genom bromsvätskan till hjulens bromsar, där kolvar pressar bromsbeläggen hårt mot bromsskivorna.' },
         { typ: 'text', text: 'Men hydrauliken ger ingenting gratis. Den lilla kolven måste röras mycket längre än den stora. Ska bilen lyftas en centimeter måste du pressa ned den lilla kolven 50 centimeter, eller pumpa många gånger. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och det kommer du att se mer av i texten om maskiner och effekt.' }
       ]
     },
@@ -99,7 +99,8 @@ Bok.niva('standard', {
         { typ: 'text', text: 'En liter vatten väger ungefär 1 kg. Om en sten är helt under vattnet och tränger undan en liter vatten blir lyftkraften därför ungefär 10 N. Är stenen större tränger den undan mer vatten och får större lyftkraft. Väger stenen som tränger undan en liter mer än 1 kg sjunker den, eftersom tyngden är större än lyftkraften. Men den känns lättare under vattnet.' },
         { typ: 'rubrik', text: 'Ett föremål flyter när lyftkraften kan bli lika stor som tyngden' },
         { typ: 'text', text: 'När du lägger en bit trä i vatten sjunker den ned en bit. Ju djupare den sjunker, desto mer vatten tränger den undan, och desto större blir lyftkraften. När lyftkraften har blivit lika stor som träbitens tyngd slutar den att sjunka. Då flyter den. Krafterna är i jämvikt.' },
-        { typ: 'text', text: 'En vanlig massiv sten har högre densitet än vatten. Även när den är helt under vattnet, och tränger undan så mycket vatten den kan, är lyftkraften mindre än tyngden. Därför sjunker den. Men det finns undantag. Pimpsten, som bildas vid vulkanutbrott, är full av små gasbubblor och kan flyta. Om något flyter eller sjunker beror alltså på om det kan tränga undan så mycket vatten att vattnet väger lika mycket som föremålet. För ett massivt föremål avgörs det av densiteten. Ett föremål med lägre densitet än vatten flyter, och ett föremål med högre densitet sjunker.' },
+        { typ: 'text', text: 'En vanlig massiv sten har högre densitet än vatten. Även när den är helt under vattnet, och tränger undan så mycket vatten den kan, är lyftkraften mindre än tyngden. Därför sjunker den. Men det finns undantag. Pimpsten, som bildas vid vulkanutbrott, är full av små gasbubblor och kan flyta.' },
+        { typ: 'text', text: 'Om något flyter eller sjunker beror alltså på om det kan tränga undan så mycket vatten att vattnet väger lika mycket som föremålet. För ett massivt föremål av ett och samma material avgörs det av materialets densitet. Ett sådant föremål flyter om densiteten är lägre än vattnets, och sjunker om den är högre. För ett ihåligt föremål, som ett fartyg, är det i stället den genomsnittliga densiteten som räknas: hela föremålets massa, luften inuti medräknad, delad med hela dess volym.' },
         { typ: 'text', text: 'Jämför en träkloss och en metallkloss som är exakt lika stora. Håller du båda helt under vattnet tränger de undan lika mycket vatten och får lika stor lyftkraft. Ändå stiger träklossen när du släpper den, medan metallklossen sjunker. Lyftkraften är densamma. Det är tyngden som skiljer, och därför blir den resulterande kraften uppåt för träet och nedåt för metallen.' },
         { typ: 'rubrik', text: 'Många tror att tunga saker sjunker och lätta saker flyter' },
         { typ: 'text', text: 'Ett gem väger nästan ingenting, men det sjunker. Ett stort fartyg av stål väger tiotusentals ton, men det flyter. Det är alltså inte vikten som avgör. Det är hur mycket vatten föremålet tränger undan jämfört med hur mycket det väger.' },

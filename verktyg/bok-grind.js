@@ -45,6 +45,12 @@ const LAGEN = [
   { namn: '1366×768 i helskärm', B: 1366, H: 768, helskarm: true },
   { namn: 'mobil 390×664', B: 390, H: 664, helskarm: true, mobil: true }
 ];
+// Chrome körs utan fönster (--headless=new). Då kan ingen sida gå i helskärm: proven av själva helskärmen ("boken öppnas
+// i helskärm", "i helskärm igen") redovisas som "hoppat (inget fönsterläge)" i stället för ✗, och i stället provas att
+// boken begär helskärm (requestFullscreen) när den öppnas med en gest (arbetsorder 36). Sidbrytningen i helskärmsmåttet
+// (1366 × 768) provas som förut, i läget "1366×768 i helskärm" och i kontrolläget.
+const CHROME_FLAGGOR = ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run'];
+const UTAN_FONSTER = CHROME_FLAGGOR.some(f => f.startsWith('--headless'));
 
 // Felen i den negativa verifieringen. Vart och ett ska ge rött i varje läge (V12: samma läge som grinden); "hackig
 // bladvändning en gång" prövar omkörningen av bladvändningens tidsprov och ska ge grönt.
@@ -87,7 +93,14 @@ const FEL = {
   // Rader i följd får delas enligt 40 %-regeln, aldrig mitt i ett mellanled (arbetsorder 21): motorns provkrok delar
   // rader före en uträkning – i V A Fördjupning, där rader står i avsnitt över flera sidor (provbokens rader står sist
   // i ett avsnitt på en sida och kan inte flyttas)
-  'rader delade i ett mellanled': { adress: '&prova=rader-mellanled', dk: 'tryck_arbete_och_maskiner', regel: /mellanled/ }
+  'rader delade i ett mellanled': { adress: '&prova=rader-mellanled', dk: 'tryck_arbete_och_maskiner', regel: /mellanled/ },
+  // Helskärmsmåttet (arbetsorder 36): helskärmens egna prov hoppas över utan fönster, men en sida som är för hög i
+  // Chromebookens helskärmsmått ska fortfarande ge rött. Texten görs för stor bara när fönstret är minst 700 px högt
+  // (1366 × 768), och felet prövas i läget "1366×768 i helskärm": kontrolläget ska säga att en sida i helskärmsmåttet
+  // inte får plats.
+  'för hög sida i helskärmsmåttet': { kod: `addEventListener('DOMContentLoaded', () => { const s = document.createElement('style');
+    s.textContent = '@media (min-height: 700px) { .sida { font-size: calc(var(--fs) * 1.45) !important; } }'; document.head.append(s); });`,
+    lagen: ['1366×768 i helskärm'], matt: 'Chromebook i helskärm' }
 };
 // --negativ=<del av namnet>: bara de negativa proven vars namn innehåller texten
 const NEGATIV_BARA = (process.argv.find(a => a.startsWith('--negativ=')) || '').slice(10);
@@ -208,7 +221,7 @@ const hamtaJson = u => new Promise((ok, fel) => http.get(u, r => { let d = ''; r
 async function chrome() {
   const port = 9400 + Math.floor(Math.random() * 500);
   const profil = fs.mkdtempSync(path.join(os.tmpdir(), 'bok-grind-profil-'));
-  const proc = spawn(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run',
+  const proc = spawn(CHROME, [...CHROME_FLAGGOR,
     `--remote-debugging-port=${port}`, `--user-data-dir=${profil}`, 'about:blank'], { stdio: 'ignore' });
   let mal;
   for (let i = 0; i < 60 && !mal; i++) { await vanta(200); try { mal = (await hamtaJson(`http://127.0.0.1:${port}/json`)).find(t => t.type === 'page'); } catch (e) { /* startar */ } }
@@ -1972,7 +1985,12 @@ const TEXTLANK = String.raw`
 
 /* ---------- Scenariot i sidan: bara motorns egna element, så att det gäller varje delkapitel ---------- */
 
-const SCENARIO = String.raw`async (helskarmLage) => {
+const SCENARIO = String.raw`async (helskarmLage, utanFonster) => {
+  // Utan fönster (arbetsorder 36): själva helskärmen hoppas över; boken ska ändå begära helskärm när den öppnas
+  const helskHoppas = helskarmLage && utanFonster;
+  const hoppa = namn => k.push({ namn, ok: true, hoppat: 'inget fönsterläge', detalj: '' });
+  let begard = 0; const rf0 = Element.prototype.requestFullscreen;
+  if (helskHoppas && rf0) Element.prototype.requestFullscreen = function () { begard++; return rf0.apply(this, arguments); };
   const v = ms => new Promise(r => setTimeout(r, ms));
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const synlig = s => $$(s).find(e => e.offsetParent !== null);
@@ -2098,7 +2116,8 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   await gest(textA);
   const antal = $$('.lr-sida').length;
   prova('öppna: ett tryck på en text öppnar boken', oppen());
-  prova(helskarmLage ? 'öppna: boken öppnas i helskärm' : 'öppna: boken öppnas i fönstret', helsk() === helskarmLage, 'helskärm=' + helsk());
+  if (helskHoppas) { hoppa('öppna: boken öppnas i helskärm'); prova('öppna: boken begär helskärm när den öppnas (inget fönsterläge)', begard > 0, 'begäranden=' + begard); }
+  else prova(helskarmLage ? 'öppna: boken öppnas i helskärm' : 'öppna: boken öppnas i fönstret', helsk() === helskarmLage, 'helskärm=' + helsk());
   if (harOmslag) {
     // Omslaget: första gången öppnas boken där, före innehållet (sida 0); undertiteln är textens namn
     const om = omslagKoll();
@@ -2252,9 +2271,11 @@ const SCENARIO = String.raw`async (helskarmLage) => {
   prova('stäng: hubben säger var eleven var (texten markerad, läsplatsen nämnd)', dar && dar.dataset.oppna === minne && lage.includes('läste senast'),
     (dar && dar.textContent + ' → ' + dar.dataset.oppna) + ' | ' + lage + ' (mindes ' + minne + ')');
   prova('stäng: fokus tillbaka på texten som öppnade boken', document.activeElement === $('.underdel-knapp[data-fokus="text-a"]'), document.activeElement && document.activeElement.textContent);
+  const begardFore = begard;
   await gest(dar);
   prova('minns: boken öppnas där eleven var (samma block)', visar(minne), syns() + ' (mindes ' + minne + ')');
-  prova(helskarmLage ? 'minns: i helskärm igen' : 'minns: i fönstret igen', helsk() === helskarmLage, 'helskärm=' + helsk());
+  if (helskHoppas) { hoppa('minns: i helskärm igen'); prova('minns: boken begär helskärm igen (inget fönsterläge)', begard > begardFore, 'begäranden=' + (begard - begardFore)); }
+  else prova(helskarmLage ? 'minns: i helskärm igen' : 'minns: i fönstret igen', helsk() === helskarmLage, 'helskärm=' + helsk());
 
   // Esc: i helskärm tar webbläsaren Esc och lämnar helskärmen – det görs här som webbläsaren gör det
   if (helsk()) await document.exitFullscreen(); else tangent('Escape');
@@ -2389,7 +2410,12 @@ const SCENARIO = String.raw`async (helskarmLage) => {
 // En sida med bara fristående böcker (arbetsorder 11: Matematiken i fysiken): ingen text eller nivå. Hubben (bannern,
 // inga texter, nivåer eller läsläge, flikraden borta om delkapitlet säger flikar: false), korten och länkarna
 // (FRISTAENDE), och i den första boken: bläddra, Innehåll och hopp, Home och End, Esc.
-const BOKHUBB = String.raw`async (helskarmLage) => {
+const BOKHUBB = String.raw`async (helskarmLage, utanFonster) => {
+  // Utan fönster (arbetsorder 36): själva helskärmen hoppas över; boken ska ändå begära helskärm när den öppnas
+  const helskHoppas = helskarmLage && utanFonster;
+  const hoppa = namn => k.push({ namn, ok: true, hoppat: 'inget fönsterläge', detalj: '' });
+  let begard = 0; const rf0 = Element.prototype.requestFullscreen;
+  if (helskHoppas && rf0) Element.prototype.requestFullscreen = function () { begard++; return rf0.apply(this, arguments); };
   const v = ms => new Promise(r => setTimeout(r, ms));
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const synlig = s => $$(s).find(e => e.offsetParent !== null);
@@ -2421,7 +2447,8 @@ const BOKHUBB = String.raw`async (helskarmLage) => {
   // den första boken: bläddra, innehåll, hopp och tillbaka, Home/End, Esc
   if (kort.length) {
     await gest(kort[0], 900);
-    prova(helskarmLage ? 'öppna: boken öppnas i helskärm' : 'öppna: boken öppnas (i fönstret, eller i helskärm om inställningen säger så)', oppen() && (!helskarmLage || helsk()), 'helskärm=' + helsk());
+    if (helskHoppas) { prova('öppna: boken öppnas', oppen()); hoppa('öppna: boken öppnas i helskärm'); prova('öppna: boken begär helskärm när den öppnas (inget fönsterläge)', begard > 0, 'begäranden=' + begard); }
+    else prova(helskarmLage ? 'öppna: boken öppnas i helskärm' : 'öppna: boken öppnas (i fönstret, eller i helskärm om inställningen säger så)', oppen() && (!helskarmLage || helsk()), 'helskärm=' + helsk());
     Bok.gaTill(1); await v(100);
     const s0 = syns()[0], steg = syns().length;
     tangent('ArrowRight'); await v(80);
@@ -2996,7 +3023,7 @@ async function kor(dk, lage, felkod) {
     await c.send('Runtime.addBinding', { name: '__gest' });
     await c.send('Emulation.setDeviceMetricsOverride', { width: lage.B, height: lage.H, deviceScaleFactor: 1, mobile: !!lage.mobil });
     if (lage.mobil) await c.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
-    await c.send('Page.addScriptToEvaluateOnNewDocument', { source: FANGA_FEL + (typeof felkod === 'string' ? felkod : '') });
+    await c.send('Page.addScriptToEvaluateOnNewDocument', { source: FANGA_FEL + (typeof felkod === 'string' ? felkod : (felkod && felkod.kod) || '') });
     const url = adressTill(path.join(dk.mapp, 'index.html')) + '?kontroll' + ((felkod && felkod.adress) || '');
     const ladda = async adress => {
       await c.send('Page.navigate', { url: 'about:blank' }); await vanta(100);
@@ -3014,7 +3041,7 @@ async function kor(dk, lage, felkod) {
     else {
     // en sida utan nivåer, med bara fristående böcker (Matematiken i fysiken, arbetsorder 11): ett eget scenario
     res.bokhubb = !!res.kontroll && !res.kontroll.niva;
-    res.kontroller = await c.ev(res.bokhubb ? `(${BOKHUBB})(${lage.helskarm})` : `(${SCENARIO})(${lage.helskarm})`);
+    res.kontroller = await c.ev(res.bokhubb ? `(${BOKHUBB})(${lage.helskarm}, ${UTAN_FONSTER})` : `(${SCENARIO})(${lage.helskarm}, ${UTAN_FONSTER})`);
     if (dk.prov && !lage.mobil) res.kontroller.push(...await c.ev(`(${PROVSCENARIO})()`));
     const blad = await provaBlad(c, lage, felkod && felkod.blad);
     res.kontroller.push(...blad); res.bladTid = blad.tid || null;
@@ -3078,10 +3105,11 @@ async function kor(dk, lage, felkod) {
   } catch (e) {
     res.fel.push('grinden: ' + e.message);
   } finally { await c.stang(); }
-  const nav = res.kontroller.filter(x => x.ok).length;
-  res.navigering = `${nav}/${res.kontroller.length}`;
+  const riktiga = res.kontroller.filter(x => !x.hoppat), nav = riktiga.filter(x => x.ok).length;
+  res.hoppat = res.kontroller.filter(x => x.hoppat);
+  res.navigering = `${nav}/${riktiga.length}`;
   res.plats = res.kontroll && res.kontroll.gron === true;
-  res.gron = res.kontroller.length > 0 && nav === res.kontroller.length && res.plats && res.fel.length === 0;
+  res.gron = riktiga.length > 0 && nav === riktiga.length && res.plats && res.fel.length === 0;
   return res;
 }
 
@@ -3460,6 +3488,7 @@ async function jamforWebben(lista) {
   const lista = delkapitel();
   const mall = fs.readFileSync(MALL);
   let gront = true;
+  const hoppade = [];              // prov som hoppades över (inget fönsterläge, arbetsorder 36)
   const omkorningar = [];          // bladvändningens tidsprov som kördes om (rött i första körningen)
   console.log(`Bokmotorn: ${lista.length} delkapitel (${lista.map(d => d.namn).join(', ')})`);
   console.log(`Prövar: ${WEBB ? 'den publicerade boken, ' + BAS : 'filerna på disken'}\n`);
@@ -3541,7 +3570,8 @@ async function jamforWebben(lista) {
       const matt = r.kontroll && Object.values(r.kontroll.nivaer).filter(x => typeof x === 'object')
         .map(x => Object.entries(x.matt).map(([n, m]) => `${n} ${m.text}${m.for_stora.length ? ' FÅR INTE PLATS: ' + m.for_stora.map(f => 's.' + f.sida).join(',') : ''}`).join('; ')).join(' | ');
       console.log(`${r.gron ? 'GRÖNT' : 'RÖTT '}  ${dk.namn}, ${lage.namn}: ${r.allaKommer ? '(allt kommer – bara hubben) ' : ''}navigering ${r.navigering}, ` +
-        `${r.plats ? 'alla sidor får plats' : 'PLATS/STRUKTUR RÖTT'}, JS-fel ${r.fel.length}`);
+        `${r.plats ? 'alla sidor får plats' : 'PLATS/STRUKTUR RÖTT'}, JS-fel ${r.fel.length}${r.hoppat && r.hoppat.length ? `, hoppat ${r.hoppat.length}` : ''}`);
+      (r.hoppat || []).forEach(x => { console.log(`       hoppat (${x.hoppat}): ${x.namn}`); hoppade.push(`${dk.namn}, ${lage.namn}: ${x.namn}`); });
       if (matt && lage === LAGEN[0]) console.log(`       text: ${matt}`);
       if (r.brytTid) console.log(`       brytningen (CPU×6, median/max av 5 varv): ` + r.brytTid.bocker.map(b => `${b.bok || 'boken'} ${b.median}/${b.max}`).join(' · ') + ' ms');
       if (r.bladTid) console.log(`       bladvändningen (CPU×6, median/max av 3 efter uppvärmning): ${r.bladTid.total}/${r.bladTid.max} ms från tangenten (sidbytet högst ${r.bladTid.upplagt} ms), längsta glapp ${r.bladTid.maxGlapp} ms`);
@@ -3563,7 +3593,7 @@ async function jamforWebben(lista) {
   } else {
     // Negativ verifiering: varje fel, i varje läge, på första riktiga delkapitlet – grinden ska bli röd
     const dk0 = lista.find(d => !d.prov) || lista[0];
-    for (const [namn, kod] of Object.entries(FEL).filter(([n]) => !NEGATIV_BARA || n.includes(NEGATIV_BARA))) for (const lage of LAGEN) {
+    for (const [namn, kod] of Object.entries(FEL).filter(([n]) => !NEGATIV_BARA || n.includes(NEGATIV_BARA))) for (const lage of LAGEN.filter(l => !kod.lagen || kod.lagen.includes(l.namn))) {
       const dk = (kod.dk && lista.find(d => d.namn.includes(kod.dk))) || dk0;
       const r = await kor(dk, lage, kod);
       // den långsamma brytningen ska fångas av just tidsprovet, den hackiga bladvändningen av bladvändningens tidsprov
@@ -3574,6 +3604,8 @@ async function jamforWebben(lista) {
         : namn === 'hackig bladvändning' ? r.kontroller.some(x => x.namn.startsWith('blad: en vändning') && !x.ok) && !!(r.bladTid && r.bladTid.omkord)
         : enGang ? r.gron && !!(r.bladTid && r.bladTid.omkord)
         // rutornas regler: rött, och just den regeln är bruten (i brytningsreglerna eller i grindens mätning)
+        // ett mått (arbetsorder 36): rött, och kontrolläget säger att en sida i just det måttet inte får plats
+        : kod.matt ? !r.gron && !!r.kontroll && Object.values(r.kontroll.nivaer).some(x => typeof x === 'object' && x.matt[kod.matt] && x.matt[kod.matt].for_stora.length)
         : kod.regel ? !r.gron && ((r.kontroll && r.kontroll.problem.some(p => kod.regel.test(p))) || r.kontroller.some(x => !x.ok && kod.regel.test(x.namn + ' ' + x.detalj)))
         : !r.gron;
       gront = gront && rott;
@@ -3583,6 +3615,8 @@ async function jamforWebben(lista) {
         (r.brytTid ? `, brytningen median högst ${r.brytTid.median} ms` : '') +
         (namn.startsWith('hackig bladvändning') && r.bladTid ? `, bladvändningen: ${r.bladTid.omkord ? `första ${r.bladTid.omkord.total} ms / glapp ${r.bladTid.omkord.maxGlapp} ms (rött), omkörningen ` : 'ingen omkörning, '}${r.bladTid.total} ms / glapp ${r.bladTid.maxGlapp} ms (${r.bladTid.gron ? 'grönt' : 'rött'})` : '') + ')');
       // fångas felet inte: vad som hände i stället (JS-fel och prov som inte gick igenom)
+      if (kod.matt && rott) Object.entries(r.kontroll.nivaer).filter(([, x]) => typeof x === 'object' && x.matt[kod.matt] && x.matt[kod.matt].for_stora.length).slice(0, 2)
+        .forEach(([n, x]) => console.log(`       ✗ fångat: ${n}, ${kod.matt}: får inte plats – ` + x.matt[kod.matt].for_stora.map(f => `sida ${f.sida} (+${f.px} px)`).join(', ')));
       if (kod.regel && rott) [...(r.kontroll ? r.kontroll.problem.filter(p => kod.regel.test(p)) : []), ...r.kontroller.filter(x => !x.ok && kod.regel.test(x.namn + ' ' + x.detalj)).map(x => x.namn)]
         .slice(0, 2).forEach(p => console.log(`       fångat: ${p.slice(0, 200)}`));
       if (!rott) { r.fel.forEach(f => console.log(`       JS-fel: ${f.split('\n').slice(0, 3).join(' ')}`));
@@ -3597,7 +3631,8 @@ async function jamforWebben(lista) {
       if (!rott) r.kontroller.forEach(x => console.log(`       ${x.ok ? '✓' : '✗'} ${x.namn}${x.detalj ? ' – ' + x.detalj : ''}`));
     }
   }
-  if (!NEGATIV) console.log(`\nOmkörningar av bladvändningens tidsprov: ${omkorningar.length ? omkorningar.length : 'inga'}` +
+  if (!NEGATIV) console.log(`\nHoppade prov (inget fönsterläge – Chrome körs utan fönster och kan inte gå i helskärm): ${hoppade.length}`);
+  if (!NEGATIV) console.log(`Omkörningar av bladvändningens tidsprov: ${omkorningar.length ? omkorningar.length : 'inga'}` +
     omkorningar.map(o => `\n       ${o}`).join(''));
   if (!NEGATIV) console.log(`Omkörningar för att Chrome stängdes: ${chromeOmkorningar.length ? chromeOmkorningar.length : 'inga'}` +
     chromeOmkorningar.map(o => `\n       ${o}`).join(''));

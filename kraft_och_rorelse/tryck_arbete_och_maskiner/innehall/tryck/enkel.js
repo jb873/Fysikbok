@@ -1,5 +1,5 @@
 /* Avsnittssida V. Tryck, arbete och maskiner, text A: Tryck – nivån enkel (📗).
- * Arbetsorder 21 (2026-11-12): kallor/kap3/V-A-Tryck-alla-nivaer-v3.md (# 📗 ENKEL), införd ordagrant i
+ * Arbetsorder 21 (2026-11-12; källan v5: arbetsorder 36, 2026-11-22): kallor/kap3/V-A-Tryck-alla-nivaer-v5.md (# 📗 ENKEL), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text va: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill
@@ -104,7 +104,7 @@ Bok.niva('enkel', {
         { id: 'bild-v2', typ: 'figur', namn: 'tryck', lage: 'hydraulik', areor: [2, 100], bildtext: 'Trycket är lika stort i hela oljan. Den stora kolven har mycket större yta, och därför blir kraften på den mycket större.' },
         { typ: 'rubrik', text: 'Hydraulik finns i många maskiner' },
         { typ: 'text', text: 'På en bilverkstad lyfts bilar upp med hydrauliska lyftar. Om en bil får punktering kan föraren lyfta den med en domkraft, och många domkrafter är hydrauliska. En grävmaskin har hydraulcylindrar som rör armen och skopan, och därför kan den lyfta flera ton jord.' },
-        { typ: 'text', text: 'Bilens bromsar är också hydrauliska. När föraren trampar på bromspedalen trycker pedalen på en liten kolv. Trycket sprids genom en vätska, bromsvätska, i tunna rör ut till hjulen. Där finns större kolvar som trycker bromsarna hårt mot hjulen. På så sätt kan en fot stoppa en bil som väger över ett ton.' },
+        { typ: 'text', text: 'Bilens bromsar är också hydrauliska. När föraren trampar på bromspedalen trycker pedalen på en liten kolv. Trycket sprids genom en vätska, bromsvätska, i tunna rör ut till hjulen. Där finns kolvar som pressar bromsbeläggen hårt mot bromsskivorna. På så sätt kan en fot stoppa en bil som väger över ett ton.' },
         { typ: 'rubrik', text: 'Hydrauliken ger inget gratis' },
         { typ: 'text', text: 'Det låter nästan för bra för att vara sant. Men det finns ett pris. När den lilla kolven trycks ned flyttar den lite olja. Den oljan ska fördelas under den stora kolven, som är mycket bredare. Därför rör sig den stora kolven bara en liten bit.' },
         { typ: 'text', text: 'Om den stora kolven är 50 gånger så stor måste du alltså trycka ned den lilla kolven 50 centimeter för att den stora ska lyftas en centimeter. Det är därför man pumpar många gånger med en domkraft. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och mer om det kommer i texten om maskiner och effekt.' }
@@ -140,7 +140,7 @@ Bok.niva('enkel', {
         { typ: 'text', text: 'Tänk dig en träkloss och en metallkloss som är precis lika stora. Du håller ned båda under vattnet. De tar lika stor plats, så de tränger undan lika mycket vatten. Då får de lika stor lyftkraft. Men när du släpper dem stiger träklossen, och metallklossen sjunker. Det beror inte på lyftkraften, för den är lika stor. Det beror på tyngden. Träklossens tyngd är mindre än lyftkraften, så den åker upp. Metallklossens tyngd är större än lyftkraften, så den åker ned.' },
         { typ: 'rubrik', text: 'Många tror att tunga saker sjunker och lätta saker flyter' },
         { typ: 'text', text: 'Ett gem väger nästan ingenting, men det sjunker. Ett stort fartyg av stål väger tiotusentals ton, men det flyter. Det är alltså inte bara vikten som avgör.' },
-        { typ: 'text', text: 'Det som avgör är hur mycket vatten föremålet tränger undan jämfört med hur mycket det väger. Ett fartyg är ihåligt. Inuti skrovet finns mycket luft. Därför tar fartyget stor plats i vattnet och tränger undan en enorm mängd vatten. Det vattnet väger lika mycket som hela fartyget, och då flyter fartyget.' },
+        { typ: 'text', text: 'Det som avgör är hur mycket vatten föremålet tränger undan jämfört med hur mycket det väger. Ett fartyg är ihåligt. Inuti skrovet finns mycket luft. Därför tar fartyget stor plats i vattnet och tränger undan en enorm mängd vatten. Det vattnet väger lika mycket som hela fartyget, och då flyter fartyget. Man kan också säga det så här: stålet och luften inuti väger tillsammans mindre än lika mycket vatten. Fartyget som helhet har lägre densitet än vatten.' },
         { typ: 'text', text: 'Om fartyget får ett hål i skrovet rinner vatten in, och luften trycks undan. Då väger fartyget mer, men det tränger inte undan mer vatten. Till slut blir tyngden större än lyftkraften, och fartyget sjunker.' },
         { typ: 'text', text: 'Lyftkraft finns inte bara i vatten. Den finns i alla vätskor och gaser, också i luft. En heliumballong stiger för att den tränger undan luft som väger mer än ballongen själv. Då blir lyftkraften från luften större än ballongens tyngd.' },
         { typ: 'lank', till: ['ova', 'sjalvskattning'] }

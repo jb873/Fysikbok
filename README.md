@@ -568,6 +568,9 @@ Det som fanns förut ritas som förut.
 - `beskrivning` läses upp av skärmläsare. Utan den skriver figuren en själv ur sina data (inte `bildpilar`: ett foto
   kan inte beskrivas ur data).
 - Figuren tar högst 32 % av sidhöjden, ett foto (`bildpilar`) högst 45 %.
+- **Undantag: II D1 decibelskalan får ta upp till 62 % av sidhöjden** (godkänt av Joachim i arbetsorder 36, bara för
+  just den figuren; `.figur-bild svg[data-ljud="decibel"]` i `bok.css`). Femton rader med liggande staplar och text i
+  19 enheter behöver 474 enheter. Alla andra figurer behåller sina gränser.
 - **Två paneler** (`fallande_hiss`, `jord_och_mane`; `paneler` i `figurer.js`): var panel är en egen svg, 220
   enheter bred. På datorn står de bredvid varandra lika stora som en figur på 440 enheter. Blir texten då under
   14 px (mobilen) staplas de under varandra, så stora att den minsta texten blir 14 px. Gränsen är 440 · 14 / minsta
@@ -745,7 +748,7 @@ beslut 2026-11-05.
      - **Navigeringen** i ett fullt scenario. Delkapitlets sida prövas mot plattformens skal: hero-bannern,
        flikarna (Läs vald, flikar utan adress "kommer"), texterna A, B …, nivåerna 📗📘📕, inga egna
        hjälpmedelskort, och att sidan inte är bredare än skärmen. Boken ska öppnas från en text med ett riktigt
-       musklick, där texten börjar, och gå till helskärm. Man ska kunna bläddra, se var man är, hoppa och komma
+       musklick, där texten börjar, och gå till helskärm (se nedan om helskärm utan fönster). Man ska kunna bläddra, se var man är, hoppa och komma
        tillbaka, och sidan ska därefter markera texten och läsplatsen där eleven var. Varje rad i
        innehållsförteckningen ska leda till en sida där rubriken syns, och förteckningen ska bara ha avsnitten (inga
        ###-rubriker). Nivåbytet från ett avsnitt som bara finns på en nivå ska gå till närmaste föregående avsnitt. Nivålistan och menyn ska stängas med Esc.
@@ -818,7 +821,15 @@ beslut 2026-11-05.
   ett. Den långsamma brytningen ska fångas av just tidsprovet. Den hackiga bladvändningen ska fångas av
   bladvändningens tidsprov i båda körningarna. Dessutom prövas omkörningen: med hacket bara i första körningen
   ska tidsprovet bli grönt efter omkörningen ("hackig bladvändning en gång").
-  Med `--negativ` provas också elevbokens prefix (se *Elevboken*).
+  Med `--negativ` provas också elevbokens prefix (se *Elevboken*). Negativa provet `för hög sida i helskärmsmåttet`
+  (arbetsorder 36) gör texten för stor bara när fönstret är minst 700 px högt och körs i läget 1366 × 768 i helskärm:
+  kontrolläget ska säga att en sida i Chromebookens helskärmsmått inte får plats.
+- **Helskärm utan fönster (arbetsorder 36):** grinden kör Chrome utan fönster (`--headless=new`), och då kan ingen
+  sida gå i helskärm. Proven av själva helskärmen ("boken öppnas i helskärm", "i helskärm igen") redovisas därför som
+  `hoppat (inget fönsterläge)` i stället för ✗ och räknas inte i navigeringen; sist står hur många som hoppades över.
+  I stället provas att boken begär helskärm (`requestFullscreen`) när den öppnas med en gest. Sidbrytningen i
+  helskärmsmåttet (1366 × 768) provas som förut, i läget 1366 × 768 i helskärm och i kontrolläget. En grön grind
+  betyder grön.
 - **`--bilder`** sparar skärmbilder av hubben och boken i `verktyg/bilder/grind/`. Alla skärmbilder sparas under
   `verktyg/bilder/`, med en undermapp per arbete (till exempel `repetition-1/`).
 - **`--webb`** prövar den publicerade boken på https://jb873.github.io/Fysikbok/ i stället för filerna på disken
@@ -1706,3 +1717,12 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     axeln, raderna i stigande ordning uppifrån, namnet till vänster om sin stapel, neutral färg. Negativa prov:
     riskfärger, omvänd ordning, namnen till höger och längder som inte är i proportion.
   - Färgerna i avsnitt II, II D v3 och namnen inne i teckningen i I D1 är godkända.
+- **2026-11-22, arbetsorder 36: helskärm utan fönster, V A v5 och undantaget för II D1.**
+  - **Helskärmsproven:** utan fönster redovisas de som `hoppat (inget fönsterläge)` (se *Kontrollera*), och grinden
+    provar i stället att boken begär helskärm när den öppnas. Nytt negativt prov: `för hög sida i helskärmsmåttet`.
+  - **V A är v5** (`kallor/kap3/V-A-Tryck-alla-nivaer-v5.md`, v4 med en delning, ersätter v3): i Standard, avsnittet
+    Lyftkraft, är stycket "En vanlig massiv sten har högre densitet än vatten …" delat före "Om något flyter eller sjunker
+    beror alltså …". Med v4 blev sidan före stycket 39,7 % fylld när kontrolläget mäter Chromebookens mått i
+    mobilfönstret (40,4 % i datorfönstret). Inga ord ändrade. v4:s ändringar (bromsarna, genomsnittlig densitet, ned)
+    är med.
+  - **II D1** får ta upp till 62 % av sidhöjden, som undantag (se *Figurer*).

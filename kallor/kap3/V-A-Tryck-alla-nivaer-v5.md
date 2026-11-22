@@ -1,4 +1,9 @@
-# V. Tryck, arbete och maskiner · Text A Tryck · alla nivåer · v3 · 2026-11-19
+# V. Tryck, arbete och maskiner · Text A Tryck · alla nivåer · v5 · 2026-11-22
+# v5 (2026-11-22, Claude, arbetsorder 36): i Standard är stycket "En vanlig massiv sten har högre densitet än
+# vatten …" (avsnittet Lyftkraft, under "Ett föremål flyter när lyftkraften kan bli lika stor som tyngden") delat före
+# "Om något flyter eller sjunker beror alltså …". Med v4 blev sidan före stycket bara 39,7 % fylld när grinden mäter
+# Chromebookens mått i mobilfönstret (40,4 % i datorfönstret). Inga ord ändrade.
+# v4 (2026-11-21): ChatGPT:s slutgranskning – bromsarna mer generellt, genomsnittlig densitet för ihåliga föremål, ned.
 # v3: hänvisningen till text D heter nu "maskiner och effekt" (ny indelning 2026-11-19).
 # v2: efter granskning – pennan är jämvikt, inte kraft och motkraft; tryckökningen (inte trycket) sprids lika överallt;
 # massiv sten i stället för "en sten kan aldrig"; kraften vinkelrätt mot ytan; trä- och metallkloss med samma volym.
@@ -21,7 +26,7 @@
 ## Inledning (onumrerad)
 
 ### Tryck
-En kniv skär, men baksidan av samma kniv gör det inte. Med kängor sjunker du ner i djup snö, men med skidor glider du ovanpå. En bil kan lyftas av en domkraft som du pumpar med en hand, och ett stålfartyg som väger tusentals ton flyter. Allt detta förklaras med samma begrepp: tryck. Det handlar inte bara om hur stor en kraft är, utan om hur stor yta kraften fördelas på.
+En kniv skär, men baksidan av samma kniv gör det inte. Med kängor sjunker du ned i djup snö, men med skidor glider du ovanpå. En bil kan lyftas av en domkraft som du pumpar med en hand, och ett stålfartyg som väger tusentals ton flyter. Allt detta förklaras med samma begrepp: tryck. Det handlar inte bara om hur stor en kraft är, utan om hur stor yta kraften fördelas på.
 
 Det här lär du dig:
 - vad *tryck* är, och hur det mäts
@@ -102,7 +107,7 @@ När du trycker på den lilla kolven ökar du trycket i oljan. Eftersom tryckök
 [BILD V2: hydraulisk lyft – liten kolv med en kort pil nedåt (liten kraft), stor kolv med en lång pil uppåt (stor kraft) under en bil, oljan emellan; samma tryck markerat i båda cylindrarna]
 
 ### Hydraulik finns i bromsar, grävmaskiner och lyftar
-En bilverkstad lyfter bilar med hydrauliska lyftar, och en domkraft lyfter en bil med hjälp av en liten pump. En grävmaskin rör skopan och armen med hydraulcylindrar, och därför kan den lyfta flera ton. Även bilens bromsar är hydrauliska. När du trampar på bromspedalen trycker du på en liten kolv. Trycket sprids genom bromsvätskan ut till alla fyra hjulen, där större kolvar trycker bromsbeläggen hårt mot bromsskivorna.
+En bilverkstad lyfter bilar med hydrauliska lyftar, och en domkraft lyfter en bil med hjälp av en liten pump. En grävmaskin rör skopan och armen med hydraulcylindrar, och därför kan den lyfta flera ton. Även bilens bromsar är hydrauliska. När du trampar på bromspedalen trycker du på en liten kolv. Trycket sprids genom bromsvätskan till hjulens bromsar, där kolvar pressar bromsbeläggen hårt mot bromsskivorna.
 
 Men hydrauliken ger ingenting gratis. Den lilla kolven måste röras mycket längre än den stora. Ska bilen lyftas en centimeter måste du pressa ned den lilla kolven 50 centimeter, eller pumpa många gånger. Man vinner kraft men förlorar väg. Det gäller för alla maskiner, och det kommer du att se mer av i texten om maskiner och effekt.
 
@@ -128,7 +133,9 @@ En liter vatten väger ungefär 1 kg. Om en sten är helt under vattnet och trä
 ### Ett föremål flyter när lyftkraften kan bli lika stor som tyngden
 När du lägger en bit trä i vatten sjunker den ned en bit. Ju djupare den sjunker, desto mer vatten tränger den undan, och desto större blir lyftkraften. När lyftkraften har blivit lika stor som träbitens tyngd slutar den att sjunka. Då flyter den. Krafterna är i jämvikt.
 
-En vanlig massiv sten har högre densitet än vatten. Även när den är helt under vattnet, och tränger undan så mycket vatten den kan, är lyftkraften mindre än tyngden. Därför sjunker den. Men det finns undantag. Pimpsten, som bildas vid vulkanutbrott, är full av små gasbubblor och kan flyta. Om något flyter eller sjunker beror alltså på om det kan tränga undan så mycket vatten att vattnet väger lika mycket som föremålet. För ett massivt föremål avgörs det av densiteten. Ett föremål med lägre densitet än vatten flyter, och ett föremål med högre densitet sjunker.
+En vanlig massiv sten har högre densitet än vatten. Även när den är helt under vattnet, och tränger undan så mycket vatten den kan, är lyftkraften mindre än tyngden. Därför sjunker den. Men det finns undantag. Pimpsten, som bildas vid vulkanutbrott, är full av små gasbubblor och kan flyta.
+
+Om något flyter eller sjunker beror alltså på om det kan tränga undan så mycket vatten att vattnet väger lika mycket som föremålet. För ett massivt föremål av ett och samma material avgörs det av materialets densitet. Ett sådant föremål flyter om densiteten är lägre än vattnets, och sjunker om den är högre. För ett ihåligt föremål, som ett fartyg, är det i stället den genomsnittliga densiteten som räknas: hela föremålets massa, luften inuti medräknad, delad med hela dess volym.
 
 Jämför en träkloss och en metallkloss som är exakt lika stora. Håller du båda helt under vattnet tränger de undan lika mycket vatten och får lika stor lyftkraft. Ändå stiger träklossen när du släpper den, medan metallklossen sjunker. Lyftkraften är densamma. Det är tyngden som skiljer, och därför blir den resulterande kraften uppåt för träet och nedåt för metallen.
 
@@ -272,7 +279,7 @@ Om den stora kolven är 50 gånger så stor som den lilla blir kraften 50 gånge
 ### Hydraulik finns i många maskiner
 På en bilverkstad lyfts bilar upp med hydrauliska lyftar. Om en bil får punktering kan föraren lyfta den med en domkraft, och många domkrafter är hydrauliska. En grävmaskin har hydraulcylindrar som rör armen och skopan, och därför kan den lyfta flera ton jord.
 
-Bilens bromsar är också hydrauliska. När föraren trampar på bromspedalen trycker pedalen på en liten kolv. Trycket sprids genom en vätska, bromsvätska, i tunna rör ut till hjulen. Där finns större kolvar som trycker bromsarna hårt mot hjulen. På så sätt kan en fot stoppa en bil som väger över ett ton.
+Bilens bromsar är också hydrauliska. När föraren trampar på bromspedalen trycker pedalen på en liten kolv. Trycket sprids genom en vätska, bromsvätska, i tunna rör ut till hjulen. Där finns kolvar som pressar bromsbeläggen hårt mot bromsskivorna. På så sätt kan en fot stoppa en bil som väger över ett ton.
 
 ### Hydrauliken ger inget gratis
 Det låter nästan för bra för att vara sant. Men det finns ett pris. När den lilla kolven trycks ned flyttar den lite olja. Den oljan ska fördelas under den stora kolven, som är mycket bredare. Därför rör sig den stora kolven bara en liten bit.
@@ -322,7 +329,7 @@ Tänk dig en träkloss och en metallkloss som är precis lika stora. Du håller 
 ### Många tror att tunga saker sjunker och lätta saker flyter
 Ett gem väger nästan ingenting, men det sjunker. Ett stort fartyg av stål väger tiotusentals ton, men det flyter. Det är alltså inte bara vikten som avgör.
 
-Det som avgör är hur mycket vatten föremålet tränger undan jämfört med hur mycket det väger. Ett fartyg är ihåligt. Inuti skrovet finns mycket luft. Därför tar fartyget stor plats i vattnet och tränger undan en enorm mängd vatten. Det vattnet väger lika mycket som hela fartyget, och då flyter fartyget.
+Det som avgör är hur mycket vatten föremålet tränger undan jämfört med hur mycket det väger. Ett fartyg är ihåligt. Inuti skrovet finns mycket luft. Därför tar fartyget stor plats i vattnet och tränger undan en enorm mängd vatten. Det vattnet väger lika mycket som hela fartyget, och då flyter fartyget. Man kan också säga det så här: stålet och luften inuti väger tillsammans mindre än lika mycket vatten. Fartyget som helhet har lägre densitet än vatten.
 
 Om fartyget får ett hål i skrovet rinner vatten in, och luften trycks undan. Då väger fartyget mer, men det tränger inte undan mer vatten. Till slut blir tyngden större än lyftkraften, och fartyget sjunker.
 
