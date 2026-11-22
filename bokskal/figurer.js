@@ -3136,27 +3136,23 @@
       beskr = 'Ett flygplan och ljudvågorna i fyra rutor; varje cirkel sändes ut där planet var då. 1: planet flyger långsammare än ljudet – vågorna sprids före planet. 2: planet flyger lika fort som ljudet – vågorna packas ihop framför nosen. ' +
         '3: planet flyger fortare än ljudet – vågorna hamnar bakom och bildar en kon (en förenklad modell). 4: konen sveper över marken, och en person där hör en smäll.';
     } else if (lage === 'decibel') {
-      // II D1: decibelskalan som lodräta staplar (data-db), alla i samma neutrala färg – inga riskfärger. Femton
-      // vardagsljud med namn i 19 enheter ryms inte i stigande ordning på bredden (varje namn behöver 27 enheter på höjden),
-      // så staplarna stiger mot 140 dB i mitten: de jämna värdena till vänster med namnet till vänster, de udda till höger
-      // med namnet till höger. Den lodräta axeln (dB) till vänster.
+      // II D1 (arbetsorder 35): decibelskalan som liggande staplar (data-db), en rad för vart och ett av källans femton ljud,
+      // från 0 dB överst till 140 dB nederst, namnet till vänster om stapeln. Alla staplar i samma neutrala färg – inga
+      // riskfärger. dB-axeln under staplarna, med streck var 20:e dB och tal var 40:e (talen 100, 120 och 140 skulle stå ihop).
       struktur = true;
-      const k = 1.4, yB = 236, s_ = 11, bw = 9, x8 = 266;
-      const V = [[0, 'hörtröskel'], [20, 'viskning'], [40, 'lugn villagata'], [60, 'vanligt samtal'], [80, 'tät trafik, skolmatsal'], [100, 'motorsåg'], [120, 'smärtgräns'], [140, 'gevärsskott'],
-        [130, 'jetplan på nära håll'], [110, 'rockkonsert'], [90, 'gräsklippare'], [70, 'dammsugare'], [50, 'regn'], [30, 'tyst sovrum'], [10, 'andning']];
-      const x0 = x8 - 8 * s_;
-      for (let d = 0; d <= 140; d += 20) { const y = yB - d * k;
-        s += `<line class="fig-ljud-rutlinje" x1="42" y1="${f(y)}" x2="436" y2="${f(y)}"/><line class="fig-ljud-tick" data-db="${d}" x1="38" y1="${f(y)}" x2="44" y2="${f(y)}"/>` + LT(34, y + 6, String(d), 'fig-hoger'); }
-      s += `<line class="fig-ljud-axel-linje" x1="42" y1="${yB}" x2="42" y2="${f(yB - 140 * k - 8)}"/>` + LT(50, f(yB - 140 * k + 4), 'dB', 'fig-vanster fig-ljud-axeltext');
-      V.forEach(([d, n], i) => { const x = x0 + i * s_, h = d * k, y = yB - h, vanster = i < 8;
-        s += `<rect class="fig-ljud-db" data-db="${d}" data-namn="${n}" x="${f(x)}" y="${f(y)}" width="${bw}" height="${f(Math.max(h, 0.01))}"/>`;
-        s += LT(vanster ? x - 4 : x + bw + 4, y + 6, n, (vanster ? 'fig-hoger' : 'fig-vanster') + ' fig-halo'); });
-      s += `<line class="fig-bord" x1="42" y1="${yB}" x2="436" y2="${yB}"/>`;
-      s += LT(232, yB + 34, 'nivåerna är ungefärliga och beror på avståndet', 'fig-mitt fig-ljus-skuggtext');
-      H = yB + 46;
-      beskr = 'Decibelskalan som lodräta staplar i samma neutrala färg, från 0 till 140 dB. Från vänster stiger staplarna i steg om 20 dB: 0 dB hörtröskel, 20 viskning, 40 lugn villagata, 60 vanligt samtal, 80 tät trafik och skolmatsal, ' +
-        '100 motorsåg, 120 smärtgräns och 140 dB gevärsskott i mitten. Till höger sjunker de: 130 jetplan på nära håll, 110 rockkonsert, 90 gräsklippare, 70 dammsugare, 50 regn, 30 tyst sovrum och 10 dB andning. ' +
-        'Nivåerna är ungefärliga och beror på avståndet.';
+      const V = [[0, 'hörtröskel'], [10, 'andning'], [20, 'viskning'], [30, 'tyst sovrum'], [40, 'lugn villagata'], [50, 'regn'], [60, 'vanligt samtal'], [70, 'dammsugare'], [80, 'tät trafik, skolmatsal'], [90, 'gräsklippare'],
+        [100, 'motorsåg'], [110, 'rockkonsert'], [120, 'smärtgräns'], [130, 'jetplan på nära håll'], [140, 'gevärsskott']];
+      const xa = 212, k = 1.46, p = 27, y0 = 16, bh = 16, yA = y0 + (V.length - 1) * p + 16;
+      for (let d = 0; d <= 140; d += 20) { const x = xa + d * k;
+        s += `<line class="fig-ljud-rutlinje" x1="${f(x)}" y1="${y0 - 12}" x2="${f(x)}" y2="${yA}"/><line class="fig-ljud-tick" data-db="${d}" x1="${f(x)}" y1="${yA}" x2="${f(x)}" y2="${yA + 6}"/>` + (d % 40 ? '' : LT(x, yA + 25, String(d), 'fig-mitt')); }
+      V.forEach(([d, n], i) => { const yc = y0 + i * p;
+        s += `<rect class="fig-ljud-db" data-db="${d}" data-namn="${n}" x="${xa}" y="${yc - bh / 2}" width="${f(Math.max(d * k, 0.01))}" height="${bh}"/>`;
+        s += LT(xa - 8, yc + 6, n, 'fig-hoger'); });
+      s += `<line class="fig-ljud-axel-linje" x1="${xa}" y1="${yA}" x2="${f(xa + 140 * k + 6)}" y2="${yA}"/>` + LT(xa - 8, yA + 25, 'dB', 'fig-hoger fig-ljud-axeltext');
+      s += LT(220, yA + 54, 'nivåerna är ungefärliga och beror på avståndet', 'fig-mitt fig-ljus-skuggtext');
+      H = yA + 64;
+      beskr = 'Decibelskalan som liggande staplar i samma neutrala färg, en rad per ljud, från 0 dB överst till 140 dB nederst: 0 dB hörtröskel, 10 andning, 20 viskning, 30 tyst sovrum, 40 lugn villagata, 50 regn, 60 vanligt samtal, 70 dammsugare, 80 tät trafik och skolmatsal, 90 gräsklippare, 100 motorsåg, 110 rockkonsert, 120 smärtgräns, 130 jetplan på nära håll och 140 dB gevärsskott. ' +
+        'Varje stapel är lika lång som ljudnivån på axeln under. Nivåerna är ungefärliga och beror på avståndet.';
     } else if (lage === 'exponering') {
       // II D2: samma ljudexponering vid olika ljudnivåer – liggande staplar, var och en hälften så lång som den ovanför
       // (data-db, data-min = tiden i minuter)

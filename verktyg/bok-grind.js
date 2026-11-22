@@ -1408,20 +1408,27 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           if (R[3]) { const g = R[3], k = qa('line.fig-ljud-kon', g).map(L_).find(l => nara(l[3], +g.dataset.mark)), pe = q('g.fig-ljud-person', g);
             if (!k || !pe || !nara(k[2], +pe.dataset.x, 1) || !nara(k[0], +g.dataset.xn)) f_.push('ruta 4: konen når inte personen på marken'); }
         } else if (lage === 'decibel') {
-          // fetstil i ordern (II D1): neutral färg på alla staplar – inga riskfärger (risken beror också på tiden)
+          // fetstil i ordern (II D1): neutral färg på alla staplar – inga riskfärger (risken beror också på tiden).
+          // Arbetsorder 35: liggande staplar, en rad per ljud, från 0 dB överst till 140 dB nederst, namnet till vänster.
           const NAMN = { 0: 'hörtröskel', 10: 'andning', 20: 'viskning', 30: 'tyst sovrum', 40: 'lugn villagata', 50: 'regn', 60: 'vanligt samtal', 70: 'dammsugare', 80: 'tät trafik, skolmatsal', 90: 'gräsklippare', 100: 'motorsåg', 110: 'rockkonsert', 120: 'smärtgräns', 130: 'jetplan på nära håll', 140: 'gevärsskott' };
           const S = qa('rect.fig-ljud-db').map(r => ({ r, d: +r.dataset.db, n: r.dataset.namn, x: r.x.baseVal.value, y: r.y.baseVal.value, w: r.width.baseVal.value, h: r.height.baseVal.value }));
           if (S.map(x => x.d).sort((a, b) => a - b).join() !== Object.keys(NAMN).join()) f_.push('staplarna är ' + S.map(x => x.d).join(', ') + ' dB');
           const fs_ = new Set(S.map(x => getComputedStyle(x.r).fill + '/' + getComputedStyle(x.r).stroke));
           if (fs_.size !== 1) f_.push('staplarna har olika färg (' + [...fs_].join(' · ') + ')');
           S.forEach(x => { const c = (getComputedStyle(x.r).fill.match(/[\d.]+/g) || []).slice(0, 3).map(Number); if (c.length < 3 || Math.max(...c) - Math.min(...c) > 30) f_.push(x.d + ' dB: stapeln har inte en neutral färg (' + getComputedStyle(x.r).fill + ')'); });
-          const k = S.filter(x => x.d).map(x => x.h / x.d); if (k.some(v => Math.abs(v / k[0] - 1) > 0.01)) f_.push('staplarnas höjd är inte i proportion till dB');
-          if (S.some(x => !nara(x.y + x.h, S[0].y + S[0].h))) f_.push('staplarna står inte på samma linje');
+          // liggande: alla börjar vid samma x, längden i proportion till dB, lika höga
+          if (S.some(x => !nara(x.x, S[0].x))) f_.push('staplarna börjar inte vid samma linje');
+          if (S.some(x => !(x.h > 8) || !nara(x.h, S[0].h))) f_.push('staplarna är inte liggande och lika höga');
+          const k = S.filter(x => x.d).map(x => x.w / x.d); if (k.some(v => Math.abs(v / k[0] - 1) > 0.01)) f_.push('staplarnas längd är inte i proportion till dB');
+          // en rad per ljud, 0 dB överst och 140 dB nederst
+          const Y = S.slice().sort((a, b) => a.y - b.y);
+          if (Y.some((x, i) => i && !(x.d > Y[i - 1].d && x.y >= Y[i - 1].y + Y[i - 1].h))) f_.push('raderna går inte från 0 dB överst till 140 dB nederst (' + Y.map(x => x.d).join(', ') + ')');
           S.forEach(x => { if (x.n !== NAMN[x.d]) f_.push(x.d + ' dB heter ' + x.n);
             const t = qa('text').find(t => t.textContent === NAMN[x.d]), b = t && t.getBBox();
-            if (!b || Math.abs(b.y + b.height / 2 - x.y) > 14 || !(Math.abs(b.x + b.width - x.x) <= 8 || Math.abs(b.x - x.x - x.w) <= 8)) f_.push('"' + NAMN[x.d] + '" står inte vid stapelns topp (' + x.d + ' dB)'); });
-          const tk = qa('line.fig-ljud-tick').map(l => [+l.dataset.db, l.y1.baseVal.value]).sort((a, b) => a[0] - b[0]);
-          if (tk.some((t, i) => i && !(t[1] < tk[i - 1][1]))) f_.push('dB-axeln växer inte uppåt');
+            if (!b || Math.abs(b.y + b.height / 2 - (x.y + x.h / 2)) > 6 || !(b.x + b.width <= x.x + 0.5 && b.x + b.width >= x.x - 14)) f_.push('"' + NAMN[x.d] + '" står inte till vänster om stapeln (' + x.d + ' dB)'); });
+          const tk = qa('line.fig-ljud-tick').map(l => [+l.dataset.db, l.x1.baseVal.value]).sort((a, b) => a[0] - b[0]);
+          if (tk.length < 2 || tk.some((t, i) => i && !(t[1] > tk[i - 1][1]))) f_.push('dB-axeln växer inte åt höger');
+          S.forEach(x => { const t = tk.find(t => t[0] === x.d) || (tk.length > 1 && [x.d, tk[0][1] + (x.d - tk[0][0]) * (tk[1][1] - tk[0][1]) / (tk[1][0] - tk[0][0])]); if (t && Math.abs(x.x + x.w - t[1]) > 1) f_.push(x.d + ' dB: stapeln slutar inte vid ' + x.d + ' på axeln'); });
           if (!qa('text').some(t => t.textContent === 'nivåerna är ungefärliga och beror på avståndet')) f_.push('noteringen om ungefärliga nivåer saknas');
           if (qa('text').some(t => /risk|farlig|säker/i.test(t.textContent))) f_.push('figuren talar om risk');
         } else if (lage === 'exponering') {

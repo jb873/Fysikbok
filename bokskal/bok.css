@@ -817,6 +817,7 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
    kontrollägets Chromebook-fönster bryter som Chromebooken. */
 .figur-bild svg[data-ljud], .figur-bild svg[data-ljus] { max-height: calc(var(--sh) * .38); }
 .figur-bild svg[data-ljus="jamforelse"] { max-height: calc(var(--sh) * .42); }
+.figur-bild svg[data-ljud="decibel"] { max-height: calc(var(--sh) * .62); }     /* II D1: femton rader med liggande staplar (arbetsorder 35) */
 .fig-steg-ring { fill: var(--black); }
 .fig-steg-nr { fill: var(--papper); font-weight: 600; }
 .fig-steg-start { font-weight: 600; font-style: italic; }
