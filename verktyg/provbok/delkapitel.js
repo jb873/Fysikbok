@@ -29,6 +29,7 @@ Bok.delkapitel({
   nastaSteg: [{ id: 'prov-nasta', titel: 'Provbok · Nästa steg', fil: 'innehall/nasta/textbok.js' }],
   ovningsbocker: [{ id: 'prov-ovning', titel: 'Provbok · Nästa steg – övningsbok', fil: 'innehall/nasta/ovningsbok.js' }],
   stodbocker: [{ id: 'prov-matte', titel: 'Provbok · Matematik', fil: 'innehall/nasta/matte.js' }],
+  repetitionsbocker: [{ id: 'prov-repetition', titel: 'Provbok · Repetition', fil: 'innehall/repetition/prov.js' }],
   hjalpmedel: {
     forelasning:    { href: null },
     ova:            { href: 'hjalpmedel.html?vad=ova&avsnitt={avsnitt}' },

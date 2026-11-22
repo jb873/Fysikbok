@@ -316,7 +316,7 @@ djupdykningar: [
 
 ## Fristående böcker: Nästa steg, övningsböcker och stödböcker
 
-Djupdykningarna är ett av fyra slag fristående böcker (arbetsorder 11, 2026-11-07). Alla fungerar som djupdykningarna
+Djupdykningarna är ett av fem slag fristående böcker (arbetsorder 11, 2026-11-07; repetitionsböckerna 2026-11-22). Alla fungerar som djupdykningarna
 ovan: en bok utan nivåer, med egen läsplats och adress, och elevens text och nivå ändras inte.
 
 | Lista i `delkapitel.js` | Var kortet står | Nivå i filen | Adress | Omslagets överrad |
@@ -325,6 +325,7 @@ ovan: en bok utan nivåer, med egen läsplats och adress, och elevens text och n
 | `nastaSteg` | blocket *Nästa steg – gymnasiets fysik* under djupdykningarna | `nasta-steg` | `#nasta-<id>/…` | Nästa steg |
 | `ovningsbocker` | fliken Öva, som då går att välja också utan hjälpmedlets adress | `ovningsbok` | `#ovning-<id>/…` | Nästa steg |
 | `stodbocker` | inget kort, om inte `kort: true` (då i Läs, utan rubrik) | `stodbok` | `#stod-<id>/…` | inget omslag |
+| `repetitionsbocker` | först i Läs, utan rubrik (Samhällskunskap, *Inför slutprovet*: en sida per tema med `nivaer: []`) | `repetitionsbok` | `#repetition-<id>/…` | Repetition |
 
 - **Posten:** `{ id, titel, fil, kort? }`. `fil` får ligga i ett annat delkapitel (`../../…`). Då finns boken på båda
   sidorna, med var sin läsplats.
@@ -1726,3 +1727,12 @@ Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fäl
     mobilfönstret (40,4 % i datorfönstret). Inga ord ändrade. v4:s ändringar (bromsarna, genomsnittlig densitet, ned)
     är med.
   - **II D1** får ta upp till 62 % av sidhöjden, som undantag (se *Figurer*).
+- **2026-11-22, repetitionsbok – en femte sort fristående bok (Joachims beslut, för Samhällskunskap):**
+  - `repetitionsbocker: [{ id, titel, fil }]` i `delkapitel.js`; filen anropar `Bok.niva('repetitionsbok', {...})`.
+    Adressen är `#repetition-<id>/…`, omslagets överrad "Repetition". Kortet står först i Läs, utan rubrik (samma
+    block som stödböckerna). En sida med bara repetitionsböcker: `nivaer: []`, `flikar: false`.
+  - Samhällsbokens *Inför slutprovet* har en sida per tema med en repetitionsbok, utan nivåer.
+  - **Enkällig motor:** sorten bor här i Fysiks motor; Samhällsboken kopierar `bokskal/` byte för byte. Fysiks motor
+    är standarden för nya böcker.
+  - Grinden: sorten i rundan för fristående böcker, omslagsprovet läser sortens överrad (förut fast "NÄSTA STEG"), och
+    djupdykningsblocket utesluter sorten. Provboken har en repetitionsbok (`innehall/repetition/prov.js`).

@@ -1835,7 +1835,7 @@ const FRISTAENDE = String.raw`
       flik && flik.getAttribute('aria-disabled'));
   }
   const fsFel = [], fsBocker = [];
-  for (const [sel, flik] of [['.nasta-steg', 'laes'], ['.ovningsbocker', 'ova'], ['.stodbocker', 'laes']]) {
+  for (const [sel, flik, overrad] of [['.nasta-steg', 'laes', 'NÄSTA STEG'], ['.ovningsbocker', 'ova', 'NÄSTA STEG'], ['.stodbocker', 'laes', null], ['.repetitionsbocker', 'laes', 'REPETITION']]) {
     for (let i = 0; i < fsKort(sel).length; i++) {
       const fl = $('.flik[data-flik="' + flik + '"]'); if (fl && !fl.classList.contains('aktiv')) await klicka(fl, 150);
       const kort = fsKort(sel)[i], titel = kort.querySelector('.fordj-kort-titel').textContent.trim(), t = kort.dataset.text;
@@ -1848,7 +1848,7 @@ const FRISTAENDE = String.raw`
       const toc = (synlig('.scen .boktitel') || {}).textContent || '';
       if (!oppen() || !hash.startsWith('#' + t + '/')) fsFel.push(titel + ': öppnade ' + hash);
       if (!utanNiva) fsFel.push(titel + ': nivåväljaren syns');
-      if (harOmslag && !stod && !omslag.includes('NÄSTA STEG')) fsFel.push(titel + ': omslaget ”' + omslag.slice(0, 90) + '”');
+      if (harOmslag && !stod && !omslag.includes(overrad)) fsFel.push(titel + ': omslaget ”' + omslag.slice(0, 90) + '”');
       if (stod && omslag) fsFel.push(titel + ': en stödbok ska inte ha något omslag');
       if (!toc.includes(titel)) fsFel.push(titel + ': förteckningen ”' + toc + '”');
       spar.push(await figurKoll());
@@ -1858,7 +1858,7 @@ const FRISTAENDE = String.raw`
     }
   }
   const laes = $('.flik[data-flik="laes"]'); if (laes && !laes.classList.contains('aktiv')) await klicka(laes, 150);
-  if (fsBocker.length) prova('fristående böcker: varje kort (Nästa steg, Öva, stödbok) öppnar sin bok – adressen, ingen nivåväljare, förteckningen med titeln, omslaget med "Nästa steg" (inte för en stödbok) – och Stäng leder tillbaka (' + fsBocker.map(b => b.titel).join(', ') + ')',
+  if (fsBocker.length) prova('fristående böcker: varje kort (Nästa steg, Öva, stödbok, repetitionsbok) öppnar sin bok – adressen, ingen nivåväljare, förteckningen med titeln, omslaget med sortens överrad (inte för en stödbok) – och Stäng leder tillbaka (' + fsBocker.map(b => b.titel).join(', ') + ')',
     !fsFel.length, fsFel.join(' | '));
   // Länkarna mellan böckerna: i varje bok den första länken till en annan bok – den öppnar den boken vid avsnittet, och
   // "Tillbaka till …" leder tillbaka
@@ -2327,7 +2327,7 @@ const SCENARIO = String.raw`async (helskarmLage, utanFonster) => {
   // ingen nivåväljare – och figurerna i den mäts; efteråt är texten och nivån eleven valt desamma.
   const ddAntal = Object.keys(JSON.parse(document.body.dataset.kontroll).nivaer).filter(n => n.startsWith('djupdykning-')).length;
   // (djupdykningarnas block: inte Nästa steg eller en stödbok, som har samma stil – arbetsorder 11)
-  const DD_SEK = 'section[data-flik="laes"] > .vill-veta-mer:not(.nasta-steg):not(.stodbocker)';
+  const DD_SEK = 'section[data-flik="laes"] > .vill-veta-mer:not(.nasta-steg):not(.stodbocker):not(.repetitionsbocker)';
   const ddKort = () => $$(DD_SEK + ':not([hidden]) .fordj-kort');
   if (ddAntal || ddKort().length) {
     const sek = $(DD_SEK);

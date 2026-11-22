@@ -122,7 +122,7 @@ main.sida {
 /* Nästa steg (arbetsorder 11): blocket under djupdykningarna i samma stil, med indigo kant; övningsböckerna överst i
    fliken Öva och en stödbok (på sin egen sida) i Läs, utan rubrik och linje ovanför */
 .vill-veta-mer.nasta-steg .fordj-kort { border-left-color: var(--accent); }
-.vill-veta-mer.stodbocker, .vill-veta-mer.ovningsbocker { margin-top: 0; padding-top: 0; border-top: none; }
+.vill-veta-mer.stodbocker, .vill-veta-mer.ovningsbocker, .vill-veta-mer.repetitionsbocker { margin-top: 0; padding-top: 0; border-top: none; }
 /* en sida utan flikrad (flikar: false): lika mycket luft under bannern som flikraden ger */
 .flikar-rad[hidden] + .flik-innehall { margin-top: 2.25rem; }
 .vill-veta-mer.ovningsbocker + .flik-ram { margin-top: 1.5rem; }

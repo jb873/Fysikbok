@@ -148,18 +148,20 @@
   // Djupdykningarna (djupdykningar i delkapitel.js) hör till avsnittssidan, inte till en text: var och en är en egen
   // bok med en enda nivå, öppnad från avsnittssidans fot. Internt är den en "text" med id djupdykning-<id>, så att
   // brytning, läsplats och adress fungerar som för texterna – men den står inte bland texterna och har ingen nivåväljare.
-  // Fristående böcker (arbetsorder 11, 2026-11-07) fungerar likadant, i fyra slag – listorna i delkapitel.js:
+  // Fristående böcker (arbetsorder 11, 2026-11-07) fungerar likadant, i fem slag (repetitionsböckerna sedan 2026-11-22) – listorna i delkapitel.js:
   //   djupdykningar   "Vill du veta mer?" längst ned i Läs
   //   nastaSteg       Nästa steg (gymnasiets fysik): ett eget block under djupdykningarna
   //   ovningsbocker   i fliken Öva
   //   stodbocker      en stödbok (Matematiken i fysiken): ingen plats på avsnittssidan, bara länkmål – utan omslag
+  //   repetitionsbocker  en repetitionsbok utan nivåer (Samhällskunskap, Inför slutprovet): kortet först i Läs, utan rubrik
   // Varje post: {id, titel, fil, kort?}. kort: false = inget kort (boken finns bara som mål för länkar från en annan bok,
   // se bokref). Stödböckerna har inget kort om inte kort: true.
   const SLAG = [
     { lista: 'djupdykningar', prefix: 'djupdykning-', niva: { id: 'djupdykning', namn: 'Djupdykning' }, overrad: 'Djupdykning', omslag: true, kort: true },
     { lista: 'nastaSteg', prefix: 'nasta-', niva: { id: 'nasta-steg', namn: 'Nästa steg' }, overrad: 'Nästa steg', omslag: true, kort: true },
     { lista: 'ovningsbocker', prefix: 'ovning-', niva: { id: 'ovningsbok', namn: 'Övningsbok' }, overrad: 'Nästa steg', omslag: true, kort: true },
-    { lista: 'stodbocker', prefix: 'stod-', niva: { id: 'stodbok', namn: 'Stödbok' }, overrad: null, omslag: false, kort: false }
+    { lista: 'stodbocker', prefix: 'stod-', niva: { id: 'stodbok', namn: 'Stödbok' }, overrad: null, omslag: false, kort: false },
+    { lista: 'repetitionsbocker', prefix: 'repetition-', niva: { id: 'repetitionsbok', namn: 'Repetitionsbok' }, overrad: 'Repetition', omslag: true, kort: true }
   ];
   const DJUPDYKNING = SLAG[0].niva;
   let fristaendeLista = null;
@@ -1391,9 +1393,10 @@
     ui.nastaSteg = kortSektion('nastaSteg', 'nasta-steg', 'Nästa steg – gymnasiets fysik');
     ui.stodbocker = kortSektion('stodbocker', 'stodbocker', null);
     ui.ovningsbocker = kortSektion('ovningsbocker', 'ovningsbocker', null);
+    ui.repetitionsbocker = kortSektion('repetitionsbocker', 'repetitionsbocker', null);
     ui.flikInnehall = FLIKAR.map(([id, namn]) => h('section', { class: 'flik-innehall' + (id === 'laes' ? '' : ' dold'),
       'data-flik': id, role: 'tabpanel', 'aria-label': namn },
-      id === 'laes' && [ui.texter, ui.nivaval, ui.lasLage, ui.stodbocker, ui.djupdykningar, ui.nastaSteg],
+      id === 'laes' && [ui.repetitionsbocker, ui.texter, ui.nivaval, ui.lasLage, ui.stodbocker, ui.djupdykningar, ui.nastaSteg],
       id === 'ova' && ui.ovningsbocker));
     const hero = h('header', { class: 'hero-banner' },
       h('div', { class: 'hero-inner' },
