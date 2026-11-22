@@ -533,8 +533,8 @@ sub, sup { font-size: .7em; line-height: 0; }
 /* Länkar till en annan bok: "Matematik du behöver:" / "Används i Nästa steg:" överst i avsnittet */
 .b-bokref { font-size: .86em; line-height: 1.35; color: var(--dampad); margin: 0 0 .6em !important; }
 .bokref-etikett { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--accent-2-mork); }
-.bok-lank { color: var(--accent); text-decoration: underline dotted rgba(74, 45, 102, .45); text-underline-offset: .2em; }
-.bok-lank:hover { text-decoration-style: solid; }
+.bok-lank, .bok-lank-sida { color: var(--accent); text-decoration: underline dotted rgba(74, 45, 102, .45); text-underline-offset: .2em; }
+.bok-lank:hover, .bok-lank-sida:hover { text-decoration-style: solid; }
 .b-boklank { font-family: var(--rubrik); }
 .b-boklank .bok-lank { text-decoration: none; }
 .b-boklank .bok-lank:hover { text-decoration: underline; text-underline-offset: .15em; }
@@ -918,6 +918,48 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
 .fig-ljud-isomaterial { fill: #f2d98a; stroke: #b08a2e; stroke-width: 1.4; }
 .fig-ljud-fiber { fill: none; stroke: #c9a24a; stroke-width: 1.2; }
 .fig-ljud-studs { fill: none; stroke: #1f6f78; stroke-width: 1.6; stroke-linejoin: round; }
+/* Kapitel 2 Ljud och ljus, avsnitt I (arbetsorder 33): samma färger (ljudvågor blågröna, prickar bruna, markerat indigo,
+   ljusstrålar orangeröda); det rödmarkerade varvet i spiralfjädern (I A3) följer källans "rödmarkerat". */
+.fig-ljud-linjal { fill: none; stroke: #7d868e; stroke-width: 6; stroke-linecap: round; }   /* grå: guld är bara för kraftpilar (Joachim, order 33) */
+.fig-ljud-linjal.fig-ljud-spok { opacity: .35; stroke-dasharray: 5 4; stroke-width: 4; }
+.fig-ljud-bord { fill: #b98a5a; stroke: #7a5a3a; stroke-width: 1.2; }
+.fig-ljud-hand { fill: #f1dfc4; stroke: #8a5a3a; stroke-width: 1.6; }
+.fig-ljud-handlinje { fill: none; stroke: #8a5a3a; stroke-width: 1; opacity: .7; }
+.fig-ljud-varv { fill: none; stroke: #5d6770; stroke-width: 1.8; }
+.fig-ljud-varv.fig-ljud-varv-markerad { stroke: #b3261e; stroke-width: 3; }
+.fig-ljud-fjaderaxel { fill: none; stroke: #5d6770; stroke-width: 1; opacity: .6; }
+.fig-ljud-platta { fill: #8a8273; }
+.fig-ljud-glas { fill: rgba(150, 190, 205, .22); stroke: #5d7f88; stroke-width: 1.6; }
+.fig-ljud-luft { opacity: .85; }
+.fig-ljud-trad { stroke: var(--black); stroke-width: 1; }
+.fig-ljud-vackare circle { fill: #fffdf6; stroke: var(--black); stroke-width: 1.4; } .fig-ljud-vackare line { stroke: var(--black); stroke-width: 1.3; }
+.fig-ljud-vackare .fig-ljud-bjallra { fill: #9aa3ab; }
+.fig-ljud-ringer { fill: none; stroke: var(--black); stroke-width: 1.4; stroke-linecap: round; }
+.fig-ljud-ror { fill: none; stroke: #6b5a3e; stroke-width: 3; }
+.fig-ljud-pump { fill: #8a8273; stroke: var(--black); stroke-width: 1.2; }
+.fig-ljud-mittlinje { stroke: var(--dampad); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.fig-ljud-pilmatt line { stroke: var(--black); stroke-width: 1.4; } .fig-ljud-pilmatt polygon { fill: var(--black); }
+.fig-ljud-omrade { stroke: none; } .fig-ljud-omrade-0 { fill: rgba(122, 102, 72, .28); }
+.fig-ljud-omrade-1 { fill: rgba(31, 111, 120, .35); } .fig-ljud-omrade-2 { fill: rgba(74, 45, 102, .25); }
+.fig-ljud-tick { stroke: var(--black); stroke-width: 1.4; }
+.fig-ljud-stapel rect, .fig-ljud-hastighet { fill: rgba(31, 111, 120, .35); stroke: #1f6f78; stroke-width: 1.4; }
+.fig-ljud-stapel.fig-ljud-laten rect { fill: rgba(122, 102, 72, .18); stroke: #7a6648; stroke-dasharray: 4 3; }
+.fig-ljud-moln { fill: #9aa3ab; stroke: #5d6770; stroke-width: 1.2; }
+.fig-ljud-blixten { fill: #e0b53e; stroke: #8a6a1c; stroke-width: 1.2; stroke-linejoin: round; }
+.fig-ljud-mellan { fill: #f7efe0; stroke: #8a5a3a; stroke-width: 1; }
+.fig-ljud-balans path { fill: none; stroke: #8a5a3a; stroke-width: 2.4; }
+.fig-ljud-trumpet { fill: none; stroke: #8a5a3a; stroke-width: 5; stroke-linecap: round; opacity: .7; }
+.fig-ljud-klammer path { fill: none; stroke: var(--black); stroke-width: 1.4; }
+.fig-ljud-vatska { fill: rgba(70, 130, 180, .18); }
+.fig-ljud-harceller line { stroke: #b3261e; stroke-width: 1.8; stroke-linecap: round; }
+.fig-ljud-hjarna path { fill: #e9c9c0; stroke: #9b5a5a; stroke-width: 1.6; } .fig-ljud-hjarna .fig-ljud-veck { fill: none; stroke: #9b5a5a; stroke-width: 1.2; }
+.fig-ljud-skalle { fill: #f1dfc4; stroke: #8a5a3a; stroke-width: 1.6; }
+.fig-ljud-nasa { fill: #f1dfc4; stroke: #8a5a3a; stroke-width: 1.6; stroke-linejoin: round; }
+.fig-ljud-orat { fill: #e6c9a8; stroke: #8a5a3a; stroke-width: 1.4; }
+.fig-ljud-kil { fill: rgba(70, 130, 180, .14); stroke: #8a5a3a; stroke-width: 2; }
+.fig-ljud-kilstart { stroke: #8a5a3a; stroke-width: 2; }
+.fig-ljud-basilar { fill: #e9c9c0; stroke: #9b5a5a; stroke-width: 1.2; }
+.fig-ljud-plats line { stroke: var(--dampad); stroke-width: 1; }
 .fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala, .fig-yta-namn { font-size: 19px; }
 .fig-yta-namn { font-weight: 600; fill: var(--black); }   /* ytans namn i diagram_graf (arbetsorder 13) */
 .fig-diagram-rubrik { font-weight: 600; }

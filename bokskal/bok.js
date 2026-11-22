@@ -292,8 +292,11 @@
   // ankare}]}. Rubriken och inledningen är motorns, inte källtextens; länkarna öppnar Nästa steg-textboken vid avsnittet,
   // och texten är avsnittets nummer och titel (kontrolläget prövar det). Länkarna skrivs av verktyg/vidare-rutor.js.
   const VIDARE_RUBRIK = 'Vill du gå vidare?', VIDARE_TEXT = 'Läs mer i Nästa steg – gymnasiets kraft och rörelse:';
-  blocktyper.vidare = d => h('aside', { class: 'b-ruta b-vidare' }, h('h4', null, VIDARE_RUBRIK), h('p', null, VIDARE_TEXT),
-    h('ul', { class: 'b-punkter vidare-lankar' }, d.lankar.map(l => h('li', null, bokLank(l.bok, l.ankare, l.text)))));
+  // (arbetsorder 33) En länk kan också gå till en annan sida, {text, href} (Repetitionen VI A → kapitel 2), och rutan kan
+  // ha en egen inledning (inledning). Länken öppnar sidan, och adressen (#text/ankare) öppnar boken där.
+  blocktyper.vidare = d => h('aside', { class: 'b-ruta b-vidare' }, h('h4', null, VIDARE_RUBRIK), h('p', null, d.inledning || VIDARE_TEXT),
+    h('ul', { class: 'b-punkter vidare-lankar' }, d.lankar.map(l => h('li', null, l.href
+      ? h('a', { class: 'bok-lank-sida', href: l.href, html: inline(l.text, false) }) : bokLank(l.bok, l.ankare, l.text)))));
   blocktyper.tabell = d => h('div', { class: 'b-tabell' },
     h('table', null,
       d.rubriker && h('thead', null, h('tr', null, d.rubriker.map(r => h('th', { scope: 'col', html: symboler(inline(r)) })))),
@@ -1917,7 +1920,7 @@
       // (och länkarna i löptexten, [text](#bok/ankare), 2026-11-11)
       const iText = [...JSON.stringify(b).matchAll(BOKLANK_INLINE)].map(m => ({ text: m[1], bok: m[2], ankare: m[3] || null }));
       iText.forEach(l => (ut.textlankar || (ut.textlankar = [])).push({ text: bok.text, niva: bok.niva, mal: l.bok, ankare: l.ankare, lanktext: l.text }));
-      [].concat(b.typ === 'bokref' ? b.lankar.filter(l => l.bok) : b.typ === 'boklank' ? [{ bok: b.bok, text: b.bok }] : b.typ === 'vidare' ? b.lankar : [], iText).forEach(l => {
+      [].concat(b.typ === 'bokref' ? b.lankar.filter(l => l.bok) : b.typ === 'boklank' ? [{ bok: b.bok, text: b.bok }] : b.typ === 'vidare' ? b.lankar.filter(l => !l.href) : [], iText).forEach(l => {
         const ex = extraFor(l.bok);
         if (!ex) ut.problem.push(`${kalla}: ${vid}länken ”${l.text}” går till boken ”${l.bok}”, som inte finns på avsnittssidan`);
         else if (l.ankare && harInnehall(ex.slag.niva.id, l.bok)) {

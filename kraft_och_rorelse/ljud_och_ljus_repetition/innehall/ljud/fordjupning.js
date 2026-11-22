@@ -2,8 +2,8 @@
  * Arbetsorder 30 (2026-11-20; källan v4: arbetsorder 32, 2026-11-21): kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v4.md (# 📕 FÖRDJUPNING), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text via: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
- * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
- * vidare?": ordern). [BILD …] står som kommentar, med figuren efter (kap3-figurer-via.js).
+ * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill
+ * du gå vidare?" sist. [BILD …] står som kommentar, med figuren efter (kap3-figurer-via.js).
  */
 Bok.niva('fordjupning', {
   avsnitt: [
@@ -81,7 +81,13 @@ Bok.niva('fordjupning', {
           'Ljudvågen för med sig energi men inte luft. Varje 10 dB ger tio gånger så stor ljudintensitet.',
           'Ett föremål som går fortare än ljudet drar med sig en stötvåg formad som en kon. Den hörs som en ljudbang när den passerar.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] },
+        { typ: 'vidare', inledning: 'Läs mer i kapitel 2 Ljud och ljus – Vad ljud är:', lankar: [
+          { text: 'Ljud är vibrationer: 1. Ljud är tryck', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#ljud-ar-vibrationer/ljud-ar-tryck' },
+          { text: 'Ljudvågen: 2. Våglängd och hastighet', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#ljudvagen/vaglangd-och-hastighet' },
+          { text: 'Ljudets hastighet: 1. Styvhet och densitet', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#ljudets-hastighet/styvhet-och-densitet' },
+          { text: 'Örat och hörseln: 1. Örat förstärker trycket', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#orat-och-horseln/orat-forstarker' }
+        ] }
       ]
     }
   ]

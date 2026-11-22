@@ -58,10 +58,22 @@ const TEXTER = {
          grundform: { 'Hörselnerven': 'hörselnerv' } },
   vib: { kalla: 'VI-B-Repetition-Ljus-alla-nivaer-v3.md', mapp: 'ljus', figurer: './kap3-figurer-vib.js', titel: 'B: Ljus',
          order: 'Arbetsorder 30 (2026-11-20)', sidmapp: 'kraft_och_rorelse/ljud_och_ljus_repetition', sida: 'VI. Repetition: ljud och ljus',
-         grundform: {} }
+         grundform: {} },
+  // Kapitel 2 Ljud och ljus, avsnitt I Vad ljud är (arbetsorder 33, 2026-11-21): node verktyg/kap3-omvandlare.js --text 2ia
+  // (2ib, 2ic, 2id). Samma omvandlare som kapitel 3 (ordern: generell, ingen parallell variant): kap säger var källan
+  // står (kallor/kap2/). Grundformen vid stor bokstav och "Det här lär du dig" som i VI.
+  '2ia': { kap: 'kap2', kalla: 'Kap2-I-A-Ljud-ar-vibrationer-alla-nivaer-v5.md', mapp: 'ljud-ar-vibrationer', figurer: './kap2-figurer-ia.js',
+           titel: 'A: Ljud är vibrationer', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} },
+  '2ib': { kap: 'kap2', kalla: 'Kap2-I-B-Ljudvagen-alla-nivaer-v3.md', mapp: 'ljudvagen', figurer: './kap2-figurer-ib.js',
+           titel: 'B: Ljudvågen', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} },
+  '2ic': { kap: 'kap2', kalla: 'Kap2-I-C-Ljudets-hastighet-alla-nivaer-v4.md', mapp: 'ljudets-hastighet', figurer: './kap2-figurer-ic.js',
+           titel: 'C: Ljudets hastighet', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} },
+  '2id': { kap: 'kap2', kalla: 'Kap2-I-D-Orat-och-horseln-alla-nivaer-v1.md', mapp: 'orat-och-horseln', figurer: './kap2-figurer-id.js',
+           titel: 'D: Örat och hörseln', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} }
 };
-if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (a, b, c, d, va, vb eller vc)'); process.exit(1); }
-const KALLA = path.join(ROT, 'kallor', 'kap3', TEXTER[TEXT].kalla);
+if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (' + Object.keys(TEXTER).join(', ') + ')'); process.exit(1); }
+const KAP = TEXTER[TEXT].kap || 'kap3';
+const KALLA = path.join(ROT, 'kallor', KAP, TEXTER[TEXT].kalla);
 const UT = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--text');
 const MAPP = (TEXTER[TEXT].sidmapp || 'kraft_och_rorelse/fall_kast_och_balans') + '/innehall/' + TEXTER[TEXT].mapp;
 const SIDA = TEXTER[TEXT].sida || 'IV. Fall, kast och balans';
@@ -182,7 +194,7 @@ for (const [kod, n, ikon] of NIVAER) {
     ' * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och',
     ' * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.', ' */');
   else if (TEXTER[TEXT].order) ut.push(`/* Avsnittssida ${SIDA}, text ${TEXTER[TEXT].titel} – nivån ${n} (${ikon}).`,
-    ` * ${TEXTER[TEXT].order}: kallor/kap3/${TEXTER[TEXT].kalla} (# ${ikon} ${kod}), införd ordagrant i`,
+    ` * ${TEXTER[TEXT].order}: kallor/${KAP}/${TEXTER[TEXT].kalla} (# ${ikon} ${kod}), införd ordagrant i`,
     ` * strömformatet av verktyg/kap3-omvandlare.js --text ${TEXT}: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,`,
     ' * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i',
     ...(VIDARE.block(MAPP + '/fordjupning.js') ? [' * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill',

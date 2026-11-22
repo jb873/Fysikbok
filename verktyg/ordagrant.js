@@ -233,12 +233,19 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
                             ['V C', 'V-C-Mekanisk-energi-alla-nivaer-v2.md', 'mekanisk-energi', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
                             ['V D', 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', 'havstangen-och-enkla-maskiner', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
                             ['VI A', 'VI-A-Repetition-Ljud-alla-nivaer-v4.md', 'ljud', 'ljud_och_ljus_repetition'],   // (arbetsorder 30; v4: 32)
-                            ['VI B', 'VI-B-Repetition-Ljus-alla-nivaer-v3.md', 'ljus', 'ljud_och_ljus_repetition']]) {   // (arbetsorder 30)
+                            ['VI B', 'VI-B-Repetition-Ljus-alla-nivaer-v3.md', 'ljus', 'ljud_och_ljus_repetition'],   // (arbetsorder 30)
+                            // Kapitel 2 Ljud och ljus, avsnitt I (arbetsorder 33): källorna i kallor/kap2/, sidan ljud_och_ljus/vad_ljud_ar
+                            ['Kap 2 I A', 'Kap2-I-A-Ljud-ar-vibrationer-alla-nivaer-v5.md', 'ljud-ar-vibrationer', 'ljud_och_ljus/vad_ljud_ar'],
+                            ['Kap 2 I B', 'Kap2-I-B-Ljudvagen-alla-nivaer-v3.md', 'ljudvagen', 'ljud_och_ljus/vad_ljud_ar'],
+                            ['Kap 2 I C', 'Kap2-I-C-Ljudets-hastighet-alla-nivaer-v4.md', 'ljudets-hastighet', 'ljud_och_ljus/vad_ljud_ar'],
+                            ['Kap 2 I D', 'Kap2-I-D-Orat-och-horseln-alla-nivaer-v1.md', 'orat-och-horseln', 'ljud_och_ljus/vad_ljud_ar']]) {
   // (VI, arbetsorder 30) "Det här repeterar du:" är en liten rubrik, och ett begrepp med stor bokstav har fått sin
   // grundform (*Tinnitus|tinnitus*, *Hörselnerven|hörselnerv*): på båda sidor läses *Ord|grundform* som *Ord* när Ord
   // börjar med stor bokstav – det enda tillägget, och bara i VI
-  const VI = SM === 'ljud_och_ljus_repetition', utanGF = s => VI ? s.replace(/\*([A-ZÅÄÖ][^*|]*)\|[^*]+\*/g, '*$1*') : s;
-  const r = las(path.join(__dirname, '..', 'kallor', 'kap3', KF)).map(utanGF), delar = {};
+  // (kapitel 2, arbetsorder 33) sidan är en sökväg från roten, källan står i kallor/kap2/, och grundformsregeln gäller
+  const KAPMAPP = SM.includes('/') ? SM : 'kraft_och_rorelse/' + SM, KAP = /^Kap2-/.test(KF) ? 'kap2' : 'kap3';
+  const VI = SM === 'ljud_och_ljus_repetition' || KAP === 'kap2', utanGF = s => VI ? s.replace(/\*([A-ZÅÄÖ][^*|]*)\|[^*]+\*/g, '*$1*') : s;
+  const r = las(path.join(__dirname, '..', 'kallor', KAP, KF)).map(utanGF), delar = {};
   let cur = null;
   for (const l of r) { const m = /^# (?:📘|📗|📕) (STANDARD|ENKEL|FÖRDJUPNING)/.exec(l);
     if (m) { cur = { STANDARD: 'standard', ENKEL: 'enkel', 'FÖRDJUPNING': 'fordjupning' }[m[1]]; delar[cur] = []; continue; }
@@ -257,7 +264,7 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
       if ((m = /^## (.+?) \((numrerad|onumrerad)/.exec(l))) { slut(); ut.push(`AVSNITT ${m[1]} ${m[2]}`); continue; }
       if (l.startsWith('### ')) { slut(); ut.push('RUBRIK ' + l.slice(4)); continue; }
       if (l === 'Det här lär du dig:') { slut(); ut.push('UNDERRUBRIK Det här lär du dig'); continue; }
-      if (VI && l === 'Det här repeterar du:') { slut(); ut.push('UNDERRUBRIK Det här repeterar du'); continue; }
+      if (SM === 'ljud_och_ljus_repetition' && l === 'Det här repeterar du:') { slut(); ut.push('UNDERRUBRIK Det här repeterar du'); continue; }
       if ((m = /^\[FORMEL: (.+)\]$/.exec(l))) { slut(); ut.push('FORMEL ' + m[1]); continue; }
       if (l.startsWith('[BILD')) { slut(); bilder.push(l); continue; }
       if (l.startsWith('- ')) { slut(); ut.push('PUNKT ' + l.slice(2)); continue; }
@@ -265,7 +272,7 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
       st.push(l); }
     slut(); return { ut, bilder }; };
   for (const niva of ['standard', 'enkel', 'fordjupning']) {
-    const fil = path.join(__dirname, '..', 'kraft_och_rorelse', SM, 'innehall', MP, niva + '.js');
+    const fil = path.join(__dirname, '..', KAPMAPP, 'innehall', MP, niva + '.js');
     let data; global.Bok = { niva: (n, d) => { data = d; } };
     // (V C, arbetsorder 29) E_p och E_k (index) läses som källans Ep och Ek
     const kod = utanGF(fs.readFileSync(fil, 'utf8').replace(/\bE_([pk])\b/g, 'E$1')); eval(kod);
@@ -281,7 +288,7 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
         else if (b.typ === 'exempel' && b.stycken) { f.push('EXEMPEL ' + b.rubrik); b.stycken.forEach((s, si) => s.forEach((x, ri) => f.push((si && !ri ? 'EXRAD+ ' : 'EXRAD ') + x))); }
         else if (b.typ === 'exempel') f.push(`EXEMPEL ${b.rubrik}: ${b.rader.join(' ⏎ ')}`);
         else if (b.typ === 'lank') f.push('LANK ' + b.till.join(','));
-        else if (b.typ === 'vidare') f.push('VIDARE ' + b.lankar.map(l => `${l.text} → ${l.bok}/${l.ankare}`).join(' · '));
+        else if (b.typ === 'vidare') f.push('VIDARE ' + b.lankar.map(l => `${l.text} → ${l.href || l.bok + '/' + l.ankare}`).join(' · '));
         else if (b.typ !== 'figur') f.push('OKÄNT ' + b.typ); } }
     const k = kalla(delar[niva] || []), tFel = [], seq = f.slice();
     // tilläggen på sina platser
@@ -294,10 +301,10 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
     // Fördjupning (arbetsorder 13, del 2): rutan "Vill du gå vidare?" sist i Sammanfattningen, med kopplingens länkar
     // (verktyg/vidare-rutor.js) – och ingen annanstans
     // V B (arbetsorder 28): kopplingen säger "ingen ruta" (false) – då får ingen ruta stå någonstans
-    const vb = niva === 'fordjupning' && VIDARE.block(`kraft_och_rorelse/${SM}/innehall/${MP}/fordjupning.js`);
+    const vb = niva === 'fordjupning' && VIDARE.block(`${KAPMAPP}/innehall/${MP}/fordjupning.js`);
     if (niva === 'fordjupning' && vb === null) tFel.push('Fördjupningen saknas i verktyg/vidare-rutor.js');
     if (vb) {
-      const vant = 'VIDARE ' + vb.lankar.map(l => `${l.text} → ${l.bok}/${l.ankare}`).join(' · ');
+      const vant = 'VIDARE ' + vb.lankar.map(l => `${l.text} → ${l.href || l.bok + '/' + l.ankare}`).join(' · ');
       if (seq[seq.length - 1] === vant) seq.pop(); else tFel.push('rutan "Vill du gå vidare?" står inte sist i Sammanfattningen med länkarna ' + vant.slice(7));
     }
     if (seq.some(x => x.startsWith('VIDARE '))) tFel.push('rutan "Vill du gå vidare?" står på fel plats');
@@ -321,5 +328,6 @@ console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källor
   '\nKraft och rörelse V B (Energi och arbete), tre nivåer, likadant (arbetsorder 28), men utan rutan "Vill du gå vidare?".' +
   '\nKraft och rörelse V C (Mekanisk energi), tre nivåer, likadant (arbetsorder 29), med Ep och Ek skrivna med index.' +
   '\nKraft och rörelse V D (Maskiner och effekt), tre nivåer, likadant (arbetsorder 29).' +
-  '\nKraft och rörelse VI A (Ljud) och VI B (Ljus), tre nivåer var, likadant (arbetsorder 30), med "Det här repeterar du" som liten rubrik och grundformen till begrepp med stor bokstav.');
+  '\nKraft och rörelse VI A (Ljud) och VI B (Ljus), tre nivåer var, likadant (arbetsorder 30), med "Det här repeterar du" som liten rubrik och grundformen till begrepp med stor bokstav.' +
+  '\nLjud och ljus I A–D (Vad ljud är), tre nivåer var, likadant (arbetsorder 33), mot kallor/kap2/, med grundformen till begrepp med stor bokstav.');
 process.exitCode = fel ? 1 : 0;

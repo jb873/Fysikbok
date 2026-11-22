@@ -2,8 +2,8 @@
  * Arbetsorder 30 (2026-11-20; källan v4: arbetsorder 32, 2026-11-21): kallor/kap3/VI-A-Repetition-Ljud-alla-nivaer-v4.md (# 📘 STANDARD), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text via: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
- * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
- * vidare?": ordern). [BILD …] står som kommentar, med figuren efter (kap3-figurer-via.js).
+ * Inledningen, länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i Fördjupningen rutan "Vill
+ * du gå vidare?" sist. [BILD …] står som kommentar, med figuren efter (kap3-figurer-via.js).
  */
 Bok.niva('standard', {
   avsnitt: [
