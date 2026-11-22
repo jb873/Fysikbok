@@ -1,5 +1,5 @@
 /* Avsnittssida I. Vad ljud är, text D: Örat och hörseln – nivån standard (📘).
- * Arbetsorder 33 (2026-11-21): kallor/kap2/Kap2-I-D-Orat-och-horseln-alla-nivaer-v1.md (# 📘 STANDARD), införd ordagrant i
+ * Arbetsorder 33 (2026-11-21): kallor/kap2/Kap2-I-D-Orat-och-horseln-alla-nivaer-v2.md (# 📘 STANDARD), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text 2id: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
@@ -36,7 +36,7 @@ Bok.niva('standard', {
         { typ: 'text', text: '*Ytterörat|ytteröra* består av *öronmusslan|öronmussla* och *hörselgången|hörselgång*. Öronmusslan fångar upp ljudet som en tratt, och hörselgången leder in det i huvudet. Längst in i hörselgången sitter *trumhinnan|trumhinna*, ett tunt och spänt membran som skiljer ytterörat från mellanörat.' },
         { typ: 'text', text: '*Mellanörat|mellanöra* är ett litet hålrum fyllt med luft. Där sitter tre små ben som kallas *hörselben*: hammaren, städet och stigbygeln. De är kroppens minsta ben. Stigbygeln är bara omkring tre millimeter lång. Från mellanörat går också en smal gång ned till svalget, *örontrumpeten|örontrumpet*.' },
         { typ: 'text', text: '*Innerörat|inneröra* ligger inbäddat i skallbenet. Där finns *hörselsnäckan|hörselsnäcka*, en vätskefylld gång som är ihoprullad som ett snäckskal. Inuti snäckan sitter tusentals *hårceller|hårcell*, sinnesceller med små hårliknande utskott. Från snäckan går *hörselnerven|hörselnerv* till hjärnan. I innerörat sitter också balansorganet, som inte har med hörseln att göra men som känner av hur huvudet rör sig.' },
-        // [BILD D1: örat i genomskärning med namn på delarna: öronmussla, hörselgång, trumhinna, hammare, städ, stigbygel, snäcka, hörselnerv, örontrumpet, balansorgan. De tre delarna ytteröra, mellanöra och inneröra markerade med en klammer var]
+        // [BILD D1: örat i genomskärning med namn på delarna: öronmussla, hörselgång, trumhinna, hammare, städ, stigbygel, ovala fönstret, snäcka, hörselnerv, örontrumpet, balansorgan. De tre delarna ytteröra, mellanöra och inneröra markerade med en klammer var]
         { id: 'bild-d1', typ: 'figur', namn: 'ljud', lage: 'orat-delar', bildtext: 'Örats tre delar: ytterörat, mellanörat och innerörat.' }
       ]
     },
@@ -49,11 +49,11 @@ Bok.niva('standard', {
           'Öronmusslan fångar upp ljudvågen, och hörselgången leder in den till trumhinnan.',
           'Förtätningarna och förtunningarna trycker och drar i trumhinnan, så att den börjar vibrera i samma takt som ljudet.',
           'Trumhinnan sitter fast i hammaren. Vibrationerna förs vidare genom hammaren, städet och stigbygeln.',
-          'Stigbygeln trycker på ett litet membran in till hörselsnäckan, och vätskan i snäckan sätts i svängning.',
-          'Svängningarna i vätskan böjer hårcellernas små hår. Då skickar hårcellerna elektriska signaler till hörselnerven.',
+          'Stigbygeln trycker på *ovala fönstret|ovala fönstret*, ett litet membran in till hörselsnäckan, och vätskan i snäckan sätts i svängning.',
+          'Svängningarna i vätskan böjer hårcellernas små utskott. Hårcellerna omvandlar rörelserna till signaler som får hörselnervens nervceller att skicka elektriska impulser.',
           'Hörselnerven leder signalerna till hjärnan, som tolkar dem som ljud.'
         ] },
-        // [BILD D2: ljudets väg genom örat i numrerade steg på en förenklad genomskärning: 1 ljudvågen kommer in i hörselgången · 2 trumhinnan vibrerar · 3 hörselbenen för vibrationerna vidare · 4 vätskan i snäckan sätts i svängning · 5 hårcellerna skickar signaler · 6 hörselnerven leder signalerna till hjärnan]
+        // [BILD D2: ljudets väg genom örat i numrerade steg på en förenklad genomskärning: 1 ljudvågen kommer in i hörselgången · 2 trumhinnan vibrerar · 3 hörselbenen för vibrationerna vidare · 4 stigbygeln trycker på ovala fönstret och vätskan i snäckan sätts i svängning · 5 hårcellerna omvandlar rörelsen till signaler · 6 hörselnervens nervceller skickar impulser till hjärnan]
         { id: 'bild-d2', typ: 'figur', namn: 'ljud', lage: 'orat-vag', bildtext: 'Ljudet byter form på vägen: från tryckändringar i luft till signaler i en nerv.' },
         { typ: 'text', text: 'Lägg märke till att ljudet byter form på vägen. Det börjar som tryckändringar i luft, blir till rörelser i ett membran och i ben, sedan till svängningar i en vätska och till sist till elektriska signaler i en nerv.' },
         { typ: 'rubrik', text: 'Hårcellerna är känsliga och få' },
@@ -66,14 +66,14 @@ Bok.niva('standard', {
         { typ: 'rubrik', text: 'Öronvaxet håller hörselgången ren' },
         { typ: 'text', text: 'Hörselgången har körtlar som tillverkar *öronvax|öronvax*. Vaxet fångar damm och smuts och skyddar huden mot bakterier. Det flyttar sig långsamt utåt av sig själv och tar med sig smutsen. Många tror att man måste rensa öronen med bomullspinnar, men då trycker man oftast in vaxet längre, mot trumhinnan. Ytterörat behöver bara tvättas där man når med fingret.' },
         { typ: 'rubrik', text: 'En liten muskel dämpar starka ljud' },
-        { typ: 'text', text: 'I mellanörat sitter två mycket små muskler som är fästa vid hörselbenen. När ett starkt ljud når örat drar de ihop sig. Då blir hörselbenen stelare, och mindre av vibrationerna förs vidare till snäckan. Det är en reflex som skyddar hårcellerna. Men reflexen behöver en kort stund för att komma igång. Mot en plötslig smäll, som ett skott eller en smällare nära örat, hinner den inte skydda. Därför är just smällar så farliga för hörseln.' }
+        { typ: 'text', text: 'I mellanörat finns små muskler som kan minska hörselbenens rörelser. Vid starka ljud kan en av dem, stigbygelmuskeln, dra ihop sig, så att mindre av vibrationerna förs vidare till snäckan. Det kallas en *skyddsreflex|skyddsreflex*. Den dämpar framför allt låga toner och ger bara ett begränsat skydd. Den kan aldrig ersätta hörselskydd. Dessutom behöver reflexen en kort stund för att komma igång. Mot en plötslig smäll, som ett skott eller en smällare nära örat, hinner den inte skydda. Därför är just smällar så farliga för hörseln.' }
       ]
     },
     {
       id: 'vi-hor-med-hjarnan', titel: 'Vi hör med hjärnan',
       block: [
         { typ: 'rubrik', text: 'Örat tar emot, hjärnan förstår' },
-        { typ: 'text', text: 'Många tror att det är örat som hör. Men örat tar bara emot ljudet och gör om det till signaler. Det är hjärnan som gör signalerna till något vi förstår. Hjärnan jämför ljudet med allt vi har hört tidigare och känner igen det. Hör du ett "mjau" bakom en soptunna vet du direkt att det är en katt, fast du inte ser den. Det beror på att hjärnan har lärt sig hur en katt låter.' },
+        { typ: 'text', text: 'Många tror att det är örat som hör. Örat fångar upp ljudet, bearbetar svängningarna, till exempel genom att sortera dem efter frekvens i snäckan, och gör om dem till nervsignaler. Men det är hjärnan som tolkar signalerna och gör dem till något vi förstår. Hjärnan jämför ljudet med allt vi har hört tidigare och känner igen det. Hör du ett "mjau" bakom en soptunna vet du direkt att det är en katt, fast du inte ser den. Det beror på att hjärnan har lärt sig hur en katt låter.' },
         { typ: 'rubrik', text: 'Hjärnan väljer vad vi lyssnar på' },
         { typ: 'text', text: 'Hjärnan kan också välja vad vi ska lägga märke till. I en matsal full av röster kan du ändå följa vad kompisen bredvid säger, och du reagerar direkt om någon längre bort säger ditt namn. Hjärnan sorterar bort mycket av det örat tar emot. Ljud som hela tiden finns där, som surret från ett kylskåp eller en fläkt, slutar vi ofta att märka. Vi upptäcker dem först när de tystnar.' }
       ]
@@ -107,7 +107,7 @@ Bok.niva('standard', {
           'Örat har tre delar: ytterörat (öronmussla, hörselgång), mellanörat (trumhinna, hammare, städ, stigbygel) och innerörat (hörselsnäcka med hårceller).',
           'Ljudets väg: hörselgång → trumhinna → hörselben → vätskan i snäckan → hårceller → hörselnerv → hjärnan.',
           'Ljudet byter form på vägen: från tryckändringar i luft till elektriska signaler.',
-          'Öronvax håller hörselgången ren, och en reflex i mellanörat dämpar starka ljud, men inte plötsliga smällar.',
+          'Öronvax håller hörselgången ren. En skyddsreflex i mellanörat dämpar starka ljud lite, men skyddet är begränsat och hinner inte med plötsliga smällar.',
           'Det är hjärnan som tolkar och känner igen ljuden, och som väljer vad vi lyssnar på.',
           'Två öron gör att vi hör varifrån ljudet kommer: ljudet når det närmaste örat först och starkast.',
           'Örontrumpeten jämnar ut trycket i mellanörat. Därför hjälper det att svälja när det lockar i öronen.'

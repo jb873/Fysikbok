@@ -41,19 +41,27 @@ const TABELL = [
   // V C och V D (arbetsorder 29): ingen ruta, som B
   { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/mekanisk-energi/fordjupning.js', text: 'V C Mekanisk energi', avsnitt: [] },
   { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/havstangen-och-enkla-maskiner/fordjupning.js', text: 'V D Maskiner och effekt', avsnitt: [] },
-  // VI A (arbetsorder 33): länkar till kapitel 2 Ljud och ljus, avsnitt I Vad ljud är, där innehållet hör hemma – en annan
+  // VI A (arbetsorder 33): länkar till kapitel 2 Ljud och ljus, avsnitt I Vad ljud är (och II, arbetsorder 34), där innehållet hör hemma – en annan
   // sida (sida: mappen från roten, nivån och [text, avsnitt]); rutan får inledningen ur sida.inledning. VI B (arbetsorder
   // 30): ingen ruta än – kapitlets avsnitt om ljus finns inte
   { fil: 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud/fordjupning.js', text: 'VI A Ljud', avsnitt: [],
-    sida: { mapp: 'ljud_och_ljus/vad_ljud_ar', niva: 'fordjupning', inledning: 'Läs mer i kapitel 2 Ljud och ljus – Vad ljud är:',
+    // (arbetsorder 34: också avsnitt II – decibel och energi till II D Ljudintensitet, ljudbangen till II C Machtal och
+    // Ljudvallen; inledningen säger då bara kapitlet)
+    sida: { mapp: 'ljud_och_ljus/vad_ljud_ar', niva: 'fordjupning', inledning: 'Läs mer i kapitel 2 Ljud och ljus:',
       lankar: [['ljud-ar-vibrationer', 'ljud-ar-tryck'], ['ljudvagen', 'vaglangd-och-hastighet'], ['ljudets-hastighet', 'styvhet-och-densitet'],
-               ['orat-och-horseln', 'orat-forstarker']] } },
+               ['orat-och-horseln', 'orat-forstarker'], ['eko-ultraljud-och-doppler', 'machtal', 'ljud_och_ljus/ljud_omkring_oss'],
+               ['eko-ultraljud-och-doppler', 'ljudvallen', 'ljud_och_ljus/ljud_omkring_oss'], ['ljudniva-buller-och-halsa', 'ljudintensitet', 'ljud_och_ljus/ljud_omkring_oss']] } },
   { fil: 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljus/fordjupning.js', text: 'VI B Ljus', avsnitt: [] },
   // Kapitel 2 Ljud och ljus, avsnitt I (arbetsorder 33): inga rutor än (ordern)
   { fil: 'ljud_och_ljus/vad_ljud_ar/innehall/ljud-ar-vibrationer/fordjupning.js', text: 'Kap 2 I A Ljud är vibrationer', avsnitt: [] },
   { fil: 'ljud_och_ljus/vad_ljud_ar/innehall/ljudvagen/fordjupning.js', text: 'Kap 2 I B Ljudvågen', avsnitt: [] },
   { fil: 'ljud_och_ljus/vad_ljud_ar/innehall/ljudets-hastighet/fordjupning.js', text: 'Kap 2 I C Ljudets hastighet', avsnitt: [] },
-  { fil: 'ljud_och_ljus/vad_ljud_ar/innehall/orat-och-horseln/fordjupning.js', text: 'Kap 2 I D Örat och hörseln', avsnitt: [] }
+  { fil: 'ljud_och_ljus/vad_ljud_ar/innehall/orat-och-horseln/fordjupning.js', text: 'Kap 2 I D Örat och hörseln', avsnitt: [] },
+  // Kapitel 2, avsnitt II (arbetsorder 34): inga rutor än (ordern)
+  { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/toner-och-klang/fordjupning.js', text: 'Kap 2 II A Toner och klang', avsnitt: [] },
+  { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/resonans-och-instrument/fordjupning.js', text: 'Kap 2 II B Resonans och instrument', avsnitt: [] },
+  { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/eko-ultraljud-och-doppler/fordjupning.js', text: 'Kap 2 II C Eko, ultraljud och dopplereffekten', avsnitt: [] },
+  { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/ljudniva-buller-och-halsa/fordjupning.js', text: 'Kap 2 II D Ljudnivå, buller och hälsa', avsnitt: [] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };
@@ -71,13 +79,16 @@ function avsnittsnamn() {
 // avsnittet inte är det ett fel här, så att en länk aldrig kan peka fel.
 function sidlankar(rad) {
   const S = rad.sida, fran = rad.fil.split('/').slice(0, -3).join('/');
-  let dk; const B = global.Bok; global.Bok = { delkapitel: d => { dk = d; } };
-  try { eval(fs.readFileSync(path.join(ROT, S.mapp, 'delkapitel.js'), 'utf8')); } finally { global.Bok = B; }
-  return S.lankar.map(([t, a]) => {
-    const tx = dk.texter.find(x => x.id === t); if (!tx) throw new Error(`${rad.text}: texten ”${t}” finns inte på ${S.mapp}`);
-    let n = 0; const av = lasBok(`${S.mapp}/innehall/${t}/${S.niva}.js`).avsnitt.map(x => ({ id: x.id, nr: x.numrerad !== false ? ++n : null, titel: x.titel })).find(x => x.id === a);
+  // en länk är [text, avsnitt] på sida.mapp, eller [text, avsnitt, mapp] på en annan sida (arbetsorder 34: VI A länkar
+  // till både avsnitt I och avsnitt II i kapitel 2)
+  return S.lankar.map(([t, a, m]) => {
+    const mapp = m || S.mapp;
+    let dk; const B = global.Bok; global.Bok = { delkapitel: d => { dk = d; } };
+    try { eval(fs.readFileSync(path.join(ROT, mapp, 'delkapitel.js'), 'utf8')); } finally { global.Bok = B; }
+    const tx = dk.texter.find(x => x.id === t); if (!tx) throw new Error(`${rad.text}: texten ”${t}” finns inte på ${mapp}`);
+    let n = 0; const av = lasBok(`${mapp}/innehall/${t}/${S.niva}.js`).avsnitt.map(x => ({ id: x.id, nr: x.numrerad !== false ? ++n : null, titel: x.titel })).find(x => x.id === a);
     if (!av || !av.nr) throw new Error(`${rad.text}: avsnittet ”${a}” finns inte (numrerat) i ${tx.titel}, ${S.niva}`);
-    return { text: `${tx.titel}: ${av.nr}. ${av.titel}`, href: `${path.posix.relative(fran, S.mapp)}/index.html?niva=${S.niva}#${t}/${a}` };
+    return { text: `${tx.titel}: ${av.nr}. ${av.titel}`, href: `${path.posix.relative(fran, mapp)}/index.html?niva=${S.niva}#${t}/${a}` };
   });
 }
 // Blocket för en fil i tabellen (fil: sökväg från repots rot, med / )

@@ -1,5 +1,5 @@
 /* Avsnittssida I. Vad ljud är, text D: Örat och hörseln – nivån fordjupning (📕).
- * Arbetsorder 33 (2026-11-21): kallor/kap2/Kap2-I-D-Orat-och-horseln-alla-nivaer-v1.md (# 📕 FÖRDJUPNING), införd ordagrant i
+ * Arbetsorder 33 (2026-11-21): kallor/kap2/Kap2-I-D-Orat-och-horseln-alla-nivaer-v2.md (# 📕 FÖRDJUPNING), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text 2id: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i
  * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå
@@ -30,9 +30,9 @@ Bok.niva('fordjupning', {
       id: 'orat-forstarker', titel: 'Örat förstärker trycket',
       block: [
         { typ: 'rubrik', text: 'Ljud studsar mot vätska' },
-        { typ: 'text', text: 'När ljud i luft träffar en vattenyta studsar nästan allt tillbaka. Bara omkring en tusendel av energin går in i vattnet. Det är därför det blir så tyst när du doppar huvudet under ytan. Snäckan är fylld med vätska, och om luftens ljudvågor träffade vätskan direkt skulle nästan allt ljud gå förlorat. Mellanörats uppgift är att lösa det problemet.' },
+        { typ: 'text', text: 'När ljud i luft träffar en vattenyta studsar nästan allt tillbaka. Bara omkring en tusendel av energin går in i vattnet. Snäckan är fylld med vätska, och om luftens ljudvågor träffade vätskan direkt skulle nästan allt ljud gå förlorat. Mellanörats uppgift är att lösa det problemet.' },
         { typ: 'rubrik', text: 'Liten yta ger stort tryck' },
-        { typ: 'text', text: '*Tryck|tryck* är kraft fördelad på en yta: p = F / A. Samma kraft ger större tryck om ytan är mindre. Det utnyttjar örat. Trumhinnan har en yta på omkring 55 kvadratmillimeter, men stigbygelns fotplatta, som trycker på membranet in till snäckan, har bara omkring 3 kvadratmillimeter. Kraften som samlas upp av den stora trumhinnan trycker alltså på en nästan 20 gånger mindre yta. Dessutom fungerar hörselbenen som en liten hävstång som ökar kraften något. Sammanlagt blir trycket mot snäckan ungefär 20 gånger större än trycket mot trumhinnan. Utan den förstärkningen skulle vi höra mycket sämre.' },
+        { typ: 'text', text: '*Tryck|tryck* är kraft fördelad på en yta: p = F / A. Samma kraft ger större tryck om ytan är mindre. Det utnyttjar örat. Trumhinnan har en yta på omkring 55 kvadratmillimeter, men stigbygelns fotplatta, som trycker på membranet in till snäckan, har bara omkring 3 kvadratmillimeter. Trumhinnan har alltså en mycket större yta än stigbygelns fotplatta, ungefär 20 gånger så stor. Hörselbenen fungerar dessutom som en liten hävstång. Tillsammans gör detta att trycket mot snäckans vätska blir betydligt större än trycket mot trumhinnan, ungefär 20 gånger. På så sätt överförs ljudenergin mycket effektivare från luft till vätska. Utan mellanörat skulle vi höra mycket sämre.' },
         { typ: 'formel', uttryck: 'p = F / A', forklaring: 'p tryck (Pa), F kraft (N), A area (m²)' },
         { typ: 'text', text: 'Om tryck läser du mer i kapitlet om tryck. Samma princip används när en sko med klack trycker hårdare mot golvet än en sko med platt sula.' }
       ]
@@ -42,10 +42,10 @@ Bok.niva('fordjupning', {
       block: [
         { typ: 'rubrik', text: 'Varje plats i snäckan svarar på sin frekvens' },
         { typ: 'text', text: 'Om man kunde rulla ut snäckan skulle den vara drygt tre centimeter lång. Längs hela snäckan går ett membran, *basilarmembranet|basilarmembran*, som hårcellerna sitter på. Membranet är smalt och styvt i början av snäckan och brett och mjukt i slutet. En ljus ton får membranet att svänga kraftigast nära början, en mörk ton längst in. Hårcellerna på olika platser svarar alltså på olika frekvenser, ungefär som tangenterna på ett piano. Hjärnan vet vilka hårceller som skickar signaler och därmed vilken tonhöjd ljudet har.' },
-        // [BILD D4: snäckan utrullad till en lång kil, med början till vänster och slutet till höger. Markeringar längs membranet: 20 000 Hz vid början, 2 000 Hz i mitten, 200 Hz och 20 Hz längst in. Text: "smalt och styvt" vid början, "brett och mjukt" i slutet]
-        { id: 'bild-d4', typ: 'figur', namn: 'ljud', lage: 'snacka', bildtext: 'Ljusa toner får membranet att svänga nära början, mörka toner längst in.' },
+        // [BILD D4: snäckan utrullad till en lång kil, med början till vänster och slutet till höger. Bara två markeringar: "höga frekvenser (t.ex. 20 000 Hz)" vid början och "låga frekvenser (t.ex. 20 Hz)" längst in, med en pil däremellan. Inga mellanliggande värden, eftersom frekvenserna inte är jämnt fördelade längs membranet. Text: "smalt och styvt" vid början, "brett och mjukt" i slutet]
+        { id: 'bild-d4', typ: 'figur', namn: 'ljud', lage: 'snacka', bildtext: 'Höga frekvenser får membranet att svänga nära början, låga frekvenser längst in.' },
         { typ: 'rubrik', text: 'Därför försvinner de ljusaste tonerna först' },
-        { typ: 'text', text: 'Alla ljud, ljusa som mörka, passerar början av snäckan på vägen in. Hårcellerna där får därför ta emot mest under ett helt liv, och det är de som först slits ut och skadas av starka ljud. Därför är det de ljusaste tonerna som försvinner först när hörseln försämras med åldern eller av buller.' }
+        { typ: 'text', text: 'De hårceller som reagerar på höga frekvenser sitter nära snäckans början. De delarna är särskilt känsliga för vissa typer av skador och för förändringar som kommer med åldern. Därför försämras hörseln ofta först för de höga frekvenserna. Det kan göra det svårare att höra vissa språkljud, som s, f och t, även om man fortfarande hör att någon pratar.' }
       ]
     },
     {
@@ -70,9 +70,9 @@ Bok.niva('fordjupning', {
         { typ: 'rubrik', text: 'Det viktigaste' },
         { typ: 'punkter', punkter: [
           'Ljud i luft studsar nästan helt mot vätska. Mellanörat löser det genom att förstärka trycket.',
-          'Trumhinnan är ungefär 20 gånger större än stigbygelns fotplatta. Med p = F / A blir trycket mot snäckan ungefär 20 gånger större.',
+          'Trumhinnan är ungefär 20 gånger större än stigbygelns fotplatta, och hörselbenen fungerar som en hävstång. Tillsammans blir trycket mot snäckan ungefär 20 gånger större.',
           'Snäckans membran svänger på olika platser för olika frekvenser: ljusa toner i början, mörka längst in.',
-          'Hårcellerna i början av snäckan slits först. Därför försvinner de ljusaste tonerna först.',
+          'Hårcellerna för höga frekvenser, nära snäckans början, är särskilt känsliga. Därför försämras hörseln ofta först för höga toner.',
           'Tidsskillnaden mellan öronen är högst ungefär 0,0006 s, och hjärnan kan märka ännu mindre skillnader.'
         ] },
         { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }

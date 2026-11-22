@@ -238,7 +238,12 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
                             ['Kap 2 I A', 'Kap2-I-A-Ljud-ar-vibrationer-alla-nivaer-v5.md', 'ljud-ar-vibrationer', 'ljud_och_ljus/vad_ljud_ar'],
                             ['Kap 2 I B', 'Kap2-I-B-Ljudvagen-alla-nivaer-v3.md', 'ljudvagen', 'ljud_och_ljus/vad_ljud_ar'],
                             ['Kap 2 I C', 'Kap2-I-C-Ljudets-hastighet-alla-nivaer-v4.md', 'ljudets-hastighet', 'ljud_och_ljus/vad_ljud_ar'],
-                            ['Kap 2 I D', 'Kap2-I-D-Orat-och-horseln-alla-nivaer-v1.md', 'orat-och-horseln', 'ljud_och_ljus/vad_ljud_ar']]) {
+                            ['Kap 2 I D', 'Kap2-I-D-Orat-och-horseln-alla-nivaer-v2.md', 'orat-och-horseln', 'ljud_och_ljus/vad_ljud_ar'],
+                            // avsnitt II (arbetsorder 34)
+                            ['Kap 2 II A', 'Kap2-II-A-Toner-och-klang-alla-nivaer-v3.md', 'toner-och-klang', 'ljud_och_ljus/ljud_omkring_oss'],
+                            ['Kap 2 II B', 'Kap2-II-B-Resonans-och-instrument-alla-nivaer-v2.md', 'resonans-och-instrument', 'ljud_och_ljus/ljud_omkring_oss'],
+                            ['Kap 2 II C', 'Kap2-II-C-Eko-ultraljud-och-doppler-alla-nivaer-v2.md', 'eko-ultraljud-och-doppler', 'ljud_och_ljus/ljud_omkring_oss'],
+                            ['Kap 2 II D', 'Kap2-II-D-Ljudniva-buller-och-halsa-alla-nivaer-v3.md', 'ljudniva-buller-och-halsa', 'ljud_och_ljus/ljud_omkring_oss']]) {
   // (VI, arbetsorder 30) "Det här repeterar du:" är en liten rubrik, och ett begrepp med stor bokstav har fått sin
   // grundform (*Tinnitus|tinnitus*, *Hörselnerven|hörselnerv*): på båda sidor läses *Ord|grundform* som *Ord* när Ord
   // börjar med stor bokstav – det enda tillägget, och bara i VI

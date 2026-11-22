@@ -68,8 +68,17 @@ const TEXTER = {
            titel: 'B: Ljudvågen', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} },
   '2ic': { kap: 'kap2', kalla: 'Kap2-I-C-Ljudets-hastighet-alla-nivaer-v4.md', mapp: 'ljudets-hastighet', figurer: './kap2-figurer-ic.js',
            titel: 'C: Ljudets hastighet', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} },
-  '2id': { kap: 'kap2', kalla: 'Kap2-I-D-Orat-och-horseln-alla-nivaer-v1.md', mapp: 'orat-och-horseln', figurer: './kap2-figurer-id.js',
-           titel: 'D: Örat och hörseln', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} }
+  '2id': { kap: 'kap2', kalla: 'Kap2-I-D-Orat-och-horseln-alla-nivaer-v2.md', mapp: 'orat-och-horseln', figurer: './kap2-figurer-id.js',
+           titel: 'D: Örat och hörseln', order: 'Arbetsorder 33 (2026-11-21)', sidmapp: 'ljud_och_ljus/vad_ljud_ar', sida: 'I. Vad ljud är', grundform: {} },
+  // Kapitel 2, avsnitt II Ljud omkring oss (arbetsorder 34, 2026-11-22): --text 2iia (2iib, 2iic, 2iid), som avsnitt I
+  '2iia': { kap: 'kap2', kalla: 'Kap2-II-A-Toner-och-klang-alla-nivaer-v3.md', mapp: 'toner-och-klang', figurer: './kap2-figurer-iia.js',
+            titel: 'A: Toner och klang', order: 'Arbetsorder 34 (2026-11-22)', sidmapp: 'ljud_och_ljus/ljud_omkring_oss', sida: 'II. Ljud omkring oss', grundform: {} },
+  '2iib': { kap: 'kap2', kalla: 'Kap2-II-B-Resonans-och-instrument-alla-nivaer-v2.md', mapp: 'resonans-och-instrument', figurer: './kap2-figurer-iib.js',
+            titel: 'B: Resonans och instrument', order: 'Arbetsorder 34 (2026-11-22)', sidmapp: 'ljud_och_ljus/ljud_omkring_oss', sida: 'II. Ljud omkring oss', grundform: {} },
+  '2iic': { kap: 'kap2', kalla: 'Kap2-II-C-Eko-ultraljud-och-doppler-alla-nivaer-v2.md', mapp: 'eko-ultraljud-och-doppler', figurer: './kap2-figurer-iic.js',
+            titel: 'C: Eko, ultraljud och dopplereffekten', order: 'Arbetsorder 34 (2026-11-22)', sidmapp: 'ljud_och_ljus/ljud_omkring_oss', sida: 'II. Ljud omkring oss', grundform: {} },
+  '2iid': { kap: 'kap2', kalla: 'Kap2-II-D-Ljudniva-buller-och-halsa-alla-nivaer-v3.md', mapp: 'ljudniva-buller-och-halsa', figurer: './kap2-figurer-iid.js',
+            titel: 'D: Ljudnivå, buller och hälsa', order: 'Arbetsorder 34 (2026-11-22)', sidmapp: 'ljud_och_ljus/ljud_omkring_oss', sida: 'II. Ljud omkring oss', grundform: {} }
 };
 if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (' + Object.keys(TEXTER).join(', ') + ')'); process.exit(1); }
 const KAP = TEXTER[TEXT].kap || 'kap3';

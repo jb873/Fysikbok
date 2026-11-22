@@ -960,6 +960,61 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
 .fig-ljud-kilstart { stroke: #8a5a3a; stroke-width: 2; }
 .fig-ljud-basilar { fill: #e9c9c0; stroke: #9b5a5a; stroke-width: 1.2; }
 .fig-ljud-plats line { stroke: var(--dampad); stroke-width: 1; }
+.fig-ljud-ovala { fill: #e9c9c0; stroke: #9b5a5a; stroke-width: 1.6; }   /* ovala fönstret (I D v2, arbetsorder 34) */
+/* Kapitel 2 Ljud och ljus, avsnitt II (arbetsorder 34): samma färger som avsnitt I; föremål i neutrala toner, guld används
+   inte. Decibelstaplarna (II D1) i en neutral grå – inga riskfärger. */
+.fig-ljud-huvudstock, .fig-ljud-kropp { fill: #b98a5a; stroke: #7a5a3a; stroke-width: 1.2; }
+.fig-ljud-band { stroke: #9aa3ab; stroke-width: 1.6; }
+.fig-ljud-sadel { fill: #e6dcc6; stroke: #6b5a3e; stroke-width: 1; }
+.fig-ljud-finger { fill: #f1dfc4; stroke: #8a5a3a; stroke-width: 1.6; }
+.fig-ljud-bage { fill: none; stroke: #1f6f78; stroke-width: 1.8; }
+.fig-ljud-strang-bage { fill: none; stroke: var(--black); stroke-width: 1.8; }
+.fig-ljud-strang-bage.fig-ljud-motsatt { stroke: var(--dampad); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.fig-ljud-nod { fill: var(--accent); }
+.fig-ljud-normalton polygon { fill: var(--black); }
+.fig-ljud-ram { stroke: #7a5a3a; stroke-width: 4; stroke-linecap: round; }
+.fig-ljud-led { fill: var(--black); }
+.fig-ljud-rep { stroke: #5d6770; stroke-width: 1.6; }
+.fig-ljud-rep.fig-ljud-spok { opacity: .35; stroke-dasharray: 4 4; }
+.fig-ljud-utslag { fill: none; stroke: #1f6f78; stroke-width: 1.6; stroke-dasharray: 2 4; stroke-linecap: round; }
+.fig-ljud-sits rect { fill: #b98a5a; stroke: #7a5a3a; stroke-width: 1; } .fig-ljud-sits circle { fill: #f1dfc4; stroke: #8a5a3a; stroke-width: 1.4; }
+.fig-ljud-lada { fill: #d9a86a; stroke: #8a5a3a; stroke-width: 1.4; }
+.fig-ljud-ladhal { fill: #3a3631; }
+.fig-ljud-gaffel { fill: none; stroke: #5d6770; stroke-width: 3; stroke-linecap: round; }
+.fig-ljud-klubba line { stroke: #7a5a3a; stroke-width: 2.4; } .fig-ljud-klubba rect { fill: #8a8273; }
+.fig-ljud-luftpelare { fill: rgba(122, 102, 72, .12); }
+.fig-ljud-flaska { fill: none; stroke: #5d7f88; stroke-width: 2; }
+.fig-ljud-vila { fill: none; stroke: var(--dampad); stroke-width: 1; stroke-dasharray: 3 3; }
+.fig-ljud-kant { fill: none; stroke: #5d7f88; stroke-width: 2.4; }
+.fig-ljud-glas2 { fill: rgba(150, 190, 205, .22); stroke: #5d7f88; stroke-width: 1.8; }
+.fig-ljud-spricka { fill: none; stroke: var(--black); stroke-width: 1.6; }
+.fig-ljud-berg { fill: #9aa3ab; stroke: #5d6770; stroke-width: 1.4; stroke-linejoin: round; }
+.fig-ljud-ekofront { stroke-dasharray: 5 4; }
+.fig-ljud-botten { fill: #d9c79a; stroke: #8a7a4a; stroke-width: 1.4; }
+.fig-ljud-kon { stroke: #1f6f78; stroke-width: 2.4; }
+.fig-ljud-plan path { fill: #5d6770; stroke: var(--black); stroke-width: .8; }
+.fig-ljud-rutlinje { stroke: var(--linje); stroke-width: 1; }
+.fig-ljud-axel-linje { stroke: var(--black); stroke-width: 1.6; }
+.fig-ljud-db, .fig-ljud-exponering { fill: rgba(93, 103, 112, .38); stroke: #5d6770; stroke-width: 1.2; }
+.fig-ljud-ruta { fill: none; stroke: var(--linje); stroke-width: 1.4; }
+.fig-ljud-vagbana { fill: #8a8273; }
+.fig-ljud-plank { fill: #b98a5a; stroke: #7a5a3a; stroke-width: 1.2; }
+.fig-ljud-hus { fill: #e6dcc6; stroke: #6b5a3e; stroke-width: 1.4; stroke-linejoin: round; }
+.fig-ljud-sovrum { fill: rgba(31, 111, 120, .18); stroke: #6b5a3e; stroke-width: 1; }
+.fig-ljud-sang { stroke: #6b5a3e; stroke-width: 3; }
+.fig-ljud-bygel { fill: none; stroke: #3a3631; stroke-width: 2.4; }
+.fig-ljud-kapa { fill: #3a3631; }
+.fig-ljud-ljudvag line { stroke: #1f6f78; stroke-width: 2.2; } .fig-ljud-ljudvag polygon { fill: #1f6f78; }
+.fig-ljud-klot { fill: none; stroke: #1f6f78; stroke-width: 1.6; }
+.fig-ljud-stralgang { stroke: var(--dampad); stroke-width: 1; stroke-dasharray: 4 3; }
+.fig-ljud-yta-liten, .fig-ljud-yta-stor rect { fill: rgba(31, 111, 120, .3); stroke: #1f6f78; stroke-width: 1.2; }
+.fig-ljud-yta-stor line { stroke: #1f6f78; stroke-width: 1; }
+.fig-ljud-kalla { fill: var(--black); }
+.fig-ljud-radie { stroke: var(--black); stroke-width: 1.2; }
+.fig-ljud-kurva polyline { fill: none; stroke-width: 2.2; } .fig-ljud-kurva circle { stroke: var(--papper); stroke-width: 1; }
+.fig-ljud-kurva[data-kurva="normal"] polyline { stroke: #1f6f78; } .fig-ljud-kurva[data-kurva="normal"] circle { fill: #1f6f78; }
+.fig-ljud-kurva[data-kurva="buller"] polyline { stroke: var(--accent); } .fig-ljud-kurva[data-kurva="buller"] circle { fill: var(--accent); }
+.fig-ljud-kurva[data-kurva="alder"] polyline { stroke: #7a6648; stroke-dasharray: 6 4; } .fig-ljud-kurva[data-kurva="alder"] circle { fill: #7a6648; }
 .fig-diagram-axel, .fig-diagram-tal, .fig-diagram-rubrik, .fig-delta-text, .fig-vektor-text, .fig-vektor-skala, .fig-yta-namn { font-size: 19px; }
 .fig-yta-namn { font-weight: 600; fill: var(--black); }   /* ytans namn i diagram_graf (arbetsorder 13) */
 .fig-diagram-rubrik { font-weight: 600; }

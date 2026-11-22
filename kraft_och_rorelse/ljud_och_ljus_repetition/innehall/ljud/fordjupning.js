@@ -82,11 +82,14 @@ Bok.niva('fordjupning', {
           'Ett föremål som går fortare än ljudet drar med sig en stötvåg formad som en kon. Den hörs som en ljudbang när den passerar.'
         ] },
         { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] },
-        { typ: 'vidare', inledning: 'Läs mer i kapitel 2 Ljud och ljus – Vad ljud är:', lankar: [
+        { typ: 'vidare', inledning: 'Läs mer i kapitel 2 Ljud och ljus:', lankar: [
           { text: 'Ljud är vibrationer: 1. Ljud är tryck', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#ljud-ar-vibrationer/ljud-ar-tryck' },
           { text: 'Ljudvågen: 2. Våglängd och hastighet', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#ljudvagen/vaglangd-och-hastighet' },
           { text: 'Ljudets hastighet: 1. Styvhet och densitet', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#ljudets-hastighet/styvhet-och-densitet' },
-          { text: 'Örat och hörseln: 1. Örat förstärker trycket', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#orat-och-horseln/orat-forstarker' }
+          { text: 'Örat och hörseln: 1. Örat förstärker trycket', href: '../../ljud_och_ljus/vad_ljud_ar/index.html?niva=fordjupning#orat-och-horseln/orat-forstarker' },
+          { text: 'Eko, ultraljud och dopplereffekten: 1. Machtal', href: '../../ljud_och_ljus/ljud_omkring_oss/index.html?niva=fordjupning#eko-ultraljud-och-doppler/machtal' },
+          { text: 'Eko, ultraljud och dopplereffekten: 2. Ljudvallen', href: '../../ljud_och_ljus/ljud_omkring_oss/index.html?niva=fordjupning#eko-ultraljud-och-doppler/ljudvallen' },
+          { text: 'Ljudnivå, buller och hälsa: 1. Ljudintensitet', href: '../../ljud_och_ljus/ljud_omkring_oss/index.html?niva=fordjupning#ljudniva-buller-och-halsa/ljudintensitet' }
         ] }
       ]
     }

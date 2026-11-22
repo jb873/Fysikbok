@@ -2316,8 +2316,27 @@
     `<circle class="fig-oga-iris" cx="${f(x + 4 * mot)}" cy="${f(y)}" r="5"/></g>`;
   const ljudSvg = (B, H, s, namn, lage, stegAntal, struktur) => svg(B, H, s).replace('<svg ', `<svg data-${namn}="${lage}" ${stegAntal ? `data-steg-antal="${stegAntal}" ` : ''}${struktur ? 'data-struktur="" ' : ''}`);
 
+  // Kapitel 2 avsnitt II (arbetsorder 34): vågor med TID på den vågräta axeln (som på ett oscilloskop), en kurva ur en
+  // funktion, en person, en logaritmisk frekvensaxel och ambulansen
+  const tidAxel = (x1, x2, y) => `<g class="fig-ljud-axel" data-axel="tid"><line x1="${f(x1)}" y1="${f(y)}" x2="${f(x2 - 6)}" y2="${f(y)}"/><polygon points="${f(x2 + 2)},${f(y)} ${f(x2 - 9)},${f(y - 5)} ${f(x2 - 9)},${f(y + 5)}"/></g>` +
+    LT(x2 + 8, y + 6, 'tid', 'fig-vanster fig-ljud-axeltext');
+  const kurva = (x0, x1, yc, fn, data = '', k = 'fig-ljud-vag') => { const p = [];
+    for (let x = x0; x <= x1 + 0.01; x += 1) p.push(f(x) + ',' + f(yc - fn(x - x0)));
+    return `<polyline class="${k}" ${data} points="${p.join(' ')}"/>`; };
+  const gubbe = (x, yG, h = 50) => { const k = h / 50, F = v => f(v);
+    return `<g class="fig-ljud-person" data-x="${F(x)}"><circle class="fig-hopp-huvud" cx="${F(x)}" cy="${F(yG - 50 * k)}" r="${F(8 * k)}"/><path class="fig-hopp-kropp" d="M${F(x)} ${F(yG - 42 * k)} L${F(x)} ${F(yG - 18 * k)}"/>` +
+      `<path class="fig-hopp-lem" d="M${F(x)} ${F(yG - 18 * k)} L${F(x - 6 * k)} ${F(yG)} M${F(x)} ${F(yG - 18 * k)} L${F(x + 6 * k)} ${F(yG)} M${F(x)} ${F(yG - 36 * k)} L${F(x - 8 * k)} ${F(yG - 24 * k)} M${F(x)} ${F(yG - 36 * k)} L${F(x + 8 * k)} ${F(yG - 24 * k)}"/></g>`; };
+  const ambulans = (xn, yc) => `<g class="fig-ljud-ambulans" data-x="${f(xn)}"><rect class="fig-ljud-bil" x="${f(xn - 20)}" y="${f(yc - 10)}" width="40" height="18" rx="3"/><rect class="fig-ljud-bil-fonster" x="${f(xn + 8)}" y="${f(yc - 7)}" width="9" height="7"/>` +
+    `<rect class="fig-ljud-blixt" x="${f(xn - 6)}" y="${f(yc - 15)}" width="10" height="5"/><circle class="fig-ljud-hjul" cx="${f(xn - 11)}" cy="${f(yc + 9)}" r="4"/><circle class="fig-ljud-hjul" cx="${f(xn + 11)}" cy="${f(yc + 9)}" r="4"/></g>`;
+  // en logaritmisk frekvensaxel: X(hz), och axeln med markeringar (data-hz) – som i I B3
+  const logAxel = (xa, W, hz0, hz1) => { const a = Math.log10(hz0), b = Math.log10(hz1); return hz => xa + (Math.log10(hz) - a) / (b - a) * W; };
+  // flygplanet med nosen i (xn, y), ungefär 26 enheter långt
+  const flygplan = (xn, y) => { const P = (dx, dy) => f(xn - dx * 0.6) + ' ' + f(y + dy * 0.6);
+    return `<g class="fig-ljud-plan" data-x="${f(xn)}" data-y="${f(y)}"><path d="M${P(0, 0)} L${P(10, -4)} L${P(34, -4)} L${P(40, -11)} L${P(44, -11)} L${P(42, 3)} L${P(10, 4)} Z"/>` +
+      `<path d="M${P(18, 0)} L${P(28, 10)} L${P(32, 10)} L${P(28, 0)}"/></g>`; };
+
   Bok.figur('ljud', d => {
-    const lage = d.lage || fel('ljud behöver lage: membran, modeller, doppler, orat, jamforelse, resonans, ekolod, isolering – eller (kapitel 2) linjal, membran-hoger, fjader, vakuum, vagtyper, tva-modeller, vagbegrepp, horomraden, aska, hastigheter, orat-delar, orat-vag, huvud eller snacka'), B = 440;
+    const lage = d.lage || fel('ljud behöver lage: membran, modeller, doppler, orat, jamforelse, resonans, ekolod, isolering – eller (kapitel 2) linjal, membran-hoger, fjader, vakuum, vagtyper, tva-modeller, vagbegrepp, horomraden, aska, hastigheter, orat-delar, orat-vag, huvud, snacka, tonhojd-tid, styrka-tid, gitarrhals, klang-tid, strang-delar, tonomfang, gunga, stamgafflar, stamgaffel-bord, flaskor, vinglas, eko-berg, ekolod-botten, doppler-centrum, ljudbang, decibel, exponering, bullerbekampning, avstandslagen eller audiogram'), B = 440;
     let s = '', H, beskr, nSteg = 0, struktur = false;
     if (lage === 'membran') {
       // A1: tre ögonblick efter varandra (rader); s(x, t) = A · sin(2π(t − u/λ)) där vågen har hunnit (u ≤ λt)
@@ -2739,20 +2758,26 @@
       s += `<g class="fig-ljud-ben" data-del="stigbygel" data-x="248"><path d="M228 ${yc + 2} L240 ${yc + 2} M240 ${yc - 6} Q252 ${yc - 6} ${xo} ${yc - 4} M240 ${yc + 10} Q252 ${yc + 10} ${xo} ${yc + 8} M240 ${yc - 6} L240 ${yc + 10}"/></g>`;
       const sp = []; for (let i = 0; i <= 90; i++) { const v = i / 90 * 2.4 * 2 * Math.PI, r = 4 + 22 * i / 90; sp.push(f(292 + r * Math.cos(v)) + ',' + f(yc + 6 + r * Math.sin(v))); }
       s += `<polyline class="fig-ljud-snacka" data-del="snäcka" data-x="292" points="${sp.reverse().join(' ')}"/>`;
-      s += `<g class="fig-ljud-balans" data-del="balansorgan" data-x="282"><path d="M268 ${yc - 22} a12 12 0 1 1 14 -12 M282 ${yc - 34} a10 10 0 1 1 14 8 M276 ${yc - 22} a9 9 0 1 0 -6 -14"/></g>`;
+      s += `<g class="fig-ljud-balans" data-del="balansorgan" data-x="290"><path d="M276 ${yc - 22} a12 12 0 1 1 14 -12 M290 ${yc - 34} a10 10 0 1 1 14 8 M284 ${yc - 22} a9 9 0 1 0 -6 -14"/></g>`;
+      // ovala fönstret (v2): membranet där stigbygelns fotplatta trycker in mot snäckan, på gränsen till innerörat
+      s += `<ellipse class="fig-ljud-ovala" data-del="ovala fönstret" data-x="${xo + 3}" cx="${xo + 3}" cy="${yc + 2}" rx="3" ry="9"/>`;
       s += `<path class="fig-ljud-nerv" data-del="hörselnerv" data-x="370" d="M314 ${yc + 2} C340 ${yc - 12} 360 ${yc + 10} 390 ${yc - 4} S420 ${yc - 8} 436 ${yc - 2}"/>`;
       s += `<path class="fig-ljud-trumpet" data-del="örontrumpet" data-x="250" d="M232 ${yc + 28} C238 ${yc + 44} 252 ${yc + 52} 272 ${yc + 60}"/>`;
       // namnen
       const namn = (t, x, y, px, py) => ledare(x, y + (y < yc ? 6 : -20), px, py) + LT(x, y, t, 'fig-mitt fig-halo fig-ljud-namn');
-      s += namn('öronmussla', 50, 78, 46, yc - 58) + namn('hammare', 196, 78, 207, yc - 24) + namn('städ', 250, 78, 230, yc - 22) + namn('balansorgan', 340, 78, 292, yc - 36);
-      s += namn('hörselgång', 128, 236, 128, yc + 12) + namn('stigbygel', 238, 236, 250, yc + 10) + namn('snäcka', 318, 236, 300, yc + 26) + namn('hörselnerv', 398, 236, 404, yc - 4);
-      s += namn('trumhinna', 176, 262, 192, yc + 14) + namn('örontrumpet', 292, 262, 268, yc + 58);
+      s += namn('öronmussla', 50, 78, 46, yc - 58) + namn('hammare', 184, 78, 207, yc - 24) + namn('städ', 250, 78, 230, yc - 22) + namn('balansorgan', 344, 78, 300, yc - 36);
+      // hörselnerven och snäckan namnges inne i bilden (till höger, ovanför och under nerven), så att ledaren till ovala
+      // fönstret går fritt under snäckan
+      s += ledare(392, yc - 22, 404, yc - 6) + LT(392, yc - 26, 'hörselnerv', 'fig-mitt fig-halo fig-ljud-namn');
+      s += ledare(350, yc + 34, 318, yc + 20) + LT(380, yc + 48, 'snäcka', 'fig-mitt fig-halo fig-ljud-namn');
+      s += namn('hörselgång', 100, 236, 110, yc + 12) + namn('stigbygel', 210, 236, 250, yc + 10) + namn('ovala fönstret', 330, 236, xo + 1, yc + 12);
+      s += namn('trumhinna', 150, 262, 192, yc + 14) + namn('örontrumpet', 260, 262, 256, yc + 53);
       // klammern över de tre delarna
       const klammer = (x1, x2, t, k) => `<g class="fig-ljud-klammer" data-del="${k}" data-fran="${x1}" data-till="${x2}"><path d="M${x1 + 1} 46 L${x1 + 1} 40 L${x2 - 1} 40 L${x2 - 1} 46 M${(x1 + x2) / 2} 40 L${(x1 + x2) / 2} 34"/></g>` + LT((x1 + x2) / 2, 26, t, 'fig-mitt fig-energi-ord');
       s += klammer(18, xt, 'ytteröra', 'ytteröra') + klammer(xt, xo, 'mellanöra', 'mellanöra') + klammer(xo, 362, 'inneröra', 'inneröra');
       H = 262 + 12;
       beskr = 'Örat i genomskärning. Ytterörat: öronmusslan och hörselgången, som slutar vid trumhinnan. Mellanörat: ett luftfyllt rum med hörselbenen hammaren, städet och stigbygeln, och örontrumpeten som går ned mot svalget. ' +
-        'Innerörat: snäckan och balansorganet. Från snäckan går hörselnerven till hjärnan. Klammerna överst visar de tre delarna.';
+        'Stigbygeln trycker på ovala fönstret, ett litet membran in till snäckan. Innerörat: snäckan och balansorganet. Från snäckan går hörselnerven till hjärnan. Klammerna överst visar de tre delarna.';
     } else if (lage === 'orat-vag') {
       // I D2: ljudets väg genom örat i steg 1–6 på en förenklad genomskärning; delarna i ordning från vänster (data-x)
       const yc = 146;
@@ -2764,16 +2789,19 @@
       s += `<g class="fig-ljud-ben" data-del="hörselben" data-x="156"><path d="M136 ${yc} L146 ${yc - 8} L158 ${yc - 2} L168 ${yc - 6} L176 ${yc + 2}"/><circle cx="146" cy="${yc - 8}" r="4.5"/><circle cx="160" cy="${yc - 3}" r="4.5"/><rect x="172" y="${yc - 5}" width="8" height="11" rx="2"/></g>`;
       const sp = []; for (let i = 0; i <= 90; i++) { const v = i / 90 * 2.4 * 2 * Math.PI, r = 4 + 22 * i / 90; sp.push(f(206 + r * Math.cos(v)) + ',' + f(yc + r * Math.sin(v))); }
       s += `<g data-del="snäcka" data-x="206"><circle class="fig-ljud-vatska" cx="206" cy="${yc}" r="27"/><polyline class="fig-ljud-snacka" points="${sp.reverse().join(' ')}"/></g>`;
+      s += `<ellipse class="fig-ljud-ovala" data-del="ovala fönstret" data-x="181" cx="181" cy="${yc + 1}" rx="2.6" ry="8"/>`;
       s += `<g class="fig-ljud-harceller" data-del="hårceller" data-x="248">${[0, 1, 2, 3, 4].map(k => `<line x1="${240 + k * 4}" y1="${yc + 8}" x2="${240 + k * 4}" y2="${yc - 4}"/>`).join('')}<line x1="236" y1="${yc + 8}" x2="260" y2="${yc + 8}"/></g>`;
       s += `<path class="fig-ljud-nerv" data-del="hörselnerv" data-x="300" d="M260 ${yc + 4} C290 ${yc - 10} 320 ${yc + 12} 352 ${yc - 2}"/>`;
       s += `<g class="fig-ljud-hjarna" data-del="hjärnan" data-x="396"><path d="M356 ${yc + 6} C350 ${yc - 26} 380 ${yc - 34} 400 ${yc - 28} C430 ${yc - 32} 440 ${yc - 6} 432 ${yc + 12} C428 ${yc + 30} 380 ${yc + 32} 356 ${yc + 6} Z"/>` +
         `<path class="fig-ljud-veck" d="M372 ${yc - 12} q8 8 0 16 M392 ${yc - 22} q-6 12 4 20 M414 ${yc - 16} q-8 10 2 22"/></g>`;
+      // (v2: steg 4 ovala fönstret, 5 hårcellerna omvandlar rörelsen, 6 nervcellerna skickar impulser; stegen 2, 4 och 6
+      // under bilden med meningen under ringen, så att de längre meningarna ryms)
       s += borjaHar(8, 20, 'fig-vanster') + steg(1, 20, 44, ['ljudvågen in', 'i hörselgången']);
-      s += steg(3, 154, 44, ['hörselbenen', 'för vidare']) + steg(5, 300, 44, ['hårcellerna', 'skickar signaler']);
-      s += steg(2, 66, 206, ['trumhinnan', 'vibrerar']) + steg(4, 208, 206, ['vätskan', 'svänger']) + steg(6, 304, 206, ['hörselnerven', 'till hjärnan']);
-      H = 206 + 6.5 + LRAD + 12; nSteg = 6;
+      s += steg(3, 154, 44, ['hörselbenen', 'för vidare']) + steg(5, 286, 44, ['hårcellerna gör', 'om rörelsen', 'till signaler']);
+      s += steg(2, 70, 202, ['trumhinnan', 'vibrerar'], 0) + steg(4, 200, 202, ['ovala fönstret:', 'vätskan svänger'], 0) + steg(6, 358, 202, ['nervcellerna', 'skickar impulser'], 0);
+      H = 202 + 34 + LRAD + 12; nSteg = 6;
       beskr = 'Ljudets väg genom örat i sex steg. 1: ljudvågen kommer in i hörselgången. 2: trumhinnan vibrerar. 3: hörselbenen för vibrationerna vidare. ' +
-        '4: vätskan i snäckan sätts i svängning. 5: hårcellerna skickar signaler. 6: hörselnerven leder signalerna till hjärnan.';
+        '4: stigbygeln trycker på ovala fönstret, och vätskan i snäckan sätts i svängning. 5: hårcellerna omvandlar rörelsen till signaler. 6: hörselnervens nervceller skickar impulser till hjärnan.';
     } else if (lage === 'huvud') {
       // I D3: ett huvud sett uppifrån, två gånger. Till vänster ljud rakt framifrån (raka fronter, båda öronen samtidigt);
       // till höger ljud från höger (högra örat först, skugga bakom huvudet vid vänster öra).
@@ -2801,21 +2829,408 @@
         'Till höger kommer de från höger sida och når det högra örat först; huvudet skuggar det vänstra örat.';
     } else if (lage === 'snacka') {
       // I D4: snäckan utrullad till en lång kil, början till vänster. Membranet (basilarmembranet) är smalt vid början och
-      // brett längst in; frekvenserna längs det: 20 000 Hz vid början, 2 000 Hz i mitten, 200 och 20 Hz längst in.
+      // brett längst in. Bara två markeringar (v2): höga frekvenser vid början, låga längst in, med en pil däremellan –
+      // inga mellanliggande värden, eftersom frekvenserna inte är jämnt fördelade längs membranet.
       struktur = true;
       const x0 = 30, x1 = 410, yc = 120, X = t => x0 + t * (x1 - x0);
       s += `<path class="fig-ljud-kil" d="M${x0} ${yc - 40} L${x1} ${yc - 14} Q${x1 + 12} ${yc} ${x1} ${yc + 14} L${x0} ${yc + 40}"/>`;
       s += `<line class="fig-ljud-kilstart" x1="${x0}" y1="${yc - 40}" x2="${x0}" y2="${yc + 40}"/>`;
       const bredd = t => 3 + 9 * t;
       s += `<polygon class="fig-ljud-basilar" data-bredd-borjan="${bredd(0) * 2}" data-bredd-slut="${bredd(1) * 2}" points="${X(0)},${yc - bredd(0)} ${X(1)},${yc - bredd(1)} ${X(1)},${yc + bredd(1)} ${X(0)},${yc + bredd(0)}"/>`;
-      [[20000, 0.06, '20 000 Hz'], [2000, 0.5, '2 000 Hz'], [200, 0.78, '200 Hz'], [20, 0.97, '20 Hz']].forEach(([hz, t, txt]) => {
+      [[20000, 0.04, ['höga frekvenser', '(t.ex. 20 000 Hz)'], 'fig-vanster', x0 - 22], [20, 0.97, ['låga frekvenser', '(t.ex. 20 Hz)'], 'fig-hoger', 438]].forEach(([hz, t, txt, k, tx]) => {
         s += `<g class="fig-ljud-plats" data-hz="${hz}" data-x="${f(X(t))}"><line x1="${f(X(t))}" y1="${f(yc - bredd(t) - 2)}" x2="${f(X(t))}" y2="${yc - 50}"/></g>` +
-          LT(hz === 20 ? 438 : X(t), yc - 58, txt, hz === 20 ? 'fig-hoger' : hz === 20000 ? 'fig-vanster' : 'fig-mitt'); });
+          rader(tx, yc - 84, txt, k); });
+      s += riktPil(X(0.42), yc - 72, X(0.68), yc - 72, '', 'data-frekvenspil=""');
       s += LT(x0, yc + 66, 'smalt och styvt', 'fig-vanster') + LT(x1, yc + 66, 'brett och mjukt', 'fig-hoger');
       s += LT(x0, yc + 92, 'början', 'fig-vanster fig-ljus-skuggtext') + LT(x1, yc + 92, 'längst in', 'fig-hoger fig-ljus-skuggtext');
       H = yc + 104;
       beskr = 'Snäckan utrullad till en lång kil, med början till vänster och slutet till höger. Membranet inuti är smalt och styvt vid början och brett och mjukt längst in. ' +
-        'Längs membranet: 20 000 Hz vid början, 2 000 Hz i mitten, 200 Hz och 20 Hz längst in.';
+        'Höga frekvenser, till exempel 20 000 Hz, får membranet att svänga vid början, och låga frekvenser, till exempel 20 Hz, längst in. En pil går från de höga till de låga.';
+    // ---------- Kapitel 2 Ljud och ljus, avsnitt II Ljud omkring oss (arbetsorder 34, 2026-11-22) ----------
+    // Egna lägen; id:t i texten är källans (A1 …). Vågkurvorna i A1, A2 och A4 har TID på den vågräta axeln.
+    } else if (lage === 'tonhojd-tid') {
+      // II A1: två vågor med samma amplitud; överst hög frekvens (tätt), underst låg (glest)
+      struktur = true;
+      const x0 = 20, x1 = 396, amp = 26;
+      const rad = (yc, lam, typ, namn) => `<g class="fig-ljud-ljud" data-ljud="${typ}">${LT(x0, yc - amp - 16, namn, 'fig-vanster fig-energi-ord')}${vagLinje(x0, x1, yc, amp, lam, x0 + lam / 4)}</g>` + tidAxel(x0, x1 + 8, yc + amp + 14);
+      s += rad(74, 37.6, 'hog', 'hög ton – hög frekvens') + rad(196, 125, 'lag', 'låg ton – låg frekvens');
+      H = 196 + amp + 14 + 22;
+      beskr = 'Två ljudvågor ovanför varandra med samma amplitud och tid på den vågräta axeln. Överst en hög ton: många svängningar tätt, hög frekvens. Underst en låg ton: få svängningar glest, låg frekvens.';
+    } else if (lage === 'styrka-tid') {
+      // II A2: samma frekvens, olika amplitud; topparna rakt ovanför varandra (streckade hjälplinjer)
+      struktur = true;
+      const x0 = 20, x1 = 396, lam = 75.2, xT = x0 + lam / 4;
+      const rad = (yc, amp, typ, namn) => `<g class="fig-ljud-ljud" data-ljud="${typ}">${LT(x0, yc - 30 - 16, namn, 'fig-vanster fig-energi-ord fig-halo')}${vagLinje(x0, x1, yc, amp, lam, xT)}</g>` + tidAxel(x0, x1 + 8, yc + 30 + 14);
+      for (let x = xT; x <= x1; x += lam) s += `<line class="fig-ljud-hjalp" data-hjalp="topp" x1="${f(x)}" y1="${f(80 - 30)}" x2="${f(x)}" y2="${f(202 - 10)}"/>`;
+      s += rad(80, 30, 'stark', 'stark ton – stor amplitud') + rad(202, 10, 'svag', 'svag ton – liten amplitud');
+      H = 202 + 30 + 14 + 22;
+      beskr = 'Två ljudvågor ovanför varandra med samma frekvens och tid på den vågräta axeln. Överst en stark ton med höga toppar, stor amplitud. Underst en svag ton med låga toppar, liten amplitud. ' +
+        'Topparna står rakt ovanför varandra (streckade linjer), så svängningarna är lika täta.';
+    } else if (lage === 'gitarrhals') {
+      // II A3: gitarrhalsen från sidan två gånger. Sadeln till vänster, stallet till höger; banden där tonen blir en
+      // halvton högre (strängen förkortas med 2^(−1/12) per band), det tolfte mitt på. Den svängande delen markerad med
+      // en båge (data-fran, data-till); underst bara delen mellan det nedtryckta bandet och stallet.
+      struktur = true;
+      const xS = 34, L = 370, xB = xS + L, band = n => xS + L * (1 - Math.pow(2, -n / 12)), x12 = band(12);
+      const rad = (yS, titel, fran, tryckt) => {
+        let g = fet(8, yS - 36, titel);
+        g += `<path class="fig-ljud-huvudstock" d="M6 ${yS + 2} L${xS} ${yS + 2} L${xS} ${yS + 14} L10 ${yS + 18} Z"/>`;
+        g += `<rect class="fig-ljud-hals" x="${xS}" y="${yS + 3}" width="${f(band(14) - xS)}" height="11"/>`;
+        g += `<path class="fig-ljud-kropp" d="M${f(band(14) - 6)} ${yS + 3} L432 ${yS + 3} Q438 ${yS + 3} 438 ${yS + 10} L438 ${yS + 34} Q438 ${yS + 40} 432 ${yS + 40} L${f(band(14) + 4)} ${yS + 40} Q${f(band(14) - 6)} ${yS + 40} ${f(band(14) - 6)} ${yS + 30} Z"/>`;
+        for (let n = 1; n <= 14; n++) g += `<line class="fig-ljud-band" data-band="${n}" x1="${f(band(n))}" y1="${yS + 3}" x2="${f(band(n))}" y2="${yS}"/>`;
+        g += `<rect class="fig-ljud-sadel" data-del="sadel" data-x="${xS}" x="${xS - 3}" y="${yS - 2}" width="5" height="6"/><rect class="fig-ljud-stall" data-del="stall" data-x="${xB}" x="${xB - 3}" y="${yS - 2}" width="7" height="6"/>`;
+        if (tryckt) {
+          g += `<line class="fig-ljud-strang" x1="${xS}" y1="${yS - 1}" x2="${f(x12 - 3)}" y2="${yS + 1}"/><line class="fig-ljud-strang" x1="${f(x12 - 3)}" y1="${yS + 1}" x2="${xB}" y2="${yS - 1}"/>`;
+          g += `<ellipse class="fig-ljud-finger" data-x="${f(x12 - 6)}" cx="${f(x12 - 7)}" cy="${yS - 9}" rx="8" ry="7"/>`;
+        } else g += `<line class="fig-ljud-strang" x1="${xS}" y1="${yS - 1}" x2="${xB}" y2="${yS - 1}"/>`;
+        const a = fran, b = xB, m = (a + b) / 2;
+        g += `<path class="fig-ljud-bage" data-fran="${f(a)}" data-till="${f(b)}" d="M${f(a)} ${yS - 1} Q${f(m)} ${yS - 29} ${f(b)} ${yS - 1} M${f(a)} ${yS - 1} Q${f(m)} ${yS + 27} ${f(b)} ${yS - 1}"/>`;
+        return g;
+      };
+      s += `<g class="fig-ljud-gitarr-rad" data-rad="1">${rad(64, 'hela strängen svänger: låg ton', xS, false)}</g>`;
+      s += LT(xS, 64 + 66, 'sadel', 'fig-mitt') + ledare(xS, 64 + 48, xS, 64 + 6) + LT(xB, 64 + 66, 'stall', 'fig-mitt') + ledare(xB, 64 + 48, xB, 64 + 6);
+      const y2 = 196;
+      s += `<g class="fig-ljud-gitarr-rad" data-rad="2" data-band12="${f(x12)}">${rad(y2, 'halva strängen svänger: högre ton', x12, true)}</g>`;
+      s += LT(x12, y2 + 66, 'tolfte bandet', 'fig-mitt') + ledare(x12, y2 + 48, x12, y2 + 4);
+      H = y2 + 66 + 12;
+      beskr = 'En gitarrhals sedd från sidan, två gånger, med sadeln till vänster och stallet till höger. Överst svänger hela strängen mellan sadeln och stallet, en lång svängande del: låg ton. ' +
+        'Underst trycker ett finger ned strängen vid det tolfte bandet, mitt på. Bara delen mellan bandet och stallet svänger, halva strängen: högre ton. Den svängande delen är markerad med en båge.';
+    } else if (lage === 'klang-tid') {
+      // II A4: ren ton, klang och brus med tid på den vågräta axeln. Klangen upprepar sig i samma takt som den rena tonen
+      // (data-period), bruset utan mönster.
+      struktur = true;
+      const x0 = 20, x1 = 396, P = 75.2, A = 22, w = 2 * Math.PI / P;
+      const ren = x => A * Math.sin(w * x);
+      const kl = x => A / 1.55 * (Math.sin(w * x) + 0.55 * Math.sin(2 * w * x + 0.6) + 0.4 * Math.sin(3 * w * x + 1.1) + 0.25 * Math.sin(5 * w * x));
+      const r = slump(17), br = []; for (let i = 0; i <= Math.ceil(x1 - x0) / 3 + 2; i++) br.push(r() * 2 * A * 0.95);
+      const brus = x => { const i = Math.floor(x / 3), t = x / 3 - i; return br[i] * (1 - t) + br[i + 1] * t; };
+      const rad = (yc, fn, typ, namn) => `<g class="fig-ljud-ljud" data-ljud="${typ}" data-period="${typ === 'brus' ? '' : P}">${LT(x0, yc - A - 14, namn, 'fig-vanster fig-energi-ord')}${kurva(x0, x1, yc, fn)}</g>` + tidAxel(x0, x1 + 8, yc + A + 12);
+      s += rad(58, ren, 'ren', 'ren ton (stämgaffel)') + rad(146, kl, 'klang', 'klang (fiol)') + rad(234, brus, 'brus', 'brus (dusch)');
+      H = 234 + A + 12 + 22;
+      beskr = 'Tre ljud med tid på den vågräta axeln. Överst en ren ton från en stämgaffel: en jämn, mjuk våg. I mitten klang från en fiol: vågen upprepar sig i samma takt men har en taggigare form. ' +
+        'Underst brus från en dusch: en helt oregelbunden kurva utan mönster.';
+    } else if (lage === 'strang-delar') {
+      // II A5: en sträng mellan två fästen, tre gånger: hela strängen (f), två halvor (2 f) och tre delar (3 f). Den
+      // heldragna och den streckade kurvan är strängens två ytterlägen; de stilla punkterna (noderna) som prickar.
+      struktur = true;
+      const xa = 40, xb = 400, L = xb - xa, A = 17;
+      [[1, 'grundton, f'], [2, '2 f'], [3, '3 f']].forEach(([n, t], i) => {
+        const yc = 58 + i * 84, fn = sg => x => sg * A * Math.sin(n * Math.PI * x / L);
+        let g = fet(xa, yc - A - 18, t);
+        g += `<rect class="fig-ljud-fast" x="${xa - 8}" y="${yc - 14}" width="8" height="28"/><rect class="fig-ljud-fast" x="${xb}" y="${yc - 14}" width="8" height="28"/>`;
+        g += kurva(xa, xb, yc, fn(1), 'data-ytterlage="1"', 'fig-ljud-strang-bage') + kurva(xa, xb, yc, fn(-1), 'data-ytterlage="-1"', 'fig-ljud-strang-bage fig-ljud-motsatt');
+        for (let k = 1; k < n; k++) g += `<circle class="fig-ljud-nod" data-x="${f(xa + k * L / n)}" cx="${f(xa + k * L / n)}" cy="${yc}" r="4.5"/>`;
+        s += `<g class="fig-ljud-strangrad" data-delar="${n}" data-fran="${xa}" data-till="${xb}" data-yc="${yc}">${g}</g>`;
+      });
+      H = 58 + 2 * 84 + A + 14;
+      beskr = 'En sträng spänd mellan två fästen, ritad tre gånger. Överst svänger hela strängen som en båge: grundtonen, f. I mitten svänger den i två halvor åt motsatta håll med en stilla punkt i mitten: 2 f. ' +
+        'Underst svänger den i tre delar med två stilla punkter: 3 f. Strängens ändar står still, och de stilla punkterna är markerade med en prick.';
+    } else if (lage === 'tonomfang') {
+      // II A6: tonomfången som liggande staplar över en logaritmisk frekvensaxel 20–20 000 Hz; normaltonen A 440 Hz
+      // markerad under axeln. data-fran/data-till i Hz.
+      struktur = true;
+      const xa = 40, W = 360, X = logAxel(xa, W, 20, 20000), yA = 176;
+      const st = [['piano', 27, 4200], ['gitarr', 82, 1200], ['flöjt', 260, 2100], ['människoröst', 80, 1000], ['bastuba', 40, 350]];
+      st.forEach(([n, a, b], i) => { const y = 24 + i * 29;
+        s += `<g class="fig-ljud-stapel" data-namn="${n}" data-fran="${a}" data-till="${b}"><rect x="${f(X(a))}" y="${y - 8}" width="${f(X(b) - X(a))}" height="14" rx="3"/></g>` + LT(X(b) + 8, y + 4, n, 'fig-vanster'); });
+      s += `<g class="fig-ljud-axel" data-axel="frekvens" data-skala="log"><line x1="${xa}" y1="${yA}" x2="${f(X(20000) + 6)}" y2="${yA}"/><polygon points="${f(X(20000) + 16)},${yA} ${f(X(20000) + 5)},${yA - 5} ${f(X(20000) + 5)},${yA + 5}"/></g>`;
+      [[20, '20'], [200, '200'], [2000, '2 000'], [20000, '20 000']].forEach(([hz, t]) => {
+        s += `<line class="fig-ljud-tick" data-hz="${hz}" x1="${f(X(hz))}" y1="${yA - 4}" x2="${f(X(hz))}" y2="${yA + 5}"/>` + LT(X(hz), yA + 24, t, hz === 20000 ? 'fig-hoger' : 'fig-mitt'); });
+      s += LT(X(20000) + 22, yA + 24, 'Hz', 'fig-mitt fig-ljud-axeltext');
+      const xA = X(440);
+      s += `<g class="fig-ljud-normalton" data-hz="440" data-x="${f(xA)}"><polygon points="${f(xA)},${yA + 6} ${f(xA - 6)},${yA + 16} ${f(xA + 6)},${yA + 16}"/></g>` + LT(xA, yA + 50, 'normaltonen A 440 Hz', 'fig-mitt');
+      H = yA + 62;
+      beskr = 'Tonomfång som liggande staplar över en frekvensaxel med logaritmisk skala från 20 Hz till 20 000 Hz, där varje markering är tio gånger den förra: piano ungefär 27–4 200 Hz, gitarr 82–1 200 Hz, ' +
+        'flöjt 260–2 100 Hz, människoröst 80–1 000 Hz och bastuba 40–350 Hz. Under axeln är normaltonen A, 440 Hz, markerad.';
+    } else if (lage === 'gunga') {
+      // II B1: gungan i fyra bilder. Utslaget (bågen) växer för varje bild. I bild 1 och 3 har gungan just vänt längst bak
+      // (till vänster), och knuffen är en pil i rörelsens riktning, framåt längs bågen (data-dx, data-dy: pilens riktning).
+      const L = 86, yP = 30, P = [[56, 8, -8, true], [162, 12, 0, false], [268, 19, -19, true], [376, 34, 34, false]];
+      P.forEach(([cx, A, v, knuff], i) => {
+        const pt = (deg, r = L) => [cx + r * Math.sin(deg * GR), yP + r * Math.cos(deg * GR)], [sx, sy] = pt(v);
+        let g = `<line class="fig-ljud-ram" x1="${cx - 30}" y1="${yP}" x2="${cx + 30}" y2="${yP}"/><circle class="fig-ljud-led" cx="${cx}" cy="${yP}" r="3"/>`;
+        const [ax, ay] = pt(-A), [bx, by] = pt(A);
+        g += `<path class="fig-ljud-utslag" d="M${f(ax)} ${f(ay)} A${L} ${L} 0 0 0 ${f(bx)} ${f(by)}"/>`;
+        if (v !== -A) { const [gx, gy] = pt(-A); g += `<line class="fig-ljud-rep fig-ljud-spok" x1="${cx}" y1="${yP}" x2="${f(gx)}" y2="${f(gy)}"/>`; }
+        if (v !== A) { const [gx, gy] = pt(A); g += `<line class="fig-ljud-rep fig-ljud-spok" x1="${cx}" y1="${yP}" x2="${f(gx)}" y2="${f(gy)}"/>`; }
+        g += `<line class="fig-ljud-rep" x1="${cx}" y1="${yP}" x2="${f(sx)}" y2="${f(sy)}"/>`;
+        g += `<g class="fig-ljud-sits" data-x="${f(sx)}" data-y="${f(sy)}" transform="rotate(${f(-v)} ${f(sx)} ${f(sy)})"><rect x="${f(sx - 10)}" y="${f(sy)}" width="20" height="5" rx="2"/><circle cx="${f(sx)}" cy="${f(sy - 9)}" r="6"/></g>`;
+        if (knuff) {
+          // tangenten framåt (mot ökande vinkel): (cos v, −sin v) i skärmens koordinater
+          const tx = Math.cos(v * GR), ty = -Math.sin(v * GR);
+          g += `<g class="fig-ljud-knuff" data-dx="${f(tx)}" data-dy="${f(ty)}">${riktPil(sx - 40 * tx, sy - 40 * ty + 2, sx - 13 * tx, sy - 13 * ty + 2)}</g>`;
+        }
+        if (i === 1) g += `<g class="fig-energi-rorelse">${rorelsePil(cx - 3, yP + L + 14, cx - 22, yP + L + 13)}${rorelsePil(cx + 3, yP + L + 14, cx + 22, yP + L + 13)}</g>`;
+        s += `<g class="fig-ljud-gunga" data-bild="${i + 1}" data-utslag="${A}" data-vinkel="${v}" data-knuff="${knuff ? 1 : 0}">${g}</g>`;
+      });
+      const yR = 166;
+      s += borjaHar(56, yR - 20) + steg(1, 56, yR, ['liten knuff', 'framåt'], 0) + steg(2, 162, yR, ['svänger fram', 'och tillbaka'], 0) + steg(3, 268, yR, ['ny knuff i', 'samma takt'], 0) + steg(4, 376, yR, ['mycket större', 'svängningar'], 0);
+      H = yR + 34 + LRAD + 12; nSteg = 4;
+      beskr = 'En gunga i fyra bilder, där bågen visar hur långt den svänger. 1: gungan har just vänt längst bak, och den får en liten knuff framåt, i rörelsens riktning (pilen). 2: gungan svänger fram och tillbaka. ' +
+        '3: nästa gång den vänder längst bak får den en ny knuff i samma takt. 4: svängningarna har blivit mycket större – bågarna växer för varje bild.';
+    } else if (lage === 'stamgafflar') {
+      // II B2: två likadana stämgafflar på var sin låda, två rader. Överst: den vänstra slås an och svänger, ljudvågorna går
+      // åt höger. Underst: den vänstra hålls tyst, den högra svänger fast ingen har rört den.
+      const gaffel = (x, yT, svang, sida) => {
+        let g = `<rect class="fig-ljud-lada" x="${x - 34}" y="${yT + 56}" width="68" height="22" rx="2"/><rect class="fig-ljud-ladhal" x="${x - 14}" y="${yT + 63}" width="28" height="8" rx="4"/>`;
+        g += `<path class="fig-ljud-gaffel" d="M${x - 7} ${yT} L${x - 7} ${yT + 38} Q${x - 7} ${yT + 46} ${x} ${yT + 46} Q${x + 7} ${yT + 46} ${x + 7} ${yT + 38} L${x + 7} ${yT} M${x} ${yT + 46} L${x} ${yT + 56}"/>`;
+        if (svang) [-1, 1].forEach(d => { [6, 12].forEach(r => { g += `<path class="fig-ljud-svang" d="M${f(x + d * (7 + r * 0.5))} ${yT + 4} Q${f(x + d * (7 + r))} ${yT + 20} ${f(x + d * (7 + r * 0.5))} ${yT + 36}"/>`; }); });
+        return `<g class="fig-ljud-stamgaffel" data-sida="${sida}" data-svanger="${svang ? 1 : 0}" data-bredd="14" data-hojd="46" data-lada="68">${g}</g>`; };
+      const fronter = (x0, n, d, yc) => { let g = ''; for (let k = 0; k < n; k++) { const x = x0 + d * k * 22; g += `<path class="fig-ljud-front" d="M${f(x)} ${yc - 18} Q${f(x + d * 8)} ${yc} ${f(x)} ${yc + 18}"/>`; } return g; };
+      const xV = 70, xH = 252, T0 = 44, T1 = 186;
+      s += gaffel(xV, T0, true, 'vanster') + gaffel(xH, T0, false, 'hoger');
+      s += `<g class="fig-ljud-klubba"><line x1="${xV + 44}" y1="${T0 - 14}" x2="${xV + 14}" y2="${T0 + 8}"/><rect x="${xV + 6}" y="${T0 + 2}" width="14" height="10" rx="3" transform="rotate(-36 ${xV + 13} ${T0 + 7})"/></g>`;
+      s += `<g class="fig-ljud-vagor" data-rad="1">${fronter(xV + 44, 6, 1, T0 + 22)}${riktPil(xV + 60, T0 + 52, xH - 50, T0 + 52, '', 'data-vagen="hoger"')}</g>`;
+      s += borjaHar(8, 20, 'fig-vanster') + steg(1, 112, 15, ['den vänstra slås an']) + steg(2, xH + 54, T0 + 24, ['ljudvågorna', 'når den högra']);
+      s += `<line class="fig-ljud-skilje" x1="8" y1="${T1 - 38}" x2="432" y2="${T1 - 38}"/>`;
+      s += gaffel(xV, T1, false, 'vanster') + gaffel(xH, T1, true, 'hoger');
+      s += `<rect class="fig-ljud-hand" data-del="handen" x="${xV - 13}" y="${T1 + 6}" width="26" height="24" rx="9"/>`;
+      s += `<g class="fig-ljud-vagor" data-rad="2">${fronter(xH - 40, 3, -1, T1 + 22)}</g>`;
+      s += steg(3, xV + 52, T1 - 18, ['den vänstra hålls tyst']) + steg(4, xH + 82, T1 + 6, ['den högra', 'svänger', 'och låter']);
+      H = T1 + 78 + 12; nSteg = 4;
+      beskr = 'Två likadana stämgafflar på var sin låda, i två rader. 1: den vänstra slås an med en klubba och svänger. 2: ljudvågorna går genom luften och når den högra. ' +
+        '3: den vänstra hålls tyst med handen. 4: den högra svänger och låter, fast ingen har rört den.';
+    } else if (lage === 'stamgaffel-bord') {
+      // II B3: stämgaffeln i luften (svaga ljudvågor, liten amplitud) och med foten mot bordsskivan, som svänger med i
+      // samma takt och ger kraftigare ljudvågor från hela skivan (större amplitud, samma våglängd).
+      const gaffel = (x, yT) => `<path class="fig-ljud-gaffel" d="M${x - 7} ${yT} L${x - 7} ${yT + 38} Q${x - 7} ${yT + 46} ${x} ${yT + 46} Q${x + 7} ${yT + 46} ${x + 7} ${yT + 38} L${x + 7} ${yT} M${x} ${yT + 46} L${x} ${yT + 62}"/>` +
+        [-1, 1].map(d => `<path class="fig-ljud-svang" d="M${f(x + d * 10)} ${yT + 4} Q${f(x + d * 15)} ${yT + 20} ${f(x + d * 10)} ${yT + 36}"/>`).join('');
+      const lam = 34;
+      // vänster: i luften, handen håller i skaftet
+      s += gaffel(70, 92) + `<rect class="fig-ljud-hand" data-del="handen" x="58" y="${92 + 56}" width="24" height="26" rx="9"/>`;
+      s += `<g class="fig-ljud-ljud" data-ljud="svagt">${vagLinje(92, 196, 112, 5, lam, 92 + lam / 2)}</g>`;
+      s += borjaHar(8, 20, 'fig-vanster') + steg(1, 20, 44, ['i luften:', 'svaga ljudvågor']);
+      s += `<line class="fig-ljud-skilje" x1="212" y1="10" x2="212" y2="240"/>`;
+      // höger: foten mot bordsskivan
+      const yB = 174, xa = 226, xb = 434, xg = 262;
+      s += `<rect class="fig-ljud-bord" data-del="bordsskiva" x="${xa}" y="${yB}" width="${xb - xa}" height="10"/><rect class="fig-ljud-bord" x="${xa + 8}" y="${yB + 10}" width="8" height="14"/><rect class="fig-ljud-bord" x="${xb - 16}" y="${yB + 10}" width="8" height="14"/>`;
+      s += gaffel(xg, yB - 62);
+      [0.3, 0.55, 0.8].forEach(t => { const x = xa + t * (xb - xa); s += `<path class="fig-ljud-svang" d="M${f(x - 22)} ${yB + 14} Q${f(x)} ${yB + 22} ${f(x + 22)} ${yB + 14}"/>`; });
+      s += `<g class="fig-ljud-ljud" data-ljud="starkt">${vagLinje(xa + 4, xb - 4, 86, 16, lam, xa + 4 + lam / 2)}</g>`;
+      s += steg(4, 230, 26, ['kraftigare ljudvågor', 'från hela skivan']);
+      s += steg(2, 300, 128, ['foten mot', 'bordsskivan']);
+      s += steg(3, 250, yB + 42, ['skivan svänger med', 'i samma takt']);
+      H = yB + 42 + 6.5 + LRAD + 12; nSteg = 4;
+      beskr = 'Till vänster: 1: stämgaffeln slås an och hålls i luften – svaga ljudvågor med liten amplitud. Till höger: 2: stämgaffelns fot sätts mot bordsskivan. 3: bordsskivan svänger med i samma takt. ' +
+        '4: kraftigare ljudvågor sprids från hela bordsskivan – större amplitud men samma våglängd, så tonen är densamma.';
+    } else if (lage === 'flaskor') {
+      // II B4: tre likadana flaskor med olika mycket vatten; luften ovanför vattnet markerad (data-luft, data-vatten i
+      // enheter av flaskans höjd). Mycket luft – låg ton, lite luft – hög ton.
+      struktur = true;
+      const yT = 34, yN = 64, yB = 196, w = 64, hk = yB - yN;
+      [[80, 0.25, ['mycket luft –', 'låg ton']], [220, 0.5, ['mindre luft –', 'mellanton']], [360, 0.75, ['lite luft –', 'hög ton']]].forEach(([x, v, t], i) => {
+        const yV = yB - v * hk, form = `M${x - 9} ${yT} L${x - 9} ${yN - 8} Q${x - w / 2} ${yN - 4} ${x - w / 2} ${yN + 14} L${x - w / 2} ${yB - 6} Q${x - w / 2} ${yB} ${x - w / 2 + 6} ${yB} L${x + w / 2 - 6} ${yB} Q${x + w / 2} ${yB} ${x + w / 2} ${yB - 6} L${x + w / 2} ${yN + 14} Q${x + w / 2} ${yN - 4} ${x + 9} ${yN - 8} L${x + 9} ${yT} Z`;
+        // luften: hela flaskans insida, vattnet ovanpå den nedifrån (raka väggar där vattnet står)
+        let g = `<path class="fig-ljud-luftpelare" data-del="luft" data-hojd="${f(yV - yT)}" d="${form}"/>`;
+        g += `<rect class="fig-ljud-vatten" data-del="vatten" data-hojd="${f(yB - yV)}" x="${x - w / 2 + 1}" y="${f(yV)}" width="${w - 2}" height="${f(yB - yV - 1)}" rx="5"/><line class="fig-ljud-yta" x1="${x - w / 2 + 1}" y1="${f(yV)}" x2="${x + w / 2 - 1}" y2="${f(yV)}"/>`;
+        g += `<path class="fig-ljud-flaska" d="${form}"/>`;
+        g += LT(x, yV - 10, 'luft', 'fig-mitt fig-halo');
+        s += `<g class="fig-ljud-flaskan" data-nr="${i + 1}" data-vatten="${v}" data-ton="${['lag', 'mellan', 'hog'][i]}">${g}</g>` + rader(x, yB + 28, t, 'fig-mitt');
+      });
+      H = yB + 28 + LRAD + 12;
+      beskr = 'Tre likadana flaskor bredvid varandra med olika mycket vatten. Luften ovanför vattnet är markerad. När man blåser över flaskan svänger luften: mycket luft ger låg ton, mindre luft en mellanton och lite luft hög ton.';
+    } else if (lage === 'vinglas') {
+      // II B5: vinglaset i fyra bilder. Glasets kant ritad uppifrån som en ring som deformeras mer och mer (data-e: hur
+      // mycket ringen är utdragen till en oval); den streckade cirkeln är kanten i vila. Ljudvågorna med egenfrekvensen
+      // kommer från vänster; i bild 4 spricker glaset.
+      const C = [55, 165, 275, 385], E = [0, 0.07, 0.15, 0.24], R = 24, yR = 48;
+      C.forEach((cx, i) => {
+        const e = E[i], pts = [];
+        for (let k = 0; k <= 72; k++) { const v = k / 72 * 2 * Math.PI, r = R * (1 + e * Math.cos(2 * v)); pts.push(f(cx + r * Math.cos(v)) + ',' + f(yR + r * Math.sin(v))); }
+        let g = `<circle class="fig-ljud-vila" cx="${cx}" cy="${yR}" r="${R}"/><polyline class="fig-ljud-kant" data-e="${e}" points="${pts.join(' ')}"/>`;
+        g += `<path class="fig-ljud-glas2" d="M${cx - 20} 92 Q${cx - 22} 130 ${cx} 136 Q${cx + 22} 130 ${cx + 20} 92 Z M${cx} 136 L${cx} 160 M${cx - 14} 162 L${cx + 14} 162"/>`;
+        g += `<line class="fig-ljud-hjalp" x1="${cx}" y1="${yR + R + 4}" x2="${cx}" y2="88"/>`;
+        [0, 1].forEach(k => { const x = cx - 46 + k * 10; g += `<path class="fig-ljud-front" d="M${x} 98 Q${x + 6} 112 ${x} 126"/>`; });
+        if (i === 3) g += `<polyline class="fig-ljud-spricka" data-spricka="" points="${cx - 4},93 ${cx + 3},104 ${cx - 5},113 ${cx + 4},124 ${cx - 2},132"/><polyline class="fig-ljud-spricka" points="${cx + 3},104 ${cx + 13},110"/>`;
+        s += `<g class="fig-ljud-glaset" data-bild="${i + 1}" data-e="${e}">${g}</g>`;
+      });
+      const yS = 204;
+      s += borjaHar(55, yS - 20) + steg(1, 55, yS, ['tonen når', 'glaset'], 0);
+      s += steg(2, 165, yS, ['kanten börjar', 'svänga'], 0) + steg(3, 275, yS, ['svängningen', 'växer'], 0) + steg(4, 385, yS, ['glaset', 'spricker'], 0);
+      H = yS + 34 + LRAD + 12; nSteg = 4;
+      beskr = 'Ett vinglas i fyra bilder. Överst syns glasets kant uppifrån som en ring, och den streckade cirkeln är kanten i vila. 1: en ton med glasets egenfrekvens når glaset. 2: kanten börjar svänga och blir lite oval. ' +
+        '3: svängningen växer för varje våg, och ringen deformeras mer. 4: utslaget blir så stort att glaset spricker.';
+    } else if (lage === 'eko-berg') {
+      // II C1: eko mot en bergvägg. Ropet går åt höger till väggen, ekot (streckat) tillbaka till personen; avståndet
+      // utmärkt (data-fran = personen, data-till = väggen), och att ljudet går fram och tillbaka.
+      const yG = 200, xP = 44, xV = 384;
+      s += `<line class="fig-bord" x1="8" y1="${yG}" x2="${xV}" y2="${yG}"/>` + gubbe(xP, yG);
+      s += `<path class="fig-ljud-berg" data-x="${xV}" d="M${xV} ${yG} L${xV} 150 L${xV - 4} 118 L${xV + 2} 84 L${xV - 3} 52 L${xV + 4} 24 L436 18 L436 ${yG} Z"/>`;
+      s += riktPil(xP + 26, 78, xV - 4, 78, 'fig-ljud-signal', 'data-vag="fram"') + riktPil(xV - 6, 156, xP + 30, 156, 'fig-ljud-eko', 'data-vag="tillbaka"');
+      [0, 1].forEach(k => { const x = 150 + k * 24; s += `<path class="fig-ljud-front" d="M${x} 60 Q${x + 8} 78 ${x} 96"/>`; });
+      [0, 1].forEach(k => { const x = 324 - k * 24; s += `<path class="fig-ljud-front fig-ljud-ekofront" d="M${x} 138 Q${x - 8} 156 ${x} 174"/>`; });
+      s += borjaHar(100, 22) + steg(1, 100, 46, ['ropet går mot berget']);
+      s += steg(2, xV - 22, 106, ['studsar mot', 'bergväggen'], -1);
+      s += steg(3, 90, 184, ['ekot färdas tillbaka']);
+      s += steg(4, 22, 112, ['hör ekot']);
+      const yM = yG + 18;
+      s += `<g class="fig-ljud-matt" data-matt="avstand" data-fran="${xP}" data-till="${xV}"><line class="fig-krock-matt" x1="${xP}" y1="${yM}" x2="${xV}" y2="${yM}"/>` +
+        `<line class="fig-krock-matt" x1="${xP}" y1="${yM - 5}" x2="${xP}" y2="${yM + 5}"/><line class="fig-krock-matt" x1="${xV}" y1="${yM - 5}" x2="${xV}" y2="${yM + 5}"/></g>`;
+      s += LT((xP + xV) / 2, yM + 26, 'avståndet till berget', 'fig-mitt') + LT((xP + xV) / 2, yM + 52, 'ljudet färdas dubbla avståndet: fram och tillbaka', 'fig-mitt');
+      H = yM + 52 + 12; nSteg = 4;
+      beskr = 'Eko mot en bergvägg. 1: en person ropar, och ljudvågen går mot berget. 2: ljudvågen träffar bergväggen och reflekteras. 3: ekot färdas tillbaka. 4: personen hör ekot. ' +
+        'Avståndet till berget är utmärkt under bilden: ljudet färdas dubbla avståndet, fram och tillbaka.';
+    } else if (lage === 'ekolod-botten') {
+      // II C2: ekolodet mäter djupet till botten; pulsen ned och ekot upp (som VI A7, men mot botten)
+      const yY = 64, yF = 222, xs = 100, xe = 124;
+      s += `<rect class="fig-ljud-vatten" x="0" y="${yY}" width="${B}" height="${yF - yY}"/><line class="fig-ljud-yta" x1="0" y1="${yY}" x2="${B}" y2="${yY}"/>`;
+      s += `<path class="fig-ljud-botten" data-y="${yF}" d="M0 ${yF} Q60 ${yF - 4} 120 ${yF} T240 ${yF} T360 ${yF} T440 ${yF} L440 ${yF + 22} L0 ${yF + 22} Z"/>`;
+      s += `<path class="fig-ljud-bat" d="M50 ${yY - 18} L176 ${yY - 18} L160 ${yY + 4} L66 ${yY + 4} Z"/><rect class="fig-ljud-hytt" x="84" y="${yY - 36}" width="44" height="18"/>`;
+      s += `<g class="fig-ljud-klocka"><circle cx="150" cy="${yY - 32}" r="9"/><line x1="150" y1="${yY - 32}" x2="150" y2="${yY - 38}"/><line x1="150" y1="${yY - 32}" x2="155" y2="${yY - 30}"/><rect x="147" y="${yY - 45}" width="6" height="3"/></g>`;
+      s += riktPil(xs, yY + 8, xs, yF - 4, 'fig-ljud-signal', 'data-vag="ned"') + riktPil(xe, yF - 4, xe, yY + 8, 'fig-ljud-eko', 'data-vag="upp"');
+      [0.3, 0.55].forEach(t => { const y = yY + 8 + t * (yF - 12 - yY); s += `<path class="fig-ljud-front" d="M${xs - 9} ${f(y)} Q${xs} ${f(y + 6)} ${xs + 9} ${f(y)}"/>`; });
+      s += borjaHar(214, 22, 'fig-vanster') + steg(1, 200, 48, ['ljudpulsen skickas ned,', 'klockan startar']);
+      s += steg(4, 200, 104, ['ekolodet tar emot ekot,', 'klockan stoppar']);
+      s += steg(3, 200, 160, ['ekot studsar tillbaka']);
+      s += steg(2, 200, yF - 22, ['pulsen når botten']);
+      s += steg(5, 20, yF + 52, ['sträckan ned och upp delas med 2']);
+      H = yF + 52 + 16; nSteg = 5;
+      beskr = 'En båt med ett ekolod. 1: ekolodet skickar en ljudpuls nedåt, och klockan startar. 2: pulsen når botten. 3: ekot studsar tillbaka uppåt. 4: ekolodet tar emot ekot, och klockan stoppar. ' +
+        '5: ljudet har gått både ned och upp, så sträckan delas med 2 för att få djupet.';
+    } else if (lage === 'doppler-centrum') {
+      // II C3: överst står ambulansen still – cirklarna har samma centrum. Underst kör den åt höger: varje cirkel har sitt
+      // centrum där ambulansen var när den förtätningen sändes ut (data-cx = ambulansens läge då, data-alder), så att
+      // cirklarna ligger tätare framför och glesare bakom.
+      struktur = true;
+      const c = 11, u = 5.5, n = 4;
+      const panel = (xn, yc, yG, v, titel, ty) => {
+        let g = fet(8, ty, titel);
+        for (let a = 1; a <= n; a++) { const cx = xn - v * a; g += `<circle class="fig-ljud-front" data-alder="${a}" data-cx="${f(cx)}" cx="${f(cx)}" cy="${yc}" r="${c * a}"/>`; }
+        g += ambulans(xn, yc).replace('<g class="fig-ljud-ambulans"', `<g class="fig-ljud-ambulans" transform="translate(${xn} ${yc}) scale(.55) translate(${-xn} ${-yc})"`);
+        if (v) g += `<g class="fig-energi-rorelse" data-rorelse="bilen">${rorelsePil(xn + 36, yc - 30, xn + 72, yc - 30)}</g>`;
+        g += `<line class="fig-bord" x1="8" y1="${yG}" x2="432" y2="${yG}"/>` + gubbe(30, yG, 30) + gubbe(410, yG, 30);
+        return g; };
+      s += `<g class="fig-ljud-dopplerpanel" data-v="0" data-x="220">${panel(220, 50, 88, 0, 'står still', 22)}</g>`;
+      s += `<line class="fig-ljud-skilje" x1="8" y1="100" x2="432" y2="100"/>`;
+      s += `<g class="fig-ljud-dopplerpanel" data-v="${u}" data-x="250">${panel(250, 150, 188, u, 'kör åt höger', 124)}</g>`;
+      s += `<g class="fig-ljud-etikett" data-sida="bakom">${LT(46, 168, 'mörkare ton', 'fig-vanster')}</g><g class="fig-ljud-etikett" data-sida="framfor">${LT(394, 168, 'ljusare ton', 'fig-hoger')}</g>`;
+      H = 200;
+      beskr = 'Dopplereffekten i två bilder. Överst står ambulansen still: ljudvågorna sprids som cirklar med samma centrum och samma avstånd åt alla håll, och personerna på båda sidorna hör samma ton. ' +
+        'Underst kör ambulansen åt höger. Varje cirkel har sitt centrum där ambulansen var när den förtätningen sändes ut, så cirklarna ligger tätare framför och glesare bakom. Personen framför hör en ljusare ton, personen bakom en mörkare.';
+    } else if (lage === 'ljudbang') {
+      // II C4: planet och ljudvågorna i fyra rutor. Varje cirkel sändes ut när planet var i cirkelns centrum (data-cx);
+      // data-v är planets fart i ljudets fart. 1: v < 1, vågorna sprids före planet; 2: v = 1, de packas ihop vid nosen;
+      // 3: v > 1, de hamnar bakom och bildar en kon (förenklad modell); 4: konen sveper över marken.
+      const k = 10, n = 3;
+      const ruta = (x0, y0, v, nr, txt) => {
+        const xn = x0 + 200, yc = y0 + 92;
+        let g = stegNr(nr, x0 + 14, y0 + 16) + txt.map((t, i) => `<text x="${x0 + 32}" y="${f(y0 + 22.5 + i * LRAD)}" class="fig-text fig-kast-text fig-vanster fig-steg-text fig-halo" data-steg-text="${nr}">${esc(t)}</text>`).join('');
+        for (let a = 1; a <= n; a++) { const cx = xn - v * k * a; g += `<circle class="fig-ljud-front" data-alder="${a}" data-cx="${f(cx)}" cx="${f(cx)}" cy="${yc}" r="${k * a}"/>`; }
+        if (v > 1) { const al = Math.asin(1 / v), Lk = 3 * v * k + 8; [-1, 1].forEach(sg => { g += `<line class="fig-ljud-kon" data-kon="${sg}" x1="${f(xn)}" y1="${yc}" x2="${f(xn - Lk * Math.cos(al))}" y2="${f(yc + sg * Lk * Math.sin(al))}"/>`; }); }
+        g += flygplan(xn, yc);
+        return `<g class="fig-ljud-bangruta" data-nr="${nr}" data-v="${v}" data-xn="${f(xn)}" data-yc="${yc}">${g}</g>`; };
+      s += borjaHar(8, 21, 'fig-vanster');
+      s += ruta(0, 26, 0.6, 1, ['långsammare än ljudet:', 'vågorna sprids', 'före planet']);
+      s += ruta(220, 26, 1, 2, ['lika fort som ljudet:', 'vågorna packas ihop']);
+      s += `<line class="fig-ljud-skilje" x1="214" y1="26" x2="214" y2="282"/><line class="fig-ljud-skilje" x1="8" y1="150" x2="432" y2="150"/>`;
+      s += ruta(0, 154, 1.6, 3, ['fortare än ljudet: en', 'kon (förenklad modell)']);
+      // ruta 4: konen sveper över marken – personen där konens undre linje når marken hör smällen
+      const x4 = 220, y4 = 154, xn4 = x4 + 204, yc4 = y4 + 80, yG4 = y4 + 126, al = Math.asin(1 / 1.6), dx = (yG4 - yc4) / Math.tan(al);
+      let g4 = stegNr(4, x4 + 14, y4 + 16) + ['konen sveper över', 'marken: en smäll'].map((t, i) => `<text x="${x4 + 32}" y="${f(y4 + 22.5 + i * LRAD)}" class="fig-text fig-kast-text fig-vanster fig-steg-text fig-halo" data-steg-text="4">${esc(t)}</text>`).join('');
+      g4 += `<line class="fig-bord" x1="${x4 + 10}" y1="${yG4}" x2="432" y2="${yG4}"/>`;
+      const Lo = (yc4 - y4 - 62) / Math.sin(al);
+      g4 += `<line class="fig-ljud-kon" data-kon="1" x1="${xn4}" y1="${yc4}" x2="${f(xn4 - dx)}" y2="${yG4}"/><line class="fig-ljud-kon" data-kon="-1" x1="${xn4}" y1="${yc4}" x2="${f(xn4 - Lo * Math.cos(al))}" y2="${f(yc4 - Lo * Math.sin(al))}"/>`;
+      g4 += flygplan(xn4, yc4) + gubbe(xn4 - dx, yG4, 30);
+      s += `<g class="fig-ljud-bangruta" data-nr="4" data-v="1.6" data-xn="${xn4}" data-yc="${yc4}" data-mark="${yG4}" data-traff="${f(xn4 - dx)}">${g4}</g>`;
+      H = 286; nSteg = 4;
+      beskr = 'Ett flygplan och ljudvågorna i fyra rutor; varje cirkel sändes ut där planet var då. 1: planet flyger långsammare än ljudet – vågorna sprids före planet. 2: planet flyger lika fort som ljudet – vågorna packas ihop framför nosen. ' +
+        '3: planet flyger fortare än ljudet – vågorna hamnar bakom och bildar en kon (en förenklad modell). 4: konen sveper över marken, och en person där hör en smäll.';
+    } else if (lage === 'decibel') {
+      // II D1: decibelskalan som lodräta staplar (data-db), alla i samma neutrala färg – inga riskfärger. Femton
+      // vardagsljud med namn i 19 enheter ryms inte i stigande ordning på bredden (varje namn behöver 27 enheter på höjden),
+      // så staplarna stiger mot 140 dB i mitten: de jämna värdena till vänster med namnet till vänster, de udda till höger
+      // med namnet till höger. Den lodräta axeln (dB) till vänster.
+      struktur = true;
+      const k = 1.4, yB = 236, s_ = 11, bw = 9, x8 = 266;
+      const V = [[0, 'hörtröskel'], [20, 'viskning'], [40, 'lugn villagata'], [60, 'vanligt samtal'], [80, 'tät trafik, skolmatsal'], [100, 'motorsåg'], [120, 'smärtgräns'], [140, 'gevärsskott'],
+        [130, 'jetplan på nära håll'], [110, 'rockkonsert'], [90, 'gräsklippare'], [70, 'dammsugare'], [50, 'regn'], [30, 'tyst sovrum'], [10, 'andning']];
+      const x0 = x8 - 8 * s_;
+      for (let d = 0; d <= 140; d += 20) { const y = yB - d * k;
+        s += `<line class="fig-ljud-rutlinje" x1="42" y1="${f(y)}" x2="436" y2="${f(y)}"/><line class="fig-ljud-tick" data-db="${d}" x1="38" y1="${f(y)}" x2="44" y2="${f(y)}"/>` + LT(34, y + 6, String(d), 'fig-hoger'); }
+      s += `<line class="fig-ljud-axel-linje" x1="42" y1="${yB}" x2="42" y2="${f(yB - 140 * k - 8)}"/>` + LT(50, f(yB - 140 * k + 4), 'dB', 'fig-vanster fig-ljud-axeltext');
+      V.forEach(([d, n], i) => { const x = x0 + i * s_, h = d * k, y = yB - h, vanster = i < 8;
+        s += `<rect class="fig-ljud-db" data-db="${d}" data-namn="${n}" x="${f(x)}" y="${f(y)}" width="${bw}" height="${f(Math.max(h, 0.01))}"/>`;
+        s += LT(vanster ? x - 4 : x + bw + 4, y + 6, n, (vanster ? 'fig-hoger' : 'fig-vanster') + ' fig-halo'); });
+      s += `<line class="fig-bord" x1="42" y1="${yB}" x2="436" y2="${yB}"/>`;
+      s += LT(232, yB + 34, 'nivåerna är ungefärliga och beror på avståndet', 'fig-mitt fig-ljus-skuggtext');
+      H = yB + 46;
+      beskr = 'Decibelskalan som lodräta staplar i samma neutrala färg, från 0 till 140 dB. Från vänster stiger staplarna i steg om 20 dB: 0 dB hörtröskel, 20 viskning, 40 lugn villagata, 60 vanligt samtal, 80 tät trafik och skolmatsal, ' +
+        '100 motorsåg, 120 smärtgräns och 140 dB gevärsskott i mitten. Till höger sjunker de: 130 jetplan på nära håll, 110 rockkonsert, 90 gräsklippare, 70 dammsugare, 50 regn, 30 tyst sovrum och 10 dB andning. ' +
+        'Nivåerna är ungefärliga och beror på avståndet.';
+    } else if (lage === 'exponering') {
+      // II D2: samma ljudexponering vid olika ljudnivåer – liggande staplar, var och en hälften så lång som den ovanför
+      // (data-db, data-min = tiden i minuter)
+      struktur = true;
+      const xa = 76, W8 = 280, R = [[85, 480, '8 timmar'], [88, 240, '4 timmar'], [91, 120, '2 timmar'], [94, 60, '1 timme'], [97, 30, '30 minuter'], [100, 15, '15 minuter']];
+      s += LT(220, 26, 'Samma ljudexponering vid olika ljudnivåer', 'fig-mitt fig-energi-ord');
+      R.forEach(([db, min, t], i) => { const y = 64 + i * 30, w = min / 480 * W8;
+        s += LT(xa - 10, y + 6, db + ' dB', 'fig-hoger') + `<rect class="fig-ljud-exponering" data-db="${db}" data-min="${min}" x="${xa}" y="${y - 9}" width="${f(w)}" height="18" rx="2"/>` + LT(xa + w + 8, y + 6, t, 'fig-vanster'); });
+      H = 64 + 5 * 30 + 26;
+      beskr = 'Samma ljudexponering vid olika ljudnivåer, som liggande staplar: 85 dB i 8 timmar, 88 dB i 4 timmar, 91 dB i 2 timmar, 94 dB i 1 timme, 97 dB i 30 minuter och 100 dB i 15 minuter. ' +
+        'För varje 3 dB högre nivå är tiden hälften så lång, och varje stapel är hälften så lång som den ovanför.';
+    } else if (lage === 'bullerbekampning') {
+      // II D3: bullerbekämpningens tre steg som tre rutor från vänster till höger: källa, väg, mottagare; ljudets väg
+      // som en pil under rutorna
+      struktur = true;
+      const R = [[8, 'källa', 'kalla'], [153, 'väg', 'vag'], [298, 'mottagare', 'mottagare']], w = 136, yT = 12, yB = 208;
+      R.forEach(([x, t, id]) => { s += `<g class="fig-ljud-steg3" data-del="${id}" data-x="${x}"><rect class="fig-ljud-ruta" x="${x}" y="${yT}" width="${w}" height="${yB - yT}" rx="8"/>${fet(x + w / 2, yT + 26, t, 'fig-mitt')}</g>`; });
+      // källa: bilen
+      const xb = 76, yb = 96;
+      s += `<g class="fig-ljud-bil2"><path class="fig-ljud-bil" d="M${xb - 44} ${yb} L${xb - 40} ${yb - 14} L${xb - 22} ${yb - 16} L${xb - 12} ${yb - 30} L${xb + 18} ${yb - 30} L${xb + 30} ${yb - 16} L${xb + 44} ${yb - 12} L${xb + 44} ${yb} Z"/>` +
+        `<circle class="fig-ljud-hjul" cx="${xb - 24}" cy="${yb + 2}" r="8"/><circle class="fig-ljud-hjul" cx="${xb + 24}" cy="${yb + 2}" r="8"/></g>`;
+      s += rader(xb, yb + 40, ['tystare däck,', 'lägre fart'], 'fig-mitt');
+      // väg: vägen, bullerplanket och huset bakom
+      const xv = 153;
+      s += `<rect class="fig-ljud-vagbana" x="${xv + 8}" y="${yb - 2}" width="44" height="10"/><rect class="fig-ljud-plank" data-del="bullerplank" x="${xv + 62}" y="${yb - 46}" width="12" height="54"/>`;
+      s += `<path class="fig-ljud-hus" d="M${xv + 90} ${yb + 8} L${xv + 90} ${yb - 18} L${xv + 108} ${yb - 34} L${xv + 126} ${yb - 18} L${xv + 126} ${yb + 8} Z"/>`;
+      s += rader(xv + w / 2, yb + 40, ['bullerplank', 'mellan väg', 'och hus'], 'fig-mitt');
+      // mottagare: huset med sovrummet på baksidan (bort från vägen, till höger) och en person med hörselkåpor
+      const xm = 298;
+      s += `<path class="fig-ljud-hus" d="M${xm + 14} ${yb + 8} L${xm + 14} ${yb - 24} L${xm + 46} ${yb - 50} L${xm + 78} ${yb - 24} L${xm + 78} ${yb + 8} Z"/>` +
+        `<rect class="fig-ljud-sovrum" data-del="sovrum" x="${xm + 48}" y="${yb - 20}" width="26" height="24"/><line class="fig-ljud-sang" x1="${xm + 52}" y1="${yb}" x2="${xm + 70}" y2="${yb}"/>`;
+      const xp = xm + 108, yp = yb - 26;
+      s += `<g class="fig-ljud-horselkapor"><circle class="fig-hopp-huvud" cx="${xp}" cy="${yp}" r="10"/><path class="fig-ljud-bygel" d="M${xp - 12} ${yp} Q${xp} ${yp - 22} ${xp + 12} ${yp}"/>` +
+        `<rect class="fig-ljud-kapa" x="${xp - 16}" y="${yp - 7}" width="7" height="14" rx="3"/><rect class="fig-ljud-kapa" x="${xp + 9}" y="${yp - 7}" width="7" height="14" rx="3"/><path class="fig-hopp-kropp" d="M${xp} ${yp + 10} L${xp} ${yp + 34}"/></g>`;
+      s += rader(xm + w / 2, yb + 40, ['sovrummet på', 'baksidan,', 'hörselkåpor'], 'fig-mitt');
+      s += riktPil(20, yB + 20, 424, yB + 20, 'fig-ljud-ljudvag', 'data-vagen="hoger"') + LT(220, yB + 46, 'ljudets väg', 'fig-mitt');
+      H = yB + 58;
+      beskr = 'Bullerbekämpningens tre steg som tre rutor med ljudets väg från vänster till höger. Källa: en bil – tystare däck och lägre fart. Väg: ett bullerplank mellan vägen och huset. ' +
+        'Mottagare: ett hus med sovrummet på baksidan, bort från vägen, och en person med hörselkåpor.';
+    } else if (lage === 'avstandslagen') {
+      // II D4: ljudkällan i mitten och två klot (cirklar) med radien r och 2r. Strålarna från källan genom den lilla
+      // rutans hörn på det inre klotet går till en dubbelt så bred ruta på det yttre – fyra lika stora rutor.
+      struktur = true;
+      const cx = 118, cy = 148, r1 = 52, r2 = 104, a = 22;
+      s += LT(8, 24, 'fri ljudutbredning, utan reflexer', 'fig-vanster fig-energi-ord');
+      s += `<circle class="fig-ljud-klot" data-r="${r1}" cx="${cx}" cy="${cy}" r="${r1}"/><circle class="fig-ljud-klot" data-r="${r2}" cx="${cx}" cy="${cy}" r="${r2}"/>`;
+      [-1, 1].forEach(sg => { s += `<line class="fig-ljud-stralgang" x1="${cx}" y1="${cy}" x2="${cx + r2}" y2="${cy + sg * a}"/>`; });
+      s += `<rect class="fig-ljud-yta-liten" data-sida="${a}" x="${cx + r1 - a / 4}" y="${cy - a / 2}" width="${a / 2}" height="${a}"/>`;
+      s += `<g class="fig-ljud-yta-stor" data-sida="${2 * a}" data-rutor="4"><rect x="${cx + r2 - a / 2}" y="${cy - a}" width="${a}" height="${2 * a}"/>` +
+        `<line x1="${cx + r2 - a / 2}" y1="${cy}" x2="${cx + r2 + a / 2}" y2="${cy}"/><line x1="${cx + r2}" y1="${cy - a}" x2="${cx + r2}" y2="${cy + a}"/></g>`;
+      s += `<circle class="fig-ljud-kalla" cx="${cx}" cy="${cy}" r="6"/>`;
+      s += `<line class="fig-ljud-radie" x1="${cx}" y1="${cy}" x2="${f(cx - r1 * 0.6)}" y2="${f(cy - r1 * 0.8)}"/>` + LT(cx - r1 * 0.3 - 10, cy - r1 * 0.4 - 4, 'r', 'fig-hoger fig-halo');
+      s += `<line class="fig-ljud-radie" x1="${cx}" y1="${cy}" x2="${f(cx - r2 * 0.6)}" y2="${f(cy + r2 * 0.8)}"/>` + LT(cx - r2 * 0.45 - 8, cy + r2 * 0.6 + 4, '2r', 'fig-hoger fig-halo');
+      s += rader(250, 104, ['dubbla avståndet –', 'fyra gånger större yta –', 'en fjärdedel av', 'intensiteten –', 'cirka 6 dB lägre'], 'fig-vanster');
+      H = cy + r2 + 14;
+      beskr = 'En ljudkälla i mitten och två klot runt den, ett på avståndet r och ett på avståndet 2r, med fri ljudutbredning utan reflexer. Samma ljud som går genom en liten ruta på det inre klotet sprids ut över fyra lika stora rutor på det yttre. ' +
+        'Dubbla avståndet ger fyra gånger större yta, en fjärdedel av intensiteten och cirka 6 dB lägre ljudnivå.';
+    } else if (lage === 'audiogram') {
+      // II D5: audiogram – frekvensen 125–8 000 Hz på den vågräta axeln (oktaver, lika avstånd), hörtröskeln i dB HL på den
+      // lodräta med 0 överst och större värden nedåt. Tre kurvor (data-hz, data-db i punkterna).
+      struktur = true;
+      const hz = [125, 250, 500, 1000, 2000, 4000, 8000], xa = 74, dx = 54, X = i => xa + i * dx, yo = 76, ky = 2, Y = db => yo + db * ky;
+      s += LT(xa + 3 * dx, 26, 'frekvens (Hz)', 'fig-mitt fig-ljud-axeltext');
+      hz.forEach((h, i) => { s += `<line class="fig-ljud-rutlinje" x1="${X(i)}" y1="${yo}" x2="${X(i)}" y2="${f(Y(80))}"/>` + LT(X(i), yo - 22, String(h).replace(/(\d)(\d{3})$/, '$1 $2'), 'fig-mitt'); });
+      [0, 20, 40, 60, 80].forEach(d => { s += `<line class="fig-ljud-rutlinje" x1="${xa}" y1="${f(Y(d))}" x2="${X(6)}" y2="${f(Y(d))}"/><line class="fig-ljud-tick" data-db="${d}" x1="${xa - 5}" y1="${f(Y(d))}" x2="${xa}" y2="${f(Y(d))}"/>` + LT(xa - 9, Y(d) + 6, String(d), 'fig-hoger'); });
+      s += `<g class="fig-ljud-axel" data-axel="dB HL" data-noll-overst=""><line x1="${xa}" y1="${yo}" x2="${xa}" y2="${f(Y(80) + 8)}"/><polygon points="${xa},${f(Y(80) + 16)} ${xa - 5},${f(Y(80) + 5)} ${xa + 5},${f(Y(80) + 5)}"/></g>`;
+      s += LT(8, f(Y(80) + 38), 'hörtröskel (dB HL)', 'fig-vanster fig-ljud-axeltext');
+      const K = [['normal', 'normal hörsel', [5, 5, 0, 5, 5, 10, 10]], ['buller', 'bullerskada', [10, 10, 10, 15, 30, 55, 30]], ['alder', 'åldersnedsättning', [10, 10, 15, 20, 35, 50, 65]]];
+      K.forEach(([id, n, d]) => { s += `<g class="fig-ljud-kurva" data-kurva="${id}"><polyline points="${d.map((v, i) => X(i) + ',' + f(Y(v))).join(' ')}"/>` +
+        d.map((v, i) => `<circle data-hz="${hz[i]}" data-db="${v}" cx="${X(i)}" cy="${f(Y(v))}" r="3.6"/>`).join('') + '</g>'; });
+      s += LT(X(5) + 27, Y(10) + 24, 'normal hörsel', 'fig-mitt fig-halo fig-ljud-kurvnamn') + LT(X(5) - 10, Y(55) + 16, 'bullerskada', 'fig-hoger fig-halo fig-ljud-kurvnamn') + LT(X(6), Y(65) + 26, 'åldersnedsättning', 'fig-hoger fig-halo fig-ljud-kurvnamn');
+      H = Y(80) + 48;
+      beskr = 'Ett audiogram med frekvensen från 125 till 8 000 Hz på den vågräta axeln och hörtröskeln i dB HL på den lodräta, med 0 dB HL överst och större värden nedåt – längre ned betyder sämre hörsel. ' +
+        'Tre kurvor: normal hörsel ligger nära 0 dB HL hela vägen. Bullerskadan har en dipp vid 4 000 Hz och är bättre igen vid 8 000 Hz. Åldersnedsättningen blir gradvis sämre mot de höga frekvenserna.';
     } else fel('ljud: okänt läge ”' + lage + '”');
     return { svg: ljudSvg(B, H, s, 'ljud', lage, nSteg, struktur), beskrivning: d.beskrivning || beskr };
   });
