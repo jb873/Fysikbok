@@ -19,12 +19,14 @@ Bok.delkapitel({
   // Föreläsning och musikvideo per text (2026-11-11): hjalpmedel i texten går före avsnittssidans. YouTube med
   // inbäddningsadressen (youtube-nocookie.com/embed/<id>); motorn lägger till ?embed=1, som YouTube inte bryr sig om.
   texter: [
-    { id: 'resulterande-kraft', titel: 'Resulterande kraft' },
+    { id: 'resulterande-kraft', titel: 'Resulterande kraft',
+      hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/UMEFG16GsKQ' } } },    // youtu.be/UMEFG16GsKQ (Resultanten)
     { id: 'fritt-fall', titel: 'Fritt fall',
       hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/9Pf7AWzPKds' },   // youtu.be/9Pf7AWzPKds
                     musikvideo: { href: 'https://www.youtube-nocookie.com/embed/jNTgCvWn1Qs' } } },   // youtu.be/jNTgCvWn1Qs
     { id: 'kastrorelse', titel: 'Kaströrelse' },
-    { id: 'tyngdpunkt-och-balans', titel: 'Tyngdpunkt, balans och kroppen' }
+    { id: 'tyngdpunkt-och-balans', titel: 'Tyngdpunkt, balans och kroppen',
+      hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/UaTbUaJbMOs' } } }     // youtu.be/UaTbUaJbMOs (Tyngdpunkten)
   ],
 
   // Djupdykningar under "Vill du veta mer?" (arbetsorder 19, 2026-11-12): de fyra till IV, en bok var i

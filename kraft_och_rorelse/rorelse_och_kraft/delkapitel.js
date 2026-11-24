@@ -19,7 +19,8 @@ Bok.delkapitel({
   // (youtube-nocookie.com/embed/<id>), som i IV.
   texter: [
     { id: 'rorelse', titel: 'Rörelse',
-      hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/2-9WMlqhLdQ' } } },    // youtu.be/2-9WMlqhLdQ (Rörelse och tröghetslagen)
+      hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/2-9WMlqhLdQ' },      // youtu.be/2-9WMlqhLdQ (Rörelse och tröghetslagen)
+                    musikvideo: { href: 'https://www.youtube-nocookie.com/embed/JgJQb66nHXg' } } },   // youtu.be/JgJQb66nHXg (Rörelse och kraft)
     { id: 'kraft-och-friktion', titel: 'Kraft och friktion',
       hjalpmedel: { forelasning: { href: 'https://www.youtube-nocookie.com/embed/Xj8Vcmmm0n0' },      // youtu.be/Xj8Vcmmm0n0 (Kraft och friktion)
                     musikvideo: { href: 'https://www.youtube-nocookie.com/embed/Ym4e-c0AKj8' } } },   // youtu.be/Ym4e-c0AKj8 (Friktion)

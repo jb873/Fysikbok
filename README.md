@@ -1812,3 +1812,10 @@ för uppgiftens bild.
     är standarden för nya böcker.
   - Grinden: sorten i rundan för fristående böcker, omslagsprovet läser sortens överrad (förut fast "NÄSTA STEG"), och
     djupdykningsblocket utesluter sorten. Provboken har en repetitionsbok (`innehall/repetition/prov.js`).
+- **2026-11-24, arbetsorder 37: musikvideor i kapitlet Kraft och rörelse.** I `texter[].hjalpmedel.musikvideo` i
+  `delkapitel.js`, YouTube med inbäddningsadressen (utan `?si=`), som Fritt fall och Friktion: III A Rörelse (Rörelse och
+  kraft), IV A Resulterande kraft (Resultanten), IV D Tyngdpunkt, balans och kroppen (Tyngdpunkten), V B Energi och
+  arbete (Energin finns kvar) och V D Maskiner och effekt (Det man vinner i kraft). Föreläsningarna är kvar.
+  - **V A Tryck** har tre videor i följd i spelaren: `embed/fhiCdH0cIAM?playlist=To0FtvgLKIU,4hpDGxSWUeU` (Tryck,
+    Hydraulik, Lyftkraft). Det finns ingen spellista på kanalen; YouTube bygger listan i spelaren av `playlist=`. Motorn
+    lägger till `&embed=1` när adressen redan har ett `?`, och grinden provar att ramen får just den adressen.

@@ -20,11 +20,19 @@ Bok.delkapitel({
   // kallor/kap3/V-C-Mekanisk-energi-alla-nivaer-v2.md, --text vc; till D: kallor/kap3/V-D-Maskiner-och-effekt-alla-nivaer-v3.md,
   // --text vd.
   // B och D bytte titel i arbetsorder 28 men behöll id och mapp (arbete-och-effekt, havstangen-och-enkla-maskiner).
+  // Musikvideor per text (arbetsorder 37, 2026-11-24): hjalpmedel i texten går före avsnittssidans. YouTube med
+  // inbäddningsadressen (youtube-nocookie.com/embed/<id>), som i III och IV. A har tre videor i följd i spelaren:
+  // embed/<id1>?playlist=<id2>,<id3> (ingen spellista på kanalen – YouTube bygger listan i spelaren); motorn lägger
+  // till &embed=1 när adressen redan har ett ?.
   texter: [
-    { id: 'tryck', titel: 'Tryck' },
-    { id: 'arbete-och-effekt', titel: 'Energi och arbete' },
+    { id: 'tryck', titel: 'Tryck',
+      // youtu.be/fhiCdH0cIAM (Tryck), youtu.be/To0FtvgLKIU (Hydraulik), youtu.be/4hpDGxSWUeU (Lyftkraft)
+      hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/fhiCdH0cIAM?playlist=To0FtvgLKIU,4hpDGxSWUeU' } } },
+    { id: 'arbete-och-effekt', titel: 'Energi och arbete',
+      hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/aK9ZnL9IC7s' } } },    // youtu.be/aK9ZnL9IC7s (Energin finns kvar)
     { id: 'mekanisk-energi', titel: 'Mekanisk energi' },
-    { id: 'havstangen-och-enkla-maskiner', titel: 'Maskiner och effekt' }
+    { id: 'havstangen-och-enkla-maskiner', titel: 'Maskiner och effekt',
+      hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/oWxHIVFGpCk' } } }     // youtu.be/oWxHIVFGpCk (Det man vinner i kraft)
   ],
 
   // Nivåerna är plattformens (📗 Enkel · 📘 Standard · 📕 Fördjupning).
