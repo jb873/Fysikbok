@@ -504,7 +504,7 @@ räkningen tror (fyllnaden skiljer cirka 1 %). Det ändrar inget här, men räkn
 | `bokref`, `boklank` | länkar till en annan bok, se *Fristående böcker* |
 | `vidare` | `lankar: [{text, bok, ankare}]`: rutan "Vill du gå vidare?" sist i en Fördjupningsbok (arbetsorder 13). Rubriken och inledningen ("Läs mer i Nästa steg – gymnasiets kraft och rörelse:") är motorns. Länkarna skrivs av `verktyg/vidare-rutor.js`, och kontrolläget prövar att varje länk går till ett avsnitts början med det numret och den titeln. En länk kan också gå till en annan sida, `{text, href}`, och rutan kan ha en egen `inledning` (arbetsorder 33: Repetitionen VI A → kapitel 2): `vidare-rutor.js` räknar fram texten ("Textens titel: N. Avsnittets titel") och adressen (`…/index.html?niva=…#text/avsnitt`) ur målsidans böcker och stoppar om målet inte finns. En länk i tabellen kan ha en egen sida, `[text, avsnitt, mapp]` (arbetsorder 34: VI A länkar till både avsnitt I och II i kapitel 2). |
 | `tabell` | `rubriker?`, `rader: [[...]]`, `fotnot?`. Första kolumnen är radrubrik. |
-| `uppgift` | en övning: `id`, `slag` (`tvaval`, `lucktext` eller `oppen`) och dess fält, se *Övningar* |
+| `uppgift` | en övning: `id`, `slag` (`kryss`, `lucktext`, `oppen`, `bild` eller `citat`) och dess fält, se *Övningar* |
 
 Ett block får ett eget `id` om det som eleven gör i det ska överleva att block flyttas (för interaktiva block senare).
 Utan eget id heter blocket `<avsnitt>-b<n>` (det n:te blocket), och läsplatsen sparas så. Rubrikernas adresser heter
@@ -943,27 +943,34 @@ sidnummer är vänstersidor (innehållsförteckningen är sida 1).
 ## Övningar (blocktypen `uppgift`)
 
 Arbetsorder 2026-11-23 (Samhällskunskap, *Inför slutprovet*), godkänd av Joachim. Det här är läsböckernas delade
-övningskomponent: den byggs här och kopieras byte för byte med resten av motorn. Den har tre slag för uppgifter och ett
-för uppgiftens bild.
+övningskomponent: den byggs här och kopieras byte för byte med resten av motorn. Den har tre slag för uppgifter
+(kolumn-kryss, lucktext och öppen) och två för det som hör till uppgiften (bilden och citatet).
 
 | `slag` | Fält | Eleven ser |
 |---|---|---|
-| `tvaval` | `kolumner: ['Ja', 'Nej']` (eller `['Stämmer', 'Stämmer inte']`), `rader: [{text, etikett?, svar: 0 \| 1}]`, `ogiltigSammaKolumn?` | två knappar per rad (ett klick till tar bort krysset), Rätta och Börja om |
+| `kryss` | kolumn-kryss: `kolumner: [2–3 namn]`, `rader: [{text, etikett?, svar: kolumnens index}]`, `ogiltigSammaKolumn?` – eller flera block, `delar: [{text?: [rader], kolumner, rader}]` | en knapp per kolumn och rad (ett klick till tar bort krysset), blockens text före deras rader, Rätta och Börja om |
 | `lucktext` | `ordbank: [...]`, `rader: [{fore, efter, svar: ['facit', 'godkänd variant', …]}]` | begreppen, ett skrivfält per mening, Rätta och Börja om |
 | `oppen` | `skrivmodell: [{rubrik, vad?, punkter: [{text, under?: [...]}]}]`, `prompt`, `platshallare`, `hjalp?`, `till?: {skrivmodell, svar}` | skrivmodellen, svarsrutan och knappen *Kopiera till AI-återkoppling*; med `till` börjar skrivmodellen och svarsrutan var sin sida av uppslaget (Samhälle: skrivmodellen till vänster, svarsrutan överst till höger) |
 | `bild` | `bild: {fil, bredd, hojd, beskrivning, kalla}` | uppgiftens bild (en karta, ett diagram) där den står i uppgiften, med källan under; `uppgiftsbild`, arbetsorder 2026-11-24 |
+| `citat` | `rader: [stycken]`, `kalla?` | en citerad ingång (ett påstående, en nyhetsnotis) där den står i uppgiften, med källan under; `uppgiftscitat`, arbetsorder 2026-11-24 |
 
 ```js
-{ typ: 'uppgift', id: 'sam-imm-u1', slag: 'tvaval', kolumner: ['Ja', 'Nej'],
+{ typ: 'uppgift', id: 'sam-imm-u1', slag: 'kryss', kolumner: ['Ja', 'Nej'],
   rader: [{ text: 'Att elever … får modersmålsundervisning …', svar: 0 }, …] }
+{ typ: 'uppgift', id: 'sam-np-sty-u2', slag: 'kryss', delar: [
+  { text: ['a) Markera med ett kryss vad som …'], kolumner: ['Demokrati', 'Diktatur'], rader: [{ etikett: '1.', text: '…', svar: 0 }, …] },
+  { text: ['b) Markera med kryss …'], kolumner: ['Monarki', 'Republik'], rader: […] }] }
 ```
 
 - **Id:t är nyckeln för elevens svar** – byt det aldrig. Raderna sparas som `<id>` (första raden), `<id>-r2`, `<id>-r3` …,
   eller med radens eget `id`; den öppna uppgiftens svar som `<id>`. Svaren sparas per elev (`localStorage`), rättningen inte.
 - **Rätta:** ✓ eller ✗ per rad och "7 av 9 rätt." (och "2 utan svar."). Facit visas aldrig, och inte heller någon nivå.
   Facit står i data, eftersom rättningen sker i webbläsaren: det är övningar, inte prov.
-- **Tvåvalet** följer NP: två kryss på samma rad går inte att sätta, och med `ogiltigSammaKolumn: true` säger Rätta att
-  uppgiften är ogiltig när alla kryss står i samma kolumn.
+- **Kolumn-krysset** (arbetsorder 2026-11-24, godkänt av Joachim) är den enda kryss-typen: Ja/Nej, Stämmer/Stämmer inte,
+  Stödjer/Stödjer inte, Demokrati/Diktatur/Varken, Monarki/Republik, Direkt/Representativ … Det ersätter tvåvalet
+  (`tvaval`), som inte finns längre. Ett kryss per rad, så två kryss på samma rad går inte att sätta. Med
+  `ogiltigSammaKolumn: true` (där NP säger det) säger Rätta att uppgiften är ogiltig när alla kryss står i samma kolumn.
+  Med flera block räknar Rätta alla block tillsammans. Med tre kolumner står knapparna på en egen rad under påståendet.
 - **Lucktexten** är generös: stora och små bokstäver, mellanslag och skiljetecken spelar ingen roll, och varje form i
   `svar` godkänns (till exempel bestämd form). Ett begrepp som står i en lucka tonas i begreppsrutan.
 - **Den öppna:** knappen kopierar `prompt` med elevens svar i stället för `platshallare` (utan svar står platshållaren
@@ -971,10 +978,10 @@ för uppgiftens bild.
   `hjalp` är en rad under knappen.
 - **Sidbrytningen:** de slutna blir en post per rad och Rätta, hållna ihop som en grupp (slag `uppgift`), som en
   punktlista: hela på en sida om de ryms, annars delade mellan två rader med minst två rader på varje sida, och Rätta
-  står med den sista raden. Lucktextens begrepp är en egen post före gruppen (på datorn på samma uppslag som meningarna,
+  står med den sista raden. Ett blocks text i kolumn-krysset står med blockets rader, aldrig sist på en sida. Lucktextens begrepp är en egen post före gruppen (på datorn på samma uppslag som meningarna,
   på mobilen ibland sidan före). Den öppna blir två poster: skrivmodellen och svarsrutan.
-- **Kontrolläget** säger till om en övning saknar `id`, om en rad i tvåvalet saknar facit (0 eller 1) eller kolumnerna
-  inte är två, om en lucka saknar facit eller facit inte står bland begreppen, om prompten saknar platshållaren, och
+- **Kontrolläget** säger till om en övning saknar `id`, om ett block i kolumn-krysset inte har två eller tre kolumner
+  eller en rad saknar facit bland dem, om ett citat saknar text, om en lucka saknar facit eller facit inte står bland begreppen, om prompten saknar platshållaren, och
   om en sida har en ensam rad ur en delad övning ("övningen har bara en rad på sidan").
 - **Rättningen** är en ren funktion, `Bok.uppgiftRattning` (`rad`, `uppgift`, `text`), för grinden och för prov.
 - **Uppgiftens bild** (`slag: 'bild'`, blocktypen `uppgiftsbild`, arbetsorder 2026-11-24) är en del av uppgiften,
@@ -984,6 +991,8 @@ för uppgiftens bild.
   brytning som eleven får. Den är högst 45 % av sidhöjden, som fotona. `fil` är räknad från avsnittssidan
   (`bilder/…`). Kontrolläget säger till om fil, mått, beskrivning eller källa saknas; en bild som inte finns anmäls när
   den laddas. Återanvändbar för alla ämnens NP-uppgifter.
+- **Uppgiftens citat** (`slag: 'citat'`, blocktypen `uppgiftscitat`, arbetsorder 2026-11-24) är en del av uppgiften,
+  som bilden: den citerade ingången där den står i uppgiften, med en källrad under (`kalla`).
 - **Stilen** står i `bok.css` (klasserna `upg-*`) med motorns färgvariabler, så att varje bok får sin accent; rätt och
   fel i plattformens bas-palett (land `#5e7a3e`, blood `#6e2e1e`).
 
@@ -1812,10 +1821,3 @@ för uppgiftens bild.
     är standarden för nya böcker.
   - Grinden: sorten i rundan för fristående böcker, omslagsprovet läser sortens överrad (förut fast "NÄSTA STEG"), och
     djupdykningsblocket utesluter sorten. Provboken har en repetitionsbok (`innehall/repetition/prov.js`).
-- **2026-11-24, arbetsorder 37: musikvideor i kapitlet Kraft och rörelse.** I `texter[].hjalpmedel.musikvideo` i
-  `delkapitel.js`, YouTube med inbäddningsadressen (utan `?si=`), som Fritt fall och Friktion: III A Rörelse (Rörelse och
-  kraft), IV A Resulterande kraft (Resultanten), IV D Tyngdpunkt, balans och kroppen (Tyngdpunkten), V B Energi och
-  arbete (Energin finns kvar) och V D Maskiner och effekt (Det man vinner i kraft). Föreläsningarna är kvar.
-  - **V A Tryck** har tre videor i följd i spelaren: `embed/fhiCdH0cIAM?playlist=To0FtvgLKIU,4hpDGxSWUeU` (Tryck,
-    Hydraulik, Lyftkraft). Det finns ingen spellista på kanalen; YouTube bygger listan i spelaren av `playlist=`. Motorn
-    lägger till `&embed=1` när adressen redan har ett `?`, och grinden provar att ramen får just den adressen.

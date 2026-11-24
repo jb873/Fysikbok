@@ -1088,6 +1088,15 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
 /* (uppgiftens bild: bredden ur sidhöjden och måtten – högst 45 % av sidhöjden, som fotona; höjden följer bredden) */
 .upg-bild img { display: block; margin: 0 auto; height: auto; width: min(100%, calc(var(--sh) * .45 * var(--kvot, 1))); }
 .upg-bild-kalla { margin-top: .25em; font-size: .8em; color: var(--dampad); }
+/* kolumn-kryss med tre kolumner: knapparna på en egen rad under påståendet, högerställda (de långa namnen ryms) */
+.upg-val.upg-tre { flex: 1 1 100%; flex-wrap: wrap; justify-content: flex-end; }
+/* ett blocks text i kolumn-krysset (delar[].text), och en citerad ingång (slag 'citat') */
+.upg-del { margin: .9em 0 .35em; }
+.upg-del p { margin: 0 0 .25em; }
+.upg-citat { margin: .4em 0 .8em; padding: .45em .9em; border-left: 3px solid var(--ruta-kant); background: var(--ruta-ton); }
+.upg-citat p { margin: 0 0 .35em; }
+.upg-citat p:last-child { margin-bottom: 0; }
+.upg-citat-kalla { font-size: .85em; color: var(--dampad); }
 
 /* ---------- Vänster- och högersidor: efterpasset (bok.js: uppslagsstyrning, väg 3, 2026-11-24) ----------
  * Utfyllnadssidan bär bara "Fortsätter på nästa sida", mitt på sidan. Samma rad längst ned på en högersida där

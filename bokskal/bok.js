@@ -327,9 +327,13 @@
   }));
 
   /* ---------- Övningar: {typ: 'uppgift'} (arbetsorder 2026-11-23, Samhällskunskap; delad läsebokskomponent) ----------
-   *   slag 'tvaval'    kolumner: [a, b], rader: [{text, etikett?, svar: 0 | 1}], ogiltigSammaKolumn?   (Ja/Nej, Stämmer/Stämmer inte)
+   *   slag 'kryss'     kolumn-kryss (arbetsorder 2026-11-24, ersätter tvåvalet): kolumner: [2–3 namn], rader: [{text, etikett?,
+   *                    svar: kolumnens index}], ogiltigSammaKolumn? – eller flera block med egna kolumner och en egen text
+   *                    före raderna: delar: [{text?: [rader], kolumner, rader}]. Ja/Nej, Stämmer/Stämmer inte, demokrati/
+   *                    diktatur/varken, monarki/republik … Ett kryss per rad. Rätta räknar alla block tillsammans.
    *   slag 'lucktext'  ordbank: [...], rader: [{fore, efter, svar: [godkända svar, …]}]
    *   slag 'oppen'     skrivmodell?: [{rubrik, vad?, punkter: [{text, under?: [...]}]}], prompt, platshallare, hjalp?
+   *   slag 'citat'     rader: [stycken], kalla?   en citerad ingång (ett påstående, en nyhetsnotis), där den står i uppgiften
    *   slag 'bild'      bild: {fil, bredd, hojd, beskrivning, kalla}   uppgiftens bild (kartan, diagrammet), där den står i
    *                    uppgiften – ingen figur: följer inte figurens uppslagsregel, och en bok med till får ha den
    *                    (arbetsorder 2026-11-24). Måtten i data: höjden är känd innan bilden laddats, så brytningen blir
@@ -342,12 +346,12 @@
   const normSvar = s => String(s == null ? '' : s).normalize('NFC').toLowerCase().replace(/[.,!?;:"”“'’()]/g, ' ').replace(/\s+/g, ' ').trim();
   const uppgiftRattning = {
     // en rad: 'ratt' | 'fel' | 'tomt' (lucktexten: stora och små bokstäver, mellanslag och skiljetecken spelar ingen roll)
-    rad: (d, svar) => d.slag === 'tvaval' ? (svar === 0 || svar === 1 ? (svar === d.svar ? 'ratt' : 'fel') : 'tomt')
+    rad: (d, svar) => d.slag === 'kryss' ? (Number.isInteger(svar) ? (svar === d.svar ? 'ratt' : 'fel') : 'tomt')
       : !normSvar(svar) ? 'tomt' : [].concat(d.svar).some(x => normSvar(x) === normSvar(svar)) ? 'ratt' : 'fel',
-    // en uppgift: status per rad, antalet rätt, och om tvåvalet är ogiltigt (som på NP: alla kryss i samma kolumn)
+    // en uppgift: status per rad, antalet rätt, och om kryssen är ogiltiga (som på NP: alla kryss i samma kolumn)
     uppgift(rader, svar, ogiltigSammaKolumn) {
       const status = rader.map((d, k) => uppgiftRattning.rad(d, svar[k]));
-      const givna = svar.filter(v => v === 0 || v === 1);
+      const givna = svar.filter(Number.isInteger);
       return { status, ratt: status.filter(s => s === 'ratt').length, tomma: status.filter(s => s === 'tomt').length, antal: rader.length,
         ogiltig: !!ogiltigSammaKolumn && givna.length > 1 && givna.every(v => v === givna[0]) };
     },
@@ -361,10 +365,10 @@
     return el;
   };
   const upgAndrad = g => { if (g.ordbank) g.ordbank(); if (g.nollstall) g.nollstall(); };
-  // en rad: tvåvalets två knappar (ett klick till på samma tar bort krysset) eller lucktextens fält
+  // en rad: kolumn-kryssets knappar, en per kolumn (ett klick till på samma tar bort krysset), eller lucktextens fält
   blocktyper.uppgiftsrad = (d, ctx) => {
     const g = d.grupp, mark = upgMarkering();
-    if (d.slag === 'tvaval') {
+    if (d.slag === 'kryss') {
       let val = ctx.hamta('svar', null);
       const knappar = d.kolumner.map((namn, i) => h('button', { type: 'button', class: 'upg-knapp', 'aria-pressed': String(val === i) }, namn));
       const visa = () => knappar.forEach((x, j) => x.setAttribute('aria-pressed', String(val === j)));
@@ -372,7 +376,7 @@
       g.rader[d.nr - 1] = { d, svar: () => val, markera: mark.satt, rensa: () => { val = null; visa(); ctx.spara('svar', null); mark.satt(null); } };
       return h('div', { class: 'upg-rad' + (d.sista ? ' upg-sista' : ''), role: 'group', 'aria-label': renText(`${d.etikett || d.nr + '.'} ${d.text}`) },
         d.etikett && h('span', { class: 'upg-etikett' }, d.etikett), h('span', { class: 'upg-text', html: inline(d.text) }),
-        h('span', { class: 'upg-val' }, knappar), mark);
+        h('span', { class: 'upg-val' + (d.kolumner.length > 2 ? ' upg-tre' : '') }, knappar), mark);
     }
     const falt = h('input', { type: 'text', class: 'upg-falt', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': `Lucka ${d.nr}` });
     falt.value = ctx.hamta('svar', '') || '';
@@ -392,6 +396,11 @@
     ctx.vidVisning(g.ordbank);
     return h('aside', { class: 'b-ruta upg-ordbank' }, h('h4', null, 'Begrepp'), h('div', { class: 'upg-orden' }, ord));
   };
+  // ett blocks text i kolumn-krysset (delar[].text): står med blockets rader
+  blocktyper.uppgiftsdel = d => h('div', { class: 'upg-del' }, d.text.map(t => h('p', { html: inline(t) })));
+  // en citerad ingång (slag 'citat'), med källan under
+  blocktyper.uppgiftscitat = d => h('blockquote', { class: 'upg-citat' }, d.rader.map(t => h('p', { html: inline(t) })),
+    d.kalla && h('p', { class: 'upg-citat-kalla', html: inline(d.kalla) }));
   blocktyper.uppgiftsratta = d => {
     const g = d.grupp, resultat = h('p', { class: 'upg-resultat', 'aria-live': 'polite' });
     const ratta = h('button', { type: 'button', class: 'upg-ratta-knapp' }, 'Rätta'), om = h('button', { type: 'button', class: 'upg-om' }, 'Börja om');
@@ -483,7 +492,9 @@
   const MED_UPPSLAG = ['figur', 'formel'];                          // uppslagsregeln: på samma uppslag som stycket (order 8, 11)
   // En övning (arbetsorder 2026-11-23) får delas före post k i sin grupp bara före en rad, och bara med minst två rader
   // före och två efter: Rätta följer den sista raden och räknas inte som en rad.
-  const upgDelbar = (rader, k) => !!rader[k].b.rad && rader.slice(0, k).filter(p => p.b.rad).length >= 2 && rader.slice(k).filter(p => p.b.rad).length >= 2;
+  // (kolumn-kryss med block: före ett blocks text får den också delas, men aldrig mellan texten och blockets första rad)
+  const upgDelbar = (rader, k) => (rader[k].b.rad ? !(rader[k - 1] && rader[k - 1].typ === 'uppgiftsdel') : rader[k].typ === 'uppgiftsdel') &&
+    rader.slice(0, k).filter(p => p.b.rad).length >= 2 && rader.slice(k).filter(p => p.b.rad).length >= 2;
   const INNEHALL = { id: 'innehall', titel: 'Innehåll', nummer: null };
 
   function normalisera(id, data, fil) {
@@ -520,18 +531,30 @@
           const ruta = { id: pid, slag: b.typ, antal: rader.length };
           rader.forEach((r, k) => poster.push(Object.assign(post({ typ: 'rutarad', slag: b.typ, ruta: pid, rad: k + 1, rubrik: b.rubrik,
             text: r.text, ny: r.ny, forsta: k === 0, sista: k === rader.length - 1, svar: b.typ === 'exempel' && /^Svar:/.test(r.text) }, `${pid}-r${k + 1}`), { ruta })));
-        } else if (b.typ === 'uppgift' && (b.slag === 'tvaval' || b.slag === 'lucktext') && Array.isArray(b.rader) && b.rader.length) {
+        } else if (b.typ === 'uppgift' && (b.slag === 'kryss' || b.slag === 'lucktext') &&
+          (b.slag === 'kryss' && Array.isArray(b.delar) ? b.delar.length : Array.isArray(b.rader) && b.rader.length)) {
           // En övning (arbetsorder 2026-11-23): en post per rad och Rätta, hållna ihop som en grupp (slag 'uppgift', som en
           // punktlista: se paginera och regelkoll). Lucktextens begrepp står före gruppen, en egen post (som en ruta): på
           // datorn på samma uppslag som meningarna, på mobilen ibland sidan före. Den första raden behåller blockets id,
           // de andra heter …-r2, …-r3 (eller radens eget id), och elevens svar sparas på dem.
+          // (kolumn-kryss med flera block, delar: varje blocks text är en egen post i gruppen, …-text1, …-text2; den står
+          // med blockets rader och aldrig sist på en sida, se upgDelbar. Raderna numreras genom alla block.)
           const grupp = { rader: [] }, delar = [];
           if (b.slag === 'lucktext') poster.push(post({ typ: 'uppgiftsord', ord: b.ordbank || [], grupp, uppgift: b }, `${pid}-begrepp`));
-          b.rader.forEach((r, k) => delar.push(Object.assign({}, r, { typ: 'uppgiftsrad', nr: k + 1, rad: true, kolumner: b.kolumner, sista: k === b.rader.length - 1 })));
+          const block = b.slag === 'kryss' && Array.isArray(b.delar) ? b.delar : [{ kolumner: b.kolumner, rader: b.rader }];
+          const alla = block.reduce((n, del) => n + (del.rader || []).length, 0);
+          let nr = 0, texter = 0;
+          block.forEach(del => {
+            if (del.text && [].concat(del.text).length) delar.push({ typ: 'uppgiftsdel', text: [].concat(del.text), n: ++texter });
+            (del.rader || []).forEach(r => { nr++; delar.push(Object.assign({}, r, { typ: 'uppgiftsrad', nr, rad: true, kolumner: del.kolumner, sista: nr === alla })); });
+          });
           delar.push({ typ: 'uppgiftsratta', ogiltigSammaKolumn: !!b.ogiltigSammaKolumn });
           const ruta = { id: pid, slag: 'uppgift', antal: delar.length, uppgift: b };
           delar.forEach((x, k) => poster.push(Object.assign(post(Object.assign(x, { slag: b.slag, grupp, uppgift: b }),
-            k === 0 ? pid : x.typ === 'uppgiftsrad' ? x.id || `${pid}-r${x.nr}` : `${pid}-ratta`), { ruta })));
+            k === 0 ? pid : x.typ === 'uppgiftsrad' ? x.id || `${pid}-r${x.nr}` : x.typ === 'uppgiftsdel' ? `${pid}-text${x.n}` : `${pid}-ratta`), { ruta })));
+        } else if (b.typ === 'uppgift' && b.slag === 'citat' && Array.isArray(b.rader) && b.rader.length) {
+          // En citerad ingång (arbetsorder 2026-11-24): en post där den står i uppgiften
+          poster.push(post({ typ: 'uppgiftscitat', rader: b.rader, kalla: b.kalla, uppgift: b }, pid));
         } else if (b.typ === 'uppgift' && b.slag === 'bild' && b.bild) {
           // Uppgiftens bild (arbetsorder 2026-11-24): en post där den står i uppgiften, som texten runt den
           poster.push(post({ typ: 'uppgiftsbild', bild: b.bild, uppgift: b }, pid));
@@ -1329,6 +1352,9 @@
         const vad = R.slag === 'uppgift' ? 'övningen' : 'punktlistan', raknas = R.slag === 'uppgift' ? p => p.b.rad : () => true;
         // (arbetsorder 31) minst två punkter på varje sida som listan står på
         sid.forEach(x => { if (ps.filter(p => r.postSida.get(p) === x && raknas(p)).length < 2) brott.push(`sida ${x.nr}: ${vad} har bara ${R.slag === 'uppgift' ? 'en rad' : 'en punkt'} på sidan`); });
+        // (kolumn-kryss med block: ett blocks text står aldrig sist på en sida, skild från sina rader)
+        if (R.slag === 'uppgift') sid.forEach(x => { const pa = ps.filter(p => r.postSida.get(p) === x);
+          if (pa.length && pa[pa.length - 1].typ === 'uppgiftsdel') brott.push(`sida ${x.nr}: ett blocks text i övningen står sist på sidan`); });
         let f = bok.poster.indexOf(ps[0]);
         while (f > 0 && RUBRIKER.includes(bok.poster[f - 1].typ)) f--;
         const efter = bok.poster.slice(bok.poster.indexOf(ps[ps.length - 1]) + 1).find(p => p.fot || iFlodet(p));
@@ -2124,14 +2150,21 @@
       if (!blocktyper[b.typ] && b.typ !== 'sidbrytning' && b.typ !== 'uppgift') ut.problem.push(`${kalla}: okänd blocktyp ”${b.typ}”`);
       if (b.typ === 'figur' && !figurer[b.namn]) ut.problem.push(`${kalla}: figuren ”${b.namn}” finns inte`);
       // en övning (arbetsorder 2026-11-23): ett id (elevens svar sparas på det), facit på varje rad, och prompten med platshållaren
-      if (b.typ === 'uppgift') ut.problem.push(`${kalla}: övningen ”${b.id || ''}” har ett okänt slag ”${b.slag}” (tvaval, lucktext, oppen eller bild) eller inga rader`);
+      if (b.typ === 'uppgift') ut.problem.push(`${kalla}: övningen ”${b.id || ''}” har ett okänt slag ”${b.slag}” (kryss, lucktext, oppen, bild eller citat) eller inga rader`);
       if (b.uppgift && bok.poster.find(x => x.b && x.b.uppgift === b.uppgift) === p) {
         const U = b.uppgift, namn = `${kalla}: övningen ”${U.id || '(utan id)'}”`;
         if (!U.id) ut.problem.push(`${namn} saknar id (elevens svar sparas på det)`);
-        if (U.slag === 'tvaval') {
-          if (!Array.isArray(U.kolumner) || U.kolumner.length !== 2) ut.problem.push(`${namn}: kolumner ska vara två namn, t.ex. ['Ja', 'Nej']`);
-          U.rader.forEach((x, k) => { if (x.svar !== 0 && x.svar !== 1) ut.problem.push(`${namn}: rad ${k + 1} saknar facit (svar: 0 eller 1)`); });
+        if (U.slag === 'kryss') {
+          // kolumn-kryss: varje block har 2–3 kolumner, och varje rad ett facit bland dem
+          let nr = 0;
+          (Array.isArray(U.delar) ? U.delar : [{ kolumner: U.kolumner, rader: U.rader }]).forEach((del, di) => {
+            const k = Array.isArray(del.kolumner) ? del.kolumner.length : 0;
+            if (k < 2 || k > 3) ut.problem.push(`${namn}${U.delar ? `, block ${di + 1}` : ''}: kolumner ska vara två eller tre namn, t.ex. ['Ja', 'Nej']`);
+            if (!Array.isArray(del.rader) || !del.rader.length) ut.problem.push(`${namn}${U.delar ? `, block ${di + 1}` : ''}: inga rader`);
+            (del.rader || []).forEach(x => { nr++; if (!(Number.isInteger(x.svar) && x.svar >= 0 && x.svar < k)) ut.problem.push(`${namn}: rad ${nr} saknar facit (svar: kolumnens index, 0–${Math.max(k - 1, 1)})`); });
+          });
         }
+        if (U.slag === 'citat' && !(Array.isArray(U.rader) && U.rader.every(t => typeof t === 'string' && t.trim()))) ut.problem.push(`${namn}: citatet saknar text`);
         if (U.slag === 'lucktext') U.rader.forEach((x, k) => {
           const s = [].concat(x.svar || []).filter(Boolean);
           if (!s.length) ut.problem.push(`${namn}: lucka ${k + 1} saknar facit`);
