@@ -326,6 +326,106 @@
       : h('span', { class: 'lank-post kommer', 'aria-disabled': 'true' }, namn, h('span', { class: 'kommer-chip' }, 'kommer'));
   }));
 
+  /* ---------- Övningar: {typ: 'uppgift'} (arbetsorder 2026-11-23, Samhällskunskap; delad läsebokskomponent) ----------
+   *   slag 'tvaval'    kolumner: [a, b], rader: [{text, etikett?, svar: 0 | 1}], ogiltigSammaKolumn?   (Ja/Nej, Stämmer/Stämmer inte)
+   *   slag 'lucktext'  ordbank: [...], rader: [{fore, efter, svar: [godkända svar, …]}]
+   *   slag 'oppen'     skrivmodell?: [{rubrik, vad?, punkter: [{text, under?: [...]}]}], prompt, platshallare, hjalp?
+   * De slutna delas i en post per rad (normalisera) och hålls ihop som en grupp, som en punktlista: hela på en sida om de
+   * ryms, annars delade mellan raderna med minst två rader på varje sida; Rätta följer den sista. Lucktextens begrepp
+   * står före gruppen. Eleven ser rätt eller fel per rad och antalet rätt – aldrig facit (det står i data, eftersom rättningen sker här).
+   * Svaren sparas per elev (ctx.spara), rättningen inte. Den öppna har skrivmodellen och en svarsruta: knappen kopierar
+   * prompten med elevens svar i stället för platshållaren. Id:t är nyckeln för elevens svar – byt det aldrig. */
+  const normSvar = s => String(s == null ? '' : s).normalize('NFC').toLowerCase().replace(/[.,!?;:"”“'’()]/g, ' ').replace(/\s+/g, ' ').trim();
+  const uppgiftRattning = {
+    // en rad: 'ratt' | 'fel' | 'tomt' (lucktexten: stora och små bokstäver, mellanslag och skiljetecken spelar ingen roll)
+    rad: (d, svar) => d.slag === 'tvaval' ? (svar === 0 || svar === 1 ? (svar === d.svar ? 'ratt' : 'fel') : 'tomt')
+      : !normSvar(svar) ? 'tomt' : [].concat(d.svar).some(x => normSvar(x) === normSvar(svar)) ? 'ratt' : 'fel',
+    // en uppgift: status per rad, antalet rätt, och om tvåvalet är ogiltigt (som på NP: alla kryss i samma kolumn)
+    uppgift(rader, svar, ogiltigSammaKolumn) {
+      const status = rader.map((d, k) => uppgiftRattning.rad(d, svar[k]));
+      const givna = svar.filter(v => v === 0 || v === 1);
+      return { status, ratt: status.filter(s => s === 'ratt').length, tomma: status.filter(s => s === 'tomt').length, antal: rader.length,
+        ogiltig: !!ogiltigSammaKolumn && givna.length > 1 && givna.every(v => v === givna[0]) };
+    },
+    text: (prompt, platshallare, svar) => String(svar || '').trim() ? prompt.replace(platshallare, () => String(svar).trim()) : prompt
+  };
+  const UPG_MARK = { ratt: ['✓', 'Rätt'], fel: ['✗', 'Fel'], tomt: ['–', 'Inget svar'] };
+  const upgMarkering = () => {
+    const el = h('span', { class: 'upg-markering' });
+    el.satt = s => { el.className = 'upg-markering' + (s ? ' ' + s : ''); el.textContent = s ? UPG_MARK[s][0] : '';
+      if (s) el.setAttribute('aria-label', UPG_MARK[s][1]); else el.removeAttribute('aria-label'); };
+    return el;
+  };
+  const upgAndrad = g => { if (g.ordbank) g.ordbank(); if (g.nollstall) g.nollstall(); };
+  // en rad: tvåvalets två knappar (ett klick till på samma tar bort krysset) eller lucktextens fält
+  blocktyper.uppgiftsrad = (d, ctx) => {
+    const g = d.grupp, mark = upgMarkering();
+    if (d.slag === 'tvaval') {
+      let val = ctx.hamta('svar', null);
+      const knappar = d.kolumner.map((namn, i) => h('button', { type: 'button', class: 'upg-knapp', 'aria-pressed': String(val === i) }, namn));
+      const visa = () => knappar.forEach((x, j) => x.setAttribute('aria-pressed', String(val === j)));
+      knappar.forEach((k, i) => k.addEventListener('click', () => { val = val === i ? null : i; visa(); ctx.spara('svar', val); mark.satt(null); upgAndrad(g); }));
+      g.rader[d.nr - 1] = { d, svar: () => val, markera: mark.satt, rensa: () => { val = null; visa(); ctx.spara('svar', null); mark.satt(null); } };
+      return h('div', { class: 'upg-rad' + (d.sista ? ' upg-sista' : ''), role: 'group', 'aria-label': renText(`${d.etikett || d.nr + '.'} ${d.text}`) },
+        d.etikett && h('span', { class: 'upg-etikett' }, d.etikett), h('span', { class: 'upg-text', html: inline(d.text) }),
+        h('span', { class: 'upg-val' }, knappar), mark);
+    }
+    const falt = h('input', { type: 'text', class: 'upg-falt', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': `Lucka ${d.nr}` });
+    falt.value = ctx.hamta('svar', '') || '';
+    falt.addEventListener('input', () => { ctx.spara('svar', falt.value); mark.satt(null); upgAndrad(g); });
+    g.rader[d.nr - 1] = { d, svar: () => falt.value, markera: mark.satt, rensa: () => { falt.value = ''; ctx.spara('svar', ''); mark.satt(null); } };
+    // mellanslag runt luckan som i källan ("ett ______."), men inte före ett skiljetecken
+    return h('p', { class: 'upg-lucka' }, h('span', { class: 'upg-nr' }, d.nr + '.'), ' ', d.fore && h('span', { html: inline(d.fore) }), d.fore && ' ', falt,
+      d.efter && !/^[.,!?;:]/.test(d.efter) && ' ', d.efter && h('span', { html: inline(d.efter) }), ' ', mark);
+  };
+  // lucktextens begrepp: ett begrepp som redan står i en lucka tonas
+  blocktyper.uppgiftsord = (d, ctx) => {
+    const g = d.grupp, ord = d.ord.map(o => h('span', { class: 'upg-ord' }, o));
+    g.ordbank = () => {
+      const givna = g.rader.filter(Boolean).map(r => normSvar(r.svar())).filter(Boolean);
+      ord.forEach((el, i) => { const o = normSvar(d.ord[i]); el.classList.toggle('anvant', givna.some(x => x === o || x.startsWith(o))); });
+    };
+    ctx.vidVisning(g.ordbank);
+    return h('aside', { class: 'b-ruta upg-ordbank' }, h('h4', null, 'Begrepp'), h('div', { class: 'upg-orden' }, ord));
+  };
+  blocktyper.uppgiftsratta = d => {
+    const g = d.grupp, resultat = h('p', { class: 'upg-resultat', 'aria-live': 'polite' });
+    const ratta = h('button', { type: 'button', class: 'upg-ratta-knapp' }, 'Rätta'), om = h('button', { type: 'button', class: 'upg-om' }, 'Börja om');
+    ratta.addEventListener('click', () => {
+      const rader = g.rader.filter(Boolean), r = uppgiftRattning.uppgift(rader.map(x => x.d), rader.map(x => x.svar()), d.ogiltigSammaKolumn);
+      if (r.ogiltig) { rader.forEach(x => x.markera(null)); resultat.textContent = 'Alla kryss står i samma kolumn. På provet räknas uppgiften då som ogiltig.'; return; }
+      rader.forEach((x, k) => x.markera(r.status[k]));
+      resultat.textContent = `${r.ratt} av ${r.antal} rätt.` + (r.tomma ? ` ${r.tomma} utan svar.` : '');
+    });
+    om.addEventListener('click', () => { g.rader.filter(Boolean).forEach(x => x.rensa()); upgAndrad(g); });
+    g.nollstall = () => { resultat.textContent = ''; };
+    return h('div', { class: 'upg-ratta' }, ratta, om, resultat);
+  };
+  blocktyper.uppgiftsmodell = d => {
+    const lista = p => h('ul', { class: 'b-punkter' }, p.map(x => h('li', null, h('span', { html: inline(x.text) }), x.under && x.under.length && lista(x.under.map(text => ({ text }))))));
+    return h('aside', { class: 'b-ruta upg-skrivmodell' }, h('h4', null, 'Skrivmodell'),
+      d.delar.map(del => [h('p', { class: 'upg-modell-del' }, h('strong', null, del.rubrik), del.vad ? ` (${del.vad})` : ''), lista(del.punkter)]));
+  };
+  blocktyper.uppgiftssvar = (d, ctx) => {
+    const fid = 'upg-svar-' + ctx.blockId, svar = h('textarea', { class: 'upg-svar', id: fid, rows: '7', spellcheck: 'true' });
+    svar.value = ctx.hamta('svar', '') || '';
+    svar.addEventListener('input', () => ctx.spara('svar', svar.value));
+    const kvitto = h('span', { class: 'upg-kopierat', 'aria-live': 'polite' }), knapp = h('button', { type: 'button', class: 'upg-kopiera' }, 'Kopiera till AI-återkoppling');
+    knapp.addEventListener('click', async () => {
+      const text = uppgiftRattning.text(d.prompt, d.platshallare, svar.value);
+      let ok = false;
+      try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+        const t = h('textarea', { style: 'position:fixed;top:0;left:0;opacity:0' }); t.value = text; document.body.append(t); t.select();
+        try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+        t.remove();
+      }
+      kvitto.textContent = ok ? 'Kopierat ✓' : 'Det gick inte att kopiera.'; kvitto.classList.toggle('fel', !ok);
+      setTimeout(() => { kvitto.textContent = ''; }, 2500);
+    });
+    return h('div', { class: 'upg-ai' }, h('label', { class: 'upg-ai-etikett', for: fid }, 'Ditt svar'), svar,
+      h('div', { class: 'upg-ai-rad' }, knapp, kvitto), d.hjalp && h('p', { class: 'upg-ai-hjalp', html: inline(d.hjalp) }));
+  };
+
   // Ett blocks element byggs en gång per bok och flyttas sedan mellan sidorna när de bryts om (nytt sidmått), så det
   // som eleven gör i ett block ligger kvar; hamta/spara behåller det också mellan lektionerna.
   function blockElement(p, bok) {
@@ -372,6 +472,9 @@
   const RAKNING = /^(?!\p{Lu})|^\S{1,15} [=≈<>≤≥]/u;
   const bundenRad = (p, fore) => !!p.b.svar || (!p.b.ny && (/:\s*$/.test(fore.b.text) || RAKNING.test(p.b.text)));
   const MED_UPPSLAG = ['figur', 'formel'];                          // uppslagsregeln: på samma uppslag som stycket (order 8, 11)
+  // En övning (arbetsorder 2026-11-23) får delas före post k i sin grupp bara före en rad, och bara med minst två rader
+  // före och två efter: Rätta följer den sista raden och räknas inte som en rad.
+  const upgDelbar = (rader, k) => !!rader[k].b.rad && rader.slice(0, k).filter(p => p.b.rad).length >= 2 && rader.slice(k).filter(p => p.b.rad).length >= 2;
   const INNEHALL = { id: 'innehall', titel: 'Innehåll', nummer: null };
 
   function normalisera(id, data, fil) {
@@ -408,6 +511,22 @@
           const ruta = { id: pid, slag: b.typ, antal: rader.length };
           rader.forEach((r, k) => poster.push(Object.assign(post({ typ: 'rutarad', slag: b.typ, ruta: pid, rad: k + 1, rubrik: b.rubrik,
             text: r.text, ny: r.ny, forsta: k === 0, sista: k === rader.length - 1, svar: b.typ === 'exempel' && /^Svar:/.test(r.text) }, `${pid}-r${k + 1}`), { ruta })));
+        } else if (b.typ === 'uppgift' && (b.slag === 'tvaval' || b.slag === 'lucktext') && Array.isArray(b.rader) && b.rader.length) {
+          // En övning (arbetsorder 2026-11-23): en post per rad och Rätta, hållna ihop som en grupp (slag 'uppgift', som en
+          // punktlista: se paginera och regelkoll). Lucktextens begrepp står före gruppen, en egen post (som en ruta): på
+          // datorn på samma uppslag som meningarna, på mobilen ibland sidan före. Den första raden behåller blockets id,
+          // de andra heter …-r2, …-r3 (eller radens eget id), och elevens svar sparas på dem.
+          const grupp = { rader: [] }, delar = [];
+          if (b.slag === 'lucktext') poster.push(post({ typ: 'uppgiftsord', ord: b.ordbank || [], grupp, uppgift: b }, `${pid}-begrepp`));
+          b.rader.forEach((r, k) => delar.push(Object.assign({}, r, { typ: 'uppgiftsrad', nr: k + 1, rad: true, kolumner: b.kolumner, sista: k === b.rader.length - 1 })));
+          delar.push({ typ: 'uppgiftsratta', ogiltigSammaKolumn: !!b.ogiltigSammaKolumn });
+          const ruta = { id: pid, slag: 'uppgift', antal: delar.length, uppgift: b };
+          delar.forEach((x, k) => poster.push(Object.assign(post(Object.assign(x, { slag: b.slag, grupp, uppgift: b }),
+            k === 0 ? pid : x.typ === 'uppgiftsrad' ? x.id || `${pid}-r${x.nr}` : `${pid}-ratta`), { ruta })));
+        } else if (b.typ === 'uppgift' && b.slag === 'oppen') {
+          // En öppen uppgift: skrivmodellen och svarsrutan, två poster (blockets id är svarsrutans – elevens svar)
+          if (Array.isArray(b.skrivmodell) && b.skrivmodell.length) poster.push(post({ typ: 'uppgiftsmodell', delar: b.skrivmodell, uppgift: b }, `${pid}-modell`));
+          poster.push(post(Object.assign({}, b, { typ: 'uppgiftssvar', uppgift: b }), pid));
         } else if (b.typ === 'punkter' && Array.isArray(b.punkter) && b.punkter.length > 1) {
           // En punktlista (arbetsorder 16, 2026-11-11): en post per punkt, hållna ihop som en grupp – listan står hel på
           // en sida om den ryms, och delas bara mellan två punkter om den är högre än sidan (IV C: Sammanfattningens
@@ -832,10 +951,12 @@
           // den sista raden (Svar) i samma grupp som raden före, så att den aldrig står ensam på en ny sida. Rubrikerna
           // före exemplet följer den första raden. Ett exempel som ryms står helt på en sida; en PROVA-ruta delas aldrig.
           // (En punktlista som inte ryms delas likadant, mellan punkterna, arbetsorder 16.)
-          if (u.ruta && (u.ruta.slag === 'exempel' || u.ruta.slag === 'punkter') && !u.radvis && hojd(u.poster) > kap(u.poster)) {
+          if (u.ruta && ['exempel', 'punkter', 'uppgift'].includes(u.ruta.slag) && !u.radvis && hojd(u.poster) > kap(u.poster)) {
             const f = u.poster.findIndex(p => p.ruta), l = u.poster.map(p => !!p.ruta).lastIndexOf(true), rader = u.poster.slice(f, l + 1), delar = [];
             // (en punktlista: också de två första punkterna ihop – minst två punkter på varje sida, arbetsorder 31)
-            rader.forEach((p, k) => { if ((k === rader.length - 1 || (k === 1 && u.ruta.slag === 'punkter')) && delar.length) delar[delar.length - 1].push(p); else delar.push([p]); });
+            // (en övning, arbetsorder 2026-11-23: bara där övningen får delas, se upgDelbar)
+            if (u.ruta.slag === 'uppgift') rader.forEach((p, k) => { if (k && !upgDelbar(rader, k)) delar[delar.length - 1].push(p); else delar.push([p]); });
+            else rader.forEach((p, k) => { if ((k === rader.length - 1 || (k === 1 && u.ruta.slag === 'punkter')) && delar.length) delar[delar.length - 1].push(p); else delar.push([p]); });
             delar[0].unshift(...u.poster.slice(0, f));
             delar[delar.length - 1].push(...u.poster.slice(l + 1));          // länken i foten, upphovet
             E.splice(i, 1, ...delar.map((ps, k) => Object.assign({}, u, { poster: ps, radvis: true, brytFore: k ? false : u.brytFore, rubrik: k ? false : u.rubrik, delVid: null })));
@@ -849,12 +970,12 @@
           // (Bara ett exempel i delaEx: en sida som står kvar tunn efter balansen, se nedan – annars packas allt som förut.)
           // (Rader i följd delas likadant, arbetsorder 21.)
           // (En punktlista likadant, arbetsorder 31: bara mellan två punkter, och minst två punkter på varje sida.)
-          if (u.ruta && ['exempel', 'rader', 'punkter'].includes(u.ruta.slag) && !u.radvis && !u.folj && s.enheter.length && !u.brytFore && delaEx.has(u.ruta.id) &&
+          if (u.ruta && ['exempel', 'rader', 'punkter', 'uppgift'].includes(u.ruta.slag) && !u.radvis && !u.folj && s.enheter.length && !u.brytFore && delaEx.has(u.ruta.id) &&
             hojd(s.poster.concat(u.poster)) > kap(s.poster.concat(u.poster)) && tunnUtan()) {
             const f = u.poster.findIndex(p => p.ruta), rader = u.poster.filter(p => p.ruta), lista = u.ruta.slag === 'punkter';
             let vid = -1;
             for (let k = 1; k < rader.length; k++) {
-              if (lista ? k < 2 || rader.length - k < 2 : bundenRad(rader[k], rader[k - 1])) continue;
+              if (u.ruta.slag === 'uppgift' ? !upgDelbar(rader, k) : lista ? k < 2 || rader.length - k < 2 : bundenRad(rader[k], rader[k - 1])) continue;
               const fore = s.poster.concat(u.poster.slice(0, f + k));
               if (hojd(fore) <= kap(fore)) vid = f + k; else break;
             }
@@ -984,7 +1105,7 @@
         // Enkel: "Örat och hörseln" började med en sida på 29 %, och listan med sex punkter stod hel på nästa.)
         if (!provaExempelHelt && varv < 6) for (let j = fran; j < sidor.length - 1; j++) {
           const t = sidor[j], n = sidor[j + 1], u = n.enheter[0];
-          if (t.sist || t.forFigur || n.avsnitt !== t.avsnitt || !u || !u.ruta || !['exempel', 'rader', 'punkter'].includes(u.ruta.slag) || u.radvis || u.brytFore || delaEx.has(u.ruta.id)) continue;
+          if (t.sist || t.forFigur || n.avsnitt !== t.avsnitt || !u || !u.ruta || !['exempel', 'rader', 'punkter', 'uppgift'].includes(u.ruta.slag) || u.radvis || u.brytFore || delaEx.has(u.ruta.id)) continue;
           if (provaListaHel && u.ruta.slag === 'punkter') continue;
           if (tunnSida(t)) { delaEx.add(u.ruta.id); nytt = true; }
         }
@@ -1119,9 +1240,11 @@
       if (R.slag === 'prova') { brott.push(`sida ${nrs}: PROVA-rutan är delad`); continue; }
       // en punktlista (arbetsorder 16) delas bara om den inte ryms på en sida
       // (som brytningen: med rubrikerna före listan, och med sidfotens plats om en fot följer listan)
-      if (R.slag === 'punkter') {
+      // (en övning, arbetsorder 2026-11-23: som en punktlista, men bara raderna räknas – Rätta är ingen rad)
+      if (R.slag === 'punkter' || R.slag === 'uppgift') {
+        const vad = R.slag === 'uppgift' ? 'övningen' : 'punktlistan', raknas = R.slag === 'uppgift' ? p => p.b.rad : () => true;
         // (arbetsorder 31) minst två punkter på varje sida som listan står på
-        sid.forEach(x => { if (ps.filter(p => r.postSida.get(p) === x).length < 2) brott.push(`sida ${x.nr}: punktlistan har bara en punkt på sidan`); });
+        sid.forEach(x => { if (ps.filter(p => r.postSida.get(p) === x && raknas(p)).length < 2) brott.push(`sida ${x.nr}: ${vad} har bara ${R.slag === 'uppgift' ? 'en rad' : 'en punkt'} på sidan`); });
         let f = bok.poster.indexOf(ps[0]);
         while (f > 0 && RUBRIKER.includes(bok.poster[f - 1].typ)) f--;
         const efter = bok.poster.slice(bok.poster.indexOf(ps[ps.length - 1]) + 1).find(p => p.fot || iFlodet(p));
@@ -1140,7 +1263,7 @@
           while (start > 0 && RUBRIKER.includes(fl[start - 1].typ)) start--;
           const innan = start > 0 ? r.matt.get(fl[start - 1]).bottom - r.matt.get(fl[0]).top : null;
           const allt = r.matt.get(slut).bottom - r.matt.get(fl[0]).top;
-          if (innan === null || !(innan < TUNN * r.kap || P.fyllFore < TUNN) || allt <= kapL) brott.push(`sida ${nrs}: punktlistan är delad, fast den ryms på en sida`);
+          if (innan === null || !(innan < TUNN * r.kap || P.fyllFore < TUNN) || allt <= kapL) brott.push(`sida ${nrs}: ${vad} är delad, fast den ryms på en sida`);
         }
         continue;
       }
@@ -1912,8 +2035,25 @@
     for (const p of bok.poster) {
       const b = p.b, kalla = `${bok.id}, ”${p.avsnitt.titel}”`;
       if (!b) continue;
-      if (!blocktyper[b.typ] && b.typ !== 'sidbrytning') ut.problem.push(`${kalla}: okänd blocktyp ”${b.typ}”`);
+      if (!blocktyper[b.typ] && b.typ !== 'sidbrytning' && b.typ !== 'uppgift') ut.problem.push(`${kalla}: okänd blocktyp ”${b.typ}”`);
       if (b.typ === 'figur' && !figurer[b.namn]) ut.problem.push(`${kalla}: figuren ”${b.namn}” finns inte`);
+      // en övning (arbetsorder 2026-11-23): ett id (elevens svar sparas på det), facit på varje rad, och prompten med platshållaren
+      if (b.typ === 'uppgift') ut.problem.push(`${kalla}: övningen ”${b.id || ''}” har ett okänt slag ”${b.slag}” (tvaval, lucktext eller oppen) eller inga rader`);
+      if (b.uppgift && bok.poster.find(x => x.b && x.b.uppgift === b.uppgift) === p) {
+        const U = b.uppgift, namn = `${kalla}: övningen ”${U.id || '(utan id)'}”`;
+        if (!U.id) ut.problem.push(`${namn} saknar id (elevens svar sparas på det)`);
+        if (U.slag === 'tvaval') {
+          if (!Array.isArray(U.kolumner) || U.kolumner.length !== 2) ut.problem.push(`${namn}: kolumner ska vara två namn, t.ex. ['Ja', 'Nej']`);
+          U.rader.forEach((x, k) => { if (x.svar !== 0 && x.svar !== 1) ut.problem.push(`${namn}: rad ${k + 1} saknar facit (svar: 0 eller 1)`); });
+        }
+        if (U.slag === 'lucktext') U.rader.forEach((x, k) => {
+          const s = [].concat(x.svar || []).filter(Boolean);
+          if (!s.length) ut.problem.push(`${namn}: lucka ${k + 1} saknar facit`);
+          else if (!(U.ordbank || []).some(o => normSvar(o) === normSvar(s[0]))) ut.problem.push(`${namn}: facit ”${s[0]}” i lucka ${k + 1} står inte bland begreppen`);
+        });
+        if (U.slag === 'oppen' && !(typeof U.prompt === 'string' && U.platshallare && U.prompt.includes(U.platshallare)))
+          ut.problem.push(`${namn}: prompten saknar platshållaren (platshallare), där elevens svar ska stå`);
+      }
       if (b.typ === 'lank') [].concat(b.till || []).filter(id => !ids.includes(id))
         .forEach(id => ut.problem.push(`${kalla}: länk till okänt hjälpmedel ”${id}”`));
       // en länk till en annan bok: boken finns på den här avsnittssidan, och avsnittet finns i den
@@ -2076,6 +2216,7 @@
       ['titel', 'illustration'].forEach(k => { if (!kapitel[k]) anmal(`kapitel.js: omslaget saknar ${k}`); });
     },
     blocktyp(namn, fn) { blocktyper[namn] = fn; },
+    uppgiftRattning,                                 // övningarnas rättning (ren funktion), för grinden
     figur(namn, fn) { figurer[namn] = fn; },
     illustration(namn, fn) { illustrationer[namn] = fn; },
     get sida() { return nr; },

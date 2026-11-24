@@ -1045,6 +1045,46 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
   .figur-bild .fig-paneler[data-paneler="jord_och_mane"] svg { flex: none; width: min(100%, 199px); }
 }
 
+/* ---------- Övningar: {typ: 'uppgift'} (bok.js, arbetsorder 2026-11-23) ----------
+ * Ämnets accent för valda knappar och Rätta; rätt och fel i plattformens bas-palett (land #5e7a3e, blood #6e2e1e). */
+.upg-rad { display: flex; flex-wrap: wrap; align-items: baseline; gap: .15em .6em; margin: 0 0 .45em; padding: .2em 0 .35em;
+  border-bottom: 1px solid var(--ruta-kant); }
+.upg-rad .upg-etikett { flex: none; min-width: 1.4em; font-weight: 600; }
+.upg-rad .upg-text { flex: 1 1 15em; }
+.upg-val { flex: none; display: inline-flex; gap: .35em; margin-left: auto; }
+.upg-knapp { font: inherit; font-size: .86em; line-height: 1.2; padding: .22em .7em; border-radius: 1em; cursor: pointer;
+  background: transparent; color: var(--black); border: 1px solid var(--ruta-kant); }
+.upg-knapp[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--papper-ljus); }
+.upg-knapp:focus-visible, .upg-falt:focus-visible, .upg-ratta button:focus-visible, .upg-svar:focus-visible, .upg-kopiera:focus-visible {
+  outline: 2px solid var(--fokus); outline-offset: 2px; }
+.upg-markering { flex: none; display: inline-block; min-width: 1.1em; text-align: center; font-weight: 700; }
+.upg-markering.ratt { color: #5e7a3e; }
+.upg-markering.fel { color: #6e2e1e; }
+.upg-markering.tomt { color: var(--dampad); }
+.upg-ordbank { margin: .3em 0 .8em; }
+.upg-orden { display: flex; flex-wrap: wrap; gap: .3em .45em; }
+.upg-ord { padding: .05em .55em; border-radius: .8em; border: 1px solid var(--ruta-kant); background: var(--papper-ljus); white-space: nowrap; }
+.upg-ord.anvant { opacity: .45; text-decoration: line-through; }
+.upg-lucka { margin: 0 0 .55em; }
+.upg-lucka .upg-nr { font-weight: 600; }
+.upg-falt { font: inherit; width: 11em; max-width: 100%; padding: 0 .2em; border: 0; border-bottom: 1.5px solid var(--accent);
+  background: var(--ruta-ton); color: var(--black); border-radius: .2em .2em 0 0; }
+.upg-ratta { display: flex; flex-wrap: wrap; align-items: center; gap: .5em .8em; margin: .7em 0 .4em; }
+.upg-ratta button, .upg-kopiera { font: inherit; cursor: pointer; border-radius: 1.2em; padding: .3em 1.1em; }
+.upg-ratta .upg-ratta-knapp, .upg-kopiera { background: var(--accent); color: var(--papper-ljus); border: 1px solid var(--accent); }
+.upg-ratta .upg-om { background: transparent; color: var(--dampad); border: 1px solid transparent; text-decoration: underline; padding: .3em .4em; }
+.upg-resultat { margin: 0; flex-basis: 100%; font-weight: 600; min-height: 1.4em; }
+.upg-skrivmodell .upg-modell-del { margin: .35em 0 .1em; }
+.upg-skrivmodell .b-punkter { margin-top: .1em; margin-bottom: .2em; }
+.upg-ai { margin: .7em 0 0; }
+.upg-ai-etikett { display: block; font-family: var(--rubrik); margin-bottom: .2em; }
+.upg-svar { display: block; width: 100%; font: inherit; line-height: 1.35; padding: .4em .5em; resize: none;
+  border: 1px solid var(--ruta-kant); border-radius: .3em; background: var(--papper-ljus); color: var(--black); }
+.upg-ai-rad { display: flex; flex-wrap: wrap; align-items: center; gap: .4em .8em; margin: .5em 0 .2em; }
+.upg-kopierat { color: #5e7a3e; font-weight: 600; }
+.upg-kopierat.fel { color: #6e2e1e; }
+.upg-ai-hjalp { margin: 0; font-size: .9em; color: var(--dampad); }
+
 /* ---------- Innehållsförteckningen (sida 1 och menyn) ---------- */
 
 .innehallssida .sidinnehall { font-size: calc(var(--toc-skala, 1) * 1em); }   /* bok.js: passaInnehall */

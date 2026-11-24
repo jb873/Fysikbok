@@ -503,6 +503,7 @@ räkningen tror (fyllnaden skiljer cirka 1 %). Det ändrar inget här, men räkn
 | `bokref`, `boklank` | länkar till en annan bok, se *Fristående böcker* |
 | `vidare` | `lankar: [{text, bok, ankare}]`: rutan "Vill du gå vidare?" sist i en Fördjupningsbok (arbetsorder 13). Rubriken och inledningen ("Läs mer i Nästa steg – gymnasiets kraft och rörelse:") är motorns. Länkarna skrivs av `verktyg/vidare-rutor.js`, och kontrolläget prövar att varje länk går till ett avsnitts början med det numret och den titeln. En länk kan också gå till en annan sida, `{text, href}`, och rutan kan ha en egen `inledning` (arbetsorder 33: Repetitionen VI A → kapitel 2): `vidare-rutor.js` räknar fram texten ("Textens titel: N. Avsnittets titel") och adressen (`…/index.html?niva=…#text/avsnitt`) ur målsidans böcker och stoppar om målet inte finns. En länk i tabellen kan ha en egen sida, `[text, avsnitt, mapp]` (arbetsorder 34: VI A länkar till både avsnitt I och II i kapitel 2). |
 | `tabell` | `rubriker?`, `rader: [[...]]`, `fotnot?`. Första kolumnen är radrubrik. |
+| `uppgift` | en övning: `id`, `slag` (`tvaval`, `lucktext` eller `oppen`) och dess fält, se *Övningar* |
 
 Ett block får ett eget `id` om det som eleven gör i det ska överleva att block flyttas (för interaktiva block senare).
 Utan eget id heter blocket `<avsnitt>-b<n>` (det n:te blocket), och läsplatsen sparas så. Rubrikernas adresser heter
@@ -606,7 +607,8 @@ Godkända av Joachim 2026-11-21 (arbetsorder 31). Klasserna står i `bokskal/bok
 
 ## Hjälpmedel: plattformens, länkade, aldrig byggda här
 
-Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga egna quiz- eller ordlisteverktyg.
+Plattformens hjälpmedel länkas, som i de andra böckerna. Motorn bygger inga egna quiz- eller ordlisteverktyg; övningar
+i boken är blocktypen `uppgift` (se *Övningar*, 2026-11-23).
 
 | Hjälpmedel (`hjalpmedel`) | Var det syns |
 |---|---|
@@ -895,7 +897,7 @@ beslut 2026-11-05.
 ## Interaktiva inslag (senare)
 
 Övningar och självrättning är plattformens hjälpmedel och länkas. Behövs något interaktivt *i* boken läggs det till
-som en ny blocktyp i motorn, valfri och tyst:
+som en ny blocktyp i motorn, valfri och tyst (så är övningarna i boken byggda, se *Övningar* nedan):
 
 ```js
 Bok.blocktyp('namn', (data, ctx) => {
@@ -910,6 +912,44 @@ Bok.blocktyp('namn', (data, ctx) => {
 Varje blocks element byggs en gång per bok och flyttas mellan sidorna när boken bryts om, så det som eleven har gjort
 ligger kvar vid bläddring och när fönstret ändrar storlek. `ctx.sida` är sidan där blocket står just nu.
 Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fält eller i `[data-ingen-svep]` bläddrar inte.
+
+## Övningar (blocktypen `uppgift`)
+
+Arbetsorder 2026-11-23 (Samhällskunskap, *Inför slutprovet*), godkänd av Joachim. Det här är läsböckernas delade
+övningskomponent: den byggs här och kopieras byte för byte med resten av motorn. Den har tre slag och inget mer.
+
+| `slag` | Fält | Eleven ser |
+|---|---|---|
+| `tvaval` | `kolumner: ['Ja', 'Nej']` (eller `['Stämmer', 'Stämmer inte']`), `rader: [{text, etikett?, svar: 0 \| 1}]`, `ogiltigSammaKolumn?` | två knappar per rad (ett klick till tar bort krysset), Rätta och Börja om |
+| `lucktext` | `ordbank: [...]`, `rader: [{fore, efter, svar: ['facit', 'godkänd variant', …]}]` | begreppen, ett skrivfält per mening, Rätta och Börja om |
+| `oppen` | `skrivmodell: [{rubrik, vad?, punkter: [{text, under?: [...]}]}]`, `prompt`, `platshallare`, `hjalp?` | skrivmodellen, svarsrutan och knappen *Kopiera till AI-återkoppling* |
+
+```js
+{ typ: 'uppgift', id: 'sam-imm-u1', slag: 'tvaval', kolumner: ['Ja', 'Nej'],
+  rader: [{ text: 'Att elever … får modersmålsundervisning …', svar: 0 }, …] }
+```
+
+- **Id:t är nyckeln för elevens svar** – byt det aldrig. Raderna sparas som `<id>` (första raden), `<id>-r2`, `<id>-r3` …,
+  eller med radens eget `id`; den öppna uppgiftens svar som `<id>`. Svaren sparas per elev (`localStorage`), rättningen inte.
+- **Rätta:** ✓ eller ✗ per rad och "7 av 9 rätt." (och "2 utan svar."). Facit visas aldrig, och inte heller någon nivå.
+  Facit står i data, eftersom rättningen sker i webbläsaren: det är övningar, inte prov.
+- **Tvåvalet** följer NP: två kryss på samma rad går inte att sätta, och med `ogiltigSammaKolumn: true` säger Rätta att
+  uppgiften är ogiltig när alla kryss står i samma kolumn.
+- **Lucktexten** är generös: stora och små bokstäver, mellanslag och skiljetecken spelar ingen roll, och varje form i
+  `svar` godkänns (till exempel bestämd form). Ett begrepp som står i en lucka tonas i begreppsrutan.
+- **Den öppna:** knappen kopierar `prompt` med elevens svar i stället för `platshallare` (utan svar står platshållaren
+  kvar). Prompten skrivs av boken (Samhällskunskap: `verktyg/md-till-uppgifter.js`); motorn fyller bara i svaret.
+  `hjalp` är en rad under knappen.
+- **Sidbrytningen:** de slutna blir en post per rad och Rätta, hållna ihop som en grupp (slag `uppgift`), som en
+  punktlista: hela på en sida om de ryms, annars delade mellan två rader med minst två rader på varje sida, och Rätta
+  står med den sista raden. Lucktextens begrepp är en egen post före gruppen (på datorn på samma uppslag som meningarna,
+  på mobilen ibland sidan före). Den öppna blir två poster: skrivmodellen och svarsrutan.
+- **Kontrolläget** säger till om en övning saknar `id`, om en rad i tvåvalet saknar facit (0 eller 1) eller kolumnerna
+  inte är två, om en lucka saknar facit eller facit inte står bland begreppen, om prompten saknar platshållaren, och
+  om en sida har en ensam rad ur en delad övning ("övningen har bara en rad på sidan").
+- **Rättningen** är en ren funktion, `Bok.uppgiftRattning` (`rad`, `uppgift`, `text`), för grinden och för prov.
+- **Stilen** står i `bok.css` (klasserna `upg-*`) med motorns färgvariabler, så att varje bok får sin accent; rätt och
+  fel i plattformens bas-palett (land `#5e7a3e`, blood `#6e2e1e`).
 
 ## Beslut och antaganden
 
