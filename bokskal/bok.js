@@ -330,6 +330,10 @@
    *   slag 'tvaval'    kolumner: [a, b], rader: [{text, etikett?, svar: 0 | 1}], ogiltigSammaKolumn?   (Ja/Nej, Stämmer/Stämmer inte)
    *   slag 'lucktext'  ordbank: [...], rader: [{fore, efter, svar: [godkända svar, …]}]
    *   slag 'oppen'     skrivmodell?: [{rubrik, vad?, punkter: [{text, under?: [...]}]}], prompt, platshallare, hjalp?
+   *   slag 'bild'      bild: {fil, bredd, hojd, beskrivning, kalla}   uppgiftens bild (kartan, diagrammet), där den står i
+   *                    uppgiften – ingen figur: följer inte figurens uppslagsregel, och en bok med till får ha den
+   *                    (arbetsorder 2026-11-24). Måtten i data: höjden är känd innan bilden laddats, så brytningen blir
+   *                    densamma i kontrolläget och för eleven. Högst 45 % av sidhöjden, som fotona.
    * De slutna delas i en post per rad (normalisera) och hålls ihop som en grupp, som en punktlista: hela på en sida om de
    * ryms, annars delade mellan raderna med minst två rader på varje sida; Rätta följer den sista. Lucktextens begrepp
    * står före gruppen. Eleven ser rätt eller fel per rad och antalet rätt – aldrig facit (det står i data, eftersom rättningen sker här).
@@ -406,6 +410,11 @@
     return h('aside', { class: 'b-ruta upg-skrivmodell' }, h('h4', null, 'Skrivmodell'),
       d.delar.map(del => [h('p', { class: 'upg-modell-del' }, h('strong', null, del.rubrik), del.vad ? ` (${del.vad})` : ''), lista(del.punkter)]));
   };
+  // uppgiftens bild (slag 'bild'): bredden räknas ur sidhöjden och måtten, så att höjden är känd utan att bilden laddats
+  blocktyper.uppgiftsbild = d => h('figure', { class: 'upg-bild', style: `--kvot: ${(d.bild.bredd / d.bild.hojd).toFixed(4)}` },
+    h('img', { src: d.bild.fil, width: d.bild.bredd, height: d.bild.hojd, alt: d.bild.beskrivning, decoding: 'async',
+      onerror: () => anmal(`uppgiftens bild ”${d.bild.fil}” finns inte`) }),
+    d.bild.kalla && h('figcaption', { class: 'upg-bild-kalla', html: inline(d.bild.kalla) }));
   blocktyper.uppgiftssvar = (d, ctx) => {
     const fid = 'upg-svar-' + ctx.blockId, svar = h('textarea', { class: 'upg-svar', id: fid, rows: '7', spellcheck: 'true' });
     svar.value = ctx.hamta('svar', '') || '';
@@ -523,6 +532,9 @@
           const ruta = { id: pid, slag: 'uppgift', antal: delar.length, uppgift: b };
           delar.forEach((x, k) => poster.push(Object.assign(post(Object.assign(x, { slag: b.slag, grupp, uppgift: b }),
             k === 0 ? pid : x.typ === 'uppgiftsrad' ? x.id || `${pid}-r${x.nr}` : `${pid}-ratta`), { ruta })));
+        } else if (b.typ === 'uppgift' && b.slag === 'bild' && b.bild) {
+          // Uppgiftens bild (arbetsorder 2026-11-24): en post där den står i uppgiften, som texten runt den
+          poster.push(post({ typ: 'uppgiftsbild', bild: b.bild, uppgift: b }, pid));
         } else if (b.typ === 'uppgift' && b.slag === 'oppen') {
           // En öppen uppgift: skrivmodellen och svarsrutan, två poster (blockets id är svarsrutans – elevens svar). Med
           // till: {skrivmodell, svar} ('vanster' eller 'hoger', väg 3) börjar var och en på ny sida, på den sidan av
@@ -2112,7 +2124,7 @@
       if (!blocktyper[b.typ] && b.typ !== 'sidbrytning' && b.typ !== 'uppgift') ut.problem.push(`${kalla}: okänd blocktyp ”${b.typ}”`);
       if (b.typ === 'figur' && !figurer[b.namn]) ut.problem.push(`${kalla}: figuren ”${b.namn}” finns inte`);
       // en övning (arbetsorder 2026-11-23): ett id (elevens svar sparas på det), facit på varje rad, och prompten med platshållaren
-      if (b.typ === 'uppgift') ut.problem.push(`${kalla}: övningen ”${b.id || ''}” har ett okänt slag ”${b.slag}” (tvaval, lucktext eller oppen) eller inga rader`);
+      if (b.typ === 'uppgift') ut.problem.push(`${kalla}: övningen ”${b.id || ''}” har ett okänt slag ”${b.slag}” (tvaval, lucktext, oppen eller bild) eller inga rader`);
       if (b.uppgift && bok.poster.find(x => x.b && x.b.uppgift === b.uppgift) === p) {
         const U = b.uppgift, namn = `${kalla}: övningen ”${U.id || '(utan id)'}”`;
         if (!U.id) ut.problem.push(`${namn} saknar id (elevens svar sparas på det)`);
@@ -2125,6 +2137,12 @@
           if (!s.length) ut.problem.push(`${namn}: lucka ${k + 1} saknar facit`);
           else if (!(U.ordbank || []).some(o => normSvar(o) === normSvar(s[0]))) ut.problem.push(`${namn}: facit ”${s[0]}” i lucka ${k + 1} står inte bland begreppen`);
         });
+        if (U.slag === 'bild') {
+          const B = U.bild || {};
+          if (!B.fil || !(B.bredd > 0) || !(B.hojd > 0)) ut.problem.push(`${namn}: bilden behöver fil, bredd och hojd (bildens mått i pixlar)`);
+          if (!B.beskrivning) ut.problem.push(`${namn}: bilden behöver en beskrivning (för den som inte ser den)`);
+          if (!B.kalla) ut.problem.push(`${namn}: bilden behöver en källa (kalla)`);
+        }
         if (U.slag === 'oppen' && !(typeof U.prompt === 'string' && U.platshallare && U.prompt.includes(U.platshallare)))
           ut.problem.push(`${namn}: prompten saknar platshållaren (platshallare), där elevens svar ska stå`);
       }

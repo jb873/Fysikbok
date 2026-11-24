@@ -943,13 +943,15 @@ sidnummer är vänstersidor (innehållsförteckningen är sida 1).
 ## Övningar (blocktypen `uppgift`)
 
 Arbetsorder 2026-11-23 (Samhällskunskap, *Inför slutprovet*), godkänd av Joachim. Det här är läsböckernas delade
-övningskomponent: den byggs här och kopieras byte för byte med resten av motorn. Den har tre slag och inget mer.
+övningskomponent: den byggs här och kopieras byte för byte med resten av motorn. Den har tre slag för uppgifter och ett
+för uppgiftens bild.
 
 | `slag` | Fält | Eleven ser |
 |---|---|---|
 | `tvaval` | `kolumner: ['Ja', 'Nej']` (eller `['Stämmer', 'Stämmer inte']`), `rader: [{text, etikett?, svar: 0 \| 1}]`, `ogiltigSammaKolumn?` | två knappar per rad (ett klick till tar bort krysset), Rätta och Börja om |
 | `lucktext` | `ordbank: [...]`, `rader: [{fore, efter, svar: ['facit', 'godkänd variant', …]}]` | begreppen, ett skrivfält per mening, Rätta och Börja om |
 | `oppen` | `skrivmodell: [{rubrik, vad?, punkter: [{text, under?: [...]}]}]`, `prompt`, `platshallare`, `hjalp?`, `till?: {skrivmodell, svar}` | skrivmodellen, svarsrutan och knappen *Kopiera till AI-återkoppling*; med `till` börjar skrivmodellen och svarsrutan var sin sida av uppslaget (Samhälle: skrivmodellen till vänster, svarsrutan överst till höger) |
+| `bild` | `bild: {fil, bredd, hojd, beskrivning, kalla}` | uppgiftens bild (en karta, ett diagram) där den står i uppgiften, med källan under; `uppgiftsbild`, arbetsorder 2026-11-24 |
 
 ```js
 { typ: 'uppgift', id: 'sam-imm-u1', slag: 'tvaval', kolumner: ['Ja', 'Nej'],
@@ -975,6 +977,13 @@ Arbetsorder 2026-11-23 (Samhällskunskap, *Inför slutprovet*), godkänd av Joac
   inte är två, om en lucka saknar facit eller facit inte står bland begreppen, om prompten saknar platshållaren, och
   om en sida har en ensam rad ur en delad övning ("övningen har bara en rad på sidan").
 - **Rättningen** är en ren funktion, `Bok.uppgiftRattning` (`rad`, `uppgift`, `text`), för grinden och för prov.
+- **Uppgiftens bild** (`slag: 'bild'`, blocktypen `uppgiftsbild`, arbetsorder 2026-11-24) är en del av uppgiften,
+  ingen figur: den står där den står i uppgiften (i en NP-uppgift före "Tips i provet"), följer inte figurens
+  uppslagsregel och får därför stå i en bok med `till` (gränsvakten stoppar bara `figur` och `formel`). Måtten
+  (`bredd`, `hojd` i pixlar) står i data, så att bildens höjd är känd innan den laddats och kontrolläget mäter samma
+  brytning som eleven får. Den är högst 45 % av sidhöjden, som fotona. `fil` är räknad från avsnittssidan
+  (`bilder/…`). Kontrolläget säger till om fil, mått, beskrivning eller källa saknas; en bild som inte finns anmäls när
+  den laddas. Återanvändbar för alla ämnens NP-uppgifter.
 - **Stilen** står i `bok.css` (klasserna `upg-*`) med motorns färgvariabler, så att varje bok får sin accent; rätt och
   fel i plattformens bas-palett (land `#5e7a3e`, blood `#6e2e1e`).
 

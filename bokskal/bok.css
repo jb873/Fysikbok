@@ -1084,6 +1084,10 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
 .upg-kopierat { color: #5e7a3e; font-weight: 600; }
 .upg-kopierat.fel { color: #6e2e1e; }
 .upg-ai-hjalp { margin: 0; font-size: .9em; color: var(--dampad); }
+.upg-bild { margin: .5em 0 .9em; text-align: center; }
+/* (uppgiftens bild: bredden ur sidhöjden och måtten – högst 45 % av sidhöjden, som fotona; höjden följer bredden) */
+.upg-bild img { display: block; margin: 0 auto; height: auto; width: min(100%, calc(var(--sh) * .45 * var(--kvot, 1))); }
+.upg-bild-kalla { margin-top: .25em; font-size: .8em; color: var(--dampad); }
 
 /* ---------- Vänster- och högersidor: efterpasset (bok.js: uppslagsstyrning, väg 3, 2026-11-24) ----------
  * Utfyllnadssidan bär bara "Fortsätter på nästa sida", mitt på sidan. Samma rad längst ned på en högersida där
