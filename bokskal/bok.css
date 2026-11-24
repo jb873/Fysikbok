@@ -1085,6 +1085,14 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
 .upg-kopierat.fel { color: #6e2e1e; }
 .upg-ai-hjalp { margin: 0; font-size: .9em; color: var(--dampad); }
 
+/* ---------- Vänster- och högersidor: efterpasset (bok.js: uppslagsstyrning, väg 3, 2026-11-24) ----------
+ * Utfyllnadssidan bär bara "Fortsätter på nästa sida", mitt på sidan. Samma rad längst ned på en högersida där
+ * avsnittet fortsätter på nästa uppslag står i luften under texten (sidinnehållets nedre utfyllnad): den är absolut
+ * placerad och tar ingen höjd från sidan, så brytningen påverkas inte. Som "mer längre ner på sidan" (.mer-hint). */
+.b-utfyllnad { margin: 0; padding-top: 55%; text-align: center; color: var(--dampad); }   /* (padding: första blockets marginal nollas) */
+.b-fortsatter { position: absolute; right: 0; bottom: .25em; margin: 0; padding-right: 8%; font-size: .8em; line-height: 1.2; color: var(--dampad); }
+@media (max-width: 599px) { .b-fortsatter { padding-right: 6%; } }
+
 /* ---------- Innehållsförteckningen (sida 1 och menyn) ---------- */
 
 .innehallssida .sidinnehall { font-size: calc(var(--toc-skala, 1) * 1em); }   /* bok.js: passaInnehall */

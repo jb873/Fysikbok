@@ -394,7 +394,8 @@ Motorn mäter alla block i sidans bredd i ett enda layoutvarv och packar dem sed
   Figuren delas aldrig. Nära 40 %-gränsen avgör en riktig sida, samma mätning som kontrollen av tunna sidor.
 - **Inledning, huvudtext och Sammanfattning** (varje avsnitt) börjar på ny sida, inte nödvändigtvis nytt uppslag.
 - **Mjuk idéregel:** en rubrik börjar ny sida om mindre än en tredjedel av sidan är kvar.
-- **`{typ: 'sidbrytning'}`** tvingar ny sida.
+- **`{typ: 'sidbrytning'}`** tvingar ny sida. Med `till: 'vanster'` eller `'hoger'` börjar nästa block dessutom på den
+  sidan av uppslaget (se *Vänster- och högersidor*).
 - **Ingen sida under 40 %** fylld, utom sista sidan i ett avsnitt, sidan före en sidbrytning och sidan som ett stycke
   lämnade för att följa sin figur (uppslagsregeln nedan) (`?kontroll`).
 - **Balansen:** sidorna packas en i taget, så en sida blir tunn när nästa grupp inte får plats. Då tar den tunna sidan
@@ -913,6 +914,32 @@ Varje blocks element byggs en gång per bok och flyttas mellan sidorna när boke
 ligger kvar vid bläddring och när fönstret ändrar storlek. `ctx.sida` är sidan där blocket står just nu.
 Tangentbordets bläddring är avstängd i fält. Ett svep som börjar i ett fält eller i `[data-ingen-svep]` bläddrar inte.
 
+## Vänster- och högersidor (efterpasset, väg 3)
+
+Joachims order 2026-11-24. En sida kan behöva börja på en viss sida av uppslaget: ett avsnitt med `till: 'vanster'`
+(eller `'hoger'`) börjar där, och `{ typ: 'sidbrytning', till: 'vanster' }` gör att nästa block gör det. Udda
+sidnummer är vänstersidor (innehållsförteckningen är sida 1).
+
+- **Efterpasset** körs när sidorna är färdigbrutna, bara i en bok som har `till` och bara när uppslag visas (datorn).
+  Hamnar en sida med `till` på fel sida av uppslaget läggs en **utfyllnadssida** före den. Den är aldrig tom: den
+  bär "Fortsätter på nästa sida", och den räknas till sidan före (avsnittet före i innehållsförteckningen; adressen
+  är sidan föres). Läsplatsen på en utfyllnadssida är nästa riktiga block, eftersom utfyllnadssidan inte finns i
+  alla lägen.
+- **"Fortsätter på nästa sida"** står också längst ned på en högersida där avsnittet fortsätter på nästa uppslag (i
+  en övningsbok: uppgiften fortsätter), i luften under texten. Den tar ingen höjd från sidan.
+- **Mobilen** visar en sida i taget: där är `till` en vanlig sidbrytning, och efterpasset körs inte.
+- **Sid-utjämningen är orörd:** packningen, balansen, 40 %-regeln, exempelregeln, uppslagsregeln och grupperingen
+  ändras inte. Ett block med `till` står alltid efter en sidbrytning, och en sådan grupp flyttar utjämningen redan
+  aldrig. Textböckerna (utan `till`) bryts byte för byte som förut: bevisat med jämförelsen gammal motor (6297bbf) mot
+  ny, post för post, på alla böcker i alla fyra lägen (2026-11-24).
+- **Gränsen:** en utfyllnadssida flyttar sidorna efter den ett steg. En figur som uppslagsregeln lagt på samma uppslag
+  som sitt stycke kan då hamna fel, så **en bok med `till` får inte ha figurer eller formler**: kontrolläget stoppar
+  med ett fel. Behövs det senare måste `till` in i själva utjämningen.
+- **Kontrolläget** prövar att varje sida med `till` börjar på rätt sida av uppslaget, och att en utfyllnadssida bara
+  står där den behövs (aldrig utan uppslag, aldrig två i rad, alltid före en sida med `till`). Sidan före en
+  utfyllnadssida får vara kort, som sidan före en sidbrytning. `till` ska vara `'vanster'` eller `'hoger'`.
+  Provkroken `?kontroll&prova=till-fel` lägger inte in den första utfyllnadssidan, och då ska kontrolläget bli rött.
+
 ## Övningar (blocktypen `uppgift`)
 
 Arbetsorder 2026-11-23 (Samhällskunskap, *Inför slutprovet*), godkänd av Joachim. Det här är läsböckernas delade
@@ -922,7 +949,7 @@ Arbetsorder 2026-11-23 (Samhällskunskap, *Inför slutprovet*), godkänd av Joac
 |---|---|---|
 | `tvaval` | `kolumner: ['Ja', 'Nej']` (eller `['Stämmer', 'Stämmer inte']`), `rader: [{text, etikett?, svar: 0 \| 1}]`, `ogiltigSammaKolumn?` | två knappar per rad (ett klick till tar bort krysset), Rätta och Börja om |
 | `lucktext` | `ordbank: [...]`, `rader: [{fore, efter, svar: ['facit', 'godkänd variant', …]}]` | begreppen, ett skrivfält per mening, Rätta och Börja om |
-| `oppen` | `skrivmodell: [{rubrik, vad?, punkter: [{text, under?: [...]}]}]`, `prompt`, `platshallare`, `hjalp?` | skrivmodellen, svarsrutan och knappen *Kopiera till AI-återkoppling* |
+| `oppen` | `skrivmodell: [{rubrik, vad?, punkter: [{text, under?: [...]}]}]`, `prompt`, `platshallare`, `hjalp?`, `till?: {skrivmodell, svar}` | skrivmodellen, svarsrutan och knappen *Kopiera till AI-återkoppling*; med `till` börjar skrivmodellen och svarsrutan var sin sida av uppslaget (Samhälle: skrivmodellen till vänster, svarsrutan överst till höger) |
 
 ```js
 { typ: 'uppgift', id: 'sam-imm-u1', slag: 'tvaval', kolumner: ['Ja', 'Nej'],

@@ -524,8 +524,15 @@
           delar.forEach((x, k) => poster.push(Object.assign(post(Object.assign(x, { slag: b.slag, grupp, uppgift: b }),
             k === 0 ? pid : x.typ === 'uppgiftsrad' ? x.id || `${pid}-r${x.nr}` : `${pid}-ratta`), { ruta })));
         } else if (b.typ === 'uppgift' && b.slag === 'oppen') {
-          // En öppen uppgift: skrivmodellen och svarsrutan, två poster (blockets id är svarsrutans – elevens svar)
-          if (Array.isArray(b.skrivmodell) && b.skrivmodell.length) poster.push(post({ typ: 'uppgiftsmodell', delar: b.skrivmodell, uppgift: b }, `${pid}-modell`));
+          // En öppen uppgift: skrivmodellen och svarsrutan, två poster (blockets id är svarsrutans – elevens svar). Med
+          // till: {skrivmodell, svar} ('vanster' eller 'hoger', väg 3) börjar var och en på ny sida, på den sidan av
+          // uppslaget: en sidbrytning med till före var och en (efterpasset lägger in en utfyllnadssida om det behövs).
+          const till = b.till || {}, bryt = (x, n) => x && poster.push(post({ typ: 'sidbrytning', till: x }, `${pid}-till-${n}`));
+          if (Array.isArray(b.skrivmodell) && b.skrivmodell.length) {
+            bryt(till.skrivmodell, 'modell');
+            poster.push(post({ typ: 'uppgiftsmodell', delar: b.skrivmodell, uppgift: b }, `${pid}-modell`));
+          }
+          bryt(till.svar, 'svar');
           poster.push(post(Object.assign({}, b, { typ: 'uppgiftssvar', uppgift: b }), pid));
         } else if (b.typ === 'punkter' && Array.isArray(b.punkter) && b.punkter.length > 1) {
           // En punktlista (arbetsorder 16, 2026-11-11): en post per punkt, hållna ihop som en grupp – listan står hel på
@@ -869,6 +876,57 @@
     return r;
   }
 
+  /* ---------- Vänster- och högersidor: efterpasset (väg 3, Joachims order 2026-11-24) ----------
+   * En sida kan behöva börja på en viss sida av uppslaget: ett avsnitt med till ('vanster' eller 'hoger') och
+   * {typ: 'sidbrytning', till} (övningskomponenten lägger dem mellan skrivmodell och svarsruta). Efterpasset körs när
+   * sidorna är färdigbrutna, bara i en bok som har till och bara när uppslag visas (paginera, sist). Det flyttar inget
+   * innehåll: hamnar en sida på fel sida av uppslaget läggs en utfyllnadssida före den, som bara bär "Fortsätter på
+   * nästa sida" och räknas till sidan före (avsnittet före i innehållsförteckningen). Och på en högersida där avsnittet
+   * fortsätter på nästa uppslag står samma rad längst ned. Sid-utjämningen (packningen, balansen, 40 %-regeln,
+   * exempelregeln, uppslagsregeln och grupperingen) är orörd: ett block med till står alltid efter en sidbrytning, och
+   * en sådan grupp flyttar utjämningen redan aldrig. Gränsen: en utfyllnadssida flyttar sidorna efter den ett steg, så
+   * en bok med till får inte ha figurer eller formler (uppslagsregeln) – strukturkoll stoppar det. */
+  const FORTSATTER = 'Fortsätter på nästa sida';
+  const harTill = bok => bok.harTill !== undefined ? bok.harTill
+    : (bok.harTill = bok.avsnitt.some(a => a.till) || bok.poster.some(p => p.typ === 'sidbrytning' && p.b && p.b.till));
+  // den sida av uppslaget som sidan s ska börja på: avsnittets till på dess första sida, annars sidbrytningen före sidan
+  const tillFor = (bok, s) => {
+    if (s.typ === 'innehall' || s.utfyllnad) return null;
+    if (s.forsta && s.avsnitt.till) return s.avsnitt.till;
+    const d = bok.delar.find(dd => dd.avsnitt === s.avsnitt), p0 = s.poster.find(iFlodet), fore = d && p0 && d.poster[d.poster.indexOf(p0) - 1];
+    return fore && fore.typ === 'sidbrytning' && fore.b && fore.b.till || null;
+  };
+  const tillagdPost = (typ, avsnitt, id) => ({ typ, b: { typ }, id, avsnitt, tillagd: true, vidVisning: [] });
+  function uppslagsstyrning(bok, sidor, postSida) {
+    // (provkrok för grindens negativa prov, bara med ?kontroll&prova=till-fel: den första utfyllnadssidan läggs inte in)
+    let hoppa = kontroll && /[?&]prova=till-fel(&|$)/.test(location.search);
+    for (let j = 1; j < sidor.length; j++) {
+      const s = sidor[j], till = tillFor(bok, s);
+      if (!till || (till === 'vanster') === ((j + 1) % 2 === 1)) continue;       // udda sidnummer: vänstersida
+      if (hoppa) { hoppa = false; continue; }
+      const P = sidor[j - 1], n = sidor.filter(x => x.utfyllnad && x.avsnitt === P.avsnitt).length + 1;
+      const post = tillagdPost('utfyllnad', P.avsnitt, `${P.avsnitt.id}-utfyllnad-${n}`);
+      sidor.splice(j, 0, { bok, avsnitt: P.avsnitt, poster: [post], enheter: [{ poster: [post] }], utfyllnad: true, sist: true });   // (sist: får vara kort)
+      j++;
+    }
+    // "Fortsätter på nästa sida" längst ned på en högersida, när avsnittet (uppgiften) fortsätter på nästa uppslag
+    sidor.forEach((s, j) => {
+      const n = sidor[j + 1];
+      if ((j + 1) % 2 || !n || s.utfyllnad || n.utfyllnad || s.typ === 'innehall' || n.avsnitt !== s.avsnitt) return;
+      s.poster = s.poster.concat(tillagdPost('fortsatter', s.avsnitt, `${s.avsnitt.id}-fortsatter-${j + 1}`));
+    });
+    // Sidnummer, sidan för varje post och adresserna räknas om: en utfyllnadssida har adressen från sidan före
+    postSida.clear();
+    sidor.forEach((x, j) => {
+      x.nr = j + 1;
+      x.poster.forEach(p => postSida.set(p, x));
+      if (x.utfyllnad) x.ankare = sidor[j - 1].ankare;
+    });
+  }
+  blocktyper.utfyllnad = () => h('p', { class: 'b-utfyllnad' }, FORTSATTER);
+  // (längst ned på sidan, i luften under texten: tar ingen höjd från sidan, se bok.css)
+  blocktyper.fortsatter = () => h('p', { class: 'b-fortsatter' }, FORTSATTER);
+
   // strikt (kontrolläget): varje sida provas i en riktig sida
   function paginera(bok, g, strikt = kontroll) {
     const t0 = performance.now();
@@ -1164,6 +1222,7 @@
       const rubrik = d.poster.slice(0, forsta + 1).reverse().find(p => p.ankare);
       x.ankare = rubrik ? rubrik.ankare : x.avsnitt.id;
     });
+    if (g.uppslag && harTill(bok)) uppslagsstyrning(bok, sidor, postSida);   // vänster- och högersidor (efterpasset, väg 3)
     const r = { sidor, postSida, matt, kap: kap0, kapFot, g, undantag };
     sidor[0].brytning = r;
     // Innehållsförteckningen (sida 1) ska rymmas; den krymper själv sin text (passaInnehall). Det prövas bara i den
@@ -1188,7 +1247,9 @@
     const forstaPa = s => s.poster.find(iFlodet);
     r.sidor.forEach((s, j) => {
       if (s.typ === 'innehall') return;
-      const fl = s.poster.filter(p => iFlodet(p) && p.typ !== 'upphov'), sista = fl[fl.length - 1], forsta = fl[0];
+      if (s.utfyllnad) return;                       // en utfyllnadssida (efterpasset, väg 3): prövas nedan
+      // (raden "Fortsätter på nästa sida", som efterpasset lägger längst ned, räknas inte: tillagd)
+      const fl = s.poster.filter(p => iFlodet(p) && p.typ !== 'upphov' && !p.tillagd), sista = fl[fl.length - 1], forsta = fl[0];
       if (sista && RUBRIKER.includes(sista.typ) && fl.length > 1) brott.push(`sida ${s.nr} slutar med en rubrik`);
       const d = bok.delar.find(dd => dd.avsnitt === s.avsnitt);
       if (forsta && MED_STYCKET.includes(forsta.typ)) {
@@ -1221,7 +1282,18 @@
       if (j > 1 && r.sidor[j - 1].avsnitt === s.avsnitt && s.forsta) brott.push(`sida ${s.nr}: avsnittet börjar två gånger`);
       const nasta = r.sidor[j + 1], brytEfter = nasta && nasta.avsnitt === s.avsnitt &&
         d.poster[d.poster.indexOf(forstaPa(nasta)) - 1] && d.poster[d.poster.indexOf(forstaPa(nasta)) - 1].typ === 'sidbrytning';
-      if (!s.sist && !brytEfter && !s.forFigur && s.fyll < TUNN) tunna.push(`sida ${s.nr} är bara ${Math.round(100 * s.fyll)} % fylld`);
+      // (sidan före en utfyllnadssida får vara kort, som sidan före en sidbrytning)
+      if (!s.sist && !brytEfter && !s.forFigur && !(nasta && nasta.utfyllnad) && s.fyll < TUNN) tunna.push(`sida ${s.nr} är bara ${Math.round(100 * s.fyll)} % fylld`);
+    });
+    // Vänster- och högersidor (efterpasset, väg 3): varje sida med till börjar på rätt sida av uppslaget, och en
+    // utfyllnadssida står bara där den behövs – aldrig utan uppslag, aldrig två i rad, alltid före en sida med till
+    if (harTill(bok)) r.sidor.forEach((s, j) => {
+      const till = tillFor(bok, s);
+      if (r.g.uppslag && till && (till === 'vanster') !== (s.nr % 2 === 1)) brott.push(`sida ${s.nr}: ska börja på en ${till === 'vanster' ? 'vänster' : 'höger'}sida`);
+      if (!s.utfyllnad) return;
+      if (!r.g.uppslag) brott.push(`sida ${s.nr}: en utfyllnadssida utan uppslag`);
+      if (r.sidor[j - 1].utfyllnad) brott.push(`sida ${s.nr}: två utfyllnadssidor i rad`);
+      if (!r.sidor[j + 1] || !tillFor(bok, r.sidor[j + 1])) brott.push(`sida ${s.nr}: en utfyllnadssida som inte behövs`);
     });
     bok.poster.forEach((p, j) => {
       if (p.typ !== 'sidbrytning') return;
@@ -1430,7 +1502,9 @@
 
   // Läsplatsen är ett block, inte ett sidnummer: sidnumren beror på sidmåttet. platsFor: sidans första block.
   // sidaFor: sidan med ett block, en rubrik (adressen), 'innehall' eller ett sidnummer (#sida-7 från förr).
-  const platsFor = s => s.typ === 'omslag' || s.typ === 'innehall' ? s.typ : (s.poster.find(iFlodet) || {}).id;
+  // (en utfyllnadssida, väg 3: läsplatsen är nästa riktiga block – utfyllnadssidan finns inte i alla lägen, t.ex. mobilen)
+  const platsFor = s => s.utfyllnad && sidor[sidor.indexOf(s) + 1] ? platsFor(sidor[sidor.indexOf(s) + 1])
+    : s.typ === 'omslag' || s.typ === 'innehall' ? s.typ : (s.poster.find(iFlodet) || {}).id;
   function sidaFor(x) {
     if (x === 'omslag') return forstaSida();
     const m = /^sida-(\d+)$/.exec(x || '');
@@ -2077,6 +2151,13 @@
       const a = bok.ankare.get(p.id);
       if (a && a !== p) ut.problem.push(`${kalla}: blockets id ”${p.id}” är också adressen till rubriken ”${renText(a.b ? a.b.text : a.avsnitt.titel)}” – byt id`);
     }
+    // Gränsen för väg 3 (efterpasset, 2026-11-24): en bok med till får inte ha figurer eller formler. En utfyllnadssida
+    // flyttar sidorna efter den ett steg, och då kan en figur hamna på ett annat uppslag än stycket (uppslagsregeln).
+    bok.avsnitt.filter(a => a.till && !['vanster', 'hoger'].includes(a.till)).forEach(a => ut.problem.push(`${bok.id}, ”${a.titel}”: till ska vara 'vanster' eller 'hoger', inte ”${a.till}”`));
+    bok.poster.filter(p => p.typ === 'sidbrytning' && p.b && p.b.till && !['vanster', 'hoger'].includes(p.b.till))
+      .forEach(p => ut.problem.push(`${bok.id}, ”${p.avsnitt.titel}”: en sidbrytning har till ”${p.b.till}” – 'vanster' eller 'hoger'`));
+    if (harTill(bok) && bok.poster.some(p => MED_UPPSLAG.includes(p.typ)))
+      ut.problem.push(`${bok.id}: boken har både vänster- och högersidor (till) och figurer eller formler – det klarar efterpasset inte (se PLATTFORMS-ANDRINGAR)`);
     // Länken till hjälpmedlen står sist i det sista numrerade avsnittet (och i Sammanfattningen), inte i varje avsnitt.
     // En djupdykning behöver ingen länk.
     const numrerade = ddFor(bok.text) ? [] : bok.delar.filter(d => d.avsnitt.nummer), d = numrerade[numrerade.length - 1];
