@@ -927,6 +927,11 @@ sidnummer är vänstersidor (innehållsförteckningen är sida 1).
   alla lägen.
 - **"Fortsätter på nästa sida"** står också längst ned på en högersida där avsnittet fortsätter på nästa uppslag (i
   en övningsbok: uppgiften fortsätter), i luften under texten. Den tar ingen höjd från sidan.
+- **Ett block kan också ha en sida** (`sidaTill`, kompakt layout 2026-11-25): den öppna uppgiftens skrivmodell med
+  `till.skrivmodell` tvingar ingen ny sida, utan flödar efter uppgiftstexten, och sidan den hamnar på ska vara den sidan
+  av uppslaget. Ryms texten och modellen på en sida delar de den (ett uppslag: text och modell till vänster, svarsrutan
+  till höger, ingen utfyllnadssida); annars står modellen först på nästa sida. Efterpasset lägger in en utfyllnadssida
+  före sidan om den annars hamnar fel. Sidan före en sida som börjar med modellen får vara kort.
 - **Mobilen** visar en sida i taget: där är `till` en vanlig sidbrytning, och efterpasset körs inte.
 - **Sid-utjämningen är orörd:** packningen, balansen, 40 %-regeln, exempelregeln, uppslagsregeln och grupperingen
   ändras inte. Ett block med `till` står alltid efter en sidbrytning, och en sådan grupp flyttar utjämningen redan
@@ -950,7 +955,7 @@ Arbetsorder 2026-11-23 (Samhällskunskap, *Inför slutprovet*), godkänd av Joac
 |---|---|---|
 | `kryss` | kolumn-kryss: `kolumner: [2–3 namn]`, `rader: [{text, etikett?, svar: kolumnens index}]`, `ogiltigSammaKolumn?` – eller flera block, `delar: [{text?: [rader], kolumner, rader}]` | en knapp per kolumn och rad (ett klick till tar bort krysset), blockens text före deras rader, Rätta och Börja om |
 | `lucktext` | `ordbank: [...]`, `rader: [{fore, efter, svar: ['facit', 'godkänd variant', …]}]` | begreppen, ett skrivfält per mening, Rätta och Börja om |
-| `oppen` | `skrivmodell: [{rubrik, vad?, punkter: [{text, under?: [...]}]}]`, `prompt`, `platshallare`, `hjalp?`, `till?: {skrivmodell, svar}` | skrivmodellen, svarsrutan och knappen *Kopiera till AI-återkoppling*; med `till` börjar skrivmodellen och svarsrutan var sin sida av uppslaget (Samhälle: skrivmodellen till vänster, svarsrutan överst till höger) |
+| `oppen` | `skrivmodell: [{rubrik, vad?, punkter: [{text, under?: [...]}]}]`, `prompt`, `platshallare`, `hjalp?`, `till?: {skrivmodell, svar}` | skrivmodellen, svarsrutan och knappen *Kopiera till AI-återkoppling*; med `till: {skrivmodell: 'vanster', svar: 'hoger'}` står skrivmodellen på en vänstersida, tillsammans med uppgiftstexten när de ryms (annars överst på nästa vänstersida), och svarsrutan överst på högersidan bredvid (kompakt layout, 2026-11-25) |
 | `bild` | `bild: {fil, bredd, hojd, beskrivning, kalla}` | uppgiftens bild (en karta, ett diagram) där den står i uppgiften, med källan under; `uppgiftsbild`, arbetsorder 2026-11-24 |
 | `citat` | `rader: [stycken]`, `kalla?` | en citerad ingång (ett påstående, en nyhetsnotis) där den står i uppgiften, med källan under; `uppgiftscitat`, arbetsorder 2026-11-24 |
 

@@ -560,13 +560,13 @@
           poster.push(post({ typ: 'uppgiftsbild', bild: b.bild, uppgift: b }, pid));
         } else if (b.typ === 'uppgift' && b.slag === 'oppen') {
           // En öppen uppgift: skrivmodellen och svarsrutan, två poster (blockets id är svarsrutans – elevens svar). Med
-          // till: {skrivmodell, svar} ('vanster' eller 'hoger', väg 3) börjar var och en på ny sida, på den sidan av
-          // uppslaget: en sidbrytning med till före var och en (efterpasset lägger in en utfyllnadssida om det behövs).
+          // till: {skrivmodell, svar} ('vanster' eller 'hoger', väg 3): svarsrutan börjar på ny sida, på den sidan av
+          // uppslaget (en sidbrytning med till före den). Skrivmodellen flödar efter uppgiftstexten och står på den sidan
+          // av uppslaget (sidaTill, kompakt layout 2026-11-25): ryms texten och modellen på en sida delar de den, annars
+          // börjar modellen nästa sida. Efterpasset lägger in en utfyllnadssida om sidan annars hamnar fel.
           const till = b.till || {}, bryt = (x, n) => x && poster.push(post({ typ: 'sidbrytning', till: x }, `${pid}-till-${n}`));
-          if (Array.isArray(b.skrivmodell) && b.skrivmodell.length) {
-            bryt(till.skrivmodell, 'modell');
-            poster.push(post({ typ: 'uppgiftsmodell', delar: b.skrivmodell, uppgift: b }, `${pid}-modell`));
-          }
+          if (Array.isArray(b.skrivmodell) && b.skrivmodell.length)
+            poster.push(post(Object.assign({ typ: 'uppgiftsmodell', delar: b.skrivmodell, uppgift: b }, till.skrivmodell ? { sidaTill: till.skrivmodell } : {}), `${pid}-modell`));
           bryt(till.svar, 'svar');
           poster.push(post(Object.assign({}, b, { typ: 'uppgiftssvar', uppgift: b }), pid));
         } else if (b.typ === 'punkter' && Array.isArray(b.punkter) && b.punkter.length > 1) {
@@ -923,13 +923,16 @@
    * en bok med till får inte ha figurer eller formler (uppslagsregeln) – strukturkoll stoppar det. */
   const FORTSATTER = 'Fortsätter på nästa sida';
   const harTill = bok => bok.harTill !== undefined ? bok.harTill
-    : (bok.harTill = bok.avsnitt.some(a => a.till) || bok.poster.some(p => p.typ === 'sidbrytning' && p.b && p.b.till));
-  // den sida av uppslaget som sidan s ska börja på: avsnittets till på dess första sida, annars sidbrytningen före sidan
+    : (bok.harTill = bok.avsnitt.some(a => a.till) || bok.poster.some(p => p.b && (p.typ === 'sidbrytning' && p.b.till || p.b.sidaTill)));
+  // den sida av uppslaget som sidan s ska vara: avsnittets till på dess första sida, sidbrytningen före sidan, eller ett
+  // block på sidan som ska stå på en viss sida av uppslaget (sidaTill: den öppna uppgiftens skrivmodell, 2026-11-25)
   const tillFor = (bok, s) => {
     if (s.typ === 'innehall' || s.utfyllnad) return null;
     if (s.forsta && s.avsnitt.till) return s.avsnitt.till;
     const d = bok.delar.find(dd => dd.avsnitt === s.avsnitt), p0 = s.poster.find(iFlodet), fore = d && p0 && d.poster[d.poster.indexOf(p0) - 1];
-    return fore && fore.typ === 'sidbrytning' && fore.b && fore.b.till || null;
+    if (fore && fore.typ === 'sidbrytning' && fore.b && fore.b.till) return fore.b.till;
+    const m = s.poster.find(p => p.b && p.b.sidaTill);
+    return m ? m.b.sidaTill : null;
   };
   const tillagdPost = (typ, avsnitt, id) => ({ typ, b: { typ }, id, avsnitt, tillagd: true, vidVisning: [] });
   function uppslagsstyrning(bok, sidor, postSida) {
@@ -1318,7 +1321,9 @@
       const nasta = r.sidor[j + 1], brytEfter = nasta && nasta.avsnitt === s.avsnitt &&
         d.poster[d.poster.indexOf(forstaPa(nasta)) - 1] && d.poster[d.poster.indexOf(forstaPa(nasta)) - 1].typ === 'sidbrytning';
       // (sidan före en utfyllnadssida får vara kort, som sidan före en sidbrytning)
-      if (!s.sist && !brytEfter && !s.forFigur && !(nasta && nasta.utfyllnad) && s.fyll < TUNN) tunna.push(`sida ${s.nr} är bara ${Math.round(100 * s.fyll)} % fylld`);
+      // (och sidan före en sida som börjar med den öppna uppgiftens skrivmodell: modellen rymdes inte med texten, 2026-11-25)
+      const fn = nasta && forstaPa(nasta);
+      if (!s.sist && !brytEfter && !s.forFigur && !(nasta && nasta.utfyllnad) && !(fn && fn.b && fn.b.sidaTill) && s.fyll < TUNN) tunna.push(`sida ${s.nr} är bara ${Math.round(100 * s.fyll)} % fylld`);
     });
     // Vänster- och högersidor (efterpasset, väg 3): varje sida med till börjar på rätt sida av uppslaget, och en
     // utfyllnadssida står bara där den behövs – aldrig utan uppslag, aldrig två i rad, alltid före en sida med till
