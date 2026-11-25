@@ -891,6 +891,67 @@ circle.fig-energi-fore { fill: none; stroke: var(--dampad); stroke-width: 1.4; s
 .fig-ljud-eko line { stroke-dasharray: 6 4; }
 .fig-ljud-signal polygon, .fig-ljud-eko polygon { fill: #1f6f78; }
 .fig-ljus-energipil line { stroke: var(--dampad); } .fig-ljus-energipil polygon { fill: var(--dampad); }
+/* <III-CSS arbetsorder 38> */
+/* Kapitel 2 avsnitt III Ljusets väg (arbetsorder 38): strålarna som förut (#c2410c), vatten, glas och linser ljust
+   blågrå, skuggor i dämpat bläck. Guld används inte. */
+.fig-ljus-tallrik { fill: #fffdf6; stroke: var(--black); stroke-width: 1.3; }
+.fig-ljus-hjarna { fill: #ecd5cf; stroke: #9b6b60; stroke-width: 1.4; }
+.fig-ljus-bord3 { fill: #a08a6c; }
+.fig-ljus-ficklampa rect, .fig-ljus-ficklampa path { fill: #5b5f66; stroke: var(--black); stroke-width: 1; }
+.fig-ljus-mus ellipse, .fig-ljus-mus circle { fill: #9c9488; stroke: var(--black); stroke-width: 1.2; }
+.fig-ljus-mus path { stroke: var(--black); stroke-width: 1.4; }
+.fig-ljus-ogpunkt { fill: var(--black); }
+.fig-ljus-matt { fill: #e8e2d4; stroke: var(--dampad); stroke-width: 1.2; }
+.fig-ljus-helskugga { fill: rgba(27, 42, 54, .62); }
+.fig-ljus-halvskugga { fill: rgba(27, 42, 54, .2); }
+.fig-ljus-vagg3 { stroke: var(--black); stroke-width: 2.4; }
+.fig-ljus-boll { fill: #cfc6b4; stroke: var(--black); stroke-width: 1.3; }
+.fig-ljus-storlampa { fill: #f6e3a2; stroke: var(--black); stroke-width: 1.3; }
+.fig-ljus-sol circle, .fig-ljus-solen { fill: #f6e3a2; stroke: #c9a24a; stroke-width: 1.3; }
+.fig-ljus-sol line { stroke: #c9a24a; stroke-width: 1.6; stroke-linecap: round; }
+.fig-ljus-lada { fill: none; stroke: var(--black); stroke-width: 2.2; }
+.fig-ljus-papper { stroke: #d9d4c7; stroke-width: 6; }
+.fig-ljus-hal { fill: var(--black); }
+.fig-ljus-kugg { fill: #8a8273; stroke: var(--black); stroke-width: 1; }
+.fig-ljus-hjulskiva { fill: #b9b0a0; stroke: var(--black); stroke-width: 1; }
+.fig-ljus-bryt { fill: none; stroke: var(--black); stroke-width: 1.4; }
+.fig-ljus-jorden { fill: #b7cfd9; stroke: #5d7f88; stroke-width: 1.3; }
+.fig-ljus-manen { fill: #9c9488; stroke: var(--black); stroke-width: 1.2; }
+.fig-ljus-partiell { fill: none; stroke: rgba(27, 42, 54, .45); stroke-width: 7; }
+.fig-ljus-total { fill: none; stroke: rgba(27, 42, 54, .9); stroke-width: 7; }
+.fig-ljus-pil line { stroke: var(--black); stroke-width: 2.4; } .fig-ljus-pil polygon { fill: var(--black); }
+.fig-ljus-pil.fig-ljus-skenpil line { stroke: var(--dampad); stroke-dasharray: 5 4; } .fig-ljus-pil.fig-ljus-skenpil polygon { fill: var(--dampad); }
+.fig-ljus-pil.fig-ljus-bildpil line { stroke: #6b5b4a; } .fig-ljus-pil.fig-ljus-bildpil polygon { fill: #6b5b4a; }
+.fig-ljus-tunn { stroke-width: 1.3; }
+.fig-ljus-skrovlig { fill: #cfc6b4; stroke: #4b5563; stroke-width: 1.6; }
+.fig-ljus-strale.fig-ljus-tjock { stroke-width: 5; }
+.fig-ljus-ruta { stroke: #5d7f88; stroke-width: 4; }
+.fig-ljus-natt { fill: rgba(27, 42, 54, .5); }
+.fig-ljus-bil rect, .fig-ljus-bil3 rect { fill: #9aa7b0; stroke: var(--black); stroke-width: 1.3; }
+.fig-ljus-lykta { fill: #f6e3a2; stroke: var(--black); stroke-width: 1; }
+.fig-ljus-vag { fill: #d9d4c7; }
+.fig-ljus-hus { fill: #b9a68a; stroke: var(--black); stroke-width: 1.3; }
+.fig-ljus-stolpe { stroke: var(--dampad); stroke-width: 2; }
+.fig-ljus-cyklist line { stroke: var(--black); stroke-width: 2.4; } .fig-ljus-cyklist circle { fill: #4a6b8a; }
+.fig-ljus-anvand { stroke: #c2410c; stroke-width: 4; opacity: .55; }
+.fig-ljus-ror { fill: none; stroke: var(--black); stroke-width: 2.2; }
+.fig-ljus-brygga { fill: #a08a6c; stroke: var(--black); stroke-width: 1; }
+.fig-ljus-fisk path { fill: #8fa3b0; stroke: var(--black); stroke-width: 1.3; }
+.fig-ljus-penna.fig-ljus-skenpenna { stroke: #e8c77a; stroke-dasharray: 7 5; }
+.fig-ljus-poollampa { fill: #f6e3a2; stroke: var(--black); stroke-width: 1.2; }
+.fig-ljus-mantel { fill: rgba(150, 190, 205, .25); stroke: #5d7f88; stroke-width: 1.2; }
+.fig-ljus-karna { fill: rgba(150, 190, 205, .55); stroke: #5d7f88; stroke-width: 1.2; }
+.fig-ljus-skikt1 { fill: rgba(246, 227, 162, .12); } .fig-ljus-skikt2 { fill: rgba(246, 227, 162, .26); }
+.fig-ljus-skikt3 { fill: rgba(246, 227, 162, .42); } .fig-ljus-skikt4 { fill: rgba(246, 227, 162, .62); }
+.fig-ljus-asfalt { fill: #4b4f55; }
+.fig-ljus-strale.fig-ljus-bana { fill: none; }
+.fig-ljus-blank { fill: #dfe9ee; stroke: #9fb6c0; stroke-width: 1; }
+.fig-ljus-diamant { fill: rgba(150, 190, 205, .4); stroke: #5d7f88; stroke-width: 1.4; }
+.fig-ljus-stearin rect { fill: #f4ecd8; stroke: var(--black); stroke-width: 1.2; }
+.fig-ljus-laga { fill: #f2b544; stroke: #c2410c; stroke-width: 1; }
+.fig-ljus-papper3 { fill: #fffdf6; stroke: var(--dampad); stroke-width: 1; }
+.fig-ljus-fliten { font-size: 16px; }
+/* </III-CSS> */
 .fig-ljud-bil { fill: #f4ecd6; stroke: var(--black); stroke-width: 1.4; }
 .fig-ljud-bil-fonster { fill: #9fb8c8; }
 .fig-ljud-blixt { fill: #1565c0; }

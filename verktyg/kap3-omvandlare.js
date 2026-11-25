@@ -78,7 +78,16 @@ const TEXTER = {
   '2iic': { kap: 'kap2', kalla: 'Kap2-II-C-Eko-ultraljud-och-doppler-alla-nivaer-v2.md', mapp: 'eko-ultraljud-och-doppler', figurer: './kap2-figurer-iic.js',
             titel: 'C: Eko, ultraljud och dopplereffekten', order: 'Arbetsorder 34 (2026-11-22)', sidmapp: 'ljud_och_ljus/ljud_omkring_oss', sida: 'II. Ljud omkring oss', grundform: {} },
   '2iid': { kap: 'kap2', kalla: 'Kap2-II-D-Ljudniva-buller-och-halsa-alla-nivaer-v3.md', mapp: 'ljudniva-buller-och-halsa', figurer: './kap2-figurer-iid.js',
-            titel: 'D: Ljudnivå, buller och hälsa', order: 'Arbetsorder 34 (2026-11-22)', sidmapp: 'ljud_och_ljus/ljud_omkring_oss', sida: 'II. Ljud omkring oss', grundform: {} }
+            titel: 'D: Ljudnivå, buller och hälsa', order: 'Arbetsorder 34 (2026-11-22)', sidmapp: 'ljud_och_ljus/ljud_omkring_oss', sida: 'II. Ljud omkring oss', grundform: {} },
+  // Kapitel 2, avsnitt III Ljusets väg (arbetsorder 38, 2026-11-25): --text 2iiia (2iiib, 2iiic, 2iiid), som avsnitt I och II
+  '2iiia': { kap: 'kap2', kalla: 'Kap2-III-A-Ljus-och-seende-alla-nivaer-v2.md', mapp: 'ljus-och-seende', figurer: './kap2-figurer-iiia.js',
+            titel: 'A: Ljus och seende', order: 'Arbetsorder 38 (2026-11-25)', sidmapp: 'ljud_och_ljus/ljusets_vag', sida: 'III. Ljusets väg', grundform: {} },
+  '2iiib': { kap: 'kap2', kalla: 'Kap2-III-B-Reflektion-och-speglar-alla-nivaer-v2.md', mapp: 'reflektion-och-speglar', figurer: './kap2-figurer-iiib.js',
+            titel: 'B: Reflektion och speglar', order: 'Arbetsorder 38 (2026-11-25)', sidmapp: 'ljud_och_ljus/ljusets_vag', sida: 'III. Ljusets väg', grundform: {} },
+  '2iiic': { kap: 'kap2', kalla: 'Kap2-III-C-Ljuset-bryts-alla-nivaer-v2.md', mapp: 'ljuset-bryts', figurer: './kap2-figurer-iiic.js',
+            titel: 'C: Ljuset bryts', order: 'Arbetsorder 38 (2026-11-25)', sidmapp: 'ljud_och_ljus/ljusets_vag', sida: 'III. Ljusets väg', grundform: {} },
+  '2iiid': { kap: 'kap2', kalla: 'Kap2-III-D-Linser-och-bilder-alla-nivaer-v2.md', mapp: 'linser-och-bilder', figurer: './kap2-figurer-iiid.js',
+            titel: 'D: Linser och bilder', order: 'Arbetsorder 38 (2026-11-25)', sidmapp: 'ljud_och_ljus/ljusets_vag', sida: 'III. Ljusets väg', grundform: {} }
 };
 if (!TEXTER[TEXT]) { console.error('okänd text: ' + TEXT + ' (' + Object.keys(TEXTER).join(', ') + ')'); process.exit(1); }
 const KAP = TEXTER[TEXT].kap || 'kap3';
@@ -121,6 +130,8 @@ function las(rad, niva) {
     if (l === 'Det här lär du dig:') { slut(); a.block.push({ typ: 'underrubrik', text: 'Det här lär du dig' }); continue; }
     if (l === 'Det här repeterar du:' && TEXTER[TEXT].grundform) { slut(); a.block.push({ typ: 'underrubrik', text: 'Det här repeterar du' }); continue; }
     if ((m = /^\[FORMEL: (.+?) – (.+)\]$/.exec(l))) { slut(); a.block.push({ typ: 'formel', uttryck: m[1], forklaring: m[2] }); continue; }
+    // (kapitel 2 III A, arbetsorder 38) en formel utan förklaring: bara uttrycket
+    if ((m = /^\[FORMEL: ([^–]+)\]$/.exec(l))) { slut(); a.block.push({ typ: 'formel', uttryck: m[1] }); continue; }
     if (/^\[BILD/.test(l)) { slut(); a.block.push({ kommentar: l }); continue; }
     // (V A) [EXEMPEL: rubrik] … [/EXEMPEL]: stycken (tomma rader emellan), var och en med sina rader
     if ((m = /^\[EXEMPEL: (.+)\]$/.exec(l)) && rad.slice(i + 1).findIndex(x => x === '[/EXEMPEL]') >= 0 &&

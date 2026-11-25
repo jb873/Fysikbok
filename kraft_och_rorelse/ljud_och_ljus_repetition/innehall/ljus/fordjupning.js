@@ -84,7 +84,16 @@ Bok.niva('fordjupning', {
           'Laserljus har nästan en enda färg, och strålen sprids mycket lite.',
           'Varje grundämne ger sitt eget mönster av spektrallinjer. I stjärnornas ljus syns mönstren som mörka absorptionslinjer. Så vet vi vad stjärnorna består av.'
         ] },
-        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] }
+        { typ: 'lank', till: ['ova', 'sjalvskattning', 'elevbok'] },
+        { typ: 'vidare', inledning: 'Läs mer i kapitel 2 Ljud och ljus:', lankar: [
+          { text: 'Ljus och seende: 2. Ljusår', href: '../../ljud_och_ljus/ljusets_vag/index.html?niva=fordjupning#ljus-och-seende/ljusar' },
+          { text: 'Ljus och seende: 4. Förmörkelser', href: '../../ljud_och_ljus/ljusets_vag/index.html?niva=fordjupning#ljus-och-seende/formorkelser' },
+          { text: 'Reflektion och speglar: 3. Hörnreflektorn och månen', href: '../../ljud_och_ljus/ljusets_vag/index.html?niva=fordjupning#reflektion-och-speglar/horn-och-manen' },
+          { text: 'Ljuset bryts: 1. Brytningsindex', href: '../../ljud_och_ljus/ljusets_vag/index.html?niva=fordjupning#ljuset-bryts/brytningsindex' },
+          { text: 'Ljuset bryts: 2. Diamanten', href: '../../ljud_och_ljus/ljusets_vag/index.html?niva=fordjupning#ljuset-bryts/diamanten' },
+          { text: 'Linser och bilder: 1. Dioptri', href: '../../ljud_och_ljus/ljusets_vag/index.html?niva=fordjupning#linser-och-bilder/dioptri' },
+          { text: 'Linser och bilder: 2. Linsformeln', href: '../../ljud_och_ljus/ljusets_vag/index.html?niva=fordjupning#linser-och-bilder/linsformeln' }
+        ] }
       ]
     }
   ]

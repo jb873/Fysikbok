@@ -43,7 +43,7 @@ const TABELL = [
   { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/havstangen-och-enkla-maskiner/fordjupning.js', text: 'V D Maskiner och effekt', avsnitt: [] },
   // VI A (arbetsorder 33): länkar till kapitel 2 Ljud och ljus, avsnitt I Vad ljud är (och II, arbetsorder 34), där innehållet hör hemma – en annan
   // sida (sida: mappen från roten, nivån och [text, avsnitt]); rutan får inledningen ur sida.inledning. VI B (arbetsorder
-  // 30): ingen ruta än – kapitlets avsnitt om ljus finns inte
+  // 30) fick ingen ruta förrän kapitlets avsnitt om ljus fanns: se VI B nedan (arbetsorder 38)
   { fil: 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud/fordjupning.js', text: 'VI A Ljud', avsnitt: [],
     // (arbetsorder 34: också avsnitt II – decibel och energi till II D Ljudintensitet, ljudbangen till II C Machtal och
     // Ljudvallen; inledningen säger då bara kapitlet)
@@ -51,7 +51,13 @@ const TABELL = [
       lankar: [['ljud-ar-vibrationer', 'ljud-ar-tryck'], ['ljudvagen', 'vaglangd-och-hastighet'], ['ljudets-hastighet', 'styvhet-och-densitet'],
                ['orat-och-horseln', 'orat-forstarker'], ['eko-ultraljud-och-doppler', 'machtal', 'ljud_och_ljus/ljud_omkring_oss'],
                ['eko-ultraljud-och-doppler', 'ljudvallen', 'ljud_och_ljus/ljud_omkring_oss'], ['ljudniva-buller-och-halsa', 'ljudintensitet', 'ljud_och_ljus/ljud_omkring_oss']] } },
-  { fil: 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljus/fordjupning.js', text: 'VI B Ljus', avsnitt: [] },
+  // VI B (arbetsorder 38): länkar till kapitel 2, avsnitt III Ljusets väg, där innehållet hör hemma – ljusår och skuggor
+  // (förmörkelser) i III A, reflektion (hörnreflektorn) i III B, brytning och totalreflektion (brytningsindex, diamanten)
+  // i III C och linser (dioptri, linsformeln) i III D
+  { fil: 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljus/fordjupning.js', text: 'VI B Ljus', avsnitt: [],
+    sida: { mapp: 'ljud_och_ljus/ljusets_vag', niva: 'fordjupning', inledning: 'Läs mer i kapitel 2 Ljud och ljus:',
+      lankar: [['ljus-och-seende', 'ljusar'], ['ljus-och-seende', 'formorkelser'], ['reflektion-och-speglar', 'horn-och-manen'],
+               ['ljuset-bryts', 'brytningsindex'], ['ljuset-bryts', 'diamanten'], ['linser-och-bilder', 'dioptri'], ['linser-och-bilder', 'linsformeln']] } },
   // Kapitel 2 Ljud och ljus, avsnitt I (arbetsorder 33): inga rutor än (ordern)
   { fil: 'ljud_och_ljus/vad_ljud_ar/innehall/ljud-ar-vibrationer/fordjupning.js', text: 'Kap 2 I A Ljud är vibrationer', avsnitt: [] },
   { fil: 'ljud_och_ljus/vad_ljud_ar/innehall/ljudvagen/fordjupning.js', text: 'Kap 2 I B Ljudvågen', avsnitt: [] },
@@ -61,7 +67,12 @@ const TABELL = [
   { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/toner-och-klang/fordjupning.js', text: 'Kap 2 II A Toner och klang', avsnitt: [] },
   { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/resonans-och-instrument/fordjupning.js', text: 'Kap 2 II B Resonans och instrument', avsnitt: [] },
   { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/eko-ultraljud-och-doppler/fordjupning.js', text: 'Kap 2 II C Eko, ultraljud och dopplereffekten', avsnitt: [] },
-  { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/ljudniva-buller-och-halsa/fordjupning.js', text: 'Kap 2 II D Ljudnivå, buller och hälsa', avsnitt: [] }
+  { fil: 'ljud_och_ljus/ljud_omkring_oss/innehall/ljudniva-buller-och-halsa/fordjupning.js', text: 'Kap 2 II D Ljudnivå, buller och hälsa', avsnitt: [] },
+  // Kapitel 2, avsnitt III (arbetsorder 38): inga rutor än (ordern)
+  { fil: 'ljud_och_ljus/ljusets_vag/innehall/ljus-och-seende/fordjupning.js', text: 'Kap 2 III A Ljus och seende', avsnitt: [] },
+  { fil: 'ljud_och_ljus/ljusets_vag/innehall/reflektion-och-speglar/fordjupning.js', text: 'Kap 2 III B Reflektion och speglar', avsnitt: [] },
+  { fil: 'ljud_och_ljus/ljusets_vag/innehall/ljuset-bryts/fordjupning.js', text: 'Kap 2 III C Ljuset bryts', avsnitt: [] },
+  { fil: 'ljud_och_ljus/ljusets_vag/innehall/linser-och-bilder/fordjupning.js', text: 'Kap 2 III D Linser och bilder', avsnitt: [] }
 ];
 function lasBok(fil) {
   let data; const B = global.Bok; global.Bok = { niva: (n, d) => { data = d; } };

@@ -3238,6 +3238,47 @@
     const spegel = (x1, y1, x2, y2, bak) => { const L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L, bx = bak[0], by = bak[1]; let h = '';
       for (let t = 6; t < L; t += 12) h += `<line class="fig-skraffer" x1="${f(x1 + ux * t)}" y1="${f(y1 + uy * t)}" x2="${f(x1 + ux * (t - 6) + bx * 10)}" y2="${f(y1 + uy * (t - 6) + by * 10)}"/>`;
       return h + `<line class="fig-ljus-spegel" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`; };
+    // <III-HJALP arbetsorder 38>
+    // ---- Kapitel 2 avsnitt III Ljusets väg (arbetsorder 38): strålgången räknas, ritas inte på öga ----
+    const N3 = 4 / 3, NG = 1.5, ND = 2.42;          // vatten (ljuset går 3/4 så fort som i luft), glas, diamant
+    const lampa3 = (x, y, r = 10) => `<g class="fig-ljus-lampa" data-lampa="" data-x="${f(x)}" data-y="${f(y)}"><circle cx="${f(x)}" cy="${f(y)}" r="${r}"/></g>`;
+    const enh = (x, y) => { const L = Math.hypot(x, y); return [x / L, y / L]; };
+    const skal = (a, b) => a[0] * b[0] + a[1] * b[1];
+    const spegla = (d, n) => { const k = 2 * skal(d, n); return [d[0] - k * n[0], d[1] - k * n[1]]; };
+    // brytning med vektorer: d infallande (enhet), n normalen (enhet, mot den sida ljuset kommer från), n1 → n2; null = totalreflektion
+    const bryt3 = (d, n, n1, n2) => { const c = -skal(d, n), r = n1 / n2, k = 1 - r * r * (1 - c * c); if (k < 0) return null;
+      const t = r * c - Math.sqrt(k); return [r * d[0] + t * n[0], r * d[1] + t * n[1]]; };
+    // tangeringspunkterna från P till cirkeln (C, r)
+    const tangPkt = (px, py, cx, cy, r) => { const dx = px - cx, dy = py - cy, D = Math.hypot(dx, dy), a = Math.acos(r / D), b = Math.atan2(dy, dx);
+      return [[cx + r * Math.cos(b + a), cy + r * Math.sin(b + a)], [cx + r * Math.cos(b - a), cy + r * Math.sin(b - a)]]; };
+    // punkten på linjen genom p i riktningen d där x = X (eller y = Y), och två linjers skärning
+    const vidX = (p, d, X) => [X, p[1] + d[1] * (X - p[0]) / d[0]], vidY = (p, d, Y) => [p[0] + d[0] * (Y - p[1]) / d[1], Y];
+    const skarning = (p, d, q, e) => { const den = d[0] * e[1] - d[1] * e[0], t = ((q[0] - p[0]) * e[1] - (q[1] - p[1]) * e[0]) / den; return [p[0] + t * d[0], p[1] + t * d[1]]; };
+    const S2 = (a, b, data = '', k = '', sp = true) => strale(a[0], a[1], b[0], b[1], data, k, sp), SB = (a, b, data = '', k = '') => skenbar(a[0], a[1], b[0], b[1], data, k);
+    const NL = (a, b, data = '') => normalLinje(a[0], a[1], b[0], b[1], data);
+    // ett stort öga i genomskärning som tittar åt vänster (mot = −1) eller höger (1): pupillen är en öppning med två kanter
+    const ogaStort = (cx, cy, r, mot = -1, pw = 10, namn = '') => { const xi = cx + mot * r * 0.8;
+      const s_ = `<g class="fig-ljus-ogastort" data-oga="${namn}" data-cx="${f(cx)}" data-cy="${f(cy)}" data-r="${r}" data-pupill="${f(xi)},${f(cy - pw / 2)},${f(cy + pw / 2)}">` +
+        `<circle class="fig-ljus-ogat" cx="${f(cx)}" cy="${f(cy)}" r="${r}"/>` +
+        `<path class="fig-ljus-nathinna" d="M${f(cx - mot * r * Math.cos(50 * GR))} ${f(cy - r * Math.sin(50 * GR))} A${r} ${r} 0 0 ${mot < 0 ? 1 : 0} ${f(cx - mot * r * Math.cos(50 * GR))} ${f(cy + r * Math.sin(50 * GR))}"/>` +
+        `<line class="fig-ljus-iris" x1="${f(xi)}" y1="${f(cy - r * 0.58)}" x2="${f(xi)}" y2="${f(cy - pw / 2)}"/><line class="fig-ljus-iris" x1="${f(xi)}" y1="${f(cy + pw / 2)}" x2="${f(xi)}" y2="${f(cy + r * 0.58)}"/>` +
+        `<ellipse class="fig-ljus-ogonlins" cx="${f(xi - mot * 7)}" cy="${f(cy)}" rx="5" ry="${f(r * 0.32)}"/></g>`;
+      return { s: s_, pT: [xi, cy - pw / 2], pB: [xi, cy + pw / 2], pM: [xi, cy], c: [cx, cy], r }; };
+    const trad3 = (x, yt, yf, k = '', data = '') => { const h = yf - yt; return `<g class="fig-ljus-trad ${k}" ${data}><line class="fig-ljus-stam" x1="${f(x)}" y1="${f(yf)}" x2="${f(x)}" y2="${f(yt + h * 0.45)}"/>` +
+      `<path class="fig-ljus-krona" d="M${f(x)} ${f(yt)} L${f(x + Math.abs(h) * 0.28)} ${f(yt + h * 0.62)} L${f(x - Math.abs(h) * 0.28)} ${f(yt + h * 0.62)} Z"/></g>`; };
+    const sol3 = (x, y, r = 13) => `<g class="fig-ljus-sol" data-x="${f(x)}" data-y="${f(y)}"><circle cx="${f(x)}" cy="${f(y)}" r="${r}"/>` +
+      Array.from({ length: 8 }, (_, i) => { const a = i * 45 * GR; return `<line x1="${f(x + (r + 3) * Math.cos(a))}" y1="${f(y + (r + 3) * Math.sin(a))}" x2="${f(x + (r + 8) * Math.cos(a))}" y2="${f(y + (r + 8) * Math.sin(a))}"/>`; }).join('') + '</g>';
+    // en pil (föremål eller bild) från axeln till spetsen; skenbar = streckad och ljus
+    const pil3 = (x, y0, y1, k = '', data = '') => { const sg = Math.sign(y1 - y0);
+      return `<g class="fig-ljus-pil ${k}" ${data} data-x="${f(x)}" data-fot="${f(y0)}" data-spets="${f(y1)}"><line x1="${f(x)}" y1="${f(y0)}" x2="${f(x)}" y2="${f(y1 - sg * 8)}"/>` +
+        `<polygon points="${f(x)},${f(y1)} ${f(x - 6)},${f(y1 - sg * 11)} ${f(x + 6)},${f(y1 - sg * 11)}"/></g>`; };
+    // en tunn lins i mittlinjen x (höjd h runt axeln y), konvex eller konkav
+    const lins3 = (x, y, h, typ) => typ === 'konvex'
+      ? `<path class="fig-ljus-lins" data-lins="konvex" data-x="${f(x)}" d="M${f(x)} ${f(y - h)} Q${f(x + 16)} ${f(y)} ${f(x)} ${f(y + h)} Q${f(x - 16)} ${f(y)} ${f(x)} ${f(y - h)} Z"/>`
+      : `<path class="fig-ljus-lins" data-lins="konkav" data-x="${f(x)}" d="M${f(x - 9)} ${f(y - h)} L${f(x + 9)} ${f(y - h)} Q${f(x + 2)} ${f(y)} ${f(x + 9)} ${f(y + h)} L${f(x - 9)} ${f(y + h)} Q${f(x - 2)} ${f(y)} ${f(x - 9)} ${f(y - h)} Z"/>`;
+    const axel3 = (x1, x2, y) => `<line class="fig-ljus-axel" data-axel="" x1="${f(x1)}" y1="${f(y)}" x2="${f(x2)}" y2="${f(y)}"/>`;
+    const fPunkt = (x, y, t = 'F', data = '') => `<circle class="fig-ljus-brannpunkt" ${data} data-namn="${t}" cx="${f(x)}" cy="${f(y)}" r="3.2"/>` + LT(x, y + 24, t, 'fig-mitt');
+    // </III-HJALP>
     if (lage === 'foremal') {
       // B1: tre föremål i samma ljus – svart (absorberar), spegel (reflekterar), glas (släpper igenom); skugga bakom det svarta
       const yG = 144, dx = 0.55, dy = 0.835, pw = B / 3;
@@ -3554,6 +3595,680 @@
       beskr = 'Ljud och ljus jämförda. Gemensamt: båda är vågor med våglängd och frekvens, båda kan reflekteras (eko och spegel) och absorberas, och båda för med sig energi. ' +
         'Skillnader: ljud är en tryckvåg i ett ämne och går inte genom vakuum, ljus är en våg som inte behöver något ämne och går genom vakuum. Ljud går ca 340 m/s i luft, ljus ca 300 000 km/s. ' +
         'Ljud går snabbast i fasta ämnen, ljus i vakuum. Ljudets frekvens hörs som tonhöjd, ljusets våglängd ses som färg.';
+    // <III-LAGEN arbetsorder 38>
+    } else if (lage === 'se-tallrik') {
+      // III A1: lampan → tallriken → ögat → synnerven. Alla pilar i ljusets riktning; ingen stråle går ut ur ögat.
+      const L = [70, 92], P = [196, 226], E = ogaStort(360, 172, 32, -1, 12, 'ogat');
+      s += `<line class="fig-bord" x1="130" y1="234" x2="262" y2="234"/><ellipse class="fig-ljus-tallrik" cx="${P[0]}" cy="${P[1] + 2}" rx="36" ry="6"/>`;
+      [-160, -120, -75, 175, 125].forEach(g => { const a = g * GR; s += S2([L[0] + 15 * Math.cos(a), L[1] + 15 * Math.sin(a)], [L[0] + 50 * Math.cos(a), L[1] + 50 * Math.sin(a)], 'data-roll="lampa"'); });
+      const d1 = enh(P[0] - L[0], P[1] - L[1]);
+      s += S2([L[0] + 15 * d1[0], L[1] + 15 * d1[1]], P, 'data-roll="till-tallriken"') + lampa3(...L, 13);
+      [[-150, 46], [-115, 46], [-75, 40]].forEach(([g, l]) => { const a = g * GR; s += S2([P[0] + 6 * Math.cos(a), P[1] + 6 * Math.sin(a)], [P[0] + l * Math.cos(a), P[1] + l * Math.sin(a)], 'data-roll="sprids"'); });
+      s += S2(P, E.pM, 'data-roll="till-ogat"') + E.s + S2(E.pM, [E.c[0] + E.r - 3, E.c[1]], 'data-roll="i-ogat"', '', false);
+      const hj = [404, 60];
+      s += `<path class="fig-ljus-synnerv" d="M${f(E.c[0] + E.r)} ${E.c[1]} Q${f(hj[0] + 30)} ${f(E.c[1] - 34)} ${f(hj[0] + 10)} ${f(hj[1] + 17)}"/>`;
+      s += `<ellipse class="fig-ljus-hjarna" cx="${hj[0]}" cy="${hj[1]}" rx="28" ry="18"/>`;
+      s += borjaHar(128, 20) + steg(1, 128, 44, ['lampan lyser', 'åt alla håll'], 1);
+      s += steg(2, 104, 196, ['ljuset når', 'tallriken'], -1);
+      s += steg(3, 252, 268, ['tallriken sprider ljuset'], -1);
+      s += steg(4, 316, 236, ['ljuset når', 'näthinnan'], 1);
+      s += steg(5, 358, 60, ['synnerven', 'till hjärnan'], -1);
+      H = 284; nSteg = 5;
+      beskr = 'Hur vi ser, i fem steg. 1: en lampa skickar ut ljus åt alla håll. 2: en stråle träffar en tallrik på bordet. 3: tallriken sprider ljuset åt flera håll, och en stråle går mot ögat. ' +
+        '4: ljuset kommer in i ögat och träffar näthinnan. 5: signalen går genom synnerven till hjärnan. Alla pilar pekar i ljusets riktning, och inga strålar går ut ur ögat.';
+    } else if (lage === 'mus-tjuv') {
+      // III A2: alla strålar heldragna modellstrålar. Lampan → musen (musen ser lampan), musen → tjuvens öga (tjuven ser
+      // musen); ingen stråle går från strålen mellan lampan och musen mot tjuvens öga.
+      const yG = 232, Lm = [96, 150], M = [396, 220], T = [236, yG];
+      s += `<line class="fig-bord" x1="8" y1="${yG}" x2="${B - 8}" y2="${yG}"/><line class="fig-bord" x1="${B - 10}" y1="20" x2="${B - 10}" y2="${yG}"/>`;
+      s += `<rect class="fig-ljus-bord3" x="40" y="${Lm[1] + 12}" width="90" height="6"/><line class="fig-bord" x1="50" y1="${Lm[1] + 18}" x2="50" y2="${yG}"/><line class="fig-bord" x1="120" y1="${Lm[1] + 18}" x2="120" y2="${yG}"/>`;
+      s += `<g class="fig-ljus-ficklampa" data-x="${Lm[0]}" data-y="${Lm[1]}"><rect x="${Lm[0] - 34}" y="${Lm[1] - 7}" width="28" height="14" rx="3"/><path d="M${Lm[0] - 6} ${Lm[1] - 7} L${Lm[0]} ${Lm[1] - 11} L${Lm[0]} ${Lm[1] + 11} L${Lm[0] - 6} ${Lm[1] + 7} Z"/></g>`;
+      // musen vid väggen, nosen åt vänster; ögat i (mx, my)
+      const mOga = [M[0] - 14, M[1] - 7];
+      s += `<g class="fig-ljus-mus" data-x="${M[0]}"><ellipse cx="${M[0]}" cy="${M[1]}" rx="18" ry="11"/><circle cx="${M[0] - 4}" cy="${M[1] - 12}" r="6"/><path d="M${M[0] + 17} ${M[1] + 4} q14 4 18 -6" fill="none"/></g>`;
+      s += `<circle class="fig-ljus-ogpunkt" data-oga="mus" cx="${mOga[0]}" cy="${mOga[1]}" r="2.4"/>`;
+      // tjuven: en stor gubbe; ögat i huvudet, mot musen
+      const k = 2.8, tO = [T[0] + 4, yG - 50 * k];
+      s += gubbe(T[0], yG, 50 * k).replace('class="fig-ljud-person"', 'class="fig-ljud-person fig-ljus-tjuv"') + `<circle class="fig-ljus-ogpunkt" data-oga="tjuv" cx="${f(tO[0])}" cy="${f(tO[1])}" r="2.4"/>`;
+      // strålarna (alla heldragna): lampan → musens öga; ljus som träffat musen → tjuvens öga; strålens ljus går vidare framåt
+      s += S2([Lm[0] + 2, Lm[1]], mOga, 'data-roll="lampa-mus" data-fran="lampa" data-till="mus"');
+      s += S2([M[0] - 10, M[1] - 14], tO, 'data-roll="mus-tjuv" data-fran="mus" data-till="tjuv"');
+      [[-60, 34], [200, 30]].forEach(([g, l]) => { const a = g * GR; s += S2([M[0] + 2 + 12 * Math.cos(a), M[1] - 14 + 12 * Math.sin(a)], [M[0] + 2 + (12 + l) * Math.cos(a), M[1] - 14 + (12 + l) * Math.sin(a)], 'data-roll="mus-sprids" data-fran="mus"', 'fig-ljus-svag'); });
+      s += borjaHar(42, 80, 'fig-vanster') + steg(1, 24, 104, ['musen ser lampan'], 1);
+      s += steg(2, 300, 66, ['tjuven ser', 'musen'], 1);
+      s += steg(3, 24, 34, ['tjuven ser inte strålen'], 1);
+      H = yG + 10; nSteg = 3;
+      beskr = 'Musen och tjuven i ett mörkt rum, sett från sidan. En ficklampa på bordet lyser mot en mus vid väggen. 1: musen ser lampan, eftersom ljus från lampan går rakt in i musens ögon. ' +
+        '2: tjuven ser musen, eftersom ljus som har träffat musen studsar mot tjuvens ögon. 3: tjuven ser inte strålen mellan lampan och musen, eftersom inget ljus från den strålen går åt hans håll. Alla strålar är ritade heldragna som modell.';
+    } else if (lage === 'tre-ytor') {
+      // III A3: samma inkommande ljus mot tre ytor – mörk (absorberas, värme), ljus matt (reflekteras åt många håll), glas (går igenom)
+      struktur = true;
+      const yY = 118, pw = B / 3, d = enh(0.6, 0.8);
+      [0, 1, 2].forEach(i => { const cx = pw * i + pw / 2, tr = [cx, yY], fr = [cx - 72 * d[0], yY - 72 * d[1]];
+        s += `<g class="fig-ljus-panel" data-panel="${['absorberas', 'reflekteras', 'igenom'][i]}">`;
+        if (i === 0) s += `<rect class="fig-ljus-svart" x="${f(cx - 58)}" y="${yY}" width="116" height="16"/>` + S2(fr, tr, 'data-roll="in"') +
+          [-16, 0, 16].map(dx => `<path class="fig-ljus-varme" d="M${f(cx + dx + 18)} ${yY - 6} q-5 -5 0 -10 t0 -10"/>`).join('');
+        if (i === 1) { s += `<rect class="fig-ljus-matt" x="${f(cx - 58)}" y="${yY}" width="116" height="16"/>` + S2(fr, tr, 'data-roll="in"');
+          [-160, -125, -90, -55, -20].forEach(g => { const a = g * GR; s += S2([cx + 4 * Math.cos(a), yY + 4 * Math.sin(a)], [cx + 46 * Math.cos(a), yY + 46 * Math.sin(a)], 'data-roll="ut"'); }); }
+        if (i === 2) { const t = 14, n = [0, -1], dg = bryt3(d, n, 1, NG), ut = [cx + t * dg[0] / dg[1], yY + t];
+          s += S2(fr, tr, 'data-roll="in"') + S2(tr, ut, 'data-roll="i-glaset"', '', false) + S2(ut, [ut[0] + 46 * d[0], ut[1] + 46 * d[1]], 'data-roll="ut"');
+          s += `<rect class="fig-ljus-glas" x="${f(cx - 58)}" y="${yY}" width="116" height="${t}"/>`; }
+        s += LT(cx, yY + 84, ['absorberas', 'reflekteras', 'går igenom'][i], 'fig-mitt') + '</g>'; });
+      H = 214;
+      beskr = 'Tre ytor sida vid sida med samma inkommande ljus. Den mörka ytan absorberar ljuset, och små värmevågor stiger. Den ljusa matta ytan reflekterar ljuset åt många håll. Ljuset går igenom glasskivan och fortsätter på andra sidan.';
+    } else if (lage === 'skuggor') {
+      // III A4: skarp skugga (liten lampa) och helskugga + halvskugga (stor lampa); raka linjer från lampans kanter förbi bollens kanter
+      struktur = true;
+      const yc = 128, rb = 22, panel = (x0, lamp, xb, xv, namn) => { let t = `<g class="fig-ljus-panel" data-panel="${namn}" data-vagg="${xv}">`;
+        const kanter = lamp[0] === lamp[1] ? [lamp[0]] : lamp, L = [];
+        kanter.forEach(ly => tangPkt(x0, ly, xb, yc, rb).forEach(tp => { const d = enh(tp[0] - x0, tp[1] - ly), v = vidX([x0, ly], d, xv); L.push([ly, tp, v]);
+          t += S2([x0, ly], v, `data-roll="kant" data-lampa="${f(ly)}"`, 'fig-ljus-svag', false); }));
+        const vy = L.map(x => x[2][1]).sort((a, b) => a - b);
+        if (kanter.length === 1) t += `<rect class="fig-ljus-helskugga" data-y1="${f(vy[0])}" data-y2="${f(vy[1])}" x="${xv}" y="${f(vy[0])}" width="8" height="${f(vy[1] - vy[0])}"/>`;
+        else t += `<rect class="fig-ljus-halvskugga" data-y1="${f(vy[0])}" data-y2="${f(vy[1])}" x="${xv}" y="${f(vy[0])}" width="8" height="${f(vy[1] - vy[0])}"/>` +
+          `<rect class="fig-ljus-helskugga" data-y1="${f(vy[1])}" data-y2="${f(vy[2])}" x="${xv}" y="${f(vy[1])}" width="8" height="${f(vy[2] - vy[1])}"/>` +
+          `<rect class="fig-ljus-halvskugga" data-y1="${f(vy[2])}" data-y2="${f(vy[3])}" x="${xv}" y="${f(vy[2])}" width="8" height="${f(vy[3] - vy[2])}"/>`;
+        t += `<line class="fig-ljus-vagg3" x1="${xv}" y1="46" x2="${xv}" y2="${2 * yc - 46}"/><circle class="fig-ljus-boll" data-cx="${xb}" data-cy="${yc}" data-r="${rb}" cx="${xb}" cy="${yc}" r="${rb}"/>`;
+        t += kanter.length === 1 ? lampa3(x0, yc, 6) : `<rect class="fig-ljus-storlampa" data-y1="${lamp[0]}" data-y2="${lamp[1]}" x="${x0 - 8}" y="${lamp[0]}" width="8" height="${lamp[1] - lamp[0]}" rx="3"/>`;
+        return [t + '</g>', vy]; };
+      const [p1, v1] = panel(22, [yc, yc], 96, 200, 'liten'), [p2, v2] = panel(246, [yc - 32, yc + 32], 330, 424, 'stor');
+      s += p1 + p2;
+      s += LT(22, 2 * yc - 18, 'liten lampa', 'fig-vanster') + LT(246, 2 * yc - 18, 'stor lampa', 'fig-vanster');
+      s += ledare(200, (v1[0] + v1[1]) / 2, 186, 2 * yc - 2) + LT(196, 2 * yc + 16, 'helskugga', 'fig-hoger');
+      s += ledare(424, (v2[1] + v2[2]) / 2, 404, 2 * yc - 2) + LT(414, 2 * yc + 16, 'helskugga', 'fig-hoger');
+      s += ledare(428, (v2[0] + v2[1]) / 2, 432, 30) + LT(436, 24, 'halvskugga', 'fig-hoger');
+      H = 2 * yc + 26;
+      beskr = 'En skarp och en suddig skugga sedda från sidan. Till vänster lyser en liten lampa på en boll framför en vägg: två raka linjer från lampan förbi bollens kanter avgränsar en mörk skugga med skarpa kanter. ' +
+        'Till höger lyser en stor lampa på samma boll: linjer från lampans övre och nedre kant förbi bollens kanter ger en helskugga i mitten och halvskugga vid kanterna.';
+    } else if (lage === 'halkamera') {
+      // III A5: solljus reflekteras från trädets topp och fot; strålarna korsar varandra i hålet; bilden blir upp och ned
+      const xT = 52, yTo = 74, yFo = 214, hole = [206, 144], xP = 336, ylada = [74, 214];
+      s += sol3(24, 26, 11);
+      s += S2([36, 34], [xT - 6, yTo + 8], 'data-roll="sol" data-till="topp"', 'fig-ljus-svag') + S2([32, 40], [xT - 4, yFo - 26], 'data-roll="sol" data-till="fot"', 'fig-ljus-svag');
+      s += trad3(xT, yTo, yFo, '', 'data-trad="verkligt"');
+      s += `<line class="fig-bord" x1="8" y1="${yFo}" x2="120" y2="${yFo}"/>`;
+      s += `<path class="fig-ljus-lada" d="M${hole[0]} ${ylada[0]} L${xP + 8} ${ylada[0]} L${xP + 8} ${ylada[1]} L${hole[0]} ${ylada[1]} L${hole[0]} ${hole[1] + 4} M${hole[0]} ${hole[1] - 4} L${hole[0]} ${ylada[0]}"/>`;
+      s += `<line class="fig-ljus-papper" x1="${xP}" y1="${ylada[0] + 6}" x2="${xP}" y2="${ylada[1] - 6}"/><circle class="fig-ljus-hal" data-x="${hole[0]}" data-y="${hole[1]}" cx="${hole[0]}" cy="${hole[1]}" r="1.6"/>`;
+      const bt = vidX([xT, yTo], enh(hole[0] - xT, hole[1] - yTo), xP), bf = vidX([xT, yFo], enh(hole[0] - xT, hole[1] - yFo), xP);
+      s += S2([xT, yTo], bt, 'data-roll="topp"') + S2([xT, yFo], bf, 'data-roll="fot"');
+      s += trad3(xP - 8, bt[1], bf[1], 'fig-ljus-bild', `data-trad="bild" data-topp="${f(bt[1])}" data-fot="${f(bf[1])}"`);
+      s += borjaHar(84, 20, 'fig-vanster') + steg(1, 96, 40, ['solljus studsar på trädet'], 1);
+      s += steg(2, 150, 84, ['från toppen', 'snett nedåt'], 1);
+      s += steg(3, 110, 240, ['från foten', 'snett uppåt'], -1);
+      s += steg(4, 206, 240, ['de korsar', 'varandra i hålet'], 1);
+      s += steg(5, 380, 112, ['bilden', 'är upp', 'och ned'], 0);
+      H = 284; nSteg = 5;
+      beskr = 'Hålkameran i fem steg. 1: solljus träffar ett träd utanför lådan och reflekteras från trädets topp och fot. 2: strålen från toppen går snett nedåt genom det lilla hålet. ' +
+        '3: strålen från foten går snett uppåt genom samma hål. 4: strålarna korsar varandra i hålet. 5: på papperet längst bak syns en upp och nedvänd bild av trädet.';
+    } else if (lage === 'fizeau') {
+      // III A7: Fizeaus kugghjul (12 kuggar, 15° kugg och 15° lucka). Överst: ljuset går genom luckan högst upp, ca 8,6 km
+      // till spegeln och tillbaka. Nederst: hjulet har vridit sig en halv kugg (en kugg skymmer) och, fortare, en hel (nästa lucka).
+      const kugg = (cx, cy, r, vrid, nr) => { let p = '';
+        for (let i = 0; i < 12; i++) { const a0 = (i * 30 + vrid) * GR, a1 = (i * 30 + 15 + vrid) * GR;
+          p += `<path class="fig-ljus-kugg" d="M${f(cx + (r - 8) * Math.cos(a0))} ${f(cy + (r - 8) * Math.sin(a0))} L${f(cx + r * Math.cos(a0))} ${f(cy + r * Math.sin(a0))} A${r} ${r} 0 0 1 ${f(cx + r * Math.cos(a1))} ${f(cy + r * Math.sin(a1))} L${f(cx + (r - 8) * Math.cos(a1))} ${f(cy + (r - 8) * Math.sin(a1))}"/>`; }
+        // överst (−90°) står en lucka eller en kugg
+        const v = (((-90 - vrid) % 30) + 30) % 30;
+        return `<g class="fig-ljus-kugghjul" data-hjul="${nr}" data-overst="${v < 15 ? 'kugg' : 'lucka'}"><circle class="fig-ljus-hjulskiva" cx="${f(cx)}" cy="${f(cy)}" r="${r - 8}"/>${p}</g>`; };
+      const y = 64, R = 40, xH = 90, xS = 424;
+      s += kugg(xH, y + R - 4, R, -82.5, 'forst') + lampa3(20, y, 10);
+      s += S2([32, y - 3.5], [xH + 30, y - 3.5], 'data-roll="in"') + S2([xH + 30, y - 3.5], [226, y - 3.5], 'data-roll="ut"', '', false);
+      s += `<path class="fig-ljus-bryt" d="M228 ${y - 14} l7 26 M238 ${y - 14} l7 26"/>` + S2([246, y - 3.5], [xS - 4, y - 3.5], 'data-roll="ut2"');
+      s += `<line class="fig-ljus-spegel" x1="${xS}" y1="${y - 24}" x2="${xS}" y2="${y + 30}"/>`;
+      s += S2([xS - 4, y + 3.5], [246, y + 3.5], 'data-roll="tillbaka"') + S2([226, y + 3.5], [xH - 30, y + 3.5], 'data-roll="tillbaka2"', '', false) + ogaFig(30, y + 24, 1);
+      s += `<g data-matt="avstand"><line class="fig-ledare" x1="${xH + R + 4}" y1="${y + 42}" x2="${xS}" y2="${y + 42}"/><line class="fig-ledare" x1="${xH + R + 4}" y1="${y + 36}" x2="${xH + R + 4}" y2="${y + 48}"/><line class="fig-ledare" x1="${xS}" y1="${y + 36}" x2="${xS}" y2="${y + 48}"/></g>` + LT(382, y + 66, 'ca 8,6 km', 'fig-mitt');
+      s += borjaHar(140, y + 98, 'fig-vanster') + steg(1, 150, y + 66, ['genom en lucka'], 1);
+      s += steg(2, 196, 26, ['till spegeln'], 1) + steg(3, 330, 26, ['tillbaka'], 1);
+      const y2 = 200, r2 = 28;
+      s += kugg(100, y2 + r2 - 4, r2, -97.5, 'kugg') + S2([196, y2], [106, y2], 'data-roll="mot-kugg"') + ogaFig(34, y2, 1);
+      s += steg(4, 150, 238, ['en kugg', 'skymmer'], 1);
+      s += kugg(330, y2 + r2 - 4, r2, -82.5 - 30, 'lucka') + S2([420, y2], [336, y2], 'data-roll="mot-lucka"') + S2([324, y2], [276, y2], 'data-roll="igenom"') + ogaFig(262, y2, 1);
+      s += steg(5, 372, 166, ['nästa lucka'], -1);
+      H = 286; nSteg = 5;
+      beskr = 'Fizeaus försök i fem steg. 1: en lampa lyser genom en lucka mellan två kuggar på ett kugghjul. 2: ljuset går ungefär 8,6 km till en spegel (avståndet är ritat förkortat). 3: spegeln skickar ljuset tillbaka samma väg. ' +
+        '4: hjulet har hunnit vrida sig, och ljuset träffar en kugg och syns inte. 5: snurrar hjulet ännu fortare hinner nästa lucka fram, och ljuset syns igen.';
+    } else if (lage === 'solformorkelse') {
+      // III A8: inte i skala. Raka linjer från solens övre och nedre kant förbi månens kanter: helskuggan (från samma sidas
+      // kanter, smalnar av) når en liten fläck på jorden, halvskuggan (korsade kanter, vidgas) ett större område.
+      struktur = true;
+      const yc = 140, S0 = [6, yc], RS = 88, Mn = [236, yc], rm = 12, J = [424, yc], RJ = 150;
+      const Tt = [S0[0], yc - RS], Tb = [S0[0], yc + RS];
+      const jordyta = (p, d) => { const px = p[0] - J[0], py = p[1] - J[1], b = px * d[0] + py * d[1], c = px * px + py * py - RJ * RJ, u = -b - Math.sqrt(b * b - c); return [p[0] + u * d[0], p[1] + u * d[1]]; };
+      const linje = (T, uppe) => { const t = tangPkt(T[0], T[1], Mn[0], Mn[1], rm).sort((a, b) => a[1] - b[1])[uppe ? 0 : 1], d = enh(t[0] - T[0], t[1] - T[1]); return { T, t, e: jordyta(T, d) }; };
+      const hT = linje(Tt, true), hB = linje(Tb, false), pT = linje(Tb, true), pB = linje(Tt, false);
+      const P = a => a.map(p => f(p[0]) + ',' + f(p[1])).join(' ');
+      s += `<circle class="fig-ljus-solen" cx="${S0[0]}" cy="${yc}" r="${RS}"/>`;
+      s += `<polygon class="fig-ljus-halvskugga" points="${P([pT.t, pT.e, pB.e, pB.t])}"/><polygon class="fig-ljus-helskugga" points="${P([hT.t, hT.e, hB.e, hB.t])}"/>`;
+      s += `<circle class="fig-ljus-jorden" cx="${J[0]}" cy="${yc}" r="${RJ}"/><circle class="fig-ljus-manen" cx="${Mn[0]}" cy="${yc}" r="${rm}"/>`;
+      const bage = (a, b, k, data) => `<path class="${k}" ${data} d="M${f(a[0])} ${f(a[1])} A${RJ} ${RJ} 0 0 1 ${f(b[0])} ${f(b[1])}"/>`;
+      s += bage(pB.e, pT.e, 'fig-ljus-partiell', `data-y1="${f(pT.e[1])}" data-y2="${f(pB.e[1])}"`);
+      s += bage(hB.e, hT.e, 'fig-ljus-total', `data-y1="${f(hT.e[1])}" data-y2="${f(hB.e[1])}"`);
+      [[hT, 'hel'], [hB, 'hel'], [pT, 'halv'], [pB, 'halv']].forEach(([l, r]) => { s += S2(l.T, l.e, `data-roll="${r}" data-tx="${f(l.t[0])}" data-ty="${f(l.t[1])}"`, 'fig-ljus-svag', false); });
+      s += LT(40, yc + 6, 'solen', 'fig-mitt') + LT(Mn[0], yc - 24, 'månen', 'fig-mitt') + LT(386, 268, 'jorden', 'fig-mitt');
+      s += ledare(hT.e[0] - 2, (hT.e[1] + hB.e[1]) / 2 - 2, 262, 40) + LT(262, 30, 'total solförmörkelse', 'fig-hoger');
+      s += ledare(pB.e[0] - 1, pB.e[1] - 4, 250, 236) + LT(250, 258, 'partiell solförmörkelse', 'fig-hoger');
+      H = 278;
+      beskr = 'En solförmörkelse sedd från sidan, inte i skala: solen till vänster, månen i mitten och jorden till höger. Raka linjer från solens övre och nedre kant förbi månens kanter avgränsar skuggorna. ' +
+        'Helskuggan smalnar av och når bara en liten fläck på jorden: där blir solförmörkelsen total. Halvskuggan täcker ett större område: där blir den partiell.';
+    } else if (lage === 'reflektionslagen') {
+      // III B1: infallsvinkel = reflektionsvinkel = 40°, mätt mot normalen (streckad, vinkelrät mot spegeln i träffpunkten)
+      struktur = true;
+      const T = [220, 176], v = 40, L = 150, n = [0, -1], din = [Math.sin(v * GR), Math.cos(v * GR)], dut = spegla(din, n);
+      const A = [T[0] - L * din[0], T[1] - L * din[1]], U = [T[0] + L * dut[0], T[1] + L * dut[1]];
+      s += spegel(70, T[1], 370, T[1], [0, 1]) + NL(T, [T[0], 30], 'data-normal=""');
+      s += S2(A, T, 'data-roll="in"') + S2(T, U, 'data-roll="ut"');
+      const aN = -90 * GR, aA = Math.atan2(A[1] - T[1], A[0] - T[0]), aU = Math.atan2(U[1] - T[1], U[0] - T[0]);
+      s += vinkelBage(T[0], T[1], 52, aN, aA, `data-vinkel="in" data-grader="${v}"`) + vinkelBage(T[0], T[1], 58, aN, aU, `data-vinkel="ut" data-grader="${v}"`);
+      s += vinkelText(T[0], T[1], 76, aN, aA, v + '°') + vinkelText(T[0], T[1], 82, aN, aU, v + '°');
+      s += LT(T[0], 22, 'normal', 'fig-mitt fig-normal-text') + LT(370, T[1] + 30, 'spegel', 'fig-hoger');
+      s += ledare(184, 132, 132, 116) + LT(128, 112, 'infallsvinkel', 'fig-hoger');
+      s += ledare(258, 128, 306, 112) + LT(312, 110, 'reflektionsvinkel', 'fig-vanster').replace('x="312"', 'x="290"').replace('fig-vanster', 'fig-vanster');
+      H = 216;
+      beskr = 'Reflektionslagen: en stråle snett uppifrån vänster träffar en plan spegel och reflekteras snett uppåt höger. Normalen är streckad och vinkelrät mot spegeln i träffpunkten. Infallsvinkeln och reflektionsvinkeln mäts mot normalen, och båda är 40°.';
+    } else if (lage === 'slat-skrovlig') {
+      // III B2: samma knippe med fem parallella strålar mot en slät och en skrovlig yta; normalerna i varje träffpunkt
+      struktur = true;
+      const yY = 156, d = enh(1, 1), X = [34, 66, 98, 130, 162];
+      s += `<g class="fig-ljus-panel" data-panel="slat">` + spegel(14, yY, 206, yY, [0, 1]);
+      X.forEach(x => { const T = [x + 6, yY], u = spegla(d, [0, -1]);
+        s += S2([T[0] - 96 * d[0], T[1] - 96 * d[1]], T, 'data-roll="in"') + S2(T, [T[0] + 64 * u[0], T[1] + 64 * u[1]], 'data-roll="ut"') + NL(T, [T[0], T[1] - 26], 'data-normal=""'); });
+      s += LT(110, yY + 40, 'slät yta', 'fig-mitt') + '</g>';
+      // skrovlig: små ytor med olika lutning (grader) i varje träffpunkt
+      const lut = [10, -28, 18, -12, -40], x0 = 234;
+      s += `<g class="fig-ljus-panel" data-panel="skrovlig">`;
+      let yta = `M${x0 - 8} ${yY}`;
+      X.forEach((x, i) => { const T = [x0 + x - 14 + 6, yY], a = lut[i] * GR, t = [Math.cos(a), Math.sin(a)], nn = [Math.sin(a), -Math.cos(a)], u = spegla(d, nn);
+        yta += ` L${f(T[0] - 9 * t[0])} ${f(T[1] - 9 * t[1])} L${f(T[0] + 9 * t[0])} ${f(T[1] + 9 * t[1])}`;
+        s += S2([T[0] - 96 * d[0], T[1] - 96 * d[1]], T, 'data-roll="in"') + S2(T, [T[0] + 56 * u[0], T[1] + 56 * u[1]], 'data-roll="ut"') + NL(T, [T[0] + 26 * nn[0], T[1] + 26 * nn[1]], 'data-normal=""'); });
+      s += `<path class="fig-ljus-skrovlig" d="${yta} L${x0 + 196} ${yY} L${x0 + 196} ${yY + 10} L${x0 - 8} ${yY + 10} Z"/>`;
+      s += LT(x0 + 96, yY + 40, 'skrovlig yta', 'fig-mitt') + '</g>';
+      H = yY + 52;
+      beskr = 'Två ytor sida vid sida med samma knippe av fem parallella strålar. Den släta spegeln till vänster: de korta streckade normalerna pekar åt samma håll, och strålarna studsar parallellt. ' +
+        'Den skrovliga ytan till höger i förstoring: normalerna pekar åt olika håll, och strålarna studsar åt olika håll.';
+    } else if (lage === 'spegelbild-steg') {
+      // III B3: blomman 50 cm framför spegeln, bilden 50 cm bakom. Två strålar från blommans topp reflekteras (lagen i båda
+      // punkterna) och når pupillens övre och nedre kant; förlängda bakåt möts de i bildpunkten. 1 cm = 2,08 enheter.
+      const xm = 290, D = 104, xb = xm - D, xi = xm + D, yT = 128, yG = 214, E = ogaStort(46, 104, 38, 1, 22, 'ogat');
+      const blomma3 = (x, k, data) => `<g class="fig-ljus-blomma ${k}" ${data}><path class="fig-ljus-stjalk" d="M${x} ${yG} L${x} ${yT + 8}"/>` +
+        [0, 72, 144, 216, 288].map(g => `<ellipse class="fig-ljus-kronblad" cx="${f(x + 8 * Math.cos(g * GR))}" cy="${f(yT + 8 * Math.sin(g * GR))}" rx="6" ry="4.4" transform="rotate(${g} ${f(x + 8 * Math.cos(g * GR))} ${f(yT + 8 * Math.sin(g * GR))})"/>`).join('') +
+        `<circle class="fig-ljus-mitt" cx="${x}" cy="${yT}" r="4"/></g>`;
+      s += spegel(xm, 40, xm, yG + 6, [1, 0]) + `<line class="fig-bord" x1="120" y1="${yG}" x2="${xm}" y2="${yG}"/>`;
+      s += blomma3(xb, '', `data-blomma="verklig" data-x="${xb}" data-y="${yT}"`) + blomma3(xi, 'fig-ljus-bild', `data-blomma="bild" data-x="${xi}" data-y="${yT}"`);
+      const Lp = [148, 56]; s += lampa3(...Lp, 10) + S2([Lp[0] + 6, Lp[1] + 9], [xb - 6, yT - 12], 'data-roll="lampa"');
+      [['ovre', E.pT], ['nedre', E.pB]].forEach(([k, pp]) => { const d = enh(pp[0] - xi, pp[1] - yT), M = vidX([xi, yT], d, xm);
+        s += S2([xb, yT], M, `data-roll="till-spegeln" data-kant="${k}"`, 'fig-ljus-tunn', false) + S2(M, pp, `data-roll="till-ogat" data-kant="${k}"`, 'fig-ljus-tunn', k === 'ovre') + SB(M, [xi, yT], `data-kant="${k}"`); });
+      s += E.s;
+      s += `<g data-matt="fram"><line class="fig-ledare" x1="${xb}" y1="${yG + 22}" x2="${xm}" y2="${yG + 22}"/></g>` + LT((xb + xm) / 2, yG + 44, '50 cm', 'fig-mitt');
+      s += `<g data-matt="bak"><line class="fig-ledare" x1="${xm}" y1="${yG + 22}" x2="${xi}" y2="${yG + 22}"/></g>` + LT((xm + xi) / 2, yG + 44, '50 cm', 'fig-mitt');
+      s += borjaHar(158, 28, 'fig-hoger') + steg(1, 176, 22, ['lampan lyser på blomman'], 1);
+      s += steg(2, 252, 142, ['reflekteras'], -1);
+      s += steg(3, 52, 176, ['når pupillens', 'kanter'], 1);
+      s += steg(4, 308, 186, ['bilden bakom', 'spegeln'], 1);
+      H = yG + 54; nSteg = 4;
+      beskr = 'Spegelbilden i fyra steg. 1: en lampa lyser på en blomma som står 50 cm framför en plan spegel. 2: två strålar från blommans topp går till två närliggande punkter på spegeln och reflekteras, med infallsvinkeln lika med reflektionsvinkeln. ' +
+        '3: de reflekterade strålarna når pupillens övre och nedre kant i ett stort öga. 4: förlängda streckat bakåt genom spegeln möts strålarna i en punkt 50 cm bakom spegeln, där spegelbilden syns.';
+    } else if (lage === 'fonster') {
+      // III B4: dag och kväll. Rutan reflekterar alltid lite av lampans ljus (lika vinklar mot rutan); på dagen kommer starkt ljus utifrån.
+      struktur = true;
+      const panel = (x0, dag) => { const xp = x0 + 168, Ey = 118, Eye = [x0 + 30, Ey], Lp = [x0 + 72, 40], Lb = [2 * xp - Lp[0], Lp[1]];
+        const d = enh(Eye[0] - Lb[0], Eye[1] - Lb[1]), M = vidX(Lb, d, xp);
+        let t = `<g class="fig-ljus-panel" data-panel="${dag ? 'dag' : 'kvall'}" data-ruta="${xp}">`;
+        if (dag) [92, 118, 144].forEach(y => { t += S2([x0 + 214, y + (y - Ey) * 0.25], [Eye[0] + 16, Ey + (y - Ey) * 0.08], 'data-roll="utifran"', 'fig-ljus-tjock'); });
+        t += S2(Lp, M, 'data-roll="lampa"', 'fig-ljus-tunn') + S2(M, [Eye[0] + 14, Eye[1] + (M[1] - Eye[1]) * 14 / (M[0] - Eye[0])], 'data-roll="reflex"', 'fig-ljus-tunn');
+        t += `<line class="fig-ljus-ruta" x1="${xp}" y1="24" x2="${xp}" y2="196"/>` + lampa3(...Lp, 9) + ogaFig(Eye[0], Eye[1], 1);
+        if (!dag) t += `<rect class="fig-ljus-natt" x="${xp + 3}" y="24" width="${x0 + 218 - xp - 3}" height="172"/>`;
+        return t + LT(x0 + 110, 228, dag ? 'dag – du ser ut' : 'kväll – du ser rummet', 'fig-mitt') + '</g>'; };
+      s += panel(0, true) + panel(222, false);
+      H = 240;
+      beskr = 'Ett fönster på dagen och på kvällen. Till vänster, dag: starkt ljus utifrån går in genom rutan till ögat, och en tunn stråle från en lampa inne reflekteras i rutan. Du ser ut. ' +
+        'Till höger, kväll: inget ljus utifrån, och samma tunna reflekterade stråle från lampan når ögat. Du ser rummet.';
+    } else if (lage === 'reflex') {
+      // III B5: förenklad tvådimensionell modell – två ytor i rät vinkel; två reflektioner skickar ljuset tillbaka parallellt
+      const V = [384, 148], k = 74, yIn = 118;
+      const A = [V[0] - k, V[1] - k], Bp = [V[0] - k, V[1] + k], nA = enh(-1, 1), nB = enh(-1, -1);
+      s += spegel(A[0], A[1], V[0], V[1], [0.7, -0.7]) + spegel(V[0], V[1], Bp[0], Bp[1], [0.7, 0.7]);
+      // in vågrätt (1, 0) → efter A rakt ned (0, 1) → efter B vågrätt tillbaka (−1, 0)
+      const P1 = [V[0] - (V[1] - yIn), yIn], P2r = [P1[0], P1[1] + 2 * (V[1] - yIn)];
+      s += `<g class="fig-ljus-bil" data-x="58"><rect x="12" y="104" width="70" height="${f(2 * (V[1] - yIn) + 28)}" rx="10"/><circle class="fig-ljus-lykta" cx="80" cy="${yIn}" r="5"/></g>`;
+      s += S2([86, yIn], P1, 'data-roll="in"') + S2(P1, P2r, 'data-roll="mellan"') + S2(P2r, [88, P2r[1]], 'data-roll="ut"');
+      s += NL(P1, [P1[0] + 30 * nA[0], P1[1] + 30 * nA[1]], 'data-normal=""') + NL(P2r, [P2r[0] + 30 * nB[0], P2r[1] + 30 * nB[1]], 'data-normal=""');
+      s += borjaHar(110, 84, 'fig-vanster') + steg(1, 130, 104, ['ljus från lyktan'], 1);
+      s += steg(2, 330, 64, ['första ytan'], -1) + steg(3, 330, 236, ['andra ytan'], -1);
+      s += steg(4, 130, 210, ['tillbaka parallellt'], 1);
+      H = 256; nSteg = 4;
+      beskr = 'Reflexens hörn som en förenklad tvådimensionell modell med två ytor i rät vinkel. 1: ljus från en billykta går in i hörnet. 2: strålen reflekteras mot den första ytan. 3: strålen reflekteras mot den andra ytan. ' +
+        '4: strålen går ut parallellt med den inkommande strålen, tillbaka mot bilen. Normalerna är streckade i båda träffpunkterna.';
+    } else if (lage === 'buktiga-speglar') {
+      // III B6: paraboliska speglar. Konkav: x = xv − (y − yc)²/(4f), strålarna reflekteras mot den verkliga ytan och går genom
+      // F framför spegeln. Konvex: x = xv + (y − yc)²/(4f), de reflekterade strålarna ser ut att komma från F bakom spegeln.
+      struktur = true;
+      const yc = 96, H5 = [-40, -20, 0, 20, 40];
+      const panel = (typ, x0, xv, fb) => { const sg = typ === 'konkav' ? -1 : 1, F = [xv + sg * fb, yc];
+        const X = y => xv + sg * (y - yc) * (y - yc) / (4 * fb), nrm = y => { const dx = sg * (y - yc) / (2 * fb); return enh(-1, dx); };
+        let t = `<g class="fig-ljus-spegeltyp" data-typ="${typ}" data-f="${f(F[0])},${f(F[1])}" data-xv="${xv}" data-fb="${fb}">`;
+        let yta = ''; for (let y = yc - 52; y <= yc + 52.01; y += 4) yta += (yta ? ' L' : 'M') + f(X(y)) + ' ' + f(y);
+        t += `<path class="fig-ljus-spegel" d="${yta}"/>`;
+        H5.forEach(h => { const y = yc + h, T = [X(y), y], n = nrm(y), u = spegla([1, 0], n);
+          t += S2([x0, y], T, `data-roll="in" data-h="${h}"`, 'fig-ljus-tunn');
+          if (typ === 'konkav') { const l = (F[0] - T[0]) / u[0] * 1.2; t += S2(T, [T[0] + l * u[0], T[1] + l * u[1]], `data-roll="ut" data-h="${h}"`, 'fig-ljus-tunn'); }
+          else { t += S2(T, [T[0] + 54 * u[0], T[1] + 54 * u[1]], `data-roll="ut" data-h="${h}"`, 'fig-ljus-tunn'); if (h) t += SB(T, F, `data-h="${h}"`); } });
+        t += `<circle class="fig-ljus-brannpunkt" cx="${f(F[0])}" cy="${yc}" r="3.4"/>` + LT(F[0] + (typ === 'konkav' ? -2 : 14), yc - 12, 'F', typ === 'konkav' ? 'fig-mitt' : 'fig-vanster');
+        if (typ === 'konkav') t += `<g data-matt="brannvidd"><line class="fig-ledare" x1="${f(F[0])}" y1="${yc + 66}" x2="${xv}" y2="${yc + 66}"/><line class="fig-ledare" x1="${f(F[0])}" y1="${yc + 60}" x2="${f(F[0])}" y2="${yc + 72}"/><line class="fig-ledare" x1="${xv}" y1="${yc + 60}" x2="${xv}" y2="${yc + 72}"/></g>` + LT((F[0] + xv) / 2, yc + 90, 'brännvidd', 'fig-mitt');
+        return t + LT(typ === 'konkav' ? x0 + 4 : x0 + 4, 22, typ === 'konkav' ? 'konkav spegel' : 'konvex spegel', 'fig-vanster') + '</g>'; };
+      s += panel('konkav', 6, 206, 92) + panel('konvex', 236, 296, 70);
+      s += LT(330, yc + 90, 'F: brännpunkt', 'fig-vanster');
+      H = yc + 100;
+      beskr = 'En konkav och en konvex spegel sida vid sida. Till vänster går fem parallella strålar mot en konkav spegel, reflekteras och möts i brännpunkten F framför spegeln; brännvidden är avståndet från spegeln till F. ' +
+        'Till höger går fem parallella strålar mot en konvex spegel och reflekteras utåt; förlängda streckat bakom spegeln ser de ut att komma från en brännpunkt F där.';
+    } else if (lage === 'stralkastare') {
+      // III B7: lampan i den konkava (paraboliska) spegelns brännpunkt; varje stråle reflekteras enligt lagen och går ut parallellt
+      const yc = 128, xv = 40, fb = 56, F = [xv + fb, yc], X = y => xv + (y - yc) * (y - yc) / (4 * fb);
+      let yta = ''; for (let y = yc - 96; y <= yc + 96.01; y += 4) yta += (yta ? ' L' : 'M') + f(X(y)) + ' ' + f(y);
+      s += `<path class="fig-ljus-spegel" data-xv="${xv}" data-fb="${fb}" d="${yta}"/>`;
+      [-90, -60, -30, 30, 60, 90].forEach(h => { const y = yc + h, T = [X(y), y], n = enh(1, -(y - yc) / (2 * fb)), din = enh(T[0] - F[0], T[1] - F[1]), u = spegla(din, n);
+        s += S2([F[0] + 11 * din[0], F[1] + 11 * din[1]], T, `data-roll="till-spegeln" data-h="${h}"`, 'fig-ljus-tunn') + S2(T, [400, T[1] + (400 - T[0]) * u[1] / u[0]], `data-roll="ut" data-h="${h}"`, 'fig-ljus-tunn'); });
+      s += lampa3(...F, 9);
+      s += borjaHar(F[0] + 16, yc + 34, 'fig-vanster') + steg(1, F[0] + 30, yc, ['lampan i brännpunkten'], 1);
+      s += steg(2, 150, 246, ['ljuset mot spegeln'], 1) + steg(3, 120, 20, ['reflekteras'], 1) + steg(4, 292, 20, ['parallellt ut'], 1);
+      H = 262; nSteg = 4;
+      beskr = 'Strålkastaren i fyra steg. 1: en lampa sitter i den konkava spegelns brännpunkt. 2: ljuset från lampan går åt alla håll mot spegeln. 3: varje stråle reflekteras enligt reflektionslagen. 4: de reflekterade strålarna går ut nästan parallellt framåt som en smal ljuskägla.';
+    } else if (lage === 'vagspegel') {
+      // III B8: sett uppifrån. Bilen vid utfarten, huset skymmer vägen åt vänster; strålar från cyklisten reflekteras i den
+      // konvexa spegeln (en cirkelbåge) mot föraren – reflektionslagen mot den verkliga ytan.
+      struktur = true;
+      const yV1 = 104, yV2 = 180, Mc = [176, 40], R = 52, oga = [196, 222], cyk = [44, 150];
+      s += `<rect class="fig-ljus-vag" x="0" y="${yV1}" width="${B}" height="${yV2 - yV1}"/><rect class="fig-ljus-vag" x="168" y="${yV2}" width="56" height="90"/>`;
+      s += `<rect class="fig-ljus-hus" x="0" y="${yV2 + 8}" width="152" height="82"/>` + LT(76, yV2 + 56, 'hus', 'fig-mitt');
+      // spegeln: en båge av cirkeln (Mc, R), konvex nedåt mot vägen
+      const P = a => [Mc[0] + R * Math.cos(a), Mc[1] + R * Math.sin(a)];
+      s += `<path class="fig-ljus-spegel" data-cx="${Mc[0]}" data-cy="${Mc[1]}" data-r="${R}" d="M${f(P(55 * GR)[0])} ${f(P(55 * GR)[1])} A${R} ${R} 0 0 1 ${f(P(125 * GR)[0])} ${f(P(125 * GR)[1])}"/><line class="fig-ljus-stolpe" x1="${Mc[0]}" y1="${Mc[1] + R}" x2="${Mc[0]}" y2="${yV1 - 2}"/>`;
+      // punkten på bågen där strålen från Q reflekteras mot ögat: normalen delar vinkeln mellan riktningarna till Q och ögat
+      const traff = Q => { let bast = null; for (let a = 55; a <= 125; a += 0.01) { const T = P(a * GR), n = enh(T[0] - Mc[0], T[1] - Mc[1]), u1 = enh(Q[0] - T[0], Q[1] - T[1]), u2 = enh(oga[0] - T[0], oga[1] - T[1]);
+        const fel_ = Math.abs(skal(u1, n) - skal(u2, n)) + Math.abs((u1[0] * n[1] - u1[1] * n[0]) + (u2[0] * n[1] - u2[1] * n[0])); if (!bast || fel_ < bast[0]) bast = [fel_, T]; } return bast[1]; };
+      [[cyk[0] + 10, cyk[1] - 4], [cyk[0] - 10, cyk[1] + 4]].forEach((Q, i) => { const T = traff(Q); s += S2(Q, T, `data-roll="till-spegeln" data-i="${i}"`, 'fig-ljus-tunn') + S2(T, oga, `data-roll="till-foraren" data-i="${i}"`, 'fig-ljus-tunn'); });
+      s += `<g class="fig-ljus-cyklist" data-x="${cyk[0]}" data-y="${cyk[1]}"><line x1="${cyk[0] - 16}" y1="${cyk[1] + 6}" x2="${cyk[0] + 16}" y2="${cyk[1] - 6}"/><circle cx="${cyk[0]}" cy="${cyk[1]}" r="6"/></g>`;
+      s += `<g class="fig-ljus-bil3" data-x="${oga[0]}"><rect x="${oga[0] - 16}" y="${oga[1] - 14}" width="32" height="54" rx="7"/></g>` + `<circle class="fig-ljus-ogpunkt" data-oga="foraren" cx="${oga[0]}" cy="${oga[1]}" r="2.6"/>`;
+      s += ledare(Mc[0] + 46, Mc[1] + 34, 270, 50) + LT(276, 56, 'konvex spegel', 'fig-vanster');
+      s += LT(10, yV1 + 26, 'skymd väg', 'fig-vanster');
+      H = yV2 + 90;
+      beskr = 'En skymd korsning sedd uppifrån. En bil står vid utfarten, och ett hus skymmer vägen åt vänster. På andra sidan vägen sitter en konvex spegel. Strålar från en cyklist som kommer på den skymda vägen träffar spegeln och reflekteras mot föraren.';
+    } else if (lage === 'hel-kropp') {
+      // III B9: personen framför en plan spegel på väggen. Strålen från fötterna träffar spegeln mitt emellan ögonen och golvet,
+      // strålen från hjässan mitt emellan ögonen och hjässan; den använda delen är hälften så lång som personen.
+      const xp = 110, xm = 262, yF = 250, yH = 60, yO = 74;
+      s += `<line class="fig-bord" x1="20" y1="${yF}" x2="${xm + 10}" y2="${yF}"/>` + spegel(xm, 36, xm, 222, [1, 0]);
+      s += `<g class="fig-ljud-person fig-ljus-person" data-x="${xp}" data-hjassa="${yH}" data-fotter="${yF}"><circle class="fig-hopp-huvud" cx="${xp}" cy="${yH + 14}" r="14"/>` +
+        `<path class="fig-hopp-kropp" d="M${xp} ${yH + 28} L${xp} ${yF - 84}"/><path class="fig-hopp-lem" d="M${xp} ${yF - 84} L${xp - 12} ${yF} M${xp} ${yF - 84} L${xp + 12} ${yF} M${xp} ${yH + 44} L${xp - 18} ${yH + 92} M${xp} ${yH + 44} L${xp + 18} ${yH + 92}"/></g>`;
+      s += `<circle class="fig-ljus-ogpunkt" data-oga="person" cx="${xp}" cy="${yO}" r="2.6"/>`;
+      const Mf = [xm, (yO + yF) / 2], Mh = [xm, (yO + yH) / 2];
+      s += `<line class="fig-ljus-anvand" data-y1="${f(Mh[1])}" data-y2="${f(Mf[1])}" x1="${xm + 6}" y1="${f(Mh[1])}" x2="${xm + 6}" y2="${f(Mf[1])}"/>`;
+      s += S2([xp, yF], Mf, 'data-roll="fran-fotterna"', 'fig-ljus-tunn') + S2(Mf, [xp, yO], 'data-roll="till-ogat-f"', 'fig-ljus-tunn') + NL(Mf, [xm - 64, Mf[1]], 'data-normal=""');
+      s += S2([xp, yH], Mh, 'data-roll="fran-hjassan"', 'fig-ljus-tunn') + S2(Mh, [xp, yO], 'data-roll="till-ogat-h"', 'fig-ljus-tunn') + NL(Mh, [xm - 64, Mh[1]], 'data-normal=""');
+      s += borjaHar(168, 242, 'fig-hoger') + steg(1, 186, 236, ['från fötterna'], 1);
+      s += steg(2, 288, 166, ['mitt emellan', 'ögon och golv'], 1);
+      s += steg(3, 288, 30, ['mitt emellan', 'ögon och hjässa'], 1);
+      s += steg(4, 288, 104, ['halva', 'längden'], 1);
+      H = 262; nSteg = 4;
+      beskr = 'En person framför en plan spegel på väggen, sedd från sidan. 1: en stråle från fötterna går till spegeln och reflekteras in i ögat. 2: den träffar spegeln på höjden mitt emellan ögonen och golvet; normalen är streckad. ' +
+        '3: en stråle från hjässan träffar spegeln mitt emellan ögonen och hjässan. 4: den del av spegeln som används är markerad och är hälften så lång som personen.';
+    } else if (lage === 'periskop') {
+      // III B10: två parallella speglar som lutar 45°: vågrätt in → rakt ned → vågrätt ut; normalerna streckade
+      const xr = 196, yo = 74, yu = 214, w = 22;
+      s += `<path class="fig-ljus-ror" d="M${xr - w} ${yo - 30} L${xr + w} ${yo - 30} L${xr + w} ${yu - w} M${xr - w} ${yo + w} L${xr - w} ${yu + 30} L${xr + w} ${yu + 30}"/>`;
+      s += spegel(xr - w, yo - w, xr + w, yo + w, [0.7, -0.7]) + spegel(xr - w, yu - w, xr + w, yu + w, [-0.7, 0.7]);
+      s += trad3(40, 40, 112, '', 'data-trad="foremal"');
+      const P1 = [xr, yo], P2 = [xr, yu];
+      s += S2([56, yo], P1, 'data-roll="in"') + S2(P1, P2, 'data-roll="ned"') + S2(P2, [362, yu], 'data-roll="ut"') + ogaFig(378, yu, -1);
+      const n1 = enh(-1, 1), n2 = enh(1, -1);
+      s += NL(P1, [P1[0] + 30 * n1[0], P1[1] + 30 * n1[1]], 'data-normal=""') + NL(P2, [P2[0] + 30 * n2[0], P2[1] + 30 * n2[1]], 'data-normal=""');
+      s += borjaHar(100, 94) + steg(1, 84, 118, ['vågrätt in'], 1) + steg(2, 240, 64, ['45°: rakt ned'], 1) + steg(3, 240, 180, ['45°: vågrätt ut'], 1) + steg(4, 330, 246, ['till ögat'], -1);
+      H = 262; nSteg = 4;
+      beskr = 'Periskopet i fyra steg. 1: ljus från ett föremål kommer vågrätt in i rörets övre öppning. 2: strålen träffar den övre spegeln, som lutar 45°, och reflekteras rakt nedåt. 3: strålen träffar den nedre spegeln, som lutar 45°, och reflekteras vågrätt ut. 4: strålen når ögat. Normalerna är streckade.';
+    } else if (lage === 'vagfront') {
+      // III C1: vågfronter (vinkelräta mot strålen) snett ned mot vattenytan. Vid tiden τ: i luften (p − O)·d1 = τ, i vattnet
+      // (p − O)·d2 = 3τ/4 – fronterna ligger 3/4 så tätt i vattnet och knäcks vid ytan. d2 ur Snells lag med n = 4/3.
+      const yY = 146, O = [214, yY], v1 = 50 * GR, d1 = [Math.sin(v1), Math.cos(v1)], d2 = bryt3(d1, [0, -1], 1, N3), v2 = Math.asin(d2[0]);
+      const e1 = [Math.cos(v1), -Math.sin(v1)], e2 = [Math.cos(v2), -Math.sin(v2)], w = 96, w2 = w * Math.cos(v2) / Math.cos(v1), lam = 30;
+      s += `<rect class="fig-ljus-vatten" x="0" y="${yY}" width="${B}" height="${280 - yY}"/><line class="fig-ljus-yta" x1="0" y1="${yY}" x2="${B}" y2="${yY}"/>`;
+      s += NL([O[0], yY - 70], [O[0], yY + 92], 'data-normal=""');
+      const P = (a, d, e, t, u) => [a[0] + t * d[0] + u * e[0], a[1] + t * d[1] + u * e[1]];
+      // varje front: helt i luften, helt i vattnet, eller knäckt i ytan (luftdelen till punkten O + τ/sin v1 på ytan, sedan vattendelen)
+      for (let k = -3; k <= 4; k++) { const t = k * lam, uK = t / Math.tan(v1), Pa = u => P(O, d1, e1, t, u), Pw = u => P(O, d2, e2, 0.75 * t, u);
+        const pts = uK <= -w / 2 ? [Pa(w / 2), Pa(-w / 2)] : uK >= w / 2 ? [Pw(w2 / 2), Pw(-w2 / 2)] : [Pa(w / 2), [O[0] + t / Math.sin(v1), yY], Pw(-w2 / 2)];
+        s += `<polyline class="fig-ljus-front" data-tid="${k}" points="${pts.map(p => f(p[0]) + ',' + f(p[1])).join(' ')}"/>`; }
+      // kanterna (tunna) och strålen genom fronternas mitt
+      [-1, 1].forEach(sg => { const a = P(O, d1, e1, -3.6 * lam, sg * w / 2), b = [O[0] + sg * w / 2 / Math.cos(v1), yY];
+        s += S2(a, b, 'data-roll="kant"', 'fig-ljus-tunn fig-ljus-svag', false) + S2(b, [b[0] + 3.7 * lam * d2[0], b[1] + 3.7 * lam * d2[1]], 'data-roll="kant"', 'fig-ljus-tunn fig-ljus-svag', false); });
+      s += S2(P(O, d1, e1, -3.6 * lam, 0), O, 'data-roll="in"') + S2(O, [O[0] + 3.7 * lam * d2[0], O[1] + 3.7 * lam * d2[1]], 'data-roll="bruten"');
+      s += LT(8, yY - 10, 'luft', 'fig-vanster') + LT(8, yY + 26, 'vatten', 'fig-vanster');
+      s += borjaHar(8, 22, 'fig-vanster') + steg(1, 16, 46, ['vågfronterna', 'snett mot ytan'], 1);
+      s += steg(2, 24, yY + 64, ['vänstra kanten', 'går långsammare'], 1);
+      s += steg(3, 314, 40, ['högra kanten', 'går fortare'], 1);
+      s += steg(4, 322, 214, ['strålen går', 'brantare'], 1);
+      H = 280; nSteg = 4;
+      beskr = 'En bred ljusvåg kommer snett ned mot en vattenyta, sedd från sidan, i fyra steg. 1: vågfronterna, som är vinkelräta mot strålen, kommer snett mot ytan. 2: den vänstra kanten når vattnet först och går långsammare, så fronterna ligger tätare i vattnet. ' +
+        '3: den högra kanten är fortfarande i luften och går fortare. 4: vågfronten har vridits, och strålen går brantare nedåt i vattnet. Avståndet mellan fronterna i vattnet är 3/4 av avståndet i luften.';
+    } else if (lage === 'brytning-tva') {
+      // III C2: luft → vatten mot normalen (och en svag reflekterad stråle), vatten → luft från normalen; n = 4/3
+      struktur = true;
+      const yY = 138, v = 46, L = 112;
+      const panel = (x0, uppifran) => { const T = [x0 + 110, yY], va = v * GR, vw = Math.asin(Math.sin(va) / N3);
+        let t = `<g class="fig-ljus-panel" data-panel="${uppifran ? 'luft-vatten' : 'vatten-luft'}">` + NL([T[0], yY - 104], [T[0], yY + 104], 'data-normal=""');
+        if (uppifran) { const A = [T[0] - L * Math.sin(va), yY - L * Math.cos(va)], W = [T[0] + L * Math.sin(vw), yY + L * Math.cos(vw)], R = [T[0] + 0.7 * L * Math.sin(va), yY - 0.7 * L * Math.cos(va)];
+          t += S2(A, T, 'data-roll="in"') + S2(T, W, 'data-roll="bruten"') + S2(T, R, 'data-roll="reflekterad"', 'fig-ljus-svag');
+          t += vinkelBage(T[0], yY, 40, -90 * GR, Math.atan2(A[1] - yY, A[0] - T[0]), `data-vinkel="in" data-grader="${v}"`) + vinkelBage(T[0], yY, 40, 90 * GR, Math.atan2(W[1] - yY, W[0] - T[0]), `data-vinkel="bruten" data-grader="${f(vw / GR)}"`);
+          t += ledare(T[0] - 22, yY - 46, x0 + 24, yY - 60) + LT(x0 + 4, yY - 66, 'infallsvinkel', 'fig-vanster');
+          t += ledare(T[0] + 16, yY + 44, x0 + 150, yY + 76) + LT(x0 + 112, yY + 96, 'brytningsvinkel', 'fig-mitt');
+          t += LT(x0 + 214, yY - 82, 'reflekterat', 'fig-hoger') + LT(x0 + 214, yY - 56, 'ljus', 'fig-hoger');
+        } else { const W = [T[0] - L * Math.sin(vw), yY + L * Math.cos(vw)], A = [T[0] + L * Math.sin(va), yY - L * Math.cos(va)];
+          t += S2(W, T, 'data-roll="in"') + S2(T, A, 'data-roll="bruten"');
+          t += vinkelBage(T[0], yY, 40, 90 * GR, Math.atan2(W[1] - yY, W[0] - T[0]), `data-vinkel="in" data-grader="${f(vw / GR)}"`) + vinkelBage(T[0], yY, 40, -90 * GR, Math.atan2(A[1] - yY, A[0] - T[0]), `data-vinkel="bruten" data-grader="${v}"`);
+          t += LT(x0 + 214, yY - 82, 'normal', 'fig-hoger fig-normal-text').replace(`x="${x0 + 214}"`, `x="${x0 + 104}"`).replace('fig-hoger', 'fig-hoger');
+        }
+        return t + '</g>'; };
+      s += `<rect class="fig-ljus-vatten" x="0" y="${yY}" width="${B}" height="${120}"/><line class="fig-ljus-yta" x1="0" y1="${yY}" x2="${B}" y2="${yY}"/><line class="fig-ljud-skilje" x1="${B / 2}" y1="10" x2="${B / 2}" y2="${yY + 112}"/>`;
+      s += panel(0, true) + panel(220, false);
+      s += LT(8, yY - 12, 'luft', 'fig-vanster') + LT(8, yY + 30, 'vatten', 'fig-vanster');
+      s += LT(330, 22, 'vatten → luft', 'fig-mitt') + LT(110, 22, 'luft → vatten', 'fig-mitt');
+      H = yY + 120;
+      beskr = 'Brytning i två fall sida vid sida. Till vänster, luft till vatten: en stråle snett uppifrån bryts mot normalen i vattnet, och en svag reflekterad stråle går uppåt åt höger. Till höger, vatten till luft: en stråle snett nedifrån bryts från normalen i luften. Normalerna är streckade.';
+    } else if (lage === 'penna-steg') {
+      // III C3: två strålar från spetsen under vattnet bryts från normalen vid ytan och når pupillens övre och nedre kant.
+      // Varje stråle räknas (Fermat: den kortaste tiden genom ytan); förlängda bakåt möts de i en punkt högre upp.
+      const yY = 150, yB = 274, Sp = [132, 250], In = [182, yY], E = ogaStort(352, 40, 32, -1, 20, 'ogat');
+      const genomYta = (P, Q) => { let b = null; for (let x = Math.min(P[0], Q[0]); x <= Math.max(P[0], Q[0]); x += 0.02) { const t = N3 * Math.hypot(x - P[0], yY - P[1]) + Math.hypot(Q[0] - x, Q[1] - yY); if (!b || t < b[0]) b = [t, x]; } return [b[1], yY]; };
+      s += `<rect class="fig-ljus-vatten" x="120" y="${yY}" width="120" height="${yB - yY}"/><path class="fig-ljus-glaset" d="M120 ${yY - 50} L120 ${yB} L240 ${yB} L240 ${yY - 50}"/><line class="fig-ljus-yta" x1="120" y1="${yY}" x2="240" y2="${yY}"/>`;
+      const S1 = genomYta(Sp, E.pT), S3 = genomYta(Sp, E.pB), dA = enh(S1[0] - E.pT[0], S1[1] - E.pT[1]), dB = enh(S3[0] - E.pB[0], S3[1] - E.pB[1]), A = skarning(S1, dA, S3, dB);
+      // pennan: verklig del heldragen, den skenbara delen under ytan ljus och streckad (från där den går in i vattnet till den skenbara spetsen)
+      const upp = [In[0] + (In[0] - Sp[0]) * 0.75, In[1] + (In[1] - Sp[1]) * 0.75];
+      s += `<line class="fig-ljus-penna" data-del="verklig" x1="${f(upp[0])}" y1="${f(upp[1])}" x2="${Sp[0]}" y2="${Sp[1]}"/>`;
+      s += `<line class="fig-ljus-penna fig-ljus-skenpenna" data-del="skenbar" x1="${In[0]}" y1="${yY}" x2="${f(A[0])}" y2="${f(A[1])}"/>`;
+      [[S1, E.pT, 'ovre'], [S3, E.pB, 'nedre']].forEach(([Sx, pp, k]) => { s += S2(Sp, Sx, `data-roll="i-vattnet" data-kant="${k}"`, 'fig-ljus-tunn', k === 'ovre') + S2(Sx, pp, `data-roll="i-luften" data-kant="${k}"`, 'fig-ljus-tunn', k === 'ovre') +
+        SB(Sx, A, `data-kant="${k}"`) + NL([Sx[0], yY - 30], [Sx[0], yY + 30], 'data-normal=""'); });
+      s += `<circle class="fig-ljus-spets-punkt" data-spets="verklig" cx="${Sp[0]}" cy="${Sp[1]}" r="3.4"/><circle class="fig-ljus-spets-punkt fig-ljus-bild" data-spets="skenbar" cx="${f(A[0])}" cy="${f(A[1])}" r="3.4"/>` + E.s;
+      s += borjaHar(8, 184, 'fig-vanster') + steg(1, 20, 208, ['två strålar', 'från spetsen'], 1);
+      s += steg(2, 252, 176, ['bryts från', 'normalen'], 1);
+      s += steg(3, 300, 128, ['når pupillens kanter'], -1);
+      s += steg(4, 252, 236, ['spetsen ser ut', 'att ligga högre'], 1);
+      s += steg(5, 20, 92, ['pennan ser', 'bruten ut'], 1);
+      H = yB + 12; nSteg = 5;
+      beskr = 'Pennan i vattenglaset i fem steg, sedd från sidan. 1: två strålar går från pennans spets under vattnet upp mot ytan. 2: vid ytan bryts båda från normalen. 3: strålarna når pupillens övre och nedre kant i ett stort öga. ' +
+        '4: förlängda rakt bakåt, streckat, möts strålarna i en punkt högre upp, där spetsen ser ut att ligga. 5: pennan ser bruten ut vid vattenytan. Den verkliga pennan är heldragen, den skenbara delen ljus och streckad.';
+    } else if (lage === 'fisk') {
+      // III C4: två strålar från fiskens nos bryts vid ytan och når pupillens kanter; förlängda bakåt möts de vid den skenbara
+      // fisken, högre upp och närmare ytan (Fermat, n = 4/3)
+      struktur = true;
+      const yY = 118, E = ogaStort(70, 52, 30, 1, 18, 'ogat'), N = [300, 228];
+      const genomYta = (P, Q) => { let b = null; for (let x = Math.min(P[0], Q[0]); x <= Math.max(P[0], Q[0]); x += 0.02) { const t = N3 * Math.hypot(x - P[0], yY - P[1]) + Math.hypot(Q[0] - x, Q[1] - yY); if (!b || t < b[0]) b = [t, x]; } return [b[1], yY]; };
+      s += `<rect class="fig-ljus-vatten" x="0" y="${yY}" width="${B}" height="${150}"/><line class="fig-ljus-yta" x1="120" y1="${yY}" x2="${B}" y2="${yY}"/>`;
+      s += `<rect class="fig-ljus-brygga" x="0" y="${yY - 10}" width="124" height="12"/><line class="fig-ljus-stolpe" x1="20" y1="${yY}" x2="20" y2="262"/><line class="fig-ljus-stolpe" x1="104" y1="${yY}" x2="104" y2="262"/>`;
+      const fisk = (nx, ny, k, data) => `<g class="fig-ljus-fisk ${k}" ${data}><path d="M${f(nx)} ${f(ny)} Q${f(nx + 26)} ${f(ny - 15)} ${f(nx + 50)} ${f(ny)} Q${f(nx + 26)} ${f(ny + 15)} ${f(nx)} ${f(ny)} Z M${f(nx + 48)} ${f(ny)} L${f(nx + 64)} ${f(ny - 10)} L${f(nx + 64)} ${f(ny + 10)} Z"/></g>`;
+      const S1 = genomYta(N, E.pT), S3 = genomYta(N, E.pB), A = skarning(S1, enh(S1[0] - E.pT[0], S1[1] - E.pT[1]), S3, enh(S3[0] - E.pB[0], S3[1] - E.pB[1]));
+      s += fisk(N[0], N[1], '', `data-fisk="verklig" data-x="${N[0]}" data-y="${N[1]}"`) + fisk(A[0], A[1], 'fig-ljus-bild', `data-fisk="skenbar" data-x="${f(A[0])}" data-y="${f(A[1])}"`);
+      [[S1, E.pT, 'ovre'], [S3, E.pB, 'nedre']].forEach(([Sx, pp, k]) => { s += S2(N, Sx, `data-roll="i-vattnet" data-kant="${k}"`, 'fig-ljus-tunn', k === 'ovre') + S2(Sx, pp, `data-roll="i-luften" data-kant="${k}"`, 'fig-ljus-tunn', k === 'ovre') +
+        SB(Sx, A, `data-kant="${k}"`) + NL([Sx[0], yY - 26], [Sx[0], yY + 26], 'data-normal=""'); });
+      s += E.s + LT(30, 98, 'personen på bryggan', 'fig-vanster').replace('personen på bryggan', 'på bryggan');
+      s += ledare(N[0] + 40, N[1] + 12, 360, 254) + LT(366, 260, 'verklig fisk', 'fig-vanster').replace('x="366"', 'x="330"');
+      s += ledare(A[0] + 40, A[1] - 10, 366, 140) + LT(B - 4, 142, 'skenbar fisk', 'fig-hoger');
+      H = 270;
+      beskr = 'En person på en brygga tittar snett ned i vattnet, sett från sidan. Två strålar från fiskens nos bryts vid ytan och når pupillens övre och nedre kant. Förlängda streckat bakåt möts de vid en skenbar fisk som ligger högre upp och närmare ytan än den verkliga.';
+    } else if (lage === 'glasskiva') {
+      // III C5: en stråle genom en tjock glasskiva (n = 1,5): mot normalen in, lika mycket från normalen ut, parallell förskjuten
+      struktur = true;
+      const y1 = 104, y2 = 176, v = 52 * GR, d0 = [Math.sin(v), Math.cos(v)], dg = bryt3(d0, [0, -1], 1, NG), d3 = bryt3(dg, [0, -1], NG, 1);
+      const P1 = [150, y1], P2 = [P1[0] + (y2 - y1) * dg[0] / dg[1], y2], A = [P1[0] - 110 * d0[0], y1 - 110 * d0[1]];
+      s += `<rect class="fig-ljus-glas" x="20" y="${y1}" width="${B - 40}" height="${y2 - y1}"/>`;
+      s += S2(A, P1, 'data-roll="in"') + S2(P1, P2, 'data-roll="i-glaset"') + S2(P2, [P2[0] + 110 * d3[0], P2[1] + 110 * d3[1]], 'data-roll="ut"');
+      s += SB(P1, [P1[0] + 170 * d0[0], P1[1] + 170 * d0[1]], 'data-roll="forlangning"');
+      s += NL([P1[0], y1 - 44], [P1[0], y1 + 30], 'data-normal=""') + NL([P2[0], y2 - 30], [P2[0], y2 + 44], 'data-normal=""');
+      s += LT(B - 26, y1 + 44, 'glas', 'fig-hoger') + LT(372, 286 - 12, 'förskjutningen', 'fig-hoger').replace('x="372"', 'x="430"');
+      s += ledare(P2[0] + 70 * d3[0] + 10, P2[1] + 70 * d3[1] + 8, 360, 256);
+      H = 286;
+      beskr = 'En stråle genom en tjock glasskiva. Strålen kommer snett in, bryts mot normalen i glaset och lika mycket från normalen när den går ut, och fortsätter parallellt med den inkommande strålen. Den inkommande strålens förlängning är streckad och visar förskjutningen. Normalerna är streckade.';
+    } else if (lage === 'pool') {
+      // III C6: fem lampor på botten, allt snettare: 0°, 25°, 40°, gränsvinkeln (48,6°: brytningsvinkeln 90°) och 54° (totalreflektion).
+      // En svag reflekterad stråle i steg 2–4. Normalerna streckade.
+      const yY = 74, yB = 152, gv = Math.asin(1 / N3) / GR, V = [0, 25, 40, gv, 54], XL = [26, 84, 150, 226, 288];
+      s += `<rect class="fig-ljus-vatten" x="0" y="${yY}" width="${B}" height="${yB - yY}"/><line class="fig-ljus-yta" x1="0" y1="${yY}" x2="${B}" y2="${yY}"/><line class="fig-bord" x1="0" y1="${yB}" x2="${B}" y2="${yB}"/>`;
+      V.forEach((v, i) => { const L = [XL[i], yB - 6], d = [Math.sin(v * GR), -Math.cos(v * GR)], T = [L[0] + (L[1] - yY) * d[0] / -d[1], yY], ut = bryt3(d, [0, 1], N3, 1), r = spegla(d, [0, 1]);
+        let t = `<g class="fig-ljus-panel" data-panel="${i + 1}" data-vinkel="${f(v)}">` + NL([T[0], yY - 40], [T[0], yY + 40], 'data-normal=""') + S2(L, T, 'data-roll="in"');
+        if (i === 3) t += S2(T, [T[0] + 62, yY], 'data-roll="ut"');
+        else if (ut) t += S2(T, [T[0] + 64 * ut[0], T[1] + 64 * ut[1]], 'data-roll="ut"');
+        if (i >= 1 && i <= 3) t += S2(T, [T[0] + 40 * r[0], T[1] + 40 * r[1]], 'data-roll="reflekterad"', 'fig-ljus-svag');
+        if (i === 4) { const l = Math.min((yB - yY) / r[1], (B - 2 - T[0]) / r[0]); t += S2(T, [T[0] + l * r[0], T[1] + l * r[1]], 'data-roll="reflekterad"'); }
+        s += t + `<circle class="fig-ljus-poollampa" cx="${L[0]}" cy="${yB - 3}" r="6"/></g>`; });
+      s += borjaHar(8, 214, 'fig-vanster') + steg(1, XL[0], 176, ['rakt ut'], 1) + steg(3, XL[2], 176, ['bryts mer'], 1) + steg(5, XL[4], 176, ['totalreflektion'], 1);
+      s += steg(2, XL[1] + 12, 228, ['bryts från normalen'], 1) + steg(4, XL[3] - 6, 268, ['ca 49°: längs ytan'], 1).replace(/x="238"/, 'x="238"');
+      H = 286; nSteg = 5;
+      beskr = 'Fem lampor på botten av en pool, från vänster till höger allt snettare. 1: rakt upp går strålen rakt ut. 2: snett bryts strålen från normalen. 3: ännu snettare bryts den mer. 4: vid infallsvinkeln ca 49° är brytningsvinkeln 90°, och strålen går längs ytan. ' +
+        '5: vid mer än 49° reflekteras allt ljus tillbaka ned i vattnet, totalreflektion. En svag reflekterad stråle finns också i steg 2–4. Normalerna är streckade.';
+    } else if (lage === 'fiber') {
+      // III C7: en måttligt böjd fiber (cirkelbåge) med kärna och mantel; strålen totalreflekteras mot kärnans gräns hela vägen,
+      // räknad med reflektionslagen mot de krökta gränserna. Infallsvinklarna (i data) är större än gränsvinkeln 70°
+      // (kärna n = 1,5, mantel n = 1,41).
+      struktur = true;
+      const C = [220, 342], Ri = 266, Ru = 290, Mi = 258, Mu = 298, a0 = -140 * GR, a1 = -40 * GR;
+      const pt = (r, a) => f(C[0] + r * Math.cos(a)) + ' ' + f(C[1] + r * Math.sin(a));
+      const band = (ru, ri, k) => `<path class="${k}" d="M${pt(ru, a0)} A${ru} ${ru} 0 0 1 ${pt(ru, a1)} L${pt(ri, a1)} A${ri} ${ri} 0 0 0 ${pt(ri, a0)} Z"/>`;
+      s += band(Mu, Mi, 'fig-ljus-mantel') + band(Ru, Ri, 'fig-ljus-karna');
+      const rIn = (Ri + Ru) / 2, tg = a => [-Math.sin(a), Math.cos(a)], vr = (v, g) => [v[0] * Math.cos(g) - v[1] * Math.sin(g), v[0] * Math.sin(g) + v[1] * Math.cos(g)];
+      let p = [C[0] + rIn * Math.cos(a0), C[1] + rIn * Math.sin(a0)], d = vr(tg(a0), -11 * GR); const inV = [];
+      s += S2([p[0] - 44 * d[0], p[1] - 44 * d[1]], p, 'data-roll="in"');
+      const traffa = r => { const ox = p[0] - C[0], oy = p[1] - C[1], b = ox * d[0] + oy * d[1], c = ox * ox + oy * oy - r * r, D = b * b - c; if (D < 0) return null; const t = [-b - Math.sqrt(D), -b + Math.sqrt(D)].filter(x => x > 0.5); return t.length ? Math.min(...t) : null; };
+      for (let k = 0; k < 20; k++) { const t = [traffa(Ru), traffa(Ri)].filter(x => x != null).sort((a, b) => a - b)[0], q = [p[0] + t * d[0], p[1] + t * d[1]];
+        if (Math.atan2(q[1] - C[1], q[0] - C[0]) > a1) { const e = [Math.cos(a1), Math.sin(a1)], q2 = skarning(p, d, C, e);
+          s += S2(p, q2, 'data-roll="i-karnan"', 'fig-ljus-tunn', false) + S2(q2, [q2[0] + 40 * d[0], q2[1] + 40 * d[1]], 'data-roll="ut"'); break; }
+        const n = enh(q[0] - C[0], q[1] - C[1]), vin = Math.acos(Math.abs(skal(d, n))) / GR; inV.push(vin);
+        s += S2(p, q, `data-roll="i-karnan" data-infall="${f(vin)}"`, 'fig-ljus-tunn', k % 2 === 0); d = spegla(d, n); p = q; }
+      s += `<g class="fig-ljus-fiberdata" data-gransvinkel="70" data-infallsvinklar="${inV.map(v => f(v)).join(',')}"></g>`;
+      s += ledare(C[0] - 40, C[1] - rIn + 4, 150, 120) + LT(150, 138, 'kärna', 'fig-mitt');
+      s += ledare(C[0] - 210, C[1] - Mu * 0.64 - 4, 40, 40) + LT(16, 30, 'mantel', 'fig-vanster');
+      s += ledare(C[0] + 150, C[1] - Ru * 0.83 + 2, 330, 22) + LT(B - 4, 22, 'totalreflektion', 'fig-hoger');
+      H = 206;
+      beskr = 'Ljus i en optisk fiber: en måttligt böjd glastråd i genomskärning med kärna och mantel. En stråle går in i ena änden och totalreflekteras i sicksack mot gränsen mellan kärnan och manteln hela vägen till andra änden.';
+    } else if (lage === 'hagring') {
+      // III C8: strålen från himlen böjs gradvis uppåt i en jämn båge (en parabel – ingen knäck) och når ögat; ögat förlänger
+      // den rakt bakåt (längs tangenten), och himlen syns som en blank fläck på vägen
+      const yV = 232, xm = 236, yL = 224, P0 = [18, 44], c = (yL - P0[1]) / ((xm - P0[0]) * (xm - P0[0])), Y = x => yL - c * (x - xm) * (x - xm), O = [406, Y(406)];
+      [[0, 'fig-ljus-skikt1'], [1, 'fig-ljus-skikt2'], [2, 'fig-ljus-skikt3'], [3, 'fig-ljus-skikt4']].forEach(([i, k]) => { s += `<rect class="${k}" x="0" y="${yV - 64 + i * 16}" width="${B}" height="16"/>`; });
+      s += `<rect class="fig-ljus-asfalt" x="0" y="${yV}" width="${B}" height="12"/>`;
+      const pts = []; for (let x = P0[0]; x <= O[0] + 0.01; x += 2) pts.push([x, Y(x)]);
+      s += `<polyline class="fig-ljus-strale fig-ljus-bana" data-roll="bana" points="${pts.map(p => f(p[0]) + ',' + f(p[1])).join(' ')}"/>`;
+      [0.18, 0.62, 0.9].forEach(t => { const i = Math.round(t * (pts.length - 1)); s += stralSpets(pts[i - 1][0], pts[i - 1][1], pts[i + 1][0], pts[i + 1][1], '', 0.5); });
+      const dO = enh(1, -2 * c * (O[0] - xm)), F = vidY(O, dO, yV);
+      s += SB(O, F, 'data-roll="forlangning"') + `<ellipse class="fig-ljus-blank" data-x="${f(F[0])}" cx="${f(F[0])}" cy="${yV + 2}" rx="26" ry="4"/>`;
+      s += `<g class="fig-ljus-bil3"><rect x="${O[0] - 4}" y="${O[1] - 10}" width="36" height="${yV - O[1] + 6}" rx="8"/></g><circle class="fig-ljus-ogpunkt" data-oga="bilist" cx="${f(O[0])}" cy="${f(O[1])}" r="2.6"/>`;
+      s += borjaHar(58, 20, 'fig-vanster') + steg(1, 70, 44, ['ljus från himlen'], 1);
+      s += steg(2, 26, 152, ['varmast närmast', 'asfalten'], 1);
+      s += steg(3, 236, 206, ['böjs uppåt'], 1);
+      s += steg(4, 386, 84, ['bilistens', 'öga'], -1);
+      s += steg(5, 290, 150, ['himlen syns', 'på vägen'], 1);
+      H = 252; nSteg = 5;
+      beskr = 'En hägring på en varm väg i fem steg, sedd från sidan. 1: ljus från himlen går snett nedåt mot vägen långt fram. 2: närmast asfalten är luften varmast, markerad med allt ljusare skikt. 3: strålen böjs gradvis uppåt i en jämn båge. ' +
+        '4: strålen når bilistens öga. 5: ögat förlänger strålen rakt bakåt, streckat, och himlen syns som en blank fläck på vägen.';
+    } else if (lage === 'diamant') {
+      // III C9: diamant (n = 2,42, gränsvinkel 24,4°) i genomskärning. Ljuset in genom den plana toppen (bryts), totalreflekteras mot
+      // två sneda nedre ytor och går ut genom toppen. Strålen räknas; infallsvinklarna mot de sneda ytorna skrivs i data.
+      const yT = 70, yG = 104, xL = 70, xR = 370, cx = 220, yC = yG + 150 * Math.tan(44 * GR), tL = 150, tR = 290;
+      s += `<path class="fig-ljus-diamant" d="M${tL} ${yT} L${tR} ${yT} L${xR} ${yG} L${cx} ${f(yC)} L${xL} ${yG} Z"/>`;
+      const v0 = 8 * GR, d0 = [Math.sin(v0), Math.cos(v0)], P0 = [252, yT], A0 = [P0[0] - 60 * d0[0], yT - 60 * d0[1]];
+      let d = bryt3(d0, [0, -1], 1, ND); s += S2(A0, P0, 'data-roll="in"');
+      const ytor = [[[xR, yG], [cx, yC]], [[xL, yG], [cx, yC]]]; let p = P0; const vin = [];
+      ytor.forEach(([a, b], i) => { const e = enh(b[0] - a[0], b[1] - a[1]), q = skarning(p, d, a, e); let n = [-e[1], e[0]]; if (skal(n, d) > 0) n = [-n[0], -n[1]];
+        const v = Math.acos(-skal(d, n)) / GR; vin.push(v);
+        s += S2(p, q, `data-roll="i-diamanten" data-yta="${i + 1}" data-infall="${f(v)}"`, 'fig-ljus-tunn', i === 0) + NL(q, [q[0] + 28 * n[0], q[1] + 28 * n[1]], 'data-normal=""');
+        d = spegla(d, n); p = q; });
+      const q = vidY(p, d, yT), ut = bryt3(d, [0, 1], ND, 1);
+      s += S2(p, q, 'data-roll="i-diamanten" data-yta="ut"', 'fig-ljus-tunn') + S2(q, [q[0] + 50 * ut[0], q[1] + 50 * ut[1]], 'data-roll="ut"') + ogaFig(q[0] + 58 * ut[0] - 4, q[1] + 58 * ut[1], 1).replace('<g class="fig-oga"', '<g class="fig-oga" data-betraktare=""');
+      s += `<g data-ut-x="${f(q[0])}" data-tL="${tL}" data-tR="${tR}" data-infall="${vin.map(v => f(v)).join(',')}"></g>`;
+      s += borjaHar(306, 60, 'fig-vanster') + steg(1, 290, 24, ['in genom toppen'], 1);
+      s += steg(2, 390, 214, ['totalreflektion'], -1) + steg(3, 64, 190, ['och igen'], 1) + steg(4, 26, 30, ['ut mot ögat'], 1);
+      H = 268; nSteg = 4;
+      beskr = 'En slipad diamant i genomskärning i fyra steg. 1: ljus kommer in genom den plana toppen och bryts. 2: strålen träffar en av de sneda nedre ytorna med större infallsvinkel än 24° och totalreflekteras. ' +
+        '3: strålen träffar den motsatta sneda ytan och totalreflekteras igen. 4: strålen går ut genom toppen mot betraktarens öga.';
+    } else if (lage === 'prisma-vander') {
+      // III C10: rätvinkligt prisma (n = 1,5, gränsvinkel 41,8°) med den långa sidan lodrät. Två vågräta strålar in vinkelrätt,
+      // totalreflektion mot båda korta sidorna med exakt 45°, ut åt samma håll – den övre har blivit den nedre.
+      const xl = 160, yo = 60, yu = 236, xs = xl + (yu - yo) / 2, ym = (yo + yu) / 2;
+      s += `<path class="fig-ljus-prisma" d="M${xl} ${yo} L${xs} ${ym} L${xl} ${yu} Z"/>`;
+      [['ovre', ym - 34], ['nedre', ym - 14]].forEach(([k, y]) => { const P1 = [xs - (ym - y), y], P2 = [P1[0], ym + (ym - y)];
+        s += S2([20, y], [xl, y], `data-roll="in" data-stråle="${k}"`.replace('stråle', 'strale'), '', k === 'ovre') + S2([xl, y], P1, `data-roll="i-prismat" data-strale="${k}"`, '', false) + S2(P1, P2, `data-roll="ned" data-strale="${k}"`, '', k === 'ovre') +
+          S2(P2, [xl, P2[1]], `data-roll="tillbaka" data-strale="${k}"`, '', false) + S2([xl, P2[1]], [20, P2[1]], `data-roll="ut" data-strale="${k}"`, '', k === 'ovre');
+        if (k === 'ovre') s += NL(P1, [P1[0] - 30 / Math.SQRT2, P1[1] + 30 / Math.SQRT2], 'data-normal=""') + NL(P2, [P2[0] - 30 / Math.SQRT2, P2[1] - 30 / Math.SQRT2], 'data-normal=""'); });
+      s += borjaHar(6, 26, 'fig-vanster') + steg(1, 24, 50, ['in genom den långa sidan'], 1);
+      s += steg(2, xs + 22, ym - 50, ['totalreflektion,', 'infallsvinkel 45°'], 1) + steg(3, xs + 22, ym + 44, ['och igen'], 1) + steg(4, 24, 222, ['tillbaka: den övre', 'är nu den nedre'], 1);
+      H = 262; nSteg = 4;
+      beskr = 'Ett rätvinkligt prisma i fyra steg. 1: två parallella strålar, en övre och en nedre, går rakt in genom prismats långa sida. 2: de totalreflekteras mot den första korta sidan, med infallsvinkeln 45°. 3: de totalreflekteras mot den andra korta sidan. ' +
+        '4: de går ut genom den långa sidan tillbaka åt samma håll, och den övre strålen har blivit den nedre.';
+    } else if (lage === 'linskant') {
+      // III D2: förstorad detalj av en konvex lins (n = 1,5) – två riktiga brytningar: mot normalen in, från normalen ut;
+      // båda böjer strålen in mot axeln. Ytorna är cirkelbågar, normalerna går genom bågarnas medelpunkter.
+      const yA = 200, R = 200, C1 = [330, yA], C2 = [-10, yA], h = 84, y0 = yA - h;
+      const xF = y => C1[0] - Math.sqrt(R * R - (y - yA) * (y - yA)), xB = y => C2[0] + Math.sqrt(R * R - (y - yA) * (y - yA)), hk = Math.sqrt(R * R - 170 * 170);
+      let lins = `M${f(xF(yA - hk))} ${f(yA - hk)}`; for (let y = yA - hk; y <= yA + 0.01; y += 3) lins += ` L${f(xF(y))} ${f(y)}`;
+      for (let y = yA; y >= yA - hk - 0.01; y -= 3) lins += ` L${f(xB(y))} ${f(y)}`;
+      s += `<path class="fig-ljus-lins" data-lins="konvex-detalj" d="${lins} Z"/>` + axel3(8, B - 8, yA);
+      const P1 = [xF(y0), y0], n1 = enh(P1[0] - C1[0], P1[1] - C1[1]), d1 = bryt3([1, 0], n1, 1, NG);
+      const ox = P1[0] - C2[0], oy = P1[1] - C2[1], bb = ox * d1[0] + oy * d1[1], t = -bb + Math.sqrt(bb * bb - (ox * ox + oy * oy - R * R)), P2 = [P1[0] + t * d1[0], P1[1] + t * d1[1]];
+      const n2 = enh(C2[0] - P2[0], C2[1] - P2[1]), d2 = bryt3(d1, n2, NG, 1), ut = vidY(P2, d2, yA - 6);
+      s += S2([10, y0], P1, 'data-roll="in"') + S2(P1, P2, 'data-roll="i-glaset"') + S2(P2, ut, 'data-roll="ut"');
+      s += NL([P1[0] - 46 * n1[0], P1[1] - 46 * n1[1]], [P1[0] + 40 * n1[0], P1[1] + 40 * n1[1]], 'data-normal="in"') + NL([P2[0] + 46 * n2[0], P2[1] + 46 * n2[1]], [P2[0] - 40 * n2[0], P2[1] - 40 * n2[1]], 'data-normal="ut"');
+      s += `<g class="fig-ljus-linsdata" data-n="${NG}" data-c1="${C1.join(',')}" data-c2="${C2.join(',')}" data-r="${R}"></g>` + LT(B - 8, yA - 10, 'optisk axel', 'fig-hoger');
+      s += borjaHar(8, 66, 'fig-vanster') + steg(1, 20, 90, ['parallell med axeln'], 1);
+      s += steg(2, 52, 150, ['mot normalen in'], 1);
+      s += steg(3, 260, 70, ['från normalen ut'], 1);
+      s += steg(4, 300, 146, ['in mot axeln'], 1);
+      H = yA + 12; nSteg = 4;
+      beskr = 'En förstorad detalj av kanten på en konvex lins i fyra steg. 1: en stråle parallell med den optiska axeln träffar linsens framsida nära kanten. 2: strålen bryts mot normalen när den går in i glaset. 3: strålen bryts från normalen när den går ut ur glaset. ' +
+        '4: båda brytningarna har böjt strålen åt samma håll, in mot axeln. Normalerna är streckade i båda träffpunkterna.';
+    } else if (lage === 'linstyper') {
+      // III D1: brytningen förenklad i linsens mittlinje. Konvex: parallella strålar samlas i F; konkav: de sprids, och de
+      // streckade förlängningarna går till F på den sida ljuset kommer från.
+      struktur = true;
+      const yc = 112, H5 = [-44, -22, 0, 22, 44];
+      const konvex = (xl, fb) => { const F = [xl + fb, yc]; let t = `<g class="fig-ljus-linstyp" data-typ="konvex" data-lins="${xl}" data-f="${F[0]},${yc}">` + lins3(xl, yc, 56, 'konvex');
+        H5.forEach(h => { const L = [xl, yc + h], d = enh(F[0] - L[0], F[1] - L[1]); t += S2([8, yc + h], L, `data-roll="in"`, 'fig-ljus-tunn') + S2(L, [L[0] + d[0] * (fb + 36) / d[0], L[1] + d[1] * (fb + 36) / d[0]], 'data-roll="ut"', 'fig-ljus-tunn'); });
+        t += fPunkt(xl - fb, yc, 'F') + fPunkt(F[0], yc, 'F');
+        t += `<g data-matt="brannvidd"><line class="fig-ledare" x1="${xl}" y1="${yc + 82}" x2="${F[0]}" y2="${yc + 82}"/><line class="fig-ledare" x1="${xl}" y1="${yc + 76}" x2="${xl}" y2="${yc + 88}"/><line class="fig-ledare" x1="${F[0]}" y1="${yc + 76}" x2="${F[0]}" y2="${yc + 88}"/></g>` + LT((xl + F[0]) / 2, yc + 106, 'brännvidd', 'fig-mitt');
+        return t + '</g>'; };
+      const konkav = (xl, fb) => { const F = [xl - fb, yc]; let t = `<g class="fig-ljus-linstyp" data-typ="konkav" data-lins="${xl}" data-f="${F[0]},${yc}">` + lins3(xl, yc, 56, 'konkav');
+        H5.forEach(h => { const L = [xl, yc + h], d = enh(L[0] - F[0], L[1] - F[1]); t += S2([xl - 92, yc + h], L, 'data-roll="in"', 'fig-ljus-tunn') + S2(L, [L[0] + 70 * d[0], L[1] + 70 * d[1]], 'data-roll="ut"', 'fig-ljus-tunn'); if (h) t += SB(L, F, `data-h="${h}"`); });
+        return t + fPunkt(F[0], yc, 'F') + '</g>'; };
+      s += axel3(4, B - 4, yc) + konvex(104, 70) + konkav(338, 64);
+      s += LT(56, 24, 'konvex lins', 'fig-mitt') + LT(338, 24, 'konkav lins', 'fig-mitt') + LT(B - 4, yc + 106, 'brännpunkt F', 'fig-hoger');
+      H = yc + 118;
+      beskr = 'En konvex och en konkav lins sida vid sida, med den optiska axeln streckad. Till vänster går fem parallella strålar genom en konvex lins och samlas i brännpunkten F; F är markerad på båda sidor, och brännvidden är utsatt. ' +
+        'Till höger går fem parallella strålar genom en konkav lins och sprids; förlängda streckat bakåt går de till brännpunkten F på den sida ljuset kommer från. Brytningen är ritad förenklat i linsens mitt.';
+    } else if (lage === 'verklig-bild') {
+      // III D3: ljuset längre bort än F; strålen parallell med axeln bryts genom F, strålen genom mitten går rakt; de korsar
+      // varandra bakom linsen, nedanför axeln – där står papperet, och ljuset syns upp och ned (1/a + 1/b = 1/f)
+      const yc = 150, xl = 218, fb = 60, a = 110, h = 50, b = 1 / (1 / fb - 1 / a), hb = -h * b / a, xo = xl - a, xb = xl + b, T = [xo, yc - h], Bt = [xb, yc - hb];
+      const ljus3 = (x, yTopp, k = '', data = '') => { const up = yTopp < yc, hh = Math.abs(yc - yTopp), sg = up ? 1 : -1;
+        return `<g class="fig-ljus-stearin ${k}" ${data}><rect x="${x - 7}" y="${f(Math.min(yc, yc - sg * (hh - 12)))}" width="14" height="${f(hh - 12)}"/><path class="fig-ljus-laga" d="M${x} ${f(yTopp)} Q${x + 7} ${f(yTopp + sg * 8)} ${x} ${f(yTopp + sg * 13)} Q${x - 7} ${f(yTopp + sg * 8)} ${x} ${f(yTopp)} Z"/></g>`; };
+      s += axel3(6, B - 6, yc) + lins3(xl, yc, 70, 'konvex') + fPunkt(xl - fb, yc, 'F') + fPunkt(xl + fb, yc, 'F');
+      s += `<rect class="fig-ljus-papper3" data-x="${f(xb)}" x="${f(xb - 1)}" y="${yc - 30}" width="8" height="${f(-hb + 50)}"/>`;
+      s += ljus3(xo, T[1], '', `data-foremal="" data-x="${xo}" data-topp="${f(T[1])}"`) + ljus3(xb - 8, Bt[1], 'fig-ljus-bild', `data-bild="" data-x="${f(xb)}" data-topp="${f(Bt[1])}"`);
+      const Lp = [xl, T[1]], dP = enh(xl + fb - Lp[0], yc - Lp[1]);
+      s += S2(T, Lp, 'data-roll="parallell"') + S2(Lp, [Bt[0] + 30 * dP[0], Bt[1] + 30 * dP[1]], 'data-roll="genom-f"');
+      const dM = enh(Bt[0] - T[0], Bt[1] - T[1]); s += S2(T, [Bt[0] + 30 * dM[0], Bt[1] + 30 * dM[1]], 'data-roll="mitten"');
+      s += borjaHar(8, 40, 'fig-vanster') + steg(1, 20, 64, ['bortom F'], 1);
+      s += steg(2, 150, 26, ['parallellt, sedan genom F'], 1);
+      s += steg(3, 20, 214, ['rakt genom mitten'], 1);
+      s += steg(4, 300, 248, ['korsar varandra'], -1);
+      s += steg(5, 400, 60, ['upp och', 'ned på', 'papperet'], 0);
+      H = 270; nSteg = 5;
+      beskr = 'En verklig bild med en konvex lins i fem steg. 1: ett ljus står till vänster om linsen, längre bort än brännpunkten. 2: en stråle från lågans topp går parallellt med axeln och bryts genom brännpunkten F på andra sidan. 3: en stråle från lågans topp går rakt genom linsens mitt. ' +
+        '4: strålarna korsar varandra till höger om linsen, nedanför axeln. 5: där står ett papper, och på det syns ljuset upp och ned. Den optiska axeln är streckad och F markerad på båda sidor. Brytningen är ritad förenklat i linsens mitt.';
+    } else if (lage === 'tre-lagen') {
+      // III D4: tre lägen ovanför varandra (f = 40): bortom 2F – liten upp och nedvänd bild nära F (kamera); mellan F och 2F –
+      // stor upp och nedvänd bild långt bort (projektor); innanför F – skenbild, stor och rättvänd på samma sida (förstoringsglas)
+      struktur = true;
+      const xl = 214, fb = 40, ho = 14, rader = [[130, 'kamera', 44], [56, 'projektor', 130], [24, 'förstoringsglas', 240]];
+      rader.forEach(([a, namn, yc], i) => { const b = 1 / (1 / fb - 1 / a), hb = -ho * b / a, xo = xl - a, xb = xl + b, T = [xo, yc - ho], Bt = [xb, yc - hb];
+        let t = `<g class="fig-ljus-rad" data-rad="${namn}" data-a="${a}" data-f="${fb}" data-lins="${xl}" data-axel="${yc}">` + axel3(4, B - 4, yc) + lins3(xl, yc, 32, 'konvex');
+        [-2, -1, 1, 2].forEach(k => { const x = xl + k * fb; t += `<circle class="fig-ljus-brannpunkt" data-namn="${Math.abs(k) === 2 ? '2F' : 'F'}" cx="${x}" cy="${yc}" r="2.8"/>` + LT(x, yc - 8, Math.abs(k) === 2 ? '2F' : 'F', 'fig-mitt'); });
+        t += pil3(xo, yc, T[1], '', `data-foremal=""`);
+        const Lp = [xl, T[1]];
+        if (b > 0) { t += pil3(xb, yc, Bt[1], 'fig-ljus-bildpil', `data-bild="verklig"`);
+          t += S2(T, Lp, 'data-roll="parallell"', 'fig-ljus-tunn', false) + S2(Lp, Bt, 'data-roll="genom-f"', 'fig-ljus-tunn') + S2(T, Bt, 'data-roll="mitten"', 'fig-ljus-tunn'); }
+        else { t += pil3(xb, yc, Bt[1], 'fig-ljus-skenpil', `data-bild="skenbar"`);
+          const dP = enh(xl + fb - Lp[0], yc - Lp[1]), dM = enh(xl - T[0], yc - T[1]);
+          t += S2(T, Lp, 'data-roll="parallell"', 'fig-ljus-tunn', false) + S2(Lp, [Lp[0] + 70 * dP[0], Lp[1] + 70 * dP[1]], 'data-roll="genom-f"', 'fig-ljus-tunn') + S2(T, [xl + 70 * dM[0], yc + 70 * dM[1]], 'data-roll="mitten"', 'fig-ljus-tunn');
+          t += SB(Lp, Bt, 'data-roll="forlangning"') + SB(T, Bt, 'data-roll="forlangning"'); }
+        t += `<g data-bildlage="${f(xb)},${f(Bt[1])}"></g>`;
+        s += t + LT(4, yc + 30, namn, 'fig-vanster fig-energi-ord') + '</g>'; });
+      H = 282;
+      beskr = 'Var föremålet står avgör bilden, i tre lägen ovanför varandra med F och 2F markerade på axeln. Överst står föremålet, en pil, längre bort än 2F: bilden blir liten och upp och ned nära F på andra sidan – en kamera. ' +
+        'I mitten står föremålet mellan F och 2F: bilden blir stor och upp och ned långt bort – en projektor. Nederst står föremålet innanför F: ingen verklig bild, men streckade förlängningar bakåt ger en stor rättvänd skenbild på samma sida som föremålet – ett förstoringsglas.';
+    } else if (lage === 'forstoringsglas') {
+      // III D5: pilen mellan linsen och F. Konstruktionsstrålarna (parallell → genom F, genom mitten → rakt) bestämmer var
+      // skenbilden ligger; de strålar från pilens topp som når pupillen ritas tunnare, och deras förlängningar går till samma punkt.
+      const xl = 236, yc = 176, fb = 96, a = 52, h = 30, b = 1 / (1 / fb - 1 / a), hb = -h * b / a, xo = xl - a, xb = xl + b, T = [xo, yc - h], I = [xb, yc - hb];
+      const E = ogaStort(404, 150, 26, -1, 16, 'ogat');
+      s += axel3(6, B - 6, yc) + lins3(xl, yc, 76, 'konvex') + fPunkt(xl - fb, yc, 'F') + fPunkt(xl + fb, yc, 'F');
+      s += pil3(xo, yc, T[1], '', 'data-foremal=""') + pil3(I[0], yc, I[1], 'fig-ljus-skenpil', `data-bild="skenbar"`);
+      // konstruktionsstrålarna
+      const Lp = [xl, T[1]], dP = enh(xl + fb - Lp[0], yc - Lp[1]), dM = enh(xl - T[0], yc - T[1]);
+      s += S2(T, Lp, 'data-roll="parallell"', '', false) + S2(Lp, [Lp[0] + 120 * dP[0], Lp[1] + 120 * dP[1]], 'data-roll="genom-f"') + S2(T, [xl + 80 * dM[0], yc + 80 * dM[1]], 'data-roll="mitten"');
+      s += SB(Lp, I, 'data-roll="forlangning" data-konstruktion=""') + SB([xl, yc], I, 'data-roll="forlangning" data-konstruktion=""');
+      // strålarna till pupillen: efter linsen på linjen från skenbilden genom linsen till pupillens kant
+      [['ovre', E.pT], ['nedre', E.pB]].forEach(([k, pp]) => { const yL = I[1] + (pp[1] - I[1]) * (xl - I[0]) / (pp[0] - I[0]);
+        s += S2(T, [xl, yL], `data-roll="till-pupillen" data-kant="${k}"`, 'fig-ljus-tunn', false) + S2([xl, yL], pp, `data-roll="till-pupillen" data-kant="${k}"`, 'fig-ljus-tunn', k === 'ovre') + SB([xl, yL], I, `data-roll="pupill-forlangning" data-kant="${k}"`, 'fig-ljus-tunn'); });
+      s += E.s;
+      s += borjaHar(8, 260, 'fig-vanster') + steg(1, 24, 226, ['innanför F'], 1);
+      s += steg(2, 250, 30, ['parallell,', 'sedan genom F'], 1);
+      s += steg(3, 186, 238, ['rakt genom mitten'], 1);
+      s += steg(4, 410, 200, ['sprids'], 0);
+      s += steg(5, 24, 30, ['skenbilden:', 'större, rättvänd'], 1);
+      s += steg(6, 404, 92, ['ögat'], -1);
+      H = 272; nSteg = 6;
+      beskr = 'Förstoringsglaset i sex steg. 1: en liten pil står mellan linsen och brännpunkten. 2: en stråle från pilens topp parallell med axeln bryts genom F på andra sidan. 3: en stråle från pilens topp går rakt genom linsens mitt. 4: efter linsen sprids de två strålarna. ' +
+        '5: förlängda streckat bakåt möts de i en större, rättvänd pil bakom den verkliga, skenbilden. 6: ögat bakom linsen: de strålar från pilens topp som når pupillen är tunnare, och deras streckade förlängningar går till samma punkt i skenbilden. Brytningen är ritad förenklat i linsens mitt.';
+    } else if (lage === 'konkav-lins') {
+      // III D6: pilen framför en konkav lins: strålen parallell med axeln sprids som om den kom från F på samma sida, strålen
+      // genom mitten går rakt; förlängningarna möts i en mindre rättvänd skenbild närmare linsen (1/a + 1/b = −1/f)
+      struktur = true;
+      const xl = 262, yc = 160, fb = 76, a = 136, h = 60, b = 1 / (-1 / fb - 1 / a), hb = -h * b / a, xo = xl - a, xb = xl + b, T = [xo, yc - h], I = [xb, yc - hb], F = [xl - fb, yc];
+      s += axel3(6, B - 6, yc) + lins3(xl, yc, 76, 'konkav') + fPunkt(F[0], yc, 'F');
+      s += pil3(xo, yc, T[1], '', 'data-foremal=""') + pil3(I[0], yc, I[1], 'fig-ljus-skenpil', 'data-bild="skenbar"');
+      const Lp = [xl, T[1]], dP = enh(Lp[0] - F[0], Lp[1] - F[1]), dM = enh(xl - T[0], yc - T[1]);
+      s += S2(T, Lp, 'data-roll="parallell"') + S2(Lp, [Lp[0] + 120 * dP[0], Lp[1] + 120 * dP[1]], 'data-roll="sprids"') + SB(Lp, F, 'data-roll="forlangning"');
+      s += S2(T, [xl + 130 * dM[0], yc + 130 * dM[1]], 'data-roll="mitten"');
+      s += `<g data-bildlage="${f(I[0])},${f(I[1])}" data-f="${F[0]}"></g>`;
+      s += LT(xo, yc + 30, 'föremål', 'fig-mitt') + LT(xl, 24, 'konkav lins', 'fig-mitt') + ledare(I[0] - 2, I[1] + 8, 190, 228) + LT(190, 246, 'skenbild', 'fig-mitt');
+      H = 262;
+      beskr = 'En pil framför en konkav lins. En stråle parallell med axeln sprids ut så att den ser ut att komma från F på samma sida, och en stråle genom mitten går rakt. De streckade förlängningarna möts i en mindre, rättvänd skenbild närmare linsen än pilen. Brytningen är ritad förenklat i linsens mitt.';
+    } else if (lage === 'halkamera-lins') {
+      // III D7: utan lins går tre strålar från trädets topp genom olika delar av det stora hålet och träffar papperet på tre
+      // ställen (suddigt); med en konvex lins (f = 45: 1/90 + 1/90) samlas de i en punkt (skarpt)
+      struktur = true;
+      const panel = (x0, medLins) => { const yc = 140, T = [x0 + 22, 100], xh = x0 + 112, xp = x0 + 202, hh = [-14, 0, 14];
+        let t = `<g class="fig-ljus-panel" data-panel="${medLins ? 'med' : 'utan'}" data-papper="${xp}">` + trad3(T[0], T[1], 196, '', 'data-trad=""');
+        t += `<path class="fig-ljus-lada" d="M${xh} ${yc - 18} L${xh} 74 L${xp + 8} 74 L${xp + 8} 214 L${xh} 214 L${xh} ${yc + 18}"/><line class="fig-ljus-papper" x1="${xp}" y1="80" x2="${xp}" y2="208"/>`;
+        if (medLins) t += lins3(xh, yc, 20, 'konvex');
+        const Bt = [xp, yc + (yc - T[1])];
+        hh.forEach(dy => { const H_ = [xh, yc + dy], d = medLins ? enh(Bt[0] - H_[0], Bt[1] - H_[1]) : enh(H_[0] - T[0], H_[1] - T[1]), e = vidX(H_, d, xp);
+          t += S2(T, H_, 'data-roll="in"', 'fig-ljus-tunn', false) + S2(H_, e, `data-roll="till-papperet" data-y="${f(e[1])}"`, 'fig-ljus-tunn'); });
+        return t + LT(x0 + 112, 244, medLins ? 'med lins: skarpt' : 'utan lins: suddigt', 'fig-mitt') + '</g>'; };
+      s += panel(0, false) + panel(222, true);
+      H = 256;
+      beskr = 'En hålkamera utan och med lins sida vid sida. Till vänster, ett stort hål: tre strålar från trädets topp går genom olika delar av hålet och träffar papperet på tre olika ställen, och bilden blir en suddig fläck. ' +
+        'Till höger, samma hål med en konvex lins: de tre strålarna bryts och samlas i en punkt på papperet, och bilden blir skarp. Brytningen är ritad förenklat i linsens mitt.';
+    } else if (lage === 'linsformel') {
+      // III D8: räkneexemplet i skala (1 cm = 8 enheter): f = 10 cm, a = 15 cm, b = 30 cm; de två strålarna från Standard
+      struktur = true;
+      const k = 8, yc = 112, fb = 10 * k, a = 15 * k, b = 1 / (1 / fb - 1 / a), xo = 18, xl = xo + a, xb = xl + b, h = 30, T = [xo, yc - h], Bt = [xb, yc + h * b / a];
+      const ljus3 = (x, yTopp, kl = '', data = '') => { const up = yTopp < yc, hh = Math.abs(yc - yTopp), sg = up ? 1 : -1;
+        return `<g class="fig-ljus-stearin ${kl}" ${data}><rect x="${x - 6}" y="${f(Math.min(yc, yc - sg * (hh - 11)))}" width="12" height="${f(hh - 11)}"/><path class="fig-ljus-laga" d="M${x} ${f(yTopp)} Q${x + 6} ${f(yTopp + sg * 7)} ${x} ${f(yTopp + sg * 12)} Q${x - 6} ${f(yTopp + sg * 7)} ${x} ${f(yTopp)} Z"/></g>`; };
+      s += axel3(4, B - 4, yc) + lins3(xl, yc, 64, 'konvex') + fPunkt(xl + fb, yc, 'F');
+      s += ljus3(xo, T[1], '', `data-foremal="" data-x="${xo}"`) + ljus3(xb, Bt[1], 'fig-ljus-bild', `data-bild="" data-x="${f(xb)}"`);
+      const Lp = [xl, T[1]], dP = enh(xl + fb - Lp[0], yc - Lp[1]);
+      s += S2(T, Lp, 'data-roll="parallell"', '', false) + S2(Lp, Bt, 'data-roll="genom-f"') + S2(T, Bt, 'data-roll="mitten"');
+      const matt = (x1, x2, y, namn, txt) => `<g data-matt="${namn}" data-langd="${f(x2 - x1)}"><line class="fig-ledare" x1="${f(x1)}" y1="${y}" x2="${f(x2)}" y2="${y}"/><line class="fig-ledare" x1="${f(x1)}" y1="${y - 6}" x2="${f(x1)}" y2="${y + 6}"/><line class="fig-ledare" x1="${f(x2)}" y1="${y - 6}" x2="${f(x2)}" y2="${y + 6}"/></g>` + LT((x1 + x2) / 2, y + 24, txt, 'fig-mitt');
+      s += matt(xo, xl, 196, 'a', 'a = 15 cm') + matt(xl, xb, 196, 'b', 'b = 30 cm') + matt(xl, xl + fb, 238, 'f', 'f = 10 cm');
+      s += `<g data-skala="${k}"></g>`;
+      H = 270;
+      beskr = 'Linsformelns avstånd i skala: ett ljus till vänster om en konvex lins och en upp och nedvänd bild till höger, med de två strålarna från Standard. Under axeln: a = 15 cm från ljuset till linsen, b = 30 cm från linsen till bilden och f = 10 cm från linsen till F.';
+    // </III-LAGEN>
     } else fel('ljus: okänt läge ”' + lage + '”');
     return { svg: ljudSvg(B, H, s, 'ljus', lage, nSteg, struktur), beskrivning: d.beskrivning || beskr };
   });

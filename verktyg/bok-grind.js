@@ -134,7 +134,8 @@ function delkapitel() {
  * och figurernas id är rätt skrivna och unika – och i VI samma som i källans huvud ("Avsnittens id"), i ordning. Negativt
  * prov (--negativ): felen i STROM_FEL läggs in ett i taget i en kopia i minnet, och kontrollen ska ge rött för just det. */
 const STROM_MAPPAR = ['kraft_och_rorelse/tryck_arbete_och_maskiner/innehall', 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall',
-  'ljud_och_ljus/vad_ljud_ar/innehall', 'ljud_och_ljus/ljud_omkring_oss/innehall'];   // kapitel 2, avsnitt I (arbetsorder 33) och II (34)
+  'ljud_och_ljus/vad_ljud_ar/innehall', 'ljud_och_ljus/ljud_omkring_oss/innehall',   // kapitel 2, avsnitt I (arbetsorder 33) och II (34)
+  'ljud_och_ljus/ljusets_vag/innehall'];   // och III (arbetsorder 38)
 const STROM_KALLOR = { 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud': 'VI-A-Repetition-Ljud-alla-nivaer-v4.md',
   'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljus': 'VI-B-Repetition-Ljus-alla-nivaer-v3.md',
   // kapitel 2 (arbetsorder 33): källorna i kallor/kap2/
@@ -145,8 +146,14 @@ const STROM_KALLOR = { 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/ljud
   'ljud_och_ljus/ljud_omkring_oss/innehall/toner-och-klang': 'kap2/Kap2-II-A-Toner-och-klang-alla-nivaer-v3.md',
   'ljud_och_ljus/ljud_omkring_oss/innehall/resonans-och-instrument': 'kap2/Kap2-II-B-Resonans-och-instrument-alla-nivaer-v2.md',
   'ljud_och_ljus/ljud_omkring_oss/innehall/eko-ultraljud-och-doppler': 'kap2/Kap2-II-C-Eko-ultraljud-och-doppler-alla-nivaer-v2.md',
-  'ljud_och_ljus/ljud_omkring_oss/innehall/ljudniva-buller-och-halsa': 'kap2/Kap2-II-D-Ljudniva-buller-och-halsa-alla-nivaer-v3.md' };
-const VI_IN = 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/', K2_IN = 'ljud_och_ljus/vad_ljud_ar/innehall/', K2_II_IN = 'ljud_och_ljus/ljud_omkring_oss/innehall/';
+  'ljud_och_ljus/ljud_omkring_oss/innehall/ljudniva-buller-och-halsa': 'kap2/Kap2-II-D-Ljudniva-buller-och-halsa-alla-nivaer-v3.md',
+  // avsnitt III (arbetsorder 38)
+  'ljud_och_ljus/ljusets_vag/innehall/ljus-och-seende': 'kap2/Kap2-III-A-Ljus-och-seende-alla-nivaer-v2.md',
+  'ljud_och_ljus/ljusets_vag/innehall/reflektion-och-speglar': 'kap2/Kap2-III-B-Reflektion-och-speglar-alla-nivaer-v2.md',
+  'ljud_och_ljus/ljusets_vag/innehall/ljuset-bryts': 'kap2/Kap2-III-C-Ljuset-bryts-alla-nivaer-v2.md',
+  'ljud_och_ljus/ljusets_vag/innehall/linser-och-bilder': 'kap2/Kap2-III-D-Linser-och-bilder-alla-nivaer-v2.md' };
+const VI_IN = 'kraft_och_rorelse/ljud_och_ljus_repetition/innehall/', K2_IN = 'ljud_och_ljus/vad_ljud_ar/innehall/', K2_II_IN = 'ljud_och_ljus/ljud_omkring_oss/innehall/',
+  K2_III_IN = 'ljud_och_ljus/ljusets_vag/innehall/';
 const STROM_FEL = [
   { namn: 'saknad grundform (VI)', fil: VI_IN + 'ljud/standard.js', fran: '*Tinnitus|tinnitus*', till: '*Tinnitus*', regel: /grundform/ },
   { namn: 'skiljetecken innanför markering (VI)', fil: VI_IN + 'ljud/standard.js', fran: 'kallas *eko*.', till: 'kallas *eko.*', regel: /skiljetecken/ },
@@ -161,7 +168,12 @@ const STROM_FEL = [
   { namn: 'saknad grundform (kap 2 II)', fil: K2_II_IN + 'toner-och-klang/standard.js', fran: '*Buller|buller*', till: '*Buller*', regel: /grundform/ },
   { namn: 'skiljetecken innanför markering (kap 2 II)', fil: K2_II_IN + 'resonans-och-instrument/standard.js', fran: 'kallas *luftpelare*.', till: 'kallas *luftpelare.*', regel: /skiljetecken/ },
   { namn: 'okänd figur (kap 2 II)', fil: K2_II_IN + 'eko-ultraljud-och-doppler/standard.js', fran: "lage: 'doppler-centrum'", till: "lage: 'doppler-centrumm'", regel: /figur/ },
-  { namn: 'felaktig id (kap 2 II)', fil: K2_II_IN + 'ljudniva-buller-och-halsa/enkel.js', fran: "id: 'horselskador'", till: "id: 'horsel_skador'", regel: /\bid\b/ }
+  { namn: 'felaktig id (kap 2 II)', fil: K2_II_IN + 'ljudniva-buller-och-halsa/enkel.js', fran: "id: 'horselskador'", till: "id: 'horsel_skador'", regel: /\bid\b/ },
+  // avsnitt III (arbetsorder 38)
+  { namn: 'saknad grundform (kap 2 III)', fil: K2_III_IN + 'reflektion-och-speglar/standard.js', fran: '*Reflektionslagen|reflektionslagen*', till: '*Reflektionslagen*', regel: /grundform/ },
+  { namn: 'skiljetecken innanför markering (kap 2 III)', fil: K2_III_IN + 'ljuset-bryts/standard.js', fran: 'kallas *gränsvinkel*.', till: 'kallas *gränsvinkel.*', regel: /skiljetecken/ },
+  { namn: 'okänd figur (kap 2 III)', fil: K2_III_IN + 'linser-och-bilder/standard.js', fran: "lage: 'forstoringsglas'", till: "lage: 'forstoringsglaset'", regel: /figur/ },
+  { namn: 'felaktig id (kap 2 III)', fil: K2_III_IN + 'ljus-och-seende/enkel.js', fran: "id: 'hur-vi-ser'", till: "id: 'hur_vi_ser'", regel: /\bid\b/ }
 ];
 function stromFiler() {
   const ut = [];
@@ -196,7 +208,7 @@ function stromKoll(filer) {
         if ((s.match(/\*/g) || []).length % 2) f_(`udda antal * i ”${s.slice(0, 60)}…”`);
         for (const m of s.matchAll(/\*([^*]+)\*/g)) { const [ord, gf] = m[1].split('|');
           if (/^[.,;:!?]|[.,;:!?]$/.test(ord) || (gf && /[.,;:!?]$/.test(gf))) f_(`skiljetecken innanför markeringen: *${m[1]}*`);
-          if (!gf && /^[A-ZÅÄÖ]/.test(ord) && (x.mapp.startsWith(VI_IN) || x.mapp.startsWith(K2_IN) || x.mapp.startsWith(K2_II_IN))) f_(`begreppet *${ord}* har stor bokstav men ingen grundform`); } }   // (bara VI: ordern; V A har namnet *Arkimedes princip*)
+          if (!gf && /^[A-ZÅÄÖ]/.test(ord) && (x.mapp.startsWith(VI_IN) || x.mapp.startsWith(K2_IN) || x.mapp.startsWith(K2_II_IN) || x.mapp.startsWith(K2_III_IN))) f_(`begreppet *${ord}* har stor bokstav men ingen grundform`); } }   // (bara VI: ordern; V A har namnet *Arkimedes princip*)
       for (const b of figurer) {
         if (!F[b.namn]) { f_(`okänd figur ”${b.namn}” (${b.id})`); continue; }
         try { const r = F[b.namn](b); if (!r || !/<svg/.test(typeof r === 'string' ? r : r.svg)) f_(`figuren ${b.id} (${b.namn}${b.lage ? ' ' + b.lage : ''}) ritar ingen svg`); }
@@ -979,8 +991,8 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           for (let i = w; i < d.length - w; i++) if (d[i] > m * 1.04 && d.slice(i - w, i + w + 1).every(v => v <= d[i])) t.push(x0 + i);
           const dx = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b); return { toppar: t, lam: dx.length ? dx[Math.floor(dx.length / 2)] : NaN }; };
         // stegen
-        const FORLOPP = { 'ljud membran': 5, 'ljud resonans': 4, 'ljud ekolod': 5, 'ljud linjal': 4, 'ljud membran-hoger': 4, 'ljud fjader': 3, 'ljud vakuum': 4, 'ljud aska': 4, 'ljud orat-vag': 6, 'ljud gunga': 4, 'ljud stamgafflar': 4, 'ljud stamgaffel-bord': 4, 'ljud vinglas': 4, 'ljud eko-berg': 4, 'ljud ekolod-botten': 5, 'ljud ljudbang': 4, 'ljus spegelbild': 4, 'ljus brytning': 3, 'ljus penna': 4, 'ljus totalreflektion': 3, 'ljus ogat': 4, 'ljus farg': 3 };
-        const STRUKTUR = ['ljud orat', 'ljus speglar', 'ljus linser', 'ljus spektrum', 'ljud vagtyper', 'ljud tva-modeller', 'ljud vagbegrepp', 'ljud horomraden', 'ljud hastigheter', 'ljud orat-delar', 'ljud huvud', 'ljud snacka',
+        const FORLOPP = { 'ljus se-tallrik': 5, 'ljus mus-tjuv': 3, 'ljus halkamera': 5, 'ljus fizeau': 5, 'ljus spegelbild-steg': 4, 'ljus reflex': 4, 'ljus stralkastare': 4, 'ljus hel-kropp': 4, 'ljus periskop': 4, 'ljus vagfront': 4, 'ljus penna-steg': 5, 'ljus pool': 5, 'ljus hagring': 5, 'ljus diamant': 4, 'ljus prisma-vander': 4, 'ljus linskant': 4, 'ljus verklig-bild': 5, 'ljus forstoringsglas': 6, 'ljud membran': 5, 'ljud resonans': 4, 'ljud ekolod': 5, 'ljud linjal': 4, 'ljud membran-hoger': 4, 'ljud fjader': 3, 'ljud vakuum': 4, 'ljud aska': 4, 'ljud orat-vag': 6, 'ljud gunga': 4, 'ljud stamgafflar': 4, 'ljud stamgaffel-bord': 4, 'ljud vinglas': 4, 'ljud eko-berg': 4, 'ljud ekolod-botten': 5, 'ljud ljudbang': 4, 'ljus spegelbild': 4, 'ljus brytning': 3, 'ljus penna': 4, 'ljus totalreflektion': 3, 'ljus ogat': 4, 'ljus farg': 3 };
+        const STRUKTUR = ['ljus tre-ytor', 'ljus skuggor', 'ljus solformorkelse', 'ljus reflektionslagen', 'ljus slat-skrovlig', 'ljus fonster', 'ljus buktiga-speglar', 'ljus vagspegel', 'ljus brytning-tva', 'ljus fisk', 'ljus glasskiva', 'ljus fiber', 'ljus linstyper', 'ljus tre-lagen', 'ljus konkav-lins', 'ljus halkamera-lins', 'ljus linsformel', 'ljud orat', 'ljus speglar', 'ljus linser', 'ljus spektrum', 'ljud vagtyper', 'ljud tva-modeller', 'ljud vagbegrepp', 'ljud horomraden', 'ljud hastigheter', 'ljud orat-delar', 'ljud huvud', 'ljud snacka',
           'ljud tonhojd-tid', 'ljud styrka-tid', 'ljud gitarrhals', 'ljud klang-tid', 'ljud strang-delar', 'ljud tonomfang', 'ljud flaskor', 'ljud doppler-centrum', 'ljud decibel', 'ljud exponering', 'ljud bullerbekampning', 'ljud avstandslagen', 'ljud audiogram'];
         const ringar = qa('g.fig-steg'), N = FORLOPP[typ];
         if (N) {
@@ -1489,6 +1501,222 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           if (!K.buller || !(d('buller')[5] > d('buller')[4] + 10 && d('buller')[5] > d('buller')[6] + 10)) f_.push('bullerskadan har ingen dipp vid 4 000 Hz som blir bättre vid 8 000 Hz');
           if (!K.alder || d('alder').some((v, i) => i && v < d('alder')[i - 1]) || !(d('alder')[6] > d('alder')[0] + 30)) f_.push('åldersnedsättningen blir inte gradvis sämre mot höga frekvenser');
           ['normal hörsel', 'bullerskada', 'åldersnedsättning'].forEach(t => { if (!qa('text').some(x => x.textContent === t)) f_.push('"' + t + '" saknas'); });
+        // <III-PROV arbetsorder 38>
+        // ---- Kapitel 2 avsnitt III Ljusets väg (arbetsorder 38): strålgången räknad, inte ritad på öga ----
+        } else if (lage === 'se-tallrik') {
+          const g = q('g.fig-ljus-ogastort'), cx = +g.dataset.cx, cy = +g.dataset.cy, r = +g.dataset.r, inne = (x, y) => Math.hypot(x - cx, y - cy) <= r + 1;
+          qa('line.fig-ljus-strale').forEach(l => { const b = L_(l); if (inne(b[0], b[1]) && !inne(b[2], b[3])) f_.push('en stråle går ut ur ögat'); });
+          const t = q('line[data-roll="till-ogat"]'); if (!t || !inne(...L_(t).slice(2)) || inne(...L_(t).slice(0, 2))) f_.push('ingen stråle går från tallriken in i ögat');
+          const tt = q('line[data-roll="till-tallriken"]'), tl = L_(tt), lp = q('g.fig-ljus-lampa'); if (!tt || !nara(tl[0], +lp.dataset.x, 16) || !nara(tl[2], L_(t)[0], 1)) f_.push('strålen går inte från lampan till tallriken');
+        } else if (lage === 'mus-tjuv') {
+          if (qa('line.fig-ljus-skenbar, line.fig-ljus-strale.fig-ljus-skenbar').length || qa('line.fig-ljus-strale').some(l => getComputedStyle(l).strokeDasharray !== 'none')) f_.push('alla strålar ska vara heldragna');
+          const oga = n => { const c = q('circle[data-oga="' + n + '"]'); return [c.cx.baseVal.value, c.cy.baseVal.value]; }, M = oga('mus'), T = oga('tjuv');
+          const lm = q('line[data-roll="lampa-mus"]'), mt = q('line[data-roll="mus-tjuv"]');
+          if (!lm || Math.hypot(L_(lm)[2] - M[0], L_(lm)[3] - M[1]) > 1) f_.push('strålen från lampan når inte musens öga');
+          if (!mt || Math.hypot(L_(mt)[2] - T[0], L_(mt)[3] - T[1]) > 1) f_.push('ljuset från musen når inte tjuvens öga');
+          qa('line.fig-ljus-strale, line.fig-ljus-skenbar').forEach(l => { const b = L_(l); if (l.dataset.fran !== 'mus' && Math.hypot(b[2] - T[0], b[3] - T[1]) < 8) f_.push('en stråle från strålen mellan lampan och musen når tjuvens öga'); });
+        } else if (lage === 'tre-ytor') {
+          const P = n => q('g[data-panel="' + n + '"]');
+          if (q('line[data-roll="ut"]', P('absorberas'))) f_.push('ljuset ska ta slut på den mörka ytan');
+          if (qa('line[data-roll="ut"]', P('reflekteras')).length < 3) f_.push('den matta ytan ska sprida ljuset åt många håll');
+          const i = L_(q('line[data-roll="in"]', P('igenom'))), u = L_(q('line[data-roll="ut"]', P('igenom'))); if (ak(rikt(i), rikt(u)) > 0.5) f_.push('ljuset genom glaset fortsätter inte åt samma håll');
+        } else if (lage === 'skuggor') {
+          qa('g.fig-ljus-panel').forEach(g => { const b = q('circle.fig-ljus-boll', g), cx = +b.dataset.cx, cy = +b.dataset.cy, r = +b.dataset.r, xv = +g.dataset.vagg, hit = [];
+            qa('line[data-roll="kant"]', g).forEach(l => { const k = L_(l); if (!nara(avst(cx, cy, k), r, 0.6)) f_.push(g.dataset.panel + ': en linje går inte förbi bollens kant'); if (!nara(k[2], xv)) f_.push(g.dataset.panel + ': en linje når inte väggen'); hit.push(k[3]); });
+            hit.sort((a, b) => a - b); const H_ = qa('rect.fig-ljus-helskugga', g), Hv = qa('rect.fig-ljus-halvskugga', g);
+            if (hit.length === 2 && (!H_.length || !nara(+H_[0].dataset.y1, hit[0]) || !nara(+H_[0].dataset.y2, hit[1]))) f_.push('den skarpa skuggan stämmer inte med linjerna');
+            if (hit.length === 4 && (!H_.length || Hv.length !== 2 || !nara(+H_[0].dataset.y1, hit[1]) || !nara(+H_[0].dataset.y2, hit[2]) || !nara(+Hv[0].dataset.y1, hit[0]) || !nara(+Hv[1].dataset.y2, hit[3]))) f_.push('hel- och halvskuggan stämmer inte med linjerna'); });
+        } else if (lage === 'halkamera') {
+          const h = q('circle.fig-ljus-hal'), hx = +h.dataset.x, hy = +h.dataset.y, t = L_(q('line[data-roll="topp"]')), fo = L_(q('line[data-roll="fot"]'));
+          if (avst(hx, hy, t) > 1.5 || avst(hx, hy, fo) > 1.5) f_.push('strålarna går inte genom hålet');
+          const dt = rikt(t), df = rikt(fo), den = dt[0] * df[1] - dt[1] * df[0], tt = ((fo[0] - t[0]) * df[1] - (fo[1] - t[1]) * df[0]) / den, X = t[0] + tt * dt[0];
+          if (!nara(X, hx, 1.5)) f_.push('strålarna korsar inte varandra i hålet (' + X.toFixed(1) + ')');
+          if (!(t[3] > fo[3])) f_.push('bilden på papperet är inte upp och ned');
+          if (qa('line[data-roll="sol"]').length < 2) f_.push('solljuset till trädet saknas (trädet lyser inte själv)');
+        } else if (lage === 'fizeau') {
+          const ov = n => (q('g.fig-ljus-kugghjul[data-hjul="' + n + '"]') || { dataset: {} }).dataset.overst;
+          if (ov('forst') !== 'lucka' || ov('kugg') !== 'kugg' || ov('lucka') !== 'lucka') f_.push('luckorna och kuggen står fel (' + [ov('forst'), ov('kugg'), ov('lucka')].join(', ') + ')');
+          if (!q('line[data-roll="igenom"]') || q('line[data-roll="mot-kugg"]') && L_(q('line[data-roll="mot-kugg"]'))[2] < 100) f_.push('ljuset ska stoppas av kuggen och gå igenom nästa lucka');
+        } else if (lage === 'solformorkelse') {
+          const m = q('circle.fig-ljus-manen'), mx = m.cx.baseVal.value, my = m.cy.baseVal.value, mr = m.r.baseVal.value;
+          qa('line.fig-ljus-strale').forEach(l => { if (!nara(avst(mx, my, L_(l)), mr, 0.6)) f_.push('en linje går inte förbi månens kant'); });
+          const t = q('path.fig-ljus-total'), p = q('path.fig-ljus-partiell'), bt = +t.dataset.y2 - +t.dataset.y1, bp = +p.dataset.y2 - +p.dataset.y1;
+          if (!(bt > 0 && bp > 2 * bt)) f_.push('helskuggan ska vara en liten fläck och halvskuggan större');
+        } else if (lage === 'reflektionslagen') {
+          const i = st('in'), u = st('ut'), n = L_(normaler[0]), sp = L_(q('line.fig-ljus-spegel')), vi = ak(rikt(i), rikt(n)), vu = ak(rikt(u), rikt(n));
+          if (!nara(vi, 40, 0.5) || !nara(vu, 40, 0.5)) f_.push('infallsvinkeln ' + vi.toFixed(1) + '° och reflektionsvinkeln ' + vu.toFixed(1) + '° ska båda vara 40°');
+          if (!nara(ak(rikt(n), rikt(sp)), 90, 0.5)) f_.push('normalen är inte vinkelrät mot spegeln');
+          if (!nara(i[2], n[0]) || !nara(u[0], n[0]) || !nara(i[3], sp[1])) f_.push('strålarna möts inte i normalens fot');
+          qa('path.fig-vinkel').forEach(p => { if (!nara(+p.dataset.grader, vi, 0.5)) f_.push('vinkelbågen ' + p.dataset.grader + '° är ritad ' + vi.toFixed(1) + '°'); });
+        } else if (lage === 'slat-skrovlig') {
+          const pS = q('g[data-panel="slat"]'), pR = q('g[data-panel="skrovlig"]');
+          const par = (L, t) => L.every(l => ak(rikt(l), rikt(L[0])) < (t || 0.5));
+          if (!par(qa('line[data-roll="ut"]', pS).map(L_)) || !par(qa('line.fig-normal', pS).map(L_))) f_.push('den släta ytan: strålarna eller normalerna är inte parallella');
+          const nR = qa('line.fig-normal', pR).map(L_), iR = qa('line[data-roll="in"]', pR).map(L_), uR = qa('line[data-roll="ut"]', pR).map(L_);
+          if (par(nR, 3)) f_.push('den skrovliga ytan: normalerna pekar åt samma håll');
+          nR.forEach((n, k) => { if (!nara(ak(rikt(iR[k]), rikt(n)), ak(rikt(uR[k]), rikt(n)), 0.5)) f_.push('den skrovliga ytan: reflektionslagen gäller inte i punkt ' + (k + 1)); });
+        } else if (lage === 'spegelbild-steg') {
+          const xm = L_(q('line.fig-ljus-spegel'))[0], V = q('g[data-blomma="verklig"]'), Bl = q('g[data-blomma="bild"]'), xb = +V.dataset.x, yb = +V.dataset.y, xi = +Bl.dataset.x;
+          const pup = q('g.fig-ljus-ogastort').dataset.pupill.split(',').map(Number);
+          if (!nara(xm - xb, xi - xm, 1)) f_.push('bilden står inte lika långt bakom spegeln som blomman framför (' + (xm - xb).toFixed(1) + ' / ' + (xi - xm).toFixed(1) + ')');
+          ['ovre', 'nedre'].forEach((k, j) => { const a = L_(q('line[data-roll="till-spegeln"][data-kant="' + k + '"]')), b = L_(q('line[data-roll="till-ogat"][data-kant="' + k + '"]')), c = L_(q('line.fig-ljus-skenbar[data-kant="' + k + '"]'));
+            if (!nara(a[0], xb) || !nara(a[1], yb)) f_.push(k + ': strålen kommer inte från blommans topp');
+            if (!nara(a[2], xm) || !nara(b[0], xm) || !nara(a[3], b[1])) f_.push(k + ': strålen reflekteras inte i spegeln');
+            if (!nara(ak(rikt(a), [1, 0]), ak(rikt(b), [1, 0]), 0.3)) f_.push(k + ': infallsvinkeln är inte lika med reflektionsvinkeln');
+            if (!nara(b[2], pup[0], 0.6) || !nara(b[3], pup[1 + j], 0.6)) f_.push(k + ': strålen når inte pupillens ' + (j ? 'nedre' : 'övre') + ' kant');
+            if (!nara(c[2], xi, 1) || !nara(c[3], yb, 1) || avst(c[2], c[3], b) > 1) f_.push(k + ': förlängningen går inte till spegelbilden'); });
+        } else if (lage === 'fonster') {
+          qa('g.fig-ljus-panel').forEach(g => { const xp = +g.dataset.ruta, a = L_(q('line[data-roll="lampa"]', g)), b = L_(q('line[data-roll="reflex"]', g));
+            if (!nara(a[2], xp) || !nara(ak(rikt(a), [1, 0]), ak(rikt(b), [1, 0]), 0.5)) f_.push(g.dataset.panel + ': reflexen i rutan följer inte reflektionslagen'); });
+          if (!qa('g[data-panel="dag"] line[data-roll="utifran"]').length || qa('g[data-panel="kvall"] line[data-roll="utifran"]').length) f_.push('ljuset utifrån ska finnas på dagen men inte på kvällen');
+        } else if (lage === 'reflex') {
+          const i = st('in'), m = st('mellan'), u = st('ut'), N = qa('line.fig-normal').map(L_);
+          if (ak(rikt(i), rikt(u)) > 0.3 || !(rikt(i)[0] * rikt(u)[0] < 0)) f_.push('strålen går inte tillbaka parallellt med den inkommande');
+          if (N.length !== 2 || !nara(ak(rikt(i), rikt(N[0])), ak(rikt(m), rikt(N[0])), 0.5) || !nara(ak(rikt(m), rikt(N[1])), ak(rikt(u), rikt(N[1])), 0.5)) f_.push('reflektionslagen gäller inte i båda punkterna');
+        } else if (lage === 'buktiga-speglar') {
+          qa('g.fig-ljus-spegeltyp').forEach(g => { const [fx, fy] = g.dataset.f.split(',').map(Number), xv = +g.dataset.xv, fb = +g.dataset.fb, kv = g.dataset.typ === 'konkav', sg = kv ? -1 : 1;
+            if (kv ? !(fx < xv) : !(fx > xv)) f_.push(g.dataset.typ + ': F står på fel sida om spegeln');
+            qa('line[data-roll="in"]', g).forEach(l => { const a = L_(l), h = a[3] - fy, u = q('line[data-roll="ut"][data-h="' + l.dataset.h + '"]', g), b = L_(u), n = [-1, sg * h / (2 * fb)];
+              if (!nara(ak(rikt(a), n), ak(rikt(b), n), 0.5)) f_.push(g.dataset.typ + ': reflektionslagen gäller inte mot ytan (h = ' + h + ')');
+              if (kv && avst(fx, fy, b) > 1) f_.push('konkav: en stråle går inte genom F');
+              if (!kv && h) { const sb = q('line.fig-ljus-skenbar[data-h="' + l.dataset.h + '"]', g), c = L_(sb); if (!nara(c[2], fx, 1) || !nara(c[3], fy, 1) || ak(rikt(c), rikt(b)) > 0.5) f_.push('konvex: en förlängning går inte till F bakom spegeln'); } }); });
+        } else if (lage === 'stralkastare') {
+          const U = qa('line[data-roll="ut"]').map(L_); if (U.some(l => ak(rikt(l), rikt(U[0])) > 3)) f_.push('strålarna ut är inte nästan parallella');
+        } else if (lage === 'vagspegel') {
+          const sp = q('path.fig-ljus-spegel'), cx = +sp.dataset.cx, cy = +sp.dataset.cy;
+          qa('line[data-roll="till-spegeln"]').forEach(l => { const a = L_(l), b = L_(q('line[data-roll="till-foraren"][data-i="' + l.dataset.i + '"]')), n = [a[2] - cx, a[3] - cy];
+            if (!nara(ak(rikt(a), n), ak(rikt(b), n), 0.5)) f_.push('reflektionslagen gäller inte mot den konvexa spegeln'); });
+        } else if (lage === 'hel-kropp') {
+          const p = q('g.fig-ljus-person'), yH = +p.dataset.hjassa, yF = +p.dataset.fotter, o = q('circle[data-oga="person"]'), yO = o.cy.baseVal.value, an = q('line.fig-ljus-anvand');
+          const f1 = L_(q('line[data-roll="fran-fotterna"]')), h1 = L_(q('line[data-roll="fran-hjassan"]'));
+          if (!nara(f1[3], (yO + yF) / 2) || !nara(h1[3], (yO + yH) / 2)) f_.push('strålarna träffar inte spegeln mitt emellan ögonen och golvet respektive hjässan');
+          if (!nara(+an.dataset.y2 - +an.dataset.y1, (yF - yH) / 2, 0.6)) f_.push('den använda delen är inte hälften så lång som personen');
+        } else if (lage === 'periskop') {
+          const i = st('in'), n_ = st('ned'), u = st('ut');
+          if (!nara(rikt(i)[1], 0) || !nara(rikt(n_)[0], 0) || !nara(rikt(u)[1], 0)) f_.push('vågrätt in, rakt ned och vågrätt ut stämmer inte');
+          qa('line.fig-ljus-spegel').forEach(l => { if (!nara(ak(rikt(L_(l)), [1, 0]), 45, 0.5)) f_.push('en spegel lutar inte 45°'); });
+        } else if (lage === 'vagfront') {
+          const i = st('in'), b = st('bruten'), yY = L_(q('line.fig-ljus-yta'))[1], d1 = rikt(i), d2 = rikt(b), n = [0, 1];
+          const v1 = ak(d1, n), v2 = ak(d2, n); if (!(v2 < v1) || !nara(Math.sin(v1 * Math.PI / 180) / Math.sin(v2 * Math.PI / 180), 4 / 3, 0.02)) f_.push('strålen bryts inte mot normalen med n = 4/3');
+          const F = qa('polyline.fig-ljus-front').map(P_), luft = F.filter(p => p.every(x => x[1] < yY - 0.6)), vatten = F.filter(p => p.every(x => x[1] > yY + 0.6)), over = F.filter(p => !luft.includes(p) && !vatten.includes(p));
+          const avs = (A, d) => { const L = Math.hypot(...d), pr = A.map(p => (p[0][0] * d[0] + p[0][1] * d[1]) / L).sort((a, b) => a - b); return pr.slice(1).map((x, k) => x - pr[k]); }, m = a => a.reduce((x, y) => x + y, 0) / a.length;
+          const sa = avs(luft, d1), sv = avs(vatten, d2);
+          if (!sa.length || !sv.length || !nara(m(sv) / m(sa), 0.75, 0.03)) f_.push('avståndet mellan fronterna i vattnet är inte 3/4 av det i luften');
+          luft.concat(vatten).forEach(p => { const d = luft.includes(p) ? d1 : d2; if (Math.abs(90 - ak([p[1][0] - p[0][0], p[1][1] - p[0][1]], d)) > 1) f_.push('en vågfront är inte vinkelrät mot strålen'); });
+          over.forEach(p => { if (p.length !== 3 || !nara(p[1][1], yY) || Math.abs(90 - ak([p[1][0] - p[0][0], p[1][1] - p[0][1]], d1)) > 1 || Math.abs(90 - ak([p[2][0] - p[1][0], p[2][1] - p[1][1]], d2)) > 1) f_.push('en vågfront knäcks inte rätt vid ytan'); });
+        } else if (lage === 'brytning-tva') {
+          const s43 = (a, b) => Math.sin(a * Math.PI / 180) / Math.sin(b * Math.PI / 180);
+          qa('g.fig-ljus-panel').forEach(g => { const n = L_(q('line.fig-normal', g)), i = L_(q('line[data-roll="in"]', g)), b = L_(q('line[data-roll="bruten"]', g)), vi = ak(rikt(i), rikt(n)), vb = ak(rikt(b), rikt(n));
+            const ner = g.dataset.panel === 'luft-vatten', vl = ner ? vi : vb, vw = ner ? vb : vi;
+            if (!(vw < vl) || !nara(s43(vl, vw), 4 / 3, 0.02)) f_.push(g.dataset.panel + ': strålen bryts inte ' + (ner ? 'mot' : 'från') + ' normalen med n = 4/3');
+            if (ner) { const r = q('line[data-roll="reflekterad"]', g); if (!r || !r.classList.contains('fig-ljus-svag') || !nara(ak(rikt(L_(r)), rikt(n)), vi, 0.5)) f_.push('den svaga reflekterade strålen saknas eller följer inte reflektionslagen'); } });
+        } else if (lage === 'penna-steg' || lage === 'fisk') {
+          const yY = L_(q('line.fig-ljus-yta'))[1], pup = q('g.fig-ljus-ogastort').dataset.pupill.split(',').map(Number), A = [];
+          ['ovre', 'nedre'].forEach((k, j) => { const w = L_(q('line[data-roll="i-vattnet"][data-kant="' + k + '"]')), a = L_(q('line[data-roll="i-luften"][data-kant="' + k + '"]')), c = L_(q('line.fig-ljus-skenbar[data-kant="' + k + '"]'));
+            const vw = ak(rikt(w), [0, 1]), va = ak(rikt(a), [0, 1]);
+            if (!nara(w[3], yY) || !nara(a[1], yY) || !nara(w[2], a[0])) f_.push(k + ': strålen bryts inte vid ytan');
+            if (!(va > vw) || !nara(Math.sin(va * Math.PI / 180) / Math.sin(vw * Math.PI / 180), 4 / 3, 0.02)) f_.push(k + ': strålen bryts inte från normalen med n = 4/3');
+            if (!nara(a[2], pup[0], 0.6) || !nara(a[3], pup[1 + j], 0.6)) f_.push(k + ': strålen når inte pupillens ' + (j ? 'nedre' : 'övre') + ' kant');
+            if (avst(c[2], c[3], a) > 1) f_.push(k + ': förlängningen går inte rakt bakåt'); A.push([c[2], c[3]]); });
+          const P0 = L_(q('line[data-roll="i-vattnet"]'));
+          if (Math.hypot(A[0][0] - A[1][0], A[0][1] - A[1][1]) > 1) f_.push('förlängningarna möts inte i en punkt');
+          else if (!(A[0][1] < P0[1] - 5)) f_.push('den skenbara punkten ligger inte högre upp än den verkliga');
+        } else if (lage === 'glasskiva') {
+          const i = st('in'), g = st('i-glaset'), u = st('ut'), vi = ak(rikt(i), [0, 1]), vg = ak(rikt(g), [0, 1]);
+          if (ak(rikt(i), rikt(u)) > 0.3) f_.push('strålen ut är inte parallell med strålen in');
+          if (!nara(Math.sin(vi * Math.PI / 180) / Math.sin(vg * Math.PI / 180), 1.5, 0.02)) f_.push('brytningen följer inte n = 1,5');
+        } else if (lage === 'pool') {
+          const vk = Math.asin(3 / 4) * 180 / Math.PI, P = qa('g.fig-ljus-panel').sort((a, b) => +a.dataset.panel - +b.dataset.panel);
+          const vin = P.map(g => ak(rikt(L_(q('line[data-roll="in"]', g))), [0, 1]));
+          if (P.length !== 5 || vin.some((v, k) => k && !(v > vin[k - 1]))) f_.push('lamporna blir inte allt snettare');
+          P.forEach((g, k) => { const u = q('line[data-roll="ut"]', g), r = q('line[data-roll="reflekterad"]', g), v = vin[k];
+            if (k < 3 && (!u || !nara(Math.sin(ak(rikt(L_(u)), [0, 1]) * Math.PI / 180), 4 / 3 * Math.sin(v * Math.PI / 180), 0.01))) f_.push('steg ' + (k + 1) + ': strålen bryts inte enligt n = 4/3');
+            if (k === 3 && (!nara(v, vk, 0.5) || !u || !nara(rikt(L_(u))[1], 0))) f_.push('steg 4: strålen går inte längs ytan vid ca 49°');
+            if (k === 4 && (u || !(v > vk) || !r || r.classList.contains('fig-ljus-svag'))) f_.push('steg 5: allt ljus ska reflekteras tillbaka');
+            if (k >= 1 && k <= 3 && (!r || !r.classList.contains('fig-ljus-svag') || !nara(ak(rikt(L_(r)), [0, 1]), v, 0.5))) f_.push('steg ' + (k + 1) + ': den svaga reflekterade strålen saknas');
+            if (r && !nara(ak(rikt(L_(r)), [0, 1]), v, 0.5)) f_.push('steg ' + (k + 1) + ': reflektionslagen gäller inte'); });
+        } else if (lage === 'fiber') {
+          const g = q('g.fig-ljus-fiberdata'), gv = +g.dataset.gransvinkel, v = g.dataset.infallsvinklar.split(',').map(Number);
+          if (v.length < 3 || v.some(x => !(x > gv))) f_.push('strålen totalreflekteras inte hela vägen (' + v.join(', ') + ')');
+        } else if (lage === 'hagring') {
+          // ett knä: riktningen ändras plötsligt. Banan provas var 6:e punkt (avrundningen till 0,1 enhet stör inte), och
+          // vinkeländringen får inte hoppa mer än 3° från ett steg till nästa
+          const p = P_(q('polyline[data-roll="bana"]')), g6 = p.filter((x, i) => i % 6 === 0), rv = [];
+          for (let k = 1; k < g6.length; k++) rv.push(Math.atan2(g6[k][1] - g6[k - 1][1], g6[k][0] - g6[k - 1][0]) * 180 / Math.PI);
+          const dv = rv.slice(1).map((x, k) => x - rv[k]), hopp = dv.slice(1).map((x, k) => Math.abs(x - dv[k]));
+          if (!hopp.length || Math.max(...hopp) > 3) f_.push('strålen har ett knä (' + Math.max(...hopp).toFixed(1) + '°)');
+          const ys = p.map(x => x[1]), lo = ys.indexOf(Math.max(...ys)); if (!(lo > 0 && lo < p.length - 1)) f_.push('strålen böjs inte uppåt');
+          const o = q('circle[data-oga="bilist"]'), e = p[p.length - 1]; if (Math.hypot(e[0] - o.cx.baseVal.value, e[1] - o.cy.baseVal.value) > 1) f_.push('strålen når inte bilistens öga');
+          const fl = L_(q('line[data-roll="forlangning"]')); if (ak(rikt(fl), [e[0] - p[p.length - 2][0], e[1] - p[p.length - 2][1]]) > 1.5) f_.push('ögat förlänger inte strålen rakt bakåt');
+        } else if (lage === 'diamant') {
+          const d = q('g[data-ut-x]'), v = d.dataset.infall.split(',').map(Number), ux = +d.dataset.utX;
+          if (v.length !== 2 || v.some(x => !(x > 24.4))) f_.push('infallsvinklarna mot de sneda ytorna ska vara större än 24° (' + v.join(', ') + ')');
+          if (!(ux > +d.dataset.tl && ux < +d.dataset.tr)) f_.push('strålen går inte ut genom toppen');
+          const L = qa('line[data-roll="i-diamanten"]').map(L_), N = qa('line.fig-normal').map(L_);
+          N.forEach((n, k) => { if (!nara(ak(rikt(L[k]), rikt(n)), ak(rikt(L[k + 1]), rikt(n)), 0.5)) f_.push('reflektionslagen gäller inte i punkt ' + (k + 1)); });
+        } else if (lage === 'prisma-vander') {
+          const ut = {};
+          ['ovre', 'nedre'].forEach(k => { const i = L_(q('line[data-roll="in"][data-strale="' + k + '"]')), n = L_(q('line[data-roll="ned"][data-strale="' + k + '"]')), u = L_(q('line[data-roll="ut"][data-strale="' + k + '"]')); ut[k] = u[1];
+            const sp = q('path.fig-ljus-prisma'), P = sp.getAttribute('d').match(/[\d.]+/g).map(Number), y1 = [P[2] - P[0], P[3] - P[1]], y2 = [P[4] - P[2], P[5] - P[3]];
+            if (!nara(ak(rikt(i), [y1[1], -y1[0]]), 45, 0.3) || !nara(ak(rikt(n), [y2[1], -y2[0]]), 45, 0.3)) f_.push(k + ': strålen träffar inte båda korta sidorna med 45°');
+            if (!nara(rikt(u)[1], 0) || !(rikt(u)[0] < 0)) f_.push(k + ': strålen går inte tillbaka åt samma håll'); });
+          if (!(ut.ovre > ut.nedre)) f_.push('den övre strålen har inte blivit den nedre');
+        } else if (lage === 'linskant') {
+          const d = q('g.fig-ljus-linsdata'), c1 = d.dataset.c1.split(',').map(Number), c2 = d.dataset.c2.split(',').map(Number);
+          const i = st('in'), g = st('i-glaset'), u = st('ut'), n1 = [i[2] - c1[0], i[3] - c1[1]], n2 = [g[2] - c2[0], g[3] - c2[1]];
+          const sn = (a, b, n) => Math.sin(ak(rikt(a), n) * Math.PI / 180) / Math.sin(ak(rikt(b), n) * Math.PI / 180);
+          if (!nara(sn(i, g, n1), 1.5, 0.02)) f_.push('in i glaset: brytningen följer inte n = 1,5 (mot normalen)');
+          if (!nara(sn(u, g, n2), 1.5, 0.02)) f_.push('ut ur glaset: brytningen följer inte n = 1,5 (från normalen)');
+          if (!(rikt(g)[1] > 0 && rikt(u)[1] > rikt(g)[1] * Math.hypot(...rikt(u)) / Math.hypot(...rikt(g)))) f_.push('strålen böjs inte in mot axeln båda gångerna');
+        } else if (lage === 'linstyper') {
+          qa('g.fig-ljus-linstyp').forEach(g => { const [fx, fy] = g.dataset.f.split(',').map(Number), xl = +g.dataset.lins;
+            if (g.dataset.typ === 'konvex') { qa('line[data-roll="ut"]', g).forEach(l => { if (avst(fx, fy, L_(l)) > 1) f_.push('konvex: en stråle går inte genom F'); });
+              if (qa('circle.fig-ljus-brannpunkt', g).length !== 2) f_.push('konvex: F ska stå på båda sidor');
+              const m = L_(q('g[data-matt="brannvidd"] line', g)); if (!nara(Math.abs(m[2] - m[0]), fx - xl, 1)) f_.push('brännvidden är inte avståndet till F'); }
+            else { if (!(fx < xl)) f_.push('konkav: F står inte på den sida ljuset kommer från');
+              qa('line.fig-ljus-skenbar', g).forEach(l => { const b = L_(l); if (!nara(b[2], fx) || !nara(b[3], fy)) f_.push('konkav: en förlängning går inte till F'); }); } });
+        } else if (lage === 'verklig-bild' || lage === 'linsformel') {
+          const ax = L_(q('line.fig-ljus-axel'))[1], xl = +q('path.fig-ljus-lins').dataset.x, F = qa('circle.fig-ljus-brannpunkt').map(c => c.cx.baseVal.value).filter(x => x > xl)[0];
+          const p = st('parallell'), gf = st('genom-f'), m = st('mitten');
+          if (!nara(p[1], p[3]) || !nara(p[2], xl)) f_.push('strålen går inte parallellt med axeln till linsen');
+          if (avst(F, ax, gf) > 1) f_.push('strålen bryts inte genom F');
+          if (avst(xl, ax, m) > 1) f_.push('strålen går inte rakt genom linsens mitt');
+          const dg = rikt(gf), dm = rikt(m), den = dg[0] * dm[1] - dg[1] * dm[0], t = ((m[0] - gf[0]) * dm[1] - (m[1] - gf[1]) * dm[0]) / den, X = [gf[0] + t * dg[0], gf[1] + t * dg[1]];
+          const bi = q('g[data-bild]'), bx = +bi.dataset.x;
+          if (!nara(X[0], bx, 1.5)) f_.push('strålarna möts inte där bilden står (' + X[0].toFixed(1) + ' / ' + bx + ')');
+          if (!(X[1] > ax) || !(bx > F)) f_.push('bilden står inte upp och ned bakom F');
+          if (lage === 'linsformel') { const M = n => +q('g[data-matt="' + n + '"]').dataset.langd, a = M('a'), b = M('b'), fv = M('f');
+            if (!nara(a / fv, 1.5, 0.01) || !nara(b / fv, 3, 0.01) || !nara(1 / a + 1 / b, 1 / fv, 0.0002)) f_.push('a, b och f är inte 15, 30 och 10 i skala'); }
+        } else if (lage === 'tre-lagen') {
+          qa('g.fig-ljus-rad').forEach(g => { const a = +g.dataset.a, fv = +g.dataset.f, xl = +g.dataset.lins, yc = +g.dataset.axel, b = 1 / (1 / fv - 1 / a), [bx, by] = q('g[data-bildlage]', g).dataset.bildlage.split(',').map(Number);
+            const o = q('g[data-foremal]', g), ho = yc - +o.dataset.spets, hb = yc - by;
+            if (!nara(bx, xl + b, 1) || !nara(hb, -ho * b / a, 1)) f_.push(g.dataset.rad + ': bildens läge eller storlek stämmer inte med linsformeln');
+            if (qa('circle.fig-ljus-brannpunkt', g).length !== 4) f_.push(g.dataset.rad + ': F och 2F ska stå på båda sidor');
+            const r = g.dataset.rad, sk = q('g[data-bild="skenbar"]', g);
+            if (r === 'kamera' && !(a > 2 * fv && b > fv && b < 2 * fv && Math.abs(hb) < ho && hb < 0)) f_.push('kamera: bilden ska vara liten och upp och ned nära F');
+            if (r === 'projektor' && !(a > fv && a < 2 * fv && b > 2 * fv && Math.abs(hb) > ho && hb < 0)) f_.push('projektor: bilden ska vara stor och upp och ned långt bort');
+            if (r === 'förstoringsglas' && !(a < fv && b < 0 && hb > ho && sk)) f_.push('förstoringsglas: skenbilden ska vara stor och rättvänd på samma sida'); });
+        } else if (lage === 'forstoringsglas') {
+          const ax = L_(q('line.fig-ljus-axel'))[1], xl = +q('path.fig-ljus-lins').dataset.x, F = qa('circle.fig-ljus-brannpunkt').map(c => c.cx.baseVal.value).filter(x => x > xl)[0];
+          const o = q('g[data-foremal]'), I = q('g[data-bild="skenbar"]'), ix = +I.dataset.x, iy = +I.dataset.spets, ox = +o.dataset.x, oy = +o.dataset.spets;
+          if (avst(F, ax, st('genom-f')) > 1) f_.push('den parallella strålen bryts inte genom F');
+          if (avst(xl, ax, st('mitten')) > 1) f_.push('strålen genom mitten går inte rakt');
+          qa('line[data-konstruktion]').forEach(l => { const b = L_(l); if (!nara(b[2], ix, 1) || !nara(b[3], iy, 1)) f_.push('en konstruktionsstråles förlängning går inte till skenbildens topp'); });
+          if (!(ix < ox && iy < oy && ax - iy > ax - oy)) f_.push('skenbilden ska vara större, rättvänd och på samma sida som föremålet');
+          const pup = q('g.fig-ljus-ogastort').dataset.pupill.split(',').map(Number);
+          ['ovre', 'nedre'].forEach((k, j) => { const ls = qa('line.fig-ljus-strale[data-roll="till-pupillen"][data-kant="' + k + '"]').map(L_), e = L_(q('line[data-roll="pupill-forlangning"][data-kant="' + k + '"]'));
+            if (ls.length !== 2 || !nara(ls[1][2], pup[0], 0.6) || !nara(ls[1][3], pup[1 + j], 0.6)) f_.push(k + ': strålen når inte pupillens kant');
+            else if (!nara(e[2], ix, 1) || !nara(e[3], iy, 1) || ak(rikt(e), rikt(ls[1])) > 0.5) f_.push(k + ': förlängningen av strålen till pupillen går inte till skenbildens topp'); });
+        } else if (lage === 'konkav-lins') {
+          const xl = +q('path.fig-ljus-lins').dataset.x, d = q('g[data-bildlage]'), [ix, iy] = d.dataset.bildlage.split(',').map(Number), F = +d.dataset.f, o = q('g[data-foremal]'), ax = L_(q('line.fig-ljus-axel'))[1];
+          const fl = L_(q('line[data-roll="forlangning"]')); if (!nara(fl[2], F) || !nara(fl[3], ax)) f_.push('den spridda strålen ser inte ut att komma från F');
+          if (avst(xl, ax, st('mitten')) > 1) f_.push('strålen genom mitten går inte rakt');
+          if (!(ix > F && ix < xl && iy < ax && ax - iy < ax - +o.dataset.spets)) f_.push('skenbilden ska vara mindre, rättvänd och mellan F och linsen');
+        } else if (lage === 'halkamera-lins') {
+          qa('g.fig-ljus-panel').forEach(g => { const y = qa('line[data-roll="till-papperet"]', g).map(l => +l.dataset.y), sp = Math.max(...y) - Math.min(...y);
+            if (g.dataset.panel === 'utan' && !(sp > 10)) f_.push('utan lins ska strålarna träffa papperet på olika ställen');
+            if (g.dataset.panel === 'med' && sp > 1) f_.push('med lins ska strålarna samlas i en punkt'); });
+        // </III-PROV>
         } else if (lage === 'foremal') {
           const pA = q('g[data-panel="absorberar"]'), pR = q('g[data-panel="reflekterar"]'), pG = q('g[data-panel="genom"]');
           const ia = L_(q('line[data-roll="in"]', pA)), box = q('rect.fig-ljus-svart', pA), bx = box.x.baseVal.value, by = box.y.baseVal.value;
@@ -3128,8 +3356,8 @@ async function bild(c, dk, lage, vad) {
 const KAPITEL = [
   { mapp: 'materia_och_universum', nr: 'I', titel: 'Materia och universum', avsnitt: ['solsystemet_och_jorden'],
     alla: 'I II III IV V' },
-  // kapitel 2 Ljud och ljus (arbetsorder 33): avsnitt I byggt, II och III (ljuset) tonade
-  { mapp: 'ljud_och_ljus', nr: 'II', titel: 'Ljud och ljus', avsnitt: ['vad_ljud_ar', 'ljud_omkring_oss'], alla: 'I II III' },
+  // kapitel 2 Ljud och ljus (arbetsorder 33): avsnitt I byggt, II (34) och III (38) byggda, IV tonat
+  { mapp: 'ljud_och_ljus', nr: 'II', titel: 'Ljud och ljus', avsnitt: ['vad_ljud_ar', 'ljud_omkring_oss', 'ljusets_vag'], alla: 'I II III IV' },
   { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft', 'fall_kast_och_balans', 'tryck_arbete_och_maskiner', 'ljud_och_ljus_repetition'],
     alla: 'I II III IV V VI' }
 ];

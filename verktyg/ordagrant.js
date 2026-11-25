@@ -175,7 +175,7 @@ function nsFil(f) {
       else if (b.typ === 'rader') ut.push('STYCKE ' + b.rader.join(' ⏎ '));
       else if (b.typ === 'punkter') b.punkter.forEach(p => ut.push('PUNKT ' + p));
       else if (b.typ === 'numrerad') b.punkter.forEach((p, k) => ut.push(`NUMMER ${k + 1}. ${p}`));
-      else if (b.typ === 'formel') ut.push(`FORMEL ${b.uttryck} – ${b.forklaring}`);
+      else if (b.typ === 'formel') ut.push(`FORMEL ${b.uttryck}` + (b.forklaring ? ` – ${b.forklaring}` : ''));
       else if (b.typ === 'exempel') { ut.push('EXEMPEL ' + b.rubrik); b.stycken.forEach((s, si) => s.forEach((x, ri) => ut.push((si && !ri ? 'EXRAD+ ' : 'EXRAD ') + x))); }
       else if (b.typ === 'prova') { ut.push('PROVA'); b.rader.forEach(x => ut.push('PROVARAD ' + x)); }
       else if (b.typ === 'bokref') { ut.push((b.etikett === 'Matematik du behöver:' ? 'MATTE ' : b.etikett === 'Används i Nästa steg:' ? 'ANVÄNDS ' : 'BOKREF? ') + b.lankar.map(l => l.text).join(' · '));
@@ -243,7 +243,11 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
                             ['Kap 2 II A', 'Kap2-II-A-Toner-och-klang-alla-nivaer-v3.md', 'toner-och-klang', 'ljud_och_ljus/ljud_omkring_oss'],
                             ['Kap 2 II B', 'Kap2-II-B-Resonans-och-instrument-alla-nivaer-v2.md', 'resonans-och-instrument', 'ljud_och_ljus/ljud_omkring_oss'],
                             ['Kap 2 II C', 'Kap2-II-C-Eko-ultraljud-och-doppler-alla-nivaer-v2.md', 'eko-ultraljud-och-doppler', 'ljud_och_ljus/ljud_omkring_oss'],
-                            ['Kap 2 II D', 'Kap2-II-D-Ljudniva-buller-och-halsa-alla-nivaer-v3.md', 'ljudniva-buller-och-halsa', 'ljud_och_ljus/ljud_omkring_oss']]) {
+                            ['Kap 2 II D', 'Kap2-II-D-Ljudniva-buller-och-halsa-alla-nivaer-v3.md', 'ljudniva-buller-och-halsa', 'ljud_och_ljus/ljud_omkring_oss'],
+                            ['Kap 2 III A', 'Kap2-III-A-Ljus-och-seende-alla-nivaer-v2.md', 'ljus-och-seende', 'ljud_och_ljus/ljusets_vag'],
+                            ['Kap 2 III B', 'Kap2-III-B-Reflektion-och-speglar-alla-nivaer-v2.md', 'reflektion-och-speglar', 'ljud_och_ljus/ljusets_vag'],
+                            ['Kap 2 III C', 'Kap2-III-C-Ljuset-bryts-alla-nivaer-v2.md', 'ljuset-bryts', 'ljud_och_ljus/ljusets_vag'],
+                            ['Kap 2 III D', 'Kap2-III-D-Linser-och-bilder-alla-nivaer-v2.md', 'linser-och-bilder', 'ljud_och_ljus/ljusets_vag']]) {
   // (VI, arbetsorder 30) "Det här repeterar du:" är en liten rubrik, och ett begrepp med stor bokstav har fått sin
   // grundform (*Tinnitus|tinnitus*, *Hörselnerven|hörselnerv*): på båda sidor läses *Ord|grundform* som *Ord* när Ord
   // börjar med stor bokstav – det enda tillägget, och bara i VI
@@ -288,13 +292,13 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
         else if (b.typ === 'text') f.push('STYCKE ' + b.text); else if (b.typ === 'rader') f.push('STYCKE ' + b.rader.join(' ⏎ '));
         else if (b.typ === 'punkter') b.punkter.forEach(p => f.push('PUNKT ' + p));
         else if (b.typ === 'numrerad') b.punkter.forEach((p, k) => f.push(`NUMMER ${k + 1}. ${p}`));
-        else if (b.typ === 'formel') f.push(`FORMEL ${b.uttryck} – ${b.forklaring}`);
+        else if (b.typ === 'formel') f.push(`FORMEL ${b.uttryck}` + (b.forklaring ? ` – ${b.forklaring}` : ''));   // utan förklaring: arbetsorder 38
         else if (b.typ === 'ruta') f.push('RUTA ' + b.rubrik + ': ' + b.punkter.join(' / '));
         else if (b.typ === 'exempel' && b.stycken) { f.push('EXEMPEL ' + b.rubrik); b.stycken.forEach((s, si) => s.forEach((x, ri) => f.push((si && !ri ? 'EXRAD+ ' : 'EXRAD ') + x))); }
         else if (b.typ === 'exempel') f.push(`EXEMPEL ${b.rubrik}: ${b.rader.join(' ⏎ ')}`);
         else if (b.typ === 'lank') f.push('LANK ' + b.till.join(','));
         else if (b.typ === 'vidare') f.push('VIDARE ' + b.lankar.map(l => `${l.text} → ${l.href || l.bok + '/' + l.ankare}`).join(' · '));
-        else if (b.typ !== 'figur') f.push('OKÄNT ' + b.typ); } }
+        else if (b.typ !== 'figur' && !(b.typ === 'tabell' && /^bild-/.test(b.id || ''))) f.push('OKÄNT ' + b.typ); } }   // (arbetsorder 38: III A6 är en tabell på bildens plats)
     const k = kalla(delar[niva] || []), tFel = [], seq = f.slice();
     // tilläggen på sina platser
     const RUTA_T = 'RUTA Så bläddrar du: Pilarna bredvid boken, ← och → på tangentbordet, eller svep. / Klicka i innehållet för att gå till en sida. / Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.';
