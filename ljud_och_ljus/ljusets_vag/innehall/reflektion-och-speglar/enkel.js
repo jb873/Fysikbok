@@ -98,7 +98,7 @@ Bok.niva('enkel', {
           'På kvällen är det mörkt ute och tänt inne. Nu kommer nästan inget ljus utifrån. Det lilla ljus från rummet som rutan reflekterar syns tydligt. Därför ser du rummet och dig själv i fönstret.'
         ] },
         // [BILD B4: fönstret dag och kväll sida vid sida, strukturfigur: vänster dag – tjocka strålar utifrån går in genom rutan, en tunn stråle från en lampa inne reflekteras i rutan · höger kväll – inga strålar utifrån, samma tunna reflekterade stråle från lampan inne når ögat. Namn: dag – du ser ut, kväll – du ser rummet]
-        { id: 'bild-b4', typ: 'figur', namn: 'ljus', lage: 'fonster', bildtext: 'Rutan reflekterar lite ljus hela tiden. På dagen överröstas det av ljuset utifrån, på kvällen ser du rummet.' }
+        { id: 'bild-b4', typ: 'figur', namn: 'ljus', lage: 'fonster', bildtext: 'Rutan reflekterar lite ljus hela tiden. På dagen syns det inte för allt ljus utifrån, på kvällen ser du rummet.' }
       ]
     },
     {

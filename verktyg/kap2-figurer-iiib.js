@@ -6,7 +6,7 @@ module.exports = [
   fig('B1', 'reflektionslagen', 'Infallsvinkeln är lika stor som reflektionsvinkeln. Båda mäts mot normalen.'),
   fig('B2', 'slat-skrovlig', 'På en slät yta pekar normalerna åt samma håll och strålarna studsar parallellt. På en skrovlig yta sprids ljuset.'),
   fig('B3', 'spegelbild-steg', 'Båda strålarna följer reflektionslagen. Förlängda bakåt möts de 50 cm bakom spegeln, där du ser blomman.'),
-  fig('B4', 'fonster', 'Rutan reflekterar lite ljus hela tiden. På dagen överröstas det av ljuset utifrån, på kvällen ser du rummet.'),
+  fig('B4', 'fonster', 'Rutan reflekterar lite ljus hela tiden. På dagen syns det inte för allt ljus utifrån, på kvällen ser du rummet.'),
   fig('B5', 'reflex', 'Efter två reflektioner går ljuset tillbaka parallellt med det som kom in. En riktig reflex har tre ytor; här visas två.'),
   fig('B6', 'buktiga-speglar', 'En konkav spegel samlar parallella strålar i brännpunkten. Från en konvex spegel ser strålarna ut att komma från en brännpunkt bakom spegeln.'),
   fig('B7', 'stralkastare', 'Med lampan i brännpunkten går det reflekterade ljuset ut nästan parallellt.'),
