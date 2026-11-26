@@ -101,7 +101,7 @@ DD.forEach(([B, fil], i) => {
 // Djupdykningarna till IV (arbetsorder 19): kallor/kap3/IV-DD-*, prövade som kapitel 1:s. Källorna har bara # och ##:
 // ## är både avsnitt och påståenderubrik, så varje numrerat avsnitt börjar med en rubrik med avsnittets titel – det enda
 // godkända tillägget. Korten på avsnittssida IV: de fyra i källornas ordning med källornas titlar, och Galileo femte –
-// III:s bok (samma fil), ingen kopia.
+// I:s bok (samma fil), ingen kopia.
 const IV_DD = ['IV-DD-1-Hoppet-fran-rymdens-kant-redigerad.md', 'IV-DD-2-Bollar-som-svanger-i-luften-redigerad.md',
   'IV-DD-3-Berg-och-dalbanan-redigerad.md', 'IV-DD-4-Bilbaltet-en-svensk-uppfinning-redigerad.md'];
 const IV_MAPP = path.join(__dirname, '..', 'kraft_och_rorelse', 'fall_kast_och_balans'), K3 = path.join(__dirname, '..', 'kallor', 'kap3');
@@ -109,7 +109,7 @@ let ivdk; global.Bok = { delkapitel: d => { ivdk = d; } };
 eval(fs.readFileSync(path.join(IV_MAPP, 'delkapitel.js'), 'utf8'));
 const ivKort = ivdk.djupdykningar || [];
 if (ivKort.length !== 5 || ivKort[4].id !== 'galileo' || ivKort[4].fil !== '../rorelse_och_kraft/innehall/djupdykningar/galileo.js') {
-  fel++; console.log(`FEL        IV:s djupdykningar: korten ${ivKort.map(d => d.id).join(', ')} (ska vara de fyra och Galileo, III:s fil, femte)`); }
+  fel++; console.log(`FEL        II:s djupdykningar: korten ${ivKort.map(d => d.id).join(', ')} (ska vara de fyra och Galileo, I:s fil, femte)`); }
 IV_DD.forEach((fil, i) => {
   const r = las(path.join(K3, fil)), it = r.findIndex(l => /^# /.test(l)), titel = r[it].slice(2);
   const k = kallsekvens(['## Inledning (onumrerad)'].concat(r.slice(it + 1).map(l => /^## /.test(l) ? l + ' (numrerad)' : l)));
@@ -213,25 +213,25 @@ for (const B of NS) {
   if (tFel.length) { fel++; console.log('   ' + tFel.join('\n   ')); }
 }
 
-// ---------- Kraft och rörelse, avsnitt IV, text A Resulterande kraft (arbetsorder 12): kallor/kap3/IV-A-…-v4.md ----------
+// ---------- Kraft och rörelse, avsnitt II (förut IV), text A Resulterande kraft (arbetsorder 12): kallor/kap3/IV-A-…-v4.md ----------
 // Var och en av de tre nivåerna mot sin del av källan (# 📘 STANDARD, # 📗 ENKEL, # 📕 FÖRDJUPNING), i ordning: avsnitt,
 // rubriker, "Det här lär du dig", stycken, punkter, numrerade punkter, formler. Bildmarkeringarna som kommentarer i samma
-// ordning. Godkända tillägg (III:s norm, ordern): rutan "Så bläddrar du" sist i Inledningen och länkblocket sist i det
+// ordning. Godkända tillägg (I:s norm, ordern): rutan "Så bläddrar du" sist i Inledningen och länkblocket sist i det
 // sista numrerade avsnittet och sist i Sammanfattningen – på just de platserna, och inget annat.
-// IV B Fritt fall (2026-11-11) prövas likadant mot kallor/kap3/IV-B-…-v2.md. Där finns också [EXEMPEL: rubrik] (raderna
+// II B Fritt fall (2026-11-11) prövas likadant mot kallor/kap3/IV-B-…-v2.md. Där finns också [EXEMPEL: rubrik] (raderna
 // under) och [RUTA: rubrik] (punkterna under): de hör till källan och ska stå på sin plats i boken.
-// V A Tryck (arbetsorder 21) prövas likadant mot kallor/kap3/V-A-Tryck-alla-nivaer-v5.md (v3: arbetsorder 29, v4 och v5: arbetsorder 36). Exemplen där är märkta
+// III A Tryck (arbetsorder 21) prövas likadant mot kallor/kap3/V-A-Tryck-alla-nivaer-v5.md (v3: arbetsorder 29, v4 och v5: arbetsorder 36). Exemplen där är märkta
 // [EXEMPEL: rubrik] … [/EXEMPEL] med tomma rader i rutan: de prövas rad för rad, med styckena, som i Nästa steg.
-// V B Energi och arbete (arbetsorder 28) likadant mot kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md, utan rutan
+// III B Energi och arbete (arbetsorder 28) likadant mot kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md, utan rutan
 // "Vill du gå vidare?" (kopplingen i vidare-rutor.js har en rad utan avsnitt).
-for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', 'resulterande-kraft'],
-                            ['IV B', 'IV-B-Fritt-fall-alla-nivaer-v2.md', 'fritt-fall'],
-                            ['IV C', 'IV-C-Kastrorelse-alla-nivaer-v1.md', 'kastrorelse'],      // (arbetsorder 16)
-                            ['IV D', 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', 'tyngdpunkt-och-balans'],   // (arbetsorder 17)
-                            ['V A', 'V-A-Tryck-alla-nivaer-v5.md', 'tryck', 'tryck_arbete_och_maskiner'],   // (arbetsorder 21)
-                            ['V B', 'V-B-Energi-och-arbete-alla-nivaer-v3.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner'],   // (arbetsorder 28)
-                            ['V C', 'V-C-Mekanisk-energi-alla-nivaer-v2.md', 'mekanisk-energi', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
-                            ['V D', 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', 'havstangen-och-enkla-maskiner', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
+for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['II A', 'IV-A-Resulterande-kraft-alla-nivaer-v4.md', 'resulterande-kraft'],
+                            ['II B', 'IV-B-Fritt-fall-alla-nivaer-v2.md', 'fritt-fall'],
+                            ['II C', 'IV-C-Kastrorelse-alla-nivaer-v1.md', 'kastrorelse'],      // (arbetsorder 16)
+                            ['II D', 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', 'tyngdpunkt-och-balans'],   // (arbetsorder 17)
+                            ['III A', 'V-A-Tryck-alla-nivaer-v5.md', 'tryck', 'tryck_arbete_och_maskiner'],   // (arbetsorder 21)
+                            ['III B', 'V-B-Energi-och-arbete-alla-nivaer-v3.md', 'arbete-och-effekt', 'tryck_arbete_och_maskiner'],   // (arbetsorder 28)
+                            ['III C', 'V-C-Mekanisk-energi-alla-nivaer-v2.md', 'mekanisk-energi', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
+                            ['III D', 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', 'havstangen-och-enkla-maskiner', 'tryck_arbete_och_maskiner'],   // (arbetsorder 29)
                             ['VI A', 'VI-A-Repetition-Ljud-alla-nivaer-v4.md', 'ljud', 'ljud_och_ljus_repetition'],   // (arbetsorder 30; v4: 32)
                             ['VI B', 'VI-B-Repetition-Ljus-alla-nivaer-v3.md', 'ljus', 'ljud_och_ljus_repetition'],   // (arbetsorder 30)
                             // Kapitel 2 Ljud och ljus, avsnitt I (arbetsorder 33): källorna i kallor/kap2/, sidan ljud_och_ljus/vad_ljud_ar
@@ -283,7 +283,7 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
   for (const niva of ['standard', 'enkel', 'fordjupning']) {
     const fil = path.join(__dirname, '..', KAPMAPP, 'innehall', MP, niva + '.js');
     let data; global.Bok = { niva: (n, d) => { data = d; } };
-    // (V C, arbetsorder 29) E_p och E_k (index) läses som källans Ep och Ek
+    // (III C, arbetsorder 29) E_p och E_k (index) läses som källans Ep och Ek
     const kod = utanGF(fs.readFileSync(fil, 'utf8').replace(/\bE_([pk])\b/g, 'E$1')); eval(kod);
     const f = [];
     for (const a of data.avsnitt) { f.push(`AVSNITT ${a.titel} ${a.numrerad === false ? 'onumrerad' : 'numrerad'}`);
@@ -309,7 +309,7 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
     if (seq[iSam - 1] === 'LANK ova,sjalvskattning') seq.splice(iSam - 1, 1); else tFel.push('länkblocket står inte sist i det sista numrerade avsnittet');
     // Fördjupning (arbetsorder 13, del 2): rutan "Vill du gå vidare?" sist i Sammanfattningen, med kopplingens länkar
     // (verktyg/vidare-rutor.js) – och ingen annanstans
-    // V B (arbetsorder 28): kopplingen säger "ingen ruta" (false) – då får ingen ruta stå någonstans
+    // III B (arbetsorder 28): kopplingen säger "ingen ruta" (false) – då får ingen ruta stå någonstans
     const vb = niva === 'fordjupning' && VIDARE.block(`${KAPMAPP}/innehall/${MP}/fordjupning.js`);
     if (niva === 'fordjupning' && vb === null) tFel.push('Fördjupningen saknas i verktyg/vidare-rutor.js');
     if (vb) {
@@ -330,13 +330,13 @@ for (const [TX, KF, MP, SM = 'fall_kast_och_balans'] of [['IV A', 'IV-A-Resulter
 
 console.log(fel ? `\nFEL: ${fel}` : '\nAlla tolv böckerna ordagrant mot källorna, med Joachims tillägg 2026-11-07 (rutan, "Det viktigaste", Standards Inledningsrubrik) och inget annat.' +
   '\nDe fyra djupdykningarna ordagrant mot källorna, utan tillägg, och korten heter som böckerna.' +
-  '\nIV:s fyra djupdykningar ordagrant mot källorna, med påståenderubriken överst i varje avsnitt och inget annat; korten heter som böckerna och Galileo (III:s bok) är femte.' +
+  '\nII:s fyra djupdykningar ordagrant mot källorna, med påståenderubriken överst i varje avsnitt och inget annat; korten heter som böckerna och Galileo (I:s bok) är femte.' +
   '\nNästa steg (textboken, övningsboken) och Matematiken i fysiken ordagrant mot källorna, med länken till övningsboken (ordern) och inget annat, och varje länk går till avsnittet med sitt namn.' +
-  '\nKraft och rörelse IV A (Resulterande kraft), IV B (Fritt fall), IV C (Kaströrelse) och IV D (Tyngdpunkt, balans och kroppen), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt III:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.' +
-  '\nKraft och rörelse V A (Tryck), tre nivåer, likadant (arbetsorder 21), med exemplen rad för rad.' +
-  '\nKraft och rörelse V B (Energi och arbete), tre nivåer, likadant (arbetsorder 28), men utan rutan "Vill du gå vidare?".' +
-  '\nKraft och rörelse V C (Mekanisk energi), tre nivåer, likadant (arbetsorder 29), med Ep och Ek skrivna med index.' +
-  '\nKraft och rörelse V D (Maskiner och effekt), tre nivåer, likadant (arbetsorder 29).' +
+  '\nKraft och rörelse II A (Resulterande kraft), II B (Fritt fall), II C (Kaströrelse) och II D (Tyngdpunkt, balans och kroppen), tre nivåer var, ordagrant mot källorna, med rutan och länkblocken enligt I:s norm, och i Fördjupningen rutan "Vill du gå vidare?" sist (order 13), och inget annat.' +
+  '\nKraft och rörelse III A (Tryck), tre nivåer, likadant (arbetsorder 21), med exemplen rad för rad.' +
+  '\nKraft och rörelse III B (Energi och arbete), tre nivåer, likadant (arbetsorder 28), men utan rutan "Vill du gå vidare?".' +
+  '\nKraft och rörelse III C (Mekanisk energi), tre nivåer, likadant (arbetsorder 29), med Ep och Ek skrivna med index.' +
+  '\nKraft och rörelse III D (Maskiner och effekt), tre nivåer, likadant (arbetsorder 29).' +
   '\nKraft och rörelse VI A (Ljud) och VI B (Ljus), tre nivåer var, likadant (arbetsorder 30), med "Det här repeterar du" som liten rubrik och grundformen till begrepp med stor bokstav.' +
   '\nLjud och ljus I A–D (Vad ljud är), tre nivåer var, likadant (arbetsorder 33), mot kallor/kap2/, med grundformen till begrepp med stor bokstav.');
 process.exitCode = fel ? 1 : 0;

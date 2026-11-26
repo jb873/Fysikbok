@@ -1,4 +1,4 @@
-/* Repetition I, text A: Atomen – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
+/* Repetition IV, text A: Atomen – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
  * Avsnitten är Joachims granskade källa (Repetition-Atomen-Standard.md, samlad 2026-11-01), införd ordagrant:
  * ### = en sida, ett stycke = ett textblock, [FIGUR n] = figuren där markeringen står. Formler med <sub>/<sup> och
  * minustecknet −. Inledningen och sammanfattningen är bokens egna, ur arbetsordern 2026-11-02.

@@ -1,5 +1,5 @@
-// node verktyg/iv-dd-omvandlare.js – djupdykningarna till avsnitt IV (arbetsorder 19, 2026-11-12), en bok var i
-// kraft_och_rorelse/fall_kast_och_balans/innehall/djupdykningar/<id>.js, som III:s och kapitel 1:s.
+// node verktyg/iv-dd-omvandlare.js – djupdykningarna till avsnitt II, förut IV (arbetsorder 19, 2026-11-12), en bok var i
+// kraft_och_rorelse/fall_kast_och_balans/innehall/djupdykningar/<id>.js, som I:s och kapitel 1:s.
 // Källorna kallor/kap3/IV-DD-*-redigerad.md (oförändrade kopior) har bara två rubriknivåer:
 //  # = bokens titel (= kortets titel i delkapitel.js) · styckena före första ## = Inledningen (onumrerad, utan rubrik,
 //  som kapitel 1:s djupdykningar) · ## = ett avsnitt (numrerat) med samma text som påståenderubrik överst, så att
@@ -42,7 +42,7 @@ function avsnitt(D) {
 fs.mkdirSync(UT, { recursive: true });
 for (const D of DD) {
   const { titel, avs } = avsnitt(D);
-  const ut = [`/* Avsnittssida IV. Fall, kast och balans – djupdykningen "${titel}".`,
+  const ut = [`/* Avsnittssida II. Fall, kast och balans – djupdykningen "${titel}".`,
     ` * Arbetsorder 19 (2026-11-12): kallor/kap3/${D.fil}, infört ordagrant i strömformatet: styckena före första`,
     ' * ## = Inledningen (utan rubrik, som källan), ## = avsnitt med samma text som påståenderubrik, ett stycke = ett',
     ' * textblock. Ingen Sammanfattning och inget länkblock. [BILD …] står som kommentar på sin plats; eleven ser dem',

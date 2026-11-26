@@ -1,4 +1,4 @@
-/* Avsnittssida V. Tryck, arbete och maskiner, text B: Energi och arbete – nivån standard (📘).
+/* Avsnittssida III. Tryck, arbete och maskiner, text B: Energi och arbete – nivån standard (📘).
  * Arbetsorder 28 (2026-11-19): kallor/kap3/V-B-Energi-och-arbete-alla-nivaer-v3.md (# 📘 STANDARD), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text vb: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i

@@ -1,4 +1,4 @@
-/* Avsnittssida III, text C: Kraft och motkraft – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
+/* Avsnittssida I, text C: Kraft och motkraft – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
  * Joachims källa v3 (III-C-Kraft-och-motkraft-v3.md, 2026-11-04), som ersätter text C ur v2 helt (v2 i Arkiv/), införd
  * ordagrant i strömformatet: ### = rubrik, ett stycke = ett textblock. [BILD B] och [BILD C] är fotot block-rep.jpg
  * med kraftpilar (bildpilar, data ur arbetsordern); [FIGUR 7] är kraftparet med skridskoåkarna, som förut. Kraftparet

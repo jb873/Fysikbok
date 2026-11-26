@@ -1,4 +1,4 @@
-// Figurerna till V D Maskiner och effekt (verktyg/kap3-omvandlare.js --text vd): [{ borjar, figurer }]. Arbetsorder 29
+// Figurerna till III D Maskiner och effekt (verktyg/kap3-omvandlare.js --text vd): [{ borjar, figurer }]. Arbetsorder 29
 // (2026-11-19). Nya lägen av figurtypen energi i bokskal/figurer.js: ramp, gungbrada och talja. Data enligt ordern (källan
 // har ingen FIGURER-del); bildtexterna är skrivna här. D1–D3 står efter sin bildmarkering i Standard och Enkel.
 module.exports = [

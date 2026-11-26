@@ -1,4 +1,4 @@
-// Figurerna till IV B Fritt fall (verktyg/kap3-omvandlare.js --text b): [{ borjar: början av bildmarkeringen, figurer }].
+// Figurerna till II B Fritt fall (verktyg/kap3-omvandlare.js --text b): [{ borjar: början av bildmarkeringen, figurer }].
 // Joachims uppdrag 2026-11-11. Alla figurer är av befintliga sorter i bokskal/figurer.js (motorn ändras inte): kraftpilar,
 // jordklot_tyngd och diagram_graf. Kraftpilarna utan värden: det är förhållandet mellan krafterna som räknas. Figurerna
 // står efter sin bildmarkering, på varje nivå där markeringen finns.

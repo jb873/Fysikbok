@@ -1,4 +1,4 @@
-/* Avsnittssida V. Tryck, arbete och maskiner, text D: Maskiner och effekt – nivån standard (📘).
+/* Avsnittssida III. Tryck, arbete och maskiner, text D: Maskiner och effekt – nivån standard (📘).
  * Arbetsorder 29 (2026-11-19): kallor/kap3/V-D-Maskiner-och-effekt-alla-nivaer-v3.md (# 📘 STANDARD), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text vd: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i

@@ -1,4 +1,4 @@
-/* Avsnittssida III, text B: Kraft och friktion – enkel nivå. Samma källa, regler och figurer som standard.js. */
+/* Avsnittssida I, text B: Kraft och friktion – enkel nivå. Samma källa, regler och figurer som standard.js. */
 Bok.niva('enkel', {
   avsnitt: [
     {

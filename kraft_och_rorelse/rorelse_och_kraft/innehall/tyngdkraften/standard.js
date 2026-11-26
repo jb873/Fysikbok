@@ -1,4 +1,4 @@
-/* Avsnittssida III, text D: Tyngdkraften – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
+/* Avsnittssida I, text D: Tyngdkraften – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
  * Joachims källa (III-D-Tyngdkraften-alla-nivaer.md, 2026-11-04), införd ordagrant i strömformatet: ### = rubrik,
  * ett stycke = ett textblock. [BILD T] och [BILD F] är fotot block-rep.jpg och [BILD M] fotot dynamometer.jpg, med
  * kraftpilar (bildpilar, data ur arbetsordern III D; lägena justerade så att pilar och etiketter inte överlappar).

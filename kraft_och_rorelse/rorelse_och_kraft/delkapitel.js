@@ -1,4 +1,4 @@
-/* Avsnittssida III. Rörelse och kraft (Fysik · Kraft och rörelse, område 3), med texterna A Rörelse, B Kraft och
+/* Avsnittssida I. Rörelse och kraft (Fysik · Kraft och rörelse, område 3), med texterna A Rörelse, B Kraft och
  * friktion, C Kraft och motkraft och D Tyngdkraften, en bok per text. Texterna följer Joachims föreläsning (beslut
  * 2026-11-03). Bara data; motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
 Bok.delkapitel({
@@ -6,7 +6,7 @@ Bok.delkapitel({
   amne: 'Fysik',
   smulor: [{ text: 'Fysik', href: '../../index.html' },            // brödsmulorna länkar till startsidan
            { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
-  nummer: 3,                                 // brödsmulan "3. Rörelse och kraft" och etiketten "Avsnitt III"
+  nummer: 1,                                 // brödsmulan "1. Rörelse och kraft" och etiketten "Avsnitt I"
   titel: 'Rörelse och kraft',
   undertitel: 'rörelse, kraft, friktion och tyngdkraft', // bannerns rad: "— rörelse, kraft, friktion och tyngdkraft —"
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida

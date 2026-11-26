@@ -1,4 +1,4 @@
-/* Avsnittssida III, text A: Rörelse – nivån Enkel. En självbärande bok ur samma kärna som Standard (packar upp:
+/* Avsnittssida I, text A: Rörelse – nivån Enkel. En självbärande bok ur samma kärna som Standard (packar upp:
  * samma fakta, fler steg, vardag före begrepp). Joachims granskade källa (III-A-Rorelse-alla-nivaer-v2.md,
  * 2026-11-03), införd ordagrant i strömformatet – se standard.js. Samma avsnitts-id som Standard.
  * Medelfarten (2026-11-05, III-A-medelfart-Standard-Enkel.md, ordagrant): rubriken och dess fyra stycken efter stycket

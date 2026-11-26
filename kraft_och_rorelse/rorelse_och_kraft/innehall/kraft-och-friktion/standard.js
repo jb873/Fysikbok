@@ -1,4 +1,4 @@
-/* Avsnittssida III, text B: Kraft och friktion – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
+/* Avsnittssida I, text B: Kraft och friktion – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
  * Joachims granskade källa (III-B-C-Kraft-friktion-motkraft-alla-nivaer-v2.md, 2026-11-03), införd ordagrant i
  * strömformatet: ### = rubrik, ett stycke = ett textblock, [FIGUR n] = figuren där markeringen står (data ur
  * arbetsordern). Motorn bryter sidorna. "Det här lär du dig:" står som liten rubrik utan kolon, som i text A.

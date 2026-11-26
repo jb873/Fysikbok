@@ -1,4 +1,4 @@
-/* Avsnittssida III, text D: Tyngdkraften – nivån Enkel. En egen bok (en bok per text, delkapitel.js: texter).
+/* Avsnittssida I, text D: Tyngdkraften – nivån Enkel. En egen bok (en bok per text, delkapitel.js: texter).
  * Joachims källa (III-D-Tyngdkraften-alla-nivaer.md, 2026-11-04), införd ordagrant i strömformatet: ### = rubrik,
  * ett stycke = ett textblock. Samma bilder som Standard ([BILD T], [BILD F], [BILD M], bildpilar). "Det här lär du
  * dig:" står som liten rubrik utan kolon, som i text A–C.

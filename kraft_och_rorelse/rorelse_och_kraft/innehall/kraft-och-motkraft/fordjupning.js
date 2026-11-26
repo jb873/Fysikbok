@@ -1,4 +1,4 @@
-/* Avsnittssida III, text C: Kraft och motkraft – fördjupning. Samma källa (v3) och regler som standard.js; här visar
+/* Avsnittssida I, text C: Kraft och motkraft – fördjupning. Samma källa (v3) och regler som standard.js; här visar
  * kraftparet med skridskoåkarna värdet (10 N), som förut. BILD B och C står efter varandra, som i källan. */
 Bok.niva('fordjupning', {
   avsnitt: [

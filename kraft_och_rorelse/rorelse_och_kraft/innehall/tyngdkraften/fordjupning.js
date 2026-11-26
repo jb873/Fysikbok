@@ -1,4 +1,4 @@
-/* Avsnittssida III, text D: Tyngdkraften – nivån Fördjupning (v2). En egen bok (en bok per text, delkapitel.js: texter).
+/* Avsnittssida I, text D: Tyngdkraften – nivån Fördjupning (v2). En egen bok (en bok per text, delkapitel.js: texter).
  * Joachims källa (III-D-Tyngdkraften-Fordjupning-v2.md, 2026-11-05), införd ordagrant i strömformatet: ## = avsnitt,
  * ### = rubrik, ett stycke = ett textblock. Fördjupning förutsätter Standard (Joachims regel 2026-11-05): den upprepar
  * inte Standard, så avsnittet att-mata-kraft (dynamometern) och bilderna T, F och M finns inte här. Nivåbytet från

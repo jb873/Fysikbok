@@ -39,7 +39,7 @@ function avsnittUr(lines) {
   const avs = [];
   let a = null, punkter = null;
   // en lång lista (mer än 6 punkter; 7 sedan rubriken "Det viktigaste" lades till, 2026-11-07) blir två listor i följd, så att motorn kan bryta mellan dem (en lista delas aldrig;
-  // Sammanfattningen i D, Standard och Fördjupning, var annars för hög för en sida – som III D Fördjupning 2026-11-05);
+  // Sammanfattningen i D, Standard och Fördjupning, var annars för hög för en sida – som I D Fördjupning 2026-11-05);
   // den första listan är större (60 %), så att sidan före brytningen fylls
   const slutPunkter = () => { if (punkter) { if (punkter.length > 6) { const h = Math.ceil(punkter.length * 0.6); a.block.push({ typ: 'punkter', punkter: punkter.slice(0, h) }, { typ: 'punkter', punkter: punkter.slice(h) }); }
     else a.block.push({ typ: 'punkter', punkter }); punkter = null; } };
@@ -189,7 +189,7 @@ for (const T of TEXTER) {
     fs.writeFileSync(path.join(UT, T.id, 'fordjupning.js'), skriv(ford, 'fordjupning', T, kallaEF + ' (📕 FÖRDJUPNING)'));
   }
 }
-// Arbetsorder 10 (2026-11-07): de fyra djupdykningarna, en bok var (innehall/djupdykningar/<id>.js), som III:s.
+// Arbetsorder 10 (2026-11-07): de fyra djupdykningarna, en bok var (innehall/djupdykningar/<id>.js), som I:s (Rörelse och kraft).
 //  # = bokens titel (= kortets titel i delkapitel.js) · styckena före första ## = Inledningen (onumrerad; källan har
 //  ingen rubrik där, och ingen läggs till) · ## = avsnitt (numrerat) · ### = rubrik · [BILD …] = kommentar på sin
 //  plats · övriga rader = stycken. Ingen Sammanfattning och inget länkblock (README: Djupdykningar).

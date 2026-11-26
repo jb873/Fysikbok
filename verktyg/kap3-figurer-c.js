@@ -1,4 +1,4 @@
-// Figurerna till IV C Kaströrelse (verktyg/kap3-omvandlare.js --text c): [{ borjar: början av bildmarkeringen, figurer }].
+// Figurerna till II C Kaströrelse (verktyg/kap3-omvandlare.js --text c): [{ borjar: början av bildmarkeringen, figurer }].
 // Arbetsorder 16 (2026-11-11). Två nya figurtyper i bokskal/figurer.js: kastbana (lägena hoghus, komposanter, vinklar) och
 // cirkelrorelse (lägena snore, bil); K4 är den befintliga newtons_kanon. Data enligt källans FIGURER-del: höjd 20 m,
 // kastfart 10 m/s, g = 10. Figurerna står efter sin bildmarkering, på varje nivå där markeringen finns (Standard och

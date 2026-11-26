@@ -1,4 +1,4 @@
-/* Avsnittssida V. Tryck, arbete och maskiner, text C: Mekanisk energi – nivån fordjupning (📕).
+/* Avsnittssida III. Tryck, arbete och maskiner, text C: Mekanisk energi – nivån fordjupning (📕).
  * Arbetsorder 29 (2026-11-19): kallor/kap3/V-C-Mekanisk-energi-alla-nivaer-v2.md (# 📕 FÖRDJUPNING), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text vc: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i

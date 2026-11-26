@@ -1,4 +1,4 @@
-/* Avsnittssida IV. Fall, kast och balans – djupdykningen "Bollar som svänger i luften".
+/* Avsnittssida II. Fall, kast och balans – djupdykningen "Bollar som svänger i luften".
  * Arbetsorder 19 (2026-11-12): kallor/kap3/IV-DD-2-Bollar-som-svanger-i-luften-redigerad.md, infört ordagrant i strömformatet: styckena före första
  * ## = Inledningen (utan rubrik, som källan), ## = avsnitt med samma text som påståenderubrik, ett stycke = ett
  * textblock. Ingen Sammanfattning och inget länkblock. [BILD …] står som kommentar på sin plats; eleven ser dem

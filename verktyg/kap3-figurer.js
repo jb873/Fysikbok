@@ -1,5 +1,5 @@
 // Figurerna till kapitel III:s texter (verktyg/kap3-omvandlare.js): [{ borjar: början av bildmarkeringen, figurer: [...] }].
-// Arbetsorder 12, steg 2: R1–R4 i IV A Resulterande kraft (källans FIGURER-del och Joachims skisser
+// Arbetsorder 12, steg 2: R1–R4 i II A Resulterande kraft (källans FIGURER-del och Joachims skisser
 // resultant-rutat-papper-skiss-v2.png och resultant-vinklar-skiss.png). Figurerna står efter sin bildmarkering, på varje
 // nivå där markeringen finns. Rubrikerna i R2 och bildtexterna i R2 och R3 är skissernas texter.
 module.exports = [

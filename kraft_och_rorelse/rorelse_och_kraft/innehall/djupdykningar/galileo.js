@@ -1,4 +1,4 @@
-/* Avsnittssida III, text A: Rörelse – nivån Djupdykning, "Galileo mot Aristoteles – hur tröghetslagen upptäcktes".
+/* Avsnittssida I, text A: Rörelse – nivån Djupdykning, "Galileo mot Aristoteles – hur tröghetslagen upptäcktes".
  * Joachims källa (Djupdykning-A-Galileo-v2.md, 2026-11-04), införd ordagrant i strömformatet: ## = avsnitt
  * (numrerat), ### = rubrik, ett stycke = ett textblock. Ingen Sammanfattning och inget länkblock (arbetsordern).
  * [BILD L] är figuren lutande_plan (Galileos tankeexperiment i tre steg); [BILD C] är fotot curling.jpg med

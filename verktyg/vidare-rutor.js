@@ -3,44 +3,44 @@
 // källtextens. Här står bara kopplingen: vilka avsnitt i Nästa steg-textboken som varje Fördjupningstext länkar till.
 // Länktexten är avsnittets nummer och titel, räknade ur textboken, så att den alltid stämmer med boken.
 // Utan argument skrivs blocket in sist i Sammanfattningen i varje fil i tabellen (ett block som redan står där byts ut).
-// Modulen används också av kap3-omvandlare.js (IV A skrivs om därifrån) och av ordagrant.js (rutan godkänns där).
+// Modulen används också av kap3-omvandlare.js (II A skrivs om därifrån) och av ordagrant.js (rutan godkänns där).
 'use strict';
 const fs = require('fs'), path = require('path');
 const ROT = path.join(__dirname, '..');
 const TEXTBOK = 'nasta-kraft-och-rorelse';
 const TEXTBOK_FIL = 'kraft_och_rorelse/rorelse_och_kraft/innehall/nasta-steg/textbok.js';
 // Kopplingen efter textens innehåll (ordern): Fördjupningsboken → avsnitten i Nästa steg, i ordningen de står i rutan.
-// Avsnitt 9 och 10 (tryck och lyftkraft) länkas från V A Tryck (arbetsorder 21, 2026-11-12).
+// Avsnitt 9 och 10 (tryck och lyftkraft) länkas från III A Tryck (arbetsorder 21, 2026-11-12).
 const TABELL = [
-  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/rorelse/fordjupning.js', text: 'III A Rörelse',
+  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/rorelse/fordjupning.js', text: 'I A Rörelse',
     avsnitt: ['storheter-med-riktning', 'medelhastighet', 'rorelsen-i-diagram', 'acceleration'] },
-  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/kraft-och-friktion/fordjupning.js', text: 'III B Kraft och friktion',
+  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/kraft-och-friktion/fordjupning.js', text: 'I B Kraft och friktion',
     avsnitt: ['friktionskoefficienten', 'tyngden-och-fritt-fall'] },
-  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/kraft-och-motkraft/fordjupning.js', text: 'III C Kraft och motkraft',
+  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/kraft-och-motkraft/fordjupning.js', text: 'I C Kraft och motkraft',
     avsnitt: ['newtons-andra-lag', 'rorelsemangd'] },
-  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/tyngdkraften/fordjupning.js', text: 'III D Tyngdkraften',
+  { fil: 'kraft_och_rorelse/rorelse_och_kraft/innehall/tyngdkraften/fordjupning.js', text: 'I D Tyngdkraften',
     avsnitt: ['tyngden-och-fritt-fall', 'newtons-andra-lag'] },
-  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/resulterande-kraft/fordjupning.js', text: 'IV A Resulterande kraft',
+  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/resulterande-kraft/fordjupning.js', text: 'II A Resulterande kraft',
     avsnitt: ['storheter-med-riktning', 'newtons-andra-lag'] },
-  // IV B (2026-11-11): fallsträckan och g (avsnitt 6), hastighet och sträcka i diagram (3), a = F / m (5)
-  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/fritt-fall/fordjupning.js', text: 'IV B Fritt fall',
+  // II B (2026-11-11): fallsträckan och g (avsnitt 6), hastighet och sträcka i diagram (3), a = F / m (5)
+  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/fritt-fall/fordjupning.js', text: 'II B Fritt fall',
     avsnitt: ['tyngden-och-fritt-fall', 'rorelsen-i-diagram', 'newtons-andra-lag'] },
-  // IV C (arbetsorder 16): kastet delat i komposanter (avsnitt 1) och fallet (6)
-  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/kastrorelse/fordjupning.js', text: 'IV C Kaströrelse',
+  // II C (arbetsorder 16): kastet delat i komposanter (avsnitt 1) och fallet (6)
+  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/kastrorelse/fordjupning.js', text: 'II C Kaströrelse',
     avsnitt: ['storheter-med-riktning', 'tyngden-och-fritt-fall'] },
-  // IV D (arbetsorder 17): G-kraften ur accelerationen (avsnitt 4), a = F / m (5) och impulsen i krocken (8)
-  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/tyngdpunkt-och-balans/fordjupning.js', text: 'IV D Tyngdpunkt, balans och kroppen',
+  // II D (arbetsorder 17): G-kraften ur accelerationen (avsnitt 4), a = F / m (5) och impulsen i krocken (8)
+  { fil: 'kraft_och_rorelse/fall_kast_och_balans/innehall/tyngdpunkt-och-balans/fordjupning.js', text: 'II D Tyngdpunkt, balans och kroppen',
     avsnitt: ['acceleration', 'newtons-andra-lag', 'rorelsemangd'] },
-  // V A (arbetsorder 21): tryck (avsnitt 9) och lyftkraft (10), enligt ordern
-  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/tryck/fordjupning.js', text: 'V A Tryck',
+  // III A (arbetsorder 21): tryck (avsnitt 9) och lyftkraft (10), enligt ordern
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/tryck/fordjupning.js', text: 'III A Tryck',
     avsnitt: ['tryck', 'lyftkraft'] },
-  // V B (arbetsorder 28): ingen ruta – Nästa steg har inget avsnitt om energi och arbete (ordern). En rad utan avsnitt
+  // III B (arbetsorder 28): ingen ruta – Nästa steg har inget avsnitt om energi och arbete (ordern). En rad utan avsnitt
   // betyder "ingen ruta här, med avsikt"; en fil som saknas i tabellen är fortfarande ett fel.
-  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/arbete-och-effekt/fordjupning.js', text: 'V B Energi och arbete',
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/arbete-och-effekt/fordjupning.js', text: 'III B Energi och arbete',
     avsnitt: [] },
-  // V C och V D (arbetsorder 29): ingen ruta, som B
-  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/mekanisk-energi/fordjupning.js', text: 'V C Mekanisk energi', avsnitt: [] },
-  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/havstangen-och-enkla-maskiner/fordjupning.js', text: 'V D Maskiner och effekt', avsnitt: [] },
+  // III C och III D (arbetsorder 29): ingen ruta, som B
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/mekanisk-energi/fordjupning.js', text: 'III C Mekanisk energi', avsnitt: [] },
+  { fil: 'kraft_och_rorelse/tryck_arbete_och_maskiner/innehall/havstangen-och-enkla-maskiner/fordjupning.js', text: 'III D Maskiner och effekt', avsnitt: [] },
   // VI A (arbetsorder 33): länkar till kapitel 2 Ljud och ljus, avsnitt I Vad ljud är (och II, arbetsorder 34), där innehållet hör hemma – en annan
   // sida (sida: mappen från roten, nivån och [text, avsnitt]); rutan får inledningen ur sida.inledning. VI B (arbetsorder
   // 30) fick ingen ruta förrän kapitlets avsnitt om ljus fanns: se VI B nedan (arbetsorder 38)
@@ -107,7 +107,7 @@ function block(fil) {
   const rad = TABELL.find(r => r.fil === fil.split(path.sep).join('/'));
   if (!rad) return null;
   if (rad.sida) return { typ: 'vidare', inledning: rad.sida.inledning, lankar: sidlankar(rad) };
-  if (!rad.avsnitt.length) return false;      // ingen ruta, med avsikt (V B)
+  if (!rad.avsnitt.length) return false;      // ingen ruta, med avsikt (III B)
   const namn = avsnittsnamn();
   return { typ: 'vidare', lankar: rad.avsnitt.map(id => {
     if (!namn[id]) throw new Error(`${rad.text}: avsnittet ”${id}” finns inte i Nästa steg-textboken`);

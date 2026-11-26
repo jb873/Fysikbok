@@ -1,10 +1,10 @@
 // node verktyg/kap3-omvandlare.js [utmapp]
-// Arbetsorder 12 (2026-11-07): Kraft och rörelse, avsnitt IV Fall, kast och balans, text A Resulterande kraft –
+// Arbetsorder 12 (2026-11-07): Kraft och rörelse, avsnitt II (förut IV) Fall, kast och balans, text A Resulterande kraft –
 // kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v4.md → innehall/resulterande-kraft/{standard,enkel,fordjupning}.js,
 // ordagrant i strömformatet. Utan utmapp skrivs filerna på sin plats i repot (och skriver över dem); med en tom utmapp
 // hamnar de där, så att de kan jämföras först.
 //
-// Källans format (som III:s texter, ordern):
+// Källans format (som I:s texter, Rörelse och kraft, ordern):
 //   # 📘 STANDARD / # 📗 ENKEL / # 📕 FÖRDJUPNING   delar filen i tre böcker; övriga #-rader är kommentarer
 //   ## Titel (onumrerad) / ## Titel (numrerad, id: x)   avsnitt (Inledning → inledning, Sammanfattning → sammanfattning)
 //   ### …                       rubrik;  "Det här lär du dig:"  liten rubrik utan kolon
@@ -12,10 +12,10 @@
 //   [FORMEL: uttryck – förklaring]   formel (förklaringen som text, order 11)
 //   - x  punkter;  1. x  numrerad lista;  [BILD …] kommentar på sin plats (figurerna: steg 2)
 //   rader i följd utan tom rad: rader;  en ensam rad: ett stycke;  ==== och FIGURER-delen sist läses inte
-// Tilläggen enligt III:s norm (ordern): rutan "Så bläddrar du" sist i Inledningen, och länkblocket sist i det sista
+// Tilläggen enligt I:s norm (ordern): rutan "Så bläddrar du" sist i Inledningen, och länkblocket sist i det sista
 // numrerade avsnittet (Öva, Självskattning) och i Sammanfattningen (Öva, Självskattning, Elevboken).
 //
-// IV B Fritt fall (2026-11-11, Joachims uppdrag): node verktyg/kap3-omvandlare.js --text b [utmapp]. Källan
+// II B Fritt fall (2026-11-11, Joachims uppdrag): node verktyg/kap3-omvandlare.js --text b [utmapp]. Källan
 // kallor/kap3/IV-B-Fritt-fall-alla-nivaer-v2.md har två märkningar till (bara i B): [EXEMPEL: rubrik] med raderna under
 // (till nästa tomma rad) blir en exempelruta ("Exempel: rubrik"), och [RUTA: rubrik] med punkterna under blir en ruta.
 // Figurerna står i kap3-figurer-b.js. Utan --text skrivs A som förut, tecken för tecken.
@@ -33,22 +33,22 @@ const TEXTER = {
   // D Tyngdpunkt, balans och kroppen (arbetsorder 17, 2026-11-12): node verktyg/kap3-omvandlare.js --text d
   d: { kalla: 'IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md', mapp: 'tyngdpunkt-och-balans', figurer: './kap3-figurer-d.js',
        titel: 'D: Tyngdpunkt, balans och kroppen', order: 'Arbetsorder 17 (2026-11-12)' },
-  // Avsnitt V Tryck, arbete och maskiner, text A Tryck (arbetsorder 21, 2026-11-12; källan v3: arbetsorder 29): node verktyg/kap3-omvandlare.js --text va.
+  // Avsnitt III (förut V) Tryck, arbete och maskiner, text A Tryck (arbetsorder 21, 2026-11-12; källan v3: arbetsorder 29): node verktyg/kap3-omvandlare.js --text va.
   // Källan märker exemplen [EXEMPEL: rubrik] … [/EXEMPEL], med tomma rader inne i rutan: de blir exempel i stycken, som i
   // Nästa steg (Givet, Sökt, Lösning och Svar i fetstil, brytbart mellan raderna).
   va: { kalla: 'V-A-Tryck-alla-nivaer-v5.md', mapp: 'tryck', figurer: './kap3-figurer-va.js', titel: 'A: Tryck',
-        order: 'Arbetsorder 21 (2026-11-12; källan v5: arbetsorder 36, 2026-11-22)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' },
-  // V B Energi och arbete (arbetsorder 28, 2026-11-19; källan v3: arbetsorder 29): node verktyg/kap3-omvandlare.js --text vb. Mappen behåller sitt
+        order: 'Arbetsorder 21 (2026-11-12; källan v5: arbetsorder 36, 2026-11-22)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'III. Tryck, arbete och maskiner' },
+  // III B Energi och arbete (arbetsorder 28, 2026-11-19; källan v3: arbetsorder 29): node verktyg/kap3-omvandlare.js --text vb. Mappen behåller sitt
   // namn från arbetsorder 21 (arbete-och-effekt). Ingen ruta "Vill du gå vidare?" (raden i vidare-rutor.js saknar avsnitt).
   vb: { kalla: 'V-B-Energi-och-arbete-alla-nivaer-v3.md', mapp: 'arbete-och-effekt', figurer: './kap3-figurer-vb.js', titel: 'B: Energi och arbete',
-        order: 'Arbetsorder 28 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' },
-  // V C Mekanisk energi (arbetsorder 29, 2026-11-19): node verktyg/kap3-omvandlare.js --text vc. Mappen från arbetsorder 21.
+        order: 'Arbetsorder 28 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'III. Tryck, arbete och maskiner' },
+  // III C Mekanisk energi (arbetsorder 29, 2026-11-19): node verktyg/kap3-omvandlare.js --text vc. Mappen från arbetsorder 21.
   // Källan skriver Ep och Ek utan nedsänkning; de skrivs E_p och E_k, som motorn sätter nedsänkt (index, som i Nästa steg),
   // och ordagrant.js läser dem tillbaka som Ep och Ek.
   vc: { kalla: 'V-C-Mekanisk-energi-alla-nivaer-v2.md', mapp: 'mekanisk-energi', figurer: './kap3-figurer-vc.js', titel: 'C: Mekanisk energi',
-        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner', index: true },
+        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'III. Tryck, arbete och maskiner', index: true },
   vd: { kalla: 'V-D-Maskiner-och-effekt-alla-nivaer-v3.md', mapp: 'havstangen-och-enkla-maskiner', figurer: './kap3-figurer-vd.js', titel: 'D: Maskiner och effekt',
-        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'V. Tryck, arbete och maskiner' },
+        order: 'Arbetsorder 29 (2026-11-19)', sidmapp: 'kraft_och_rorelse/tryck_arbete_och_maskiner', sida: 'III. Tryck, arbete och maskiner' },
   // Avsnitt VI Repetition: ljud och ljus (arbetsorder 30, 2026-11-20): node verktyg/kap3-omvandlare.js --text via / --text vib.
   // "Det här repeterar du:" blir en liten rubrik utan kolon, som "Det här lär du dig:". Ett begrepp med stor bokstav utan
   // grundform (*Tinnitus*) får grundformen med liten bokstav (*Tinnitus|tinnitus*) – texten är densamma; grundform anger
@@ -94,7 +94,7 @@ const KAP = TEXTER[TEXT].kap || 'kap3';
 const KALLA = path.join(ROT, 'kallor', KAP, TEXTER[TEXT].kalla);
 const UT = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--text');
 const MAPP = (TEXTER[TEXT].sidmapp || 'kraft_och_rorelse/fall_kast_och_balans') + '/innehall/' + TEXTER[TEXT].mapp;
-const SIDA = TEXTER[TEXT].sida || 'IV. Fall, kast och balans';
+const SIDA = TEXTER[TEXT].sida || 'II. Fall, kast och balans';
 const NIVAER = [['STANDARD', 'standard', '📘'], ['ENKEL', 'enkel', '📗'], ['FÖRDJUPNING', 'fordjupning', '📕']];
 const RUTA = { typ: 'ruta', rubrik: 'Så bläddrar du', punkter: ['Pilarna bredvid boken, ← och → på tangentbordet, eller svep.',
   'Klicka i innehållet för att gå till en sida.', 'Stäng eller Esc tar dig tillbaka till delkapitlet. Boken minns var du var.'] };
@@ -133,7 +133,7 @@ function las(rad, niva) {
     // (kapitel 2 III A, arbetsorder 38) en formel utan förklaring: bara uttrycket
     if ((m = /^\[FORMEL: ([^–]+)\]$/.exec(l))) { slut(); a.block.push({ typ: 'formel', uttryck: m[1] }); continue; }
     if (/^\[BILD/.test(l)) { slut(); a.block.push({ kommentar: l }); continue; }
-    // (V A) [EXEMPEL: rubrik] … [/EXEMPEL]: stycken (tomma rader emellan), var och en med sina rader
+    // (III A) [EXEMPEL: rubrik] … [/EXEMPEL]: stycken (tomma rader emellan), var och en med sina rader
     if ((m = /^\[EXEMPEL: (.+)\]$/.exec(l)) && rad.slice(i + 1).findIndex(x => x === '[/EXEMPEL]') >= 0 &&
         rad.slice(i + 1).findIndex(x => x === '[/EXEMPEL]') < (rad.slice(i + 1).findIndex(x => /^##? |^\[EXEMPEL/.test(x)) + 1 || Infinity)) {
       slut(); const st = [[]];
@@ -160,7 +160,7 @@ function las(rad, niva) {
     stycke.push(l);
   }
   slut();
-  // tilläggen (III:s norm)
+  // tilläggen (I:s norm)
   const inl = avs.find(x => x.id === 'inledning'), sam = avs.find(x => x.id === 'sammanfattning'), numr = avs.filter(x => x.numrerad);
   if (!inl || !sam || !numr.length) fel.push(`${niva}: Inledning, numrerade avsnitt och Sammanfattning behövs`);
   else {
@@ -176,7 +176,7 @@ function las(rad, niva) {
   return avs;
 }
 const bocker = Object.fromEntries(NIVAER.map(([, n]) => [n, las(delar[n] || [], n)]));
-// (V C, arbetsorder 29) Ep och Ek med index: E_p och E_k i alla texter (motorn sätter dem nedsänkta)
+// (III C, arbetsorder 29) Ep och Ek med index: E_p och E_k i alla texter (motorn sätter dem nedsänkta)
 if (TEXTER[TEXT].index) { const ix = s => typeof s === 'string' ? s.replace(/\bE([pk])\b/g, 'E_$1') : Array.isArray(s) ? s.map(ix) : s;
   for (const avs of Object.values(bocker)) for (const a of avs) for (const b of a.block) for (const k of ['text', 'uttryck', 'forklaring', 'rader', 'punkter', 'stycken']) if (b[k]) b[k] = ix(b[k]); }
 // (VI, arbetsorder 30) begrepp med stor bokstav utan grundform: grundformen med liten bokstav (eller ur grundform-tabellen)
@@ -208,10 +208,10 @@ function blockText(b) {
 }
 for (const [kod, n, ikon] of NIVAER) {
   const avs = bocker[n], ut = [];
-  if (TEXT === 'a') ut.push(`/* Avsnittssida IV. Fall, kast och balans, text A: Resulterande kraft – nivån ${n} (${ikon}). Arbetsorder 12`,
+  if (TEXT === 'a') ut.push(`/* Avsnittssida II. Fall, kast och balans, text A: Resulterande kraft – nivån ${n} (${ikon}). Arbetsorder 12`,
     ` * (2026-11-07): kallor/kap3/IV-A-Resulterande-kraft-alla-nivaer-v4.md (# ${ikon} ${kod}), införd ordagrant i`,
     ' * strömformatet av verktyg/kap3-omvandlare.js: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du',
-    ' * dig:" = liten rubrik utan kolon. Tilläggen enligt III:s norm: rutan "Så bläddrar du" sist i Inledningen och',
+    ' * dig:" = liten rubrik utan kolon. Tilläggen enligt I:s norm: rutan "Så bläddrar du" sist i Inledningen och',
     ' * länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen. [BILD …] står som kommentar, med figuren efter.', ' */');
   else if (TEXTER[TEXT].order) ut.push(`/* Avsnittssida ${SIDA}, text ${TEXTER[TEXT].titel} – nivån ${n} (${ikon}).`,
     ` * ${TEXTER[TEXT].order}: kallor/${KAP}/${TEXTER[TEXT].kalla} (# ${ikon} ${kod}), införd ordagrant i`,
@@ -221,10 +221,10 @@ for (const [kod, n, ikon] of NIVAER) {
       ` * du gå vidare?" sist. [BILD …] står som kommentar, med figuren efter (${TEXTER[TEXT].figurer.slice(2)}).`]
     : [' * Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen (ingen ruta "Vill du gå',
       ` * vidare?": ordern). [BILD …] står som kommentar, med figuren efter (${TEXTER[TEXT].figurer.slice(2)}).`]), ' */');
-  else ut.push(`/* Avsnittssida IV. Fall, kast och balans, text B: Fritt fall – nivån ${n} (${ikon}). Joachims uppdrag`,
+  else ut.push(`/* Avsnittssida II. Fall, kast och balans, text B: Fritt fall – nivån ${n} (${ikon}). Joachims uppdrag`,
     ` * 2026-11-11: kallor/kap3/IV-B-Fritt-fall-alla-nivaer-v2.md (# ${ikon} ${kod}), införd ordagrant i strömformatet av`,
     ' * verktyg/kap3-omvandlare.js --text b: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du dig:" =',
-    ' * liten rubrik utan kolon, [EXEMPEL: …] = exempelruta, [RUTA: …] = ruta. Tilläggen enligt III:s norm: rutan "Så',
+    ' * liten rubrik utan kolon, [EXEMPEL: …] = exempelruta, [RUTA: …] = ruta. Tilläggen enligt I:s norm: rutan "Så',
     ' * bläddrar du" sist i Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i',
     ' * Fördjupningen rutan "Vill du gå vidare?" sist. [BILD …] står som kommentar, med figuren efter (kap3-figurer-b.js).', ' */');
   ut.push(`Bok.niva('${n}', {`, '  avsnitt: [');

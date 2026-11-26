@@ -1,7 +1,7 @@
-/* Avsnittssida III, text A: Rörelse – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
+/* Avsnittssida I, text A: Rörelse – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
  * Joachims granskade källa (III-A-Rorelse-alla-nivaer-v2.md, 2026-11-03), införd ordagrant i strömformatet:
  * ### = rubrik, ett stycke = ett textblock, [FIGUR rorelsespar: X] = figuren där markeringen står. Motorn bryter sidorna.
- * "Det här lär du dig:" står som liten rubrik utan kolon, som "Det här repeterar du" i Repetition I.
+ * "Det här lär du dig:" står som liten rubrik utan kolon, som "Det här repeterar du" i Repetition IV (Atomen).
  * Avsnittens id (inledning, rorelsen-i-prickarna, troghetslagen, sammanfattning) är desamma på alla nivåer – nivåbytet hittar samma
  * avsnitt. Fördjupning har dessutom att-rakna-pa-rorelse; nivåbytet därifrån går till troghetslagen. Huvudrubrikerna (avsnitten)
  * står i innehållsförteckningen, ###-rubrikerna bara i texten (Joachims beslut 2026-11-04).

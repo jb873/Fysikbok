@@ -1,4 +1,4 @@
-/* Avsnittssida III, text B: Kraft och friktion – fördjupning. Samma källa och regler som standard.js; här visar
+/* Avsnittssida I, text B: Kraft och friktion – fördjupning. Samma källa och regler som standard.js; här visar
  * kraftpilarna värdena i newton. "16 − 6 = 10 N" står som text i löptexten (minustecken U+2212). Figur 1 är fotot
  * med dragkraften (bildpilar, BILD A i arbetsordern 2026-11-04), utan värde. */
 Bok.niva('fordjupning', {

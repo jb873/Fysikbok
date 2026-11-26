@@ -1,4 +1,4 @@
-/* Avsnittssida III, text C: Kraft och motkraft – enkel nivå. Samma källa (v3), regler och figurer som standard.js. */
+/* Avsnittssida I, text C: Kraft och motkraft – enkel nivå. Samma källa (v3), regler och figurer som standard.js. */
 Bok.niva('enkel', {
   avsnitt: [
     {

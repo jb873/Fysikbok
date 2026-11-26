@@ -1,4 +1,4 @@
-/* Avsnittssida III, text C: Kraft och motkraft – nivån Djupdykning, "Raketer – att färdas där det inte finns något att
+/* Avsnittssida I, text C: Kraft och motkraft – nivån Djupdykning, "Raketer – att färdas där det inte finns något att
  * trycka mot". Joachims källa (Djupdykning-C-Raketer-redigerad.md, 2026-11-04), införd ordagrant i strömformatet:
  * ## = avsnitt (numrerat), ### = rubrik, ett stycke = ett textblock. Ingen Sammanfattning och inget länkblock.
  * [BILD R] är raket.jpg och [BILD A] astronaut.jpg, med två lika långa pilar på två olika föremål (bildpilar, som

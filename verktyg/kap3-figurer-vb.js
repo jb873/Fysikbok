@@ -1,4 +1,4 @@
-// Figurerna till V B Energi och arbete (verktyg/kap3-omvandlare.js --text vb): [{ borjar, figurer }]. Arbetsorder 28
+// Figurerna till III B Energi och arbete (verktyg/kap3-omvandlare.js --text vb): [{ borjar, figurer }]. Arbetsorder 28
 // (2026-11-19). Ny figurtyp i bokskal/figurer.js: energi (lägena studs, arbete och snett) – ingen befintlig typ ritar
 // en studsande boll, en person med en låda eller en kälke med vinkel och tal vid delarna. Data enligt ordern (källan har
 // ingen FIGURER-del); bildtexterna är skrivna här. B1 och B2 står efter sin bildmarkering i Standard och Enkel, B3 i

@@ -1,4 +1,4 @@
-/* Avsnittssida V. Tryck, arbete och maskiner (Fysik · Kraft och rörelse), med texterna A Tryck, B Energi och arbete,
+/* Avsnittssida III. Tryck, arbete och maskiner (Fysik · Kraft och rörelse), med texterna A Tryck, B Energi och arbete,
  * C Mekanisk energi och D Maskiner och effekt, en bok per text och nivå (arbetsorder 21, 2026-11-12; den nya indelningen
  * av B och D: arbetsorder 28, 2026-11-19). Alla fyra har innehåll (C och D: arbetsorder 29). Inga djupdykningar än: rubriken "Vill du veta mer?" står inte förrän det finns kort (motorns norm). Bara data;
  * motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
@@ -7,7 +7,7 @@ Bok.delkapitel({
   amne: 'Fysik',
   smulor: [{ text: 'Fysik', href: '../../index.html' },            // brödsmulorna länkar till startsidan
            { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
-  nummer: 5,                                 // brödsmulan "5. Tryck, arbete och maskiner" och etiketten "Avsnitt V"
+  nummer: 3,                                 // brödsmulan "3. Tryck, arbete och maskiner" och etiketten "Avsnitt III"
   titel: 'Tryck, arbete och maskiner',
   undertitel: 'tryck, energi och arbete, mekanisk energi, maskiner och effekt',  // bannerns rad: kapitelindexets beskrivning av V
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
@@ -41,8 +41,8 @@ Bok.delkapitel({
     { id: 'fordjupning', namn: 'Fördjupning', ikon: '📕' }
   ],
 
-  // Nästa steg (som IV): textboken finns här utan kort, som mål för länkarna i rutan "Vill du gå vidare?" sist i
-  // Fördjupningen – och övningsboken och Matematiken i fysiken, som textboken i sin tur länkar till. Böckerna är III:s
+  // Nästa steg (som II): textboken finns här utan kort, som mål för länkarna i rutan "Vill du gå vidare?" sist i
+  // Fördjupningen – och övningsboken och Matematiken i fysiken, som textboken i sin tur länkar till. Böckerna är I:s
   // (samma id: samma bok, men läsplatsen sparas per avsnittssida).
   nastaSteg: [
     { id: 'kraft-och-rorelse', titel: 'Nästa steg · Kraft och rörelse – textbok', fil: '../rorelse_och_kraft/innehall/nasta-steg/textbok.js', kort: false }

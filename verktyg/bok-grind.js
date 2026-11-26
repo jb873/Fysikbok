@@ -80,7 +80,7 @@ const FEL = {
   // Rutan "Vill du gå vidare?" (arbetsorder 13, del 2): motorns provkrok ger den första länken i varje ruta ett id som
   // inte finns i textboken – kontrolläget och grindens prov av länkarna ska ge rött
   'vidare-länk med fel id': { adress: '&prova=vidare-fel', dk: 'rorelse_och_kraft', regel: /vidare/i },
-  // Länken i löptexten (2026-11-11): motorns provkrok låter länken i IV B Standard gå till en bok som inte finns på
+  // Länken i löptexten (2026-11-11): motorns provkrok låter länken i II B Standard gå till en bok som inte finns på
   // avsnittssidan – kontrolläget och grindens prov av textlänkarna ska ge rött
   'textlänk till en bok som inte finns': { adress: '&prova=textlank-fel', dk: 'fall_kast_och_balans', regel: /textlänk|finns inte på avsnittssidan/i },
   // En punktlista får delas bara om den inte ryms (arbetsorder 16): motorns provkrok delar en lista som ryms på mitten
@@ -91,7 +91,7 @@ const FEL = {
   'punktlista med en punkt ensam på en sida': { adress: '&prova=punkt-ensam', dk: 'provbok', regel: /bara en punkt på sidan/ },
   'punktlista hel fast sidan blir tunn': { adress: '&prova=punktlista-hel', dk: 'provbok', regel: /fylld/ },
   // Rader i följd får delas enligt 40 %-regeln, aldrig mitt i ett mellanled (arbetsorder 21): motorns provkrok delar
-  // rader före en uträkning – i V A Fördjupning, där rader står i avsnitt över flera sidor (provbokens rader står sist
+  // rader före en uträkning – i III A Fördjupning, där rader står i avsnitt över flera sidor (provbokens rader står sist
   // i ett avsnitt på en sida och kan inte flyttas)
   'rader delade i ett mellanled': { adress: '&prova=rader-mellanled', dk: 'tryck_arbete_och_maskiner', regel: /mellanled/ },
   // Helskärmsmåttet (arbetsorder 36): helskärmens egna prov hoppas över utan fönster, men en sida som är för hög i
@@ -129,7 +129,7 @@ function delkapitel() {
 }
 
 /* ---------- Strömformatet i innehållet (arbetsorder 30) ----------
- * Innehållsfilerna i V och VI, lästa på disken (ingen webbläsare): varje begrepp *ord|grundform* med skiljetecken utanför
+ * Innehållsfilerna i III och VI (Kraft och rörelse), lästa på disken (ingen webbläsare): varje begrepp *ord|grundform* med skiljetecken utanför
  * markeringen, ett begrepp med stor bokstav har en grundform, varje figur ritas av motorn (namn och läge finns), avsnittens
  * och figurernas id är rätt skrivna och unika – och i VI samma som i källans huvud ("Avsnittens id"), i ordning. Negativt
  * prov (--negativ): felen i STROM_FEL läggs in ett i taget i en kopia i minnet, och kontrollen ska ge rött för just det. */
@@ -222,6 +222,106 @@ function stromKoll(filer) {
       if (k && avsId.join(' · ') !== k[x.niva].join(' · ')) f_(`avsnittens id ${avsId.join(' · ')} är inte källans ${k[x.niva].join(' · ')}`);
     }
   } finally { global.Bok = B0; global.window = W0; }
+  return fel;
+}
+
+/* ---------- Kraft och rörelse: avsnittens ordning (arbetsorder 39, 2026-11-26) ----------
+ * Läst på disken (ingen webbläsare). Kapitlet har de tre kraftavsnitten först och sedan repetitionerna: I Rörelse och
+ * kraft, II Fall, kast och balans, III Tryck, arbete och maskiner, IV Repetition (materia, med Atomen och Joner,
+ * isotoper och bindningar först), V Repetition (universum – tonat, finns inte än) och VI Repetition (ljud och ljus).
+ *  - atomen_repetition finns inte längre, och ingen sida eller bok (html, js) pekar dit;
+ *  - materia_repetition har de fem texterna i ordningen nedan, var och en med sina tre nivåfiler, och den nya undertiteln;
+ *  - kapitelindexet visar I–VI i den ordningen: mapp, titel och (IV–VI) raden under titeln; V tonat (span,
+ *    aria-disabled, "Kommer", ingen länk);
+ *  - nummer i varje avsnittssidas delkapitel.js är kortets romerska siffra, i alla byggda kapitel (KAPITEL);
+ *  - startsidans kort för Kraft och rörelse har den nya raden.
+ * Webbläsaren prövar samma ordning i provaSidorna (KAPITEL: ordning, avsnitt med null för det tonade kortet, och
+ * avsnittssidans etikett). Negativt prov (--negativ): felen i ORDNING_FEL läggs in ett i taget i en kopia i minnet, och
+ * kontrollen ska ge ett nytt fel för just det. */
+const K3_ORDNING = [
+  { nr: 'I', mapp: 'rorelse_och_kraft', titel: 'Rörelse och kraft' },
+  { nr: 'II', mapp: 'fall_kast_och_balans', titel: 'Fall, kast och balans' },
+  { nr: 'III', mapp: 'tryck_arbete_och_maskiner', titel: 'Tryck, arbete och maskiner' },
+  { nr: 'IV', mapp: 'materia_repetition', titel: 'Repetition', rad: 'Materia, atomen, densitet och värme.' },
+  { nr: 'V', mapp: null, titel: 'Repetition', rad: 'Universum.' },
+  { nr: 'VI', mapp: 'ljud_och_ljus_repetition', titel: 'Repetition', rad: 'Ljud och ljus.' }
+];
+const MATERIA_TEXTER = [['atomen', 'Atomen'], ['joner-isotoper-bindningar', 'Joner, isotoper och bindningar'], ['materia', 'Materia'],
+  ['densitet-och-varme', 'Densitet och värme'], ['varmespridning', 'Värmespridning']];
+const MATERIA_UNDERTITEL = 'materia, atomen, densitet och värme';
+const STARTSIDANS_K3 = 'Rörelse och kraft, fall, kast och balans, tryck, arbete och maskiner, repetition.';
+// en länk: href="…atomen_repetition…" i html, eller en sträng med atomen_repetition i js (kommentarer räknas inte)
+const LANK_ATOMEN = /href\s*=\s*["'][^"']*atomen_repetition|['"`][^'"`\n]*atomen_repetition[^'"`\n]*['"`]/;
+const ORDNING_FEL = [
+  { namn: 'atomen_repetition finns kvar (kap 3)', finns: 'kraft_och_rorelse/atomen_repetition/delkapitel.js', regel: /atomen_repetition finns/ },
+  { namn: 'länk till atomen_repetition (kap 3)', fil: 'kraft_och_rorelse/fall_kast_och_balans/delkapitel.js',
+    fran: "{ text: 'Kraft och rörelse', href: '../index.html' }]", till: "{ text: 'Kraft och rörelse', href: '../atomen_repetition/index.html' }]", regel: /pekar på atomen_repetition/ },
+  { namn: 'materia: texterna i fel ordning (kap 3)', fil: 'kraft_och_rorelse/materia_repetition/delkapitel.js',
+    fran: "{ id: 'atomen', titel: 'Atomen' },\n    { id: 'joner-isotoper-bindningar', titel: 'Joner, isotoper och bindningar' },",
+    till: "{ id: 'joner-isotoper-bindningar', titel: 'Joner, isotoper och bindningar' },\n    { id: 'atomen', titel: 'Atomen' },", regel: /materia_repetition: texterna/ },
+  { namn: 'materia: en text saknas (kap 3)', fil: 'kraft_och_rorelse/materia_repetition/delkapitel.js',
+    fran: ",\n    { id: 'varmespridning', titel: 'Värmespridning' }", till: '', regel: /materia_repetition: texterna/ },
+  { namn: 'kapitelindex: V inte tonat (kap 3)', fil: 'kraft_och_rorelse/index.html',
+    fran: '<span class="kapitel-kort dimmad" aria-disabled="true">\n          <span class="romersk">V</span>',
+    till: '<a class="kapitel-kort" href="universum_repetition/index.html">\n          <span class="romersk">V</span>', regel: /kapitelindex: kort 5/ },
+  { namn: 'kapitelindex: II och III i fel ordning (kap 3)', fil: 'kraft_och_rorelse/index.html',
+    fran: '<span class="romersk">II</span>', till: '<span class="romersk">III</span>', regel: /kapitelindex: kort 2/ },
+  { namn: 'kapitelindex: gamla raden under IV (kap 3)', fil: 'kraft_och_rorelse/index.html',
+    fran: 'Materia, atomen, densitet och värme.', till: 'Materia, densitet och värme.', regel: /kapitelindex: kort 4/ },
+  { namn: 'nummer som inte stämmer med kortet (kap 3)', fil: 'kraft_och_rorelse/materia_repetition/delkapitel.js',
+    fran: 'nummer: 4,', till: 'nummer: 2,', regel: /materia_repetition: nummer/ },
+  { namn: 'startsidans gamla rad (kap 3)', fil: 'index.html', fran: STARTSIDANS_K3, till: 'Repetition, rörelse och kraft, tyngdkraften, arbete och energi.', regel: /startsidan/ }
+];
+// alla html- och js-filer utom verktygen (grinden nämner mappen), arkivet och källorna: { 'rel/sökväg': kod } med \n
+function ordningFiler() {
+  const ut = {};
+  const samla = rel => { for (const f of fs.readdirSync(path.join(ROT, rel), { withFileTypes: true })) {
+    const r = rel ? rel + '/' + f.name : f.name;
+    if (f.isDirectory()) { if (!f.name.startsWith('.') && !['verktyg', 'Arkiv', 'kallor', 'node_modules'].includes(r)) samla(r); }
+    else if (/\.(html|js)$/.test(f.name)) ut[r] = fs.readFileSync(path.join(ROT, r), 'utf8').replace(/\r\n/g, '\n'); } };
+  samla('');
+  return ut;
+}
+function ordningKoll(filer, finns = rel => fs.existsSync(path.join(ROT, rel))) {
+  const fel = [];
+  // delkapitel.js ur kopian i minnet: det Bok.delkapitel får (övriga anrop på Bok gör inget)
+  const dk = rel => { if (filer[rel] == null) return null; let d = null;
+    try { new Function('Bok', filer[rel])(new Proxy({}, { get: (_, k) => k === 'delkapitel' ? (x => { d = x; }) : () => {} })); }
+    catch (e) { return { fel: e.message }; }
+    return d; };
+  // 1. atomen_repetition
+  if (finns('kraft_och_rorelse/atomen_repetition')) fel.push('kraft_och_rorelse/atomen_repetition finns fortfarande');
+  for (const [rel, kod] of Object.entries(filer)) if (LANK_ATOMEN.test(kod)) fel.push(`${rel} pekar på atomen_repetition: ${(LANK_ATOMEN.exec(kod) || [''])[0].slice(0, 120)}`);
+  // 2. materia_repetition: fem texter, Atomen först
+  const m = dk('kraft_och_rorelse/materia_repetition/delkapitel.js') || {};
+  const har = (m.texter || []).map(t => t.id + ' ' + t.titel).join(' · '), vill = MATERIA_TEXTER.map(([i, t]) => i + ' ' + t).join(' · ');
+  if (har !== vill) fel.push(`materia_repetition: texterna är ${har || '(inga)'}${m.fel ? ' (' + m.fel + ')' : ''}, ska vara ${vill}`);
+  for (const [id] of MATERIA_TEXTER) for (const n of ['standard', 'enkel', 'fordjupning'])
+    if (!finns(`kraft_och_rorelse/materia_repetition/innehall/${id}/${n}.js`)) fel.push(`materia_repetition: texterna – innehall/${id}/${n}.js saknas`);
+  if (m.undertitel !== MATERIA_UNDERTITEL) fel.push(`materia_repetition: undertiteln är "${m.undertitel}", ska vara "${MATERIA_UNDERTITEL}"`);
+  // 3. kapitelindexet
+  const ul = (/<ul class="innehallsforteckning">([\s\S]*?)<\/ul>/.exec(filer['kraft_och_rorelse/index.html'] || '') || [])[1] || '';
+  const kort = [...ul.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(([, li]) => {
+    const f = /<(a|span) class="kapitel-kort( dimmad)?"([^>]*)>/.exec(li) || [];
+    return { tag: f[1], dimmad: !!f[2], av: /aria-disabled="true"/.test(f[3] || ''), href: (/href="([^"]*)"/.exec(f[3] || '') || [])[1] || null,
+      nr: (/<span class="romersk">([^<]*)</.exec(li) || [])[1], titel: (/<span class="kap-titel">([^<]*)</.exec(li) || [])[1],
+      rad: (/<p class="kap-beskrivning">([^<]*)</.exec(li) || [])[1], kommer: /class="kommer-snart">Kommer</.test(li) }; });
+  if (kort.length !== K3_ORDNING.length) fel.push(`kapitelindex: ${kort.length} kort, ska vara ${K3_ORDNING.length}: ` +
+    kort.map(k => `${k.nr} ${k.titel}${k.href ? ' → ' + k.href : ' (tonat)'}`).join(' · '));
+  K3_ORDNING.forEach((v, i) => { const k = kort[i]; if (!k) return;
+    const ok = k.nr === v.nr && k.titel === v.titel && (v.rad == null || k.rad === v.rad) && (v.mapp
+      ? k.tag === 'a' && !k.dimmad && !k.av && !k.kommer && k.href === v.mapp + '/index.html'
+      : k.tag === 'span' && k.dimmad && k.av && k.kommer && !k.href);
+    if (!ok) fel.push(`kapitelindex: kort ${i + 1} ska vara ${v.nr} ${v.titel}${v.rad ? ' (' + v.rad + ')' : ''}` +
+      (v.mapp ? ` → ${v.mapp}/index.html` : ', tonat med aria-disabled och "Kommer"') +
+      `, är ${k.nr} ${k.titel} (${k.rad})${k.href ? ' → ' + k.href : ''}${k.dimmad ? ', tonat' : ''}${k.av ? ', aria-disabled' : ''}${k.kommer ? ', "Kommer"' : ''}`); });
+  // 4. nummer i delkapitel.js = kortets romerska siffra, i alla byggda kapitel
+  for (const K of KAPITEL) K.avsnitt.forEach((mapp, i) => { if (!mapp) return;
+    const d = dk(`${K.mapp}/${mapp}/delkapitel.js`);
+    if (!d || d.nummer !== i + 1) fel.push(`${K.mapp}/${mapp}: nummer ${d ? d.nummer : '(ingen delkapitel.js)'} i delkapitel.js, men kortet är ${ROMERSKA[i]} (nummer ${i + 1})`); });
+  // 5. startsidans kort för Kraft och rörelse
+  const k3 = /href="kraft_och_rorelse\/index.html">[\s\S]*?<p class="kap-beskrivning">([^<]*)</.exec(filer['index.html'] || '');
+  if (!k3 || k3[1] !== STARTSIDANS_K3) fel.push(`startsidan: kortet Kraft och rörelse har raden "${k3 && k3[1]}", ska vara "${STARTSIDANS_K3}"`);
   return fel;
 }
 
@@ -536,7 +636,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         ng.set(id, { typ, minPx: Math.min(...tx.map(x => x[2])), fel: f_ });
       });
-      // Kaströrelse och cirkelrörelse (IV C, arbetsorder 16), mätt i figurernas egna element:
+      // Kaströrelse och cirkelrörelse (II C, arbetsorder 16), mätt i figurernas egna element:
       //  - kastbana hoghus: den släppta och den kastade bollen på samma höjd vid varje tidpunkt (och den streckade linjen
       //    mellan dem), den släppta rakt ned (samma x) och den kastade lika långt framåt varje steg;
       //  - kastbana komposanter: pilarna från bollen; de vågräta lika långa, de lodräta 0 vid start och lika mycket
@@ -614,7 +714,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         kc.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
       });
-      // Tyngdpunkt, balans och kroppen (IV D, arbetsorder 17), mätt i figurernas egna element:
+      // Tyngdpunkt, balans och kroppen (II D, arbetsorder 17), mätt i figurernas egna element:
       //  - stabilitet lada och fordon, i varje läge: lodlinjen lodrät från tyngdpunkten ned till marken; stödytan på
       //    marken, från lådans ena nedre hörn till det andra (sett uppifrån) eller mellan hjulens kontaktpunkter; lådans
       //    tyngdpunkt i lådans mitt; texten under ("välter" eller inte) stämmer med var lodlinjen träffar, och det stämmer
@@ -692,7 +792,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         tb.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
       });
-      // Tryck (V A, arbetsorder 21), mätt i figurernas egna element:
+      // Tryck (III A, arbetsorder 21), mätt i figurernas egna element:
       //  - sno: tyngdpilarna exakt lika långa och rakt nedåt; den större sulan minst dubbelt så lång som den mindre; den
       //    mindre sulan sjunker minst 5 px djupare under snöytan;
       //  - hydraulik: den stora kolven minst dubbelt så bred och pilen vid den längre, ned på den lilla och upp på den
@@ -771,7 +871,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         tr.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
       });
-      // Energi och arbete (V B, arbetsorder 28), mätt i figurernas egna element:
+      // Energi och arbete (III B, arbetsorder 28), mätt i figurernas egna element:
       //  - studs: varje toppunkt på banan lägre än den förra (minst 2 px), aldrig lika hög eller högre; bollen hoptryckt
       //    (bredare än hög) bara där den når golvet, och rund överallt annars; en våg vid varje studs;
       //  - arbete: kraftpilen pekar rakt uppåt i alla tre panelerna; rörelsepilen uppåt i den första, ingen i den
@@ -780,9 +880,9 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
       //  - snett: repkraftens vinkel mot marken är den utskrivna (±0,5°); delen framåt och delen uppåt streckade från
       //    pilens början till dess spets (som komposanterna i resultant_rutor); talen vid delarna = kraften gånger de
       //    ritade delarnas andel av pilen (±1 N); kraftens tal = kraften; rörelsepilen vågrät framåt;
-      //  - (V C, arbetsorder 29) fall: staplarna tillsammans lika höga, lägesenergins i proportion till höjden; gunga:
+      //  - (III C, arbetsorder 29) fall: staplarna tillsammans lika höga, lägesenergins i proportion till höjden; gunga:
       //    ytterlägena på samma höjd och mitten lägst; stavhopp: staven böjd bara i mittläget, lägena och orden i ordning;
-      //  - (V D, arbetsorder 29) ramp: samma sluthöjd, rampen så lång och hög som utskrivet, kraft gånger sträcka lika och
+      //  - (III D, arbetsorder 29) ramp: samma sluthöjd, rampen så lång och hög som utskrivet, kraft gånger sträcka lika och
       //    utskrivet under båda; gungbrada: plankan vågrät, momenten lika, avstånden i skala, vridpilarna lika stora och
       //    motriktade; talja: två bärande repdelar, lyft och indraget rep i bilden, dragkraften halva tyngden;
       //  - alla: rörelsepilarna ser inte ut som kraftpilar (annan färg och streckade), ingen text under 14 px, utanför
@@ -1817,7 +1917,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
         });
         lj.set(id, { typ, minPx: tx.length ? Math.min(...tx.map(x => x[2])) : Infinity, fel: f_ });
       });
-      // Resulterande kraft (Kraft och rörelse IV A, arbetsorder 12), mätt i figurernas egna element:
+      // Resulterande kraft (Kraft och rörelse II A, arbetsorder 12), mätt i figurernas egna element:
       //  - resultant_rutor steg: varje pil börjar och slutar i ett rutnätshörn; den flyttade F₂ har samma komposanter som
       //    F₂ i det första steget; resultanten går från startpunkten till den flyttade pilens spets;
       //  - resultant_rutor vinklar: resultantens längd på skärmen = kraftens pil × det uträknade värdet / kraften (±1 px);
@@ -1894,7 +1994,7 @@ const FIGURKOLL = String.raw`const figurKoll = async () => {
           }
         }
         // texterna: inga utanför figuren eller över en annan; i resultant_rutor ingen under 14 px (kraftpilar har sin
-        // egen textstorlek sedan förut, som i III:s figurer)
+        // egen textstorlek sedan förut, som i I:s figurer, Rörelse och kraft)
         if (s.dataset.resultantRutor || ['kedja', 'lampa'].includes(s.dataset.kraftpilar) || s.querySelector('.fig-rod')) {
           const vb = s.viewBox.baseVal, skala = s.getBoundingClientRect().width / vb.width, tx = [...s.querySelectorAll('text')].filter(t => t.textContent.trim()).map(t => [t.textContent, t.getBBox(), parseFloat(getComputedStyle(t).fontSize) * skala]);
           tx.forEach(([a, p, px], j) => {
@@ -2180,7 +2280,7 @@ const VIDARE = String.raw`
 /* ---------- Länkar i löptexten (2026-11-11) ----------
  * [text](#bok/ankare) i en text: kontrolläget listar länkarna (textlankar). Varje bok med en sådan länk öppnas från
  * hubben, länken hittas i ett stycke eller en punkt, och den öppnar den andra boken (adressen börjar med bokens namn,
- * och med ankaret om det finns). "↩ Tillbaka till <boken>" leder tillbaka dit eleven var. (IV B Standard → Galileo.) */
+ * och med ankaret om det finns). "↩ Tillbaka till <boken>" leder tillbaka dit eleven var. (II B Standard → Galileo.) */
 const TEXTLANK = String.raw`
   {
     const tl = JSON.parse(document.body.dataset.kontroll).textlankar || [], tFel = [], tProv = [];
@@ -2444,7 +2544,7 @@ const SCENARIO = String.raw`async (helskarmLage, utanFonster) => {
   const valjNiva = async i => { await klicka(synlig('.bokapp .niva-knapp')); await klicka(nivaVal()[i], 250); };
   const spar = [];
   if (ovriga.length) {
-    // Avsnitten på varje nivå (förteckningen). En nivå kan ha avsnitt som de andra saknar (III A Fördjupning).
+    // Avsnitten på varje nivå (förteckningen). En nivå kan ha avsnitt som de andra saknar (I A Fördjupning).
     const avsnittPa = async i => { await valjNiva(i); await klicka(synlig('.bok-innehall'));
       const r = $$('.meny .toc-a').map(b => ({ till: +b.dataset.till, id: b.dataset.avsnitt, titel: b.querySelector('.toc-titel').textContent.trim() }));
       tangent('Escape'); await v(80); return r; };
@@ -2470,7 +2570,7 @@ const SCENARIO = String.raw`async (helskarmLage, utanFonster) => {
     prova('nivå: nivåbyte i boken (' + [franNiva, ...ovriga, franNiva].map(i => nivaVal()[i].textContent).join(' → ') + ') hamnar i samma avsnitt, eller i det närmaste föregående som finns på nivån',
       !fel.length, 'från ”' + mitt[1] + '”: ' + (fel.length ? fel.join(' | ') : vag.join(' → ')));
     for (const i of ovriga) { await valjNiva(i); spar.push(await figurKoll()); }
-    // Ett avsnitt som bara finns på en nivå (III A Fördjupning: Att räkna på rörelse): nivåbytet därifrån går till det
+    // Ett avsnitt som bara finns på en nivå (I A Fördjupning: Att räkna på rörelse): nivåbytet därifrån går till det
     // närmaste föregående avsnitt som finns på den nya nivån
     let fall = null;
     for (const x of Object.keys(listor)) for (const y of Object.keys(listor)) if (!fall && x !== y) {
@@ -3358,8 +3458,10 @@ const KAPITEL = [
     alla: 'I II III IV V' },
   // kapitel 2 Ljud och ljus (arbetsorder 33): avsnitt I byggt, II (34) och III (38) byggda, IV tonat
   { mapp: 'ljud_och_ljus', nr: 'II', titel: 'Ljud och ljus', avsnitt: ['vad_ljud_ar', 'ljud_omkring_oss', 'ljusets_vag'], alla: 'I II III IV' },
-  { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['atomen_repetition', 'materia_repetition', 'rorelse_och_kraft', 'fall_kast_och_balans', 'tryck_arbete_och_maskiner', 'ljud_och_ljus_repetition'],
-    alla: 'I II III IV V VI' }
+  // Kraft och rörelse (arbetsorder 39, 2026-11-26): kraftavsnitten I–III först, sedan repetitionerna IV Materia, V
+  // Universum (tonat, finns inte än: null) och VI Ljud och ljus. Mappnamnen är kvar från den gamla ordningen.
+  { mapp: 'kraft_och_rorelse', nr: 'III', titel: 'Kraft och rörelse', avsnitt: ['rorelse_och_kraft', 'fall_kast_och_balans', 'tryck_arbete_och_maskiner', 'materia_repetition', null, 'ljud_och_ljus_repetition'],
+    alla: 'I II III IV V VI', ordning: 'I Rörelse och kraft · II Fall, kast och balans · III Tryck, arbete och maskiner · IV Repetition · V Repetition · VI Repetition' }
 ];
 const STARTSIDANS_KAPITEL = 'I Materia och universum · II Ljud och ljus · III Kraft och rörelse';
 // Nästa steg på startsidan (arbetsorder 11): listan (ett kapitel per post) och Matematiken i fysiken, i den ordningen
@@ -3433,8 +3535,11 @@ async function provaSidorna(lage) {
     }
 
     for (const K of KAPITEL) {
-      const kapitel = new URL(K.mapp + '/index.html', start).href, alla = K.alla.split(' '), n = K.avsnitt.length;
-      const avsnitt = K.avsnitt.map(d => new URL(`${K.mapp}/${d}/index.html`, start).href);
+      // (arbetsorder 39) avsnitt[i] hör till kortet alla[i]; null eller ingen post = ett tonat kort på den platsen
+      const kapitel = new URL(K.mapp + '/index.html', start).href, alla = K.alla.split(' ');
+      const byggda = alla.map((_, i) => K.avsnitt[i] || null);
+      const avsnitt = byggda.map(d => d && new URL(`${K.mapp}/${d}/index.html`, start).href);
+      const lankade = alla.filter((_, i) => byggda[i]), tonadeI = alla.map((_, i) => i).filter(i => !byggda[i]);
       // Kapitelindexet
       await ga(start);
       await klicka(`a.kapitel-kort[href$="${K.mapp}/index.html"]`);
@@ -3444,10 +3549,12 @@ async function provaSidorna(lage) {
         smula === `A:Fysik→${start} | SPAN:› | SPAN:${K.titel}` && await c.ev(`document.querySelector('.hero-banner .avsnitt-label').textContent === 'Kapitel ${K.nr}'`), smula);
       const av = await kort('ul.innehallsforteckning > li > .kapitel-kort');
       prova(`kapitelindex ${K.nr}: avsnittssidorna ${alla[0]}–${alla[alla.length - 1]}`, av.map(x => x.nr).join(' ') === K.alla, av.map(x => x.nr + ' ' + x.titel).join(' · '));
-      prova(`kapitelindex ${K.nr}: ${ROMERSKA[0]}–${ROMERSKA[n - 1]} länkar till avsnittssidorna`,
-        avsnitt.every((u, i) => av[i] && av[i].tag === 'A' && av[i].href === u && !av[i].kommer), av.slice(0, n).map(x => x.href).join(' | '));
-      if (n < alla.length) prova(`kapitelindex ${K.nr}: ${alla[n]}–${alla[alla.length - 1]} tonade, aria-disabled, "Kommer" och inga länkar`,
-        av.slice(n).length === alla.length - n && av.slice(n).every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer && !x.href));
+      if (K.ordning) prova(`kapitelindex ${K.nr}: ordningen ${K.ordning}`, av.map(x => x.nr + ' ' + x.titel).join(' · ') === K.ordning,
+        av.map(x => x.nr + ' ' + x.titel).join(' · '));
+      prova(`kapitelindex ${K.nr}: ${lankade.join(', ')} länkar till avsnittssidorna`,
+        avsnitt.every((u, i) => !u || (av[i] && av[i].tag === 'A' && av[i].href === u && !av[i].kommer)), av.filter((_, i) => avsnitt[i]).map(x => x.href).join(' | '));
+      if (tonadeI.length) prova(`kapitelindex ${K.nr}: ${tonadeI.map(i => alla[i]).join(', ')} tonade, aria-disabled, "Kommer" och inga länkar`,
+        av.length === alla.length && tonadeI.every(i => av[i] && av[i].tag === 'SPAN' && av[i].dimmad && av[i].av === 'true' && av[i].kommer && !av[i].href));
       const res = await kort('.resurser-rad .resurs-kort');
       prova(`kapitelindex ${K.nr}: resurserna Begreppsbank och Självskattning, tonade "Kommer"`,
         res.map(x => x.titel).join(', ') === 'Begreppsbank, Självskattning' && res.every(x => x.tag === 'SPAN' && x.dimmad && x.av === 'true' && x.kommer));
@@ -3456,8 +3563,14 @@ async function provaSidorna(lage) {
 
       // Avsnittssidorna och brödsmulorna tillbaka
       for (const [i, mal] of avsnitt.entries()) {
-        await klicka(`a.kapitel-kort[href$="${K.avsnitt[i]}/index.html"]`, 1200);
+        if (!mal) continue;
+        await klicka(`a.kapitel-kort[href$="${byggda[i]}/index.html"]`, 1200);
         prova(`kapitelindex ${K.nr} → avsnittssida ${ROMERSKA[i]}`, await har() === mal, await har());
+        // (arbetsorder 39) avsnittssidans nummer är kortets: etiketten "Avsnitt <kortets siffra>" och brödsmulan "<n>. …"
+        const nr = await c.ev(`({ etikett: (document.querySelector('.hero-banner .avsnitt-label') || {}).textContent,
+          smula: (document.querySelector('.hero-banner .brodsmulor .aktuell') || {}).textContent })`);
+        prova(`avsnittssida ${K.nr}.${ROMERSKA[i]}: etiketten Avsnitt ${ROMERSKA[i]} och brödsmulan ${i + 1}. …, som kortet`,
+          nr.etikett === 'Avsnitt ' + ROMERSKA[i] && String(nr.smula || '').startsWith(`${i + 1}. `), JSON.stringify(nr));
         const s = await c.ev(`[...document.querySelectorAll('.hero-banner .brodsmulor a')].map(a => a.textContent + '→' + a.href).join(' | ')`);
         prova(`avsnittssida ${K.nr}.${ROMERSKA[i]}: brödsmulorna Fysik och ${K.titel} är länkar dit`, s === `Fysik→${start} | ${K.titel}→${kapitel}`, s);
         await klicka('.hero-banner .brodsmulor a:last-of-type');
@@ -3465,7 +3578,7 @@ async function provaSidorna(lage) {
       }
       await klicka('.hero-banner .brodsmulor a');
       prova(`kapitelindex ${K.nr} → brödsmulan Fysik → startsidan`, await har() === start, await har());
-      await ga(avsnitt[0]); await vanta(500);
+      await ga(avsnitt.find(Boolean)); await vanta(500);
       await klicka('.hero-banner .brodsmulor a');
       prova(`avsnittssida ${K.nr}.I → brödsmulan Fysik → startsidan`, await har() === start, await har());
     }
@@ -3739,13 +3852,13 @@ async function jamforWebben(lista) {
   }
   console.log('');
 
-  // 1 b. Strömformatet i V och VI (arbetsorder 30), och texterna ordagrant mot källorna (verktyg/ordagrant.js)
+  // 1 b. Strömformatet i III och VI (arbetsorder 30), och texterna ordagrant mot källorna (verktyg/ordagrant.js)
   if (!BARA || STROM_MAPPAR.some(m => m.includes(BARA))) {
     const filer = stromFiler();
     if (!NEGATIV) {
       const fel = stromKoll(filer);
       gront = gront && !fel.length;
-      console.log(`${fel.length ? 'RÖTT ' : 'GRÖNT'}  strömformatet i V, VI och kapitel 2: ${filer.length} böcker – begreppen med skiljetecken utanför och grundform vid stor bokstav, figurerna ritas, id:n rätt skrivna, unika och (VI) som i källans huvud`);
+      console.log(`${fel.length ? 'RÖTT ' : 'GRÖNT'}  strömformatet i III, VI och kapitel 2: ${filer.length} böcker – begreppen med skiljetecken utanför och grundform vid stor bokstav, figurerna ritas, id:n rätt skrivna, unika och (VI) som i källans huvud`);
       fel.forEach(f => console.log(`       ✗ ${f}`));
       const og = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'ordagrant.js')], { encoding: 'utf8' });
       const ogFel = og.stdout.split('\n').filter(l => /^FEL|^   /.test(l));
@@ -3758,6 +3871,27 @@ async function jamforWebben(lista) {
       const fel = insatt ? stromKoll(ny).filter(f => f.startsWith(x.fil) && x.regel.test(f)) : [];
       gront = gront && fel.length > 0;
       console.log(`${fel.length ? 'GRÖNT' : 'RÖTT '}  negativ "${x.namn}": ${!insatt ? 'FELET GICK INTE ATT LÄGGA IN (' + x.fran + ' saknas)' : fel.length ? 'strömformatet blev rött, som det ska' : 'GRÖNT – fångar inte felet'}`);
+      fel.slice(0, 2).forEach(f => console.log(`       fångat: ${f}`));
+    }
+    console.log('');
+  }
+
+  // 1 c. Kraft och rörelse: avsnittens ordning (arbetsorder 39), på disken
+  if (!BARA || ['kraft_och_rorelse', 'atomen_repetition', ...K3_ORDNING.map(x => x.mapp).filter(Boolean)].some(m => m.includes(BARA) || BARA.includes(m))) {
+    const filer = ordningFiler();
+    const bas = ordningKoll(filer);
+    if (!NEGATIV) {
+      gront = gront && !bas.length;
+      console.log(`${bas.length ? 'RÖTT ' : 'GRÖNT'}  Kraft och rörelse, avsnittens ordning: atomen_repetition borta och ingen länk dit, materia_repetition med fem texter (Atomen först), kapitelindexet I–VI med V tonat, nummer som kortets siffra (alla kapitel), startsidans rad`);
+      bas.forEach(f => console.log(`       ✗ ${f}`));
+    } else for (const x of ORDNING_FEL.filter(x => !NEGATIV_BARA || x.namn.includes(NEGATIV_BARA))) {
+      const finns = rel => (!!x.finns && x.finns.startsWith(rel)) || fs.existsSync(path.join(ROT, rel));
+      const insatt = !!x.finns || (filer[x.fil] != null && filer[x.fil].includes(x.fran));
+      const ny = x.fil ? Object.assign({}, filer, { [x.fil]: (filer[x.fil] || '').split(x.fran).join(x.till) }) : filer;
+      // ett nytt fel (inte ett som redan fanns), och just det: så fångar provet felet och inget annat
+      const fel = insatt ? ordningKoll(ny, finns).filter(f => !bas.includes(f) && x.regel.test(f)) : [];
+      gront = gront && fel.length > 0;
+      console.log(`${fel.length ? 'GRÖNT' : 'RÖTT '}  negativ "${x.namn}": ${!insatt ? 'FELET GICK INTE ATT LÄGGA IN (' + x.fran + ' saknas)' : fel.length ? 'ordningen blev röd, som den ska' : 'GRÖNT – fångar inte felet'}`);
       fel.slice(0, 2).forEach(f => console.log(`       fångat: ${f}`));
     }
     console.log('');

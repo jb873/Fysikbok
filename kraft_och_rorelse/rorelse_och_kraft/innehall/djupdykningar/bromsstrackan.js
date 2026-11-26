@@ -1,4 +1,4 @@
-/* Avsnittssida III, text B: Kraft och friktion – nivån Djupdykning, "Bromssträckan – varför fart och halka är farligt".
+/* Avsnittssida I, text B: Kraft och friktion – nivån Djupdykning, "Bromssträckan – varför fart och halka är farligt".
  * Joachims källa (Djupdykning-B-Bromsstrackan-redigerad.md, 2026-11-04), införd ordagrant i strömformatet: ## = avsnitt
  * (numrerat), ### = rubrik, ett stycke = ett textblock. Ingen Sammanfattning och inget länkblock (arbetsordern).
  * [BILD S] är figuren stoppstracka; [BILD Y] är figuren friktion med två paneler (torr asfalt och blank is).

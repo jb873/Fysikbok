@@ -1,4 +1,4 @@
-/* Avsnittssida IV. Fall, kast och balans (Fysik · Kraft och rörelse), med texterna A Resulterande kraft, B Fritt fall,
+/* Avsnittssida II. Fall, kast och balans (Fysik · Kraft och rörelse), med texterna A Resulterande kraft, B Fritt fall,
  * C Kaströrelse och D Tyngdpunkt, balans och kroppen, en bok per text och nivå (arbetsorder 12, 2026-11-07). B (Fritt
  * fall, 2026-11-11), C (Kaströrelse, arbetsorder 16) och D (arbetsorder 17; titeln var "Tyngdpunkt och balans", mappen
  * heter som förut) har fått innehåll efter A. Bara data; motorn är bokskal/. Fälten beskrivs i Fysik/README.md. */
@@ -7,7 +7,7 @@ Bok.delkapitel({
   amne: 'Fysik',
   smulor: [{ text: 'Fysik', href: '../../index.html' },            // brödsmulorna länkar till startsidan
            { text: 'Kraft och rörelse', href: '../index.html' }], // och till kapitelindexet
-  nummer: 4,                                 // brödsmulan "4. Fall, kast och balans" och etiketten "Avsnitt IV"
+  nummer: 2,                                 // brödsmulan "2. Fall, kast och balans" och etiketten "Avsnitt II"
   titel: 'Fall, kast och balans',
   undertitel: 'resulterande kraft, fritt fall, kaströrelse, tyngdpunkt, balans och kroppen',  // bannerns rad: kapitelindexets beskrivning av IV
   overrad: 'Fysik · Kraft och rörelse',       // över titeln på bokens första sida
@@ -29,9 +29,9 @@ Bok.delkapitel({
       hjalpmedel: { musikvideo: { href: 'https://www.youtube-nocookie.com/embed/UaTbUaJbMOs' } } }     // youtu.be/UaTbUaJbMOs (Tyngdpunkten)
   ],
 
-  // Djupdykningar under "Vill du veta mer?" (arbetsorder 19, 2026-11-12): de fyra till IV, en bok var i
+  // Djupdykningar under "Vill du veta mer?" (arbetsorder 19, 2026-11-12): de fyra till II (förut IV), en bok var i
   // innehall/djupdykningar/ (verktyg/iv-dd-omvandlare.js ur kallor/kap3/IV-DD-*), och Galileo sist. Galileo hör till
-  // avsnittssida III – samma bok (samma fil och id), ingen kopia; IV B Standard länkar dit. Läsplatsen sparas per
+  // avsnittssida I – samma bok (samma fil och id), ingen kopia; II B Standard länkar dit. Läsplatsen sparas per
   // avsnittssida. id är nyckeln för det eleven sparat – byt det aldrig. ingress: en mening under kortets titel.
   djupdykningar: [
     { id: 'rymdhoppet', titel: 'Hoppet från rymdens kant', fil: 'innehall/djupdykningar/rymdhoppet.js',
@@ -53,7 +53,7 @@ Bok.delkapitel({
 
   // Nästa steg (arbetsorder 13, del 2): textboken finns här utan kort, som mål för länkarna i rutan "Vill du gå vidare?"
   // sist i Fördjupningen – och övningsboken och Matematiken i fysiken, som textboken i sin tur länkar till. Böckerna är
-  // III:s (samma id: samma bok, men läsplatsen sparas per avsnittssida).
+  // I:s (samma id: samma bok, men läsplatsen sparas per avsnittssida).
   nastaSteg: [
     { id: 'kraft-och-rorelse', titel: 'Nästa steg · Kraft och rörelse – textbok', fil: '../rorelse_och_kraft/innehall/nasta-steg/textbok.js', kort: false }
   ],

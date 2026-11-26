@@ -1,4 +1,4 @@
-/* Avsnittssida IV. Fall, kast och balans, text D: Tyngdpunkt, balans och kroppen – nivån fordjupning (📕).
+/* Avsnittssida II. Fall, kast och balans, text D: Tyngdpunkt, balans och kroppen – nivån fordjupning (📕).
  * Arbetsorder 17 (2026-11-12): kallor/kap3/IV-D-Tyngdpunkt-balans-och-kroppen-alla-nivaer-v1.md (# 📕 FÖRDJUPNING), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text d: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i

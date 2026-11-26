@@ -1,4 +1,4 @@
-// Figurerna till V C Mekanisk energi (verktyg/kap3-omvandlare.js --text vc): [{ borjar, figurer }]. Arbetsorder 29
+// Figurerna till III C Mekanisk energi (verktyg/kap3-omvandlare.js --text vc): [{ borjar, figurer }]. Arbetsorder 29
 // (2026-11-19). Nya lägen av figurtypen energi i bokskal/figurer.js: fall, gunga och stavhopp. Data enligt ordern (källan
 // har ingen FIGURER-del); bildtexterna är skrivna här. C1 och C2 står efter sin bildmarkering i Standard och Enkel, C3 i
 // Fördjupningen.

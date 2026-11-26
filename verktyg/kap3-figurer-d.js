@@ -1,4 +1,4 @@
-// Figurerna till IV D Tyngdpunkt, balans och kroppen (verktyg/kap3-omvandlare.js --text d): [{ borjar, figurer }].
+// Figurerna till II D Tyngdpunkt, balans och kroppen (verktyg/kap3-omvandlare.js --text d): [{ borjar, figurer }].
 // Arbetsorder 17 (2026-11-12). Nya figurtyper i bokskal/figurer.js: stabilitet (lägena lada, fordon, hojdhopp) och krock;
 // kastbana har fått läget hopp. Data enligt källans FIGURER-del. Figurerna står efter sin bildmarkering i Standard och
 // Enkel – Fördjupningen har inga egna figurer.

@@ -1,7 +1,7 @@
-/* Avsnittssida IV. Fall, kast och balans, text B: Fritt fall – nivån fordjupning (📕). Joachims uppdrag
+/* Avsnittssida II. Fall, kast och balans, text B: Fritt fall – nivån fordjupning (📕). Joachims uppdrag
  * 2026-11-11: kallor/kap3/IV-B-Fritt-fall-alla-nivaer-v2.md (# 📕 FÖRDJUPNING), införd ordagrant i strömformatet av
  * verktyg/kap3-omvandlare.js --text b: ## = avsnitt, ### = rubrik, ett stycke = ett textblock, "Det här lär du dig:" =
- * liten rubrik utan kolon, [EXEMPEL: …] = exempelruta, [RUTA: …] = ruta. Tilläggen enligt III:s norm: rutan "Så
+ * liten rubrik utan kolon, [EXEMPEL: …] = exempelruta, [RUTA: …] = ruta. Tilläggen enligt I:s norm: rutan "Så
  * bläddrar du" sist i Inledningen och länkblocket sist i det sista numrerade avsnittet och i Sammanfattningen, och i
  * Fördjupningen rutan "Vill du gå vidare?" sist. [BILD …] står som kommentar, med figuren efter (kap3-figurer-b.js).
  */

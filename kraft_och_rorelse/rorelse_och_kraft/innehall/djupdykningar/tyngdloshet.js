@@ -1,4 +1,4 @@
-/* Avsnittssida III, text D: Tyngdkraften – nivån Djupdykning, "Är astronauterna tyngdlösa?".
+/* Avsnittssida I, text D: Tyngdkraften – nivån Djupdykning, "Är astronauterna tyngdlösa?".
  * Joachims källa (Djupdykning-D-Tyngdloshet-redigerad.md, 2026-11-04), införd ordagrant i strömformatet: ## = avsnitt
  * (numrerat), ### = rubrik, ett stycke = ett textblock. Ingen Sammanfattning och inget länkblock (arbetsordern).
  * [BILD H] är figuren fallande_hiss och [BILD N] figuren newtons_kanon.

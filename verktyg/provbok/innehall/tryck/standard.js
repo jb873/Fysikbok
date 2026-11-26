@@ -111,7 +111,7 @@ Bok.niva('standard', {
         { typ: 'text', text: 'Provtext: en provlampa i två snören.' },
         { typ: 'figur', id: 'lampa-prov', namn: 'kraftpilar', foremal: { form: 'lampa' }, snoren: true, komposanter: true, varden: false,
           krafter: [{ namn: 'prov', riktning: 145, storlek: 8 / (2 * Math.sin(35 * Math.PI / 180)) }, { namn: 'prov', riktning: 35, storlek: 8 / (2 * Math.sin(35 * Math.PI / 180)) }, { namn: 'provtyngd', riktning: 'ner', storlek: 8 }] },
-        // Kaströrelse och cirkelrörelse (order 16): varje läge av kastbana och cirkelrorelse, med andra data än i IV C
+        // Kaströrelse och cirkelrörelse (order 16): varje läge av kastbana och cirkelrorelse, med andra data än i II C
         { typ: 'text', text: 'Provtext: ett provhus på 45 m, en släppt och en kastad provboll, varje sekund.' },
         { typ: 'figur', id: 'kast-hoghus-prov', namn: 'kastbana', lage: 'hoghus', hojd: 45, fart: 15, steg: 1 },
         { typ: 'text', text: 'Provtext: ett provkast i fyra sekunder.' },
@@ -122,7 +122,7 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'cirkel-snore-prov', namn: 'cirkelrorelse', lage: 'snore', radie: 90, vinkel: 120, slapp: 300 },
         { typ: 'text', text: 'Provtext: en provbil i en provkurva.' },
         { typ: 'figur', id: 'cirkel-bil-prov', namn: 'cirkelrorelse', lage: 'bil', radie: 130, vinkel: 75 },
-        // Tyngdpunkt, balans och kroppen (order 17): varje nytt läge av stabilitet, kastbana hopp och krock, med andra data än i IV D
+        // Tyngdpunkt, balans och kroppen (order 17): varje nytt läge av stabilitet, kastbana hopp och krock, med andra data än i II D
         { typ: 'text', text: 'Provtext: en smalare provlåda i tre provlägen.' },
         { typ: 'figur', id: 'stab-lada-prov', namn: 'stabilitet', lage: 'lada', bredd: 1, hojd: 2, vinklar: [10, 20, 35] },
         { typ: 'text', text: 'Provtext: två provfordon lutade 20°.' },
@@ -134,7 +134,7 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'stab-hojdhopp-prov', namn: 'stabilitet', lage: 'hojdhopp', ribba: 1.6 },
         { typ: 'text', text: 'Provtext: två provbilar mot en provvägg.' },
         { typ: 'figur', id: 'krock-prov', namn: 'krock', stopp: [0.1, 0.7], langd: 4.8, front: 1.2 },
-        // Tryck (arbetsorder 21): varje läge av tryck, med andra data än i V A
+        // Tryck (arbetsorder 21): varje läge av tryck, med andra data än i III A
         { typ: 'text', text: 'Provtext: en lättare provperson med gympaskor och med skidor.' },
         { typ: 'figur', id: 'tryck-sno-prov', namn: 'tryck', lage: 'sno', tyngd: 450, skor: [{ namn: 'gympaskor', langd: 0.26 }, { namn: 'skidor', langd: 1.0 }] },
         { typ: 'text', text: 'Provtext: en provlyft med andra areor.' },
@@ -143,21 +143,21 @@ Bok.niva('standard', {
         { typ: 'figur', id: 'tryck-lyftkraft-prov', namn: 'tryck', lage: 'lyftkraft', djup: 1.2 },
         { typ: 'text', text: 'Provtext: provlyften med sträckor.' },
         { typ: 'figur', id: 'tryck-vag-prov', namn: 'tryck', lage: 'hydraulik-vag', areor: [4, 80], krafter: [150, 3000], vag: 0.4 },
-        // Energi och arbete (arbetsorder 28): varje läge av energi, med andra data än i V B
+        // Energi och arbete (arbetsorder 28): varje läge av energi, med andra data än i III B
         { typ: 'text', text: 'Provtext: en provboll som studsar fyra gånger och tappar hälften varje gång.' },
         { typ: 'figur', id: 'energi-studs-prov', namn: 'energi', lage: 'studs', studsar: 4, kvar: 0.5 },
         { typ: 'text', text: 'Provtext: en provperson med en väska.' },
         { typ: 'figur', id: 'energi-arbete-prov', namn: 'energi', lage: 'arbete', foremal: 'väskan' },
         { typ: 'text', text: 'Provtext: en provkälke i ett brantare rep.' },
         { typ: 'figur', id: 'energi-snett-prov', namn: 'energi', lage: 'snett', kraft: 150, vinkel: 40 },
-        // Mekanisk energi (arbetsorder 29): varje nytt läge av energi, med andra data än i V C
+        // Mekanisk energi (arbetsorder 29): varje nytt läge av energi, med andra data än i III C
         { typ: 'text', text: 'Provtext: en provboll från 8 m i tre andra lägen.' },
         { typ: 'figur', id: 'energi-fall-prov', namn: 'energi', lage: 'fall', hojd: 8, lagen: [8, 6, 2] },
         { typ: 'text', text: 'Provtext: en provgunga i en mindre vinkel.' },
         { typ: 'figur', id: 'energi-gunga-prov', namn: 'energi', lage: 'gunga', vinkel: 35 },
         { typ: 'text', text: 'Provtext: ett provstavhopp.' },
         { typ: 'figur', id: 'energi-stavhopp-prov', namn: 'energi', lage: 'stavhopp' },
-        // (arbetsorder 29, steg 3) maskinerna med andra data än V D
+        // (arbetsorder 29, steg 3) maskinerna med andra data än III D
         { typ: 'text', text: 'Provtext: ett provklot på 40 kg upp 1,5 m, rakt upp och längs en 3 m lång ramp.' },
         { typ: 'figur', id: 'energi-ramp-prov', namn: 'energi', lage: 'ramp', massa: 40, hojd: 1.5, ramp: 3 },
         { typ: 'text', text: 'Provtext: en provgungbräda med 600 N på 1,5 m och 450 N på 2 m.' },

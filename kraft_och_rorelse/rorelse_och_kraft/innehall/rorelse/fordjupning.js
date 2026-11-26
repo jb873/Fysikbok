@@ -1,4 +1,4 @@
-/* Avsnittssida III, text A: Rörelse – nivån Fördjupning. En självbärande bok ur samma kärna som Standard (fart och
+/* Avsnittssida I, text A: Rörelse – nivån Fördjupning. En självbärande bok ur samma kärna som Standard (fart och
  * hastighet med räkning, medelfart, tröghet och massa – förstå först, räkna sist). Joachims granskade källa
  * (III-A-Rorelse-alla-nivaer-v2.md, 2026-11-03), införd ordagrant i strömformatet – se standard.js. [FORMEL] är ett
  * formelblock; bråken i löptexten (600/120, v = s/t) står kvar som text. Samma avsnitts-id som Standard, och dessutom

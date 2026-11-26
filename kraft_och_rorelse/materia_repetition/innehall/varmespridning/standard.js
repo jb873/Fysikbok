@@ -1,4 +1,4 @@
-/* Repetition II, text C: Värmespridning – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
+/* Repetition IV, text E: Värmespridning – standardnivån. En egen bok (en bok per text, delkapitel.js: texter).
  * Texten är Joachims granskade källa (Repetition-II-Standard.md, samlad 2026-11-02), införd ordagrant: ### = en sida,
  * ett stycke = ett textblock, [FIGUR n], [FORMEL] och [EXEMPEL] = blocken ur arbetsordern där markeringen står.
  * Enheter med <sup>3</sup>. Inledningen och sammanfattningen är nya korttexter som Joachim granskar.

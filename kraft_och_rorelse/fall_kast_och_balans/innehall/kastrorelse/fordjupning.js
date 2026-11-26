@@ -1,4 +1,4 @@
-/* Avsnittssida IV. Fall, kast och balans, text C: Kaströrelse – nivån fordjupning (📕).
+/* Avsnittssida II. Fall, kast och balans, text C: Kaströrelse – nivån fordjupning (📕).
  * Arbetsorder 16 (2026-11-11): kallor/kap3/IV-C-Kastrorelse-alla-nivaer-v1.md (# 📕 FÖRDJUPNING), införd ordagrant i
  * strömformatet av verktyg/kap3-omvandlare.js --text c: ## = avsnitt, ### = rubrik, ett stycke = ett textblock,
  * "Det här lär du dig:" = liten rubrik utan kolon. Tilläggen enligt kapitlets norm: rutan "Så bläddrar du" sist i

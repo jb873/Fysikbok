@@ -1,4 +1,4 @@
-// Figurerna till V A Tryck (verktyg/kap3-omvandlare.js --text va): [{ borjar, figurer }]. Arbetsorder 21 (2026-11-12).
+// Figurerna till III A Tryck (verktyg/kap3-omvandlare.js --text va): [{ borjar, figurer }]. Arbetsorder 21 (2026-11-12).
 // Ny figurtyp i bokskal/figurer.js: tryck (lägena sno, hydraulik, lyftkraft och hydraulik-vag). Data enligt ordern
 // (källan har ingen FIGURER-del); bildtexterna är skrivna här. V1–V3 står efter sin bildmarkering i Standard och Enkel,
 // V4 i Fördjupningen.
